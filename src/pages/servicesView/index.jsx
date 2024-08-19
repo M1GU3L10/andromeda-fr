@@ -18,6 +18,8 @@ import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import axios from 'axios'
+import { useState, useEffect } from 'react';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -41,11 +43,25 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 
 const Services = () => {
-    const [age, setAge] = React.useState('');
+    const url = 'http://localhost:1056/api/services';
+    const [services, setServices] = useState([]);
+    const [id, setId] = useState('');
+    const [name, setName] = useState('');
+    const [price, setPrice] = useState('');
+    const [description, setDescription] = useState('');
+    const [time, setTime] = useState('');
+    const [status, setStatus] = useState('');
+    const [operation, setOperation] = useState(1);
+    const [title, setTitle] = useState('');
 
-    const handleChange = (event) => {
-        setAge(event.target.value);
-    };
+    useEffect(() => {
+        getServices();
+    }, [])
+
+    const getServices = async () => {
+        const response = await axios.get(url);
+        setServices(response.data);
+    }
     return (
         <>
             <div className="right-content w-100">
@@ -75,29 +91,10 @@ const Services = () => {
                     </div>
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
-                            <div className='col-sm-4 d-flex align-items-center'>
+                            <div className='col-sm-5 d-flex align-items-center'>
                                 <Button className='btn-register' variant="contained"><BsPlusSquareFill />Registrar</Button>
                             </div>
-                            <div className='col-sm-4 d-flex align-items-center cardFilters'>
-                                <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
-                                    <InputLabel id="demo-select-small-label">Columnas</InputLabel>
-                                    <Select
-                                        labelId="demo-select-small-label"
-                                        id="demo-select-small"
-                                        value={age}
-                                        label="Columnas"
-                                        onChange={handleChange}
-                                    >
-                                        <MenuItem value="">
-                                            <em>12</em>
-                                        </MenuItem>
-                                        <MenuItem value={10}>24</MenuItem>
-                                        <MenuItem value={20}>36</MenuItem>
-                                        <MenuItem value={30}>48</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </div>
-                            <div className='col-sm-4 d-flex align-items-center justify-content-end'>
+                            <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <SearchBox />
                             </div>
                         </div>
@@ -109,192 +106,31 @@ const Services = () => {
                                         <th>Nombre</th>
                                         <th>Precio</th>
                                         <th>Descripción</th>
-                                        <th>Tiempo</th>
+                                        <th>Tiempo(Minutos)</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Corte de cabello</td>
-                                        <td>20000</td>
-                                        <td>El corte que el cliente desee</td>
-                                        <td>60 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color="secondary" className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Corte de barba</td>
-                                        <td>7000</td>
-                                        <td>Marcar barba</td>
-                                        <td>30 Minutos</td>
-                                        <td>Activo</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button color='secondary' className='secondary'><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    {
+                                        services.map((service, i) => (
+                                            <tr key={service.id}>
+                                                <td>{(i+1)}</td>
+                                                <td>{service.name}</td>
+                                                <td>{service.price}</td>
+                                                <td>{service.description}</td>
+                                                <td>{service.time}</td>
+                                                <td>{service.status}</td>
+                                                <td>
+                                                    <div className='actions d-flex align-items-center'>
+                                                        <Button color='primary' className='primary'><FaEye /></Button>
+                                                        <Button color="secondary" className='secondary'><FaPencilAlt /></Button>
+                                                        <Button color='error' className='delete'><IoTrashSharp /></Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
                                 </tbody>
                             </table>
                             <div className="d-flex table-footer">
