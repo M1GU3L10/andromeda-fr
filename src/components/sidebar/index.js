@@ -82,6 +82,11 @@ const Sidebar = () => {
                                         Usuarios
                                     </Link>
                                 </li>
+                                <li>
+                                    <Link to="/ausencias">
+                                        Ausencias
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
                     </li>
