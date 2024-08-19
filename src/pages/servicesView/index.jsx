@@ -20,6 +20,8 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import axios from 'axios'
 import { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -62,6 +64,31 @@ const Services = () => {
         const response = await axios.get(url);
         setServices(response.data);
     }
+
+    const openModal = (op, id, name, price, description, time, status) => {
+        setId('');
+        setName('');
+        setPrice('');
+        setDescription('');
+        setTime('');
+        setStatus('');
+        setOperation(op);
+
+        if (op === 1) {
+            setTitle('Registrar servicio');
+        } else if (op === 2) {
+            setTitle('Editar servicio');
+            setId(id);
+            setName(name);
+            setPrice(price);
+            setDescription(description);
+            setTime(time);
+            setStatus(status);
+        }
+        window.setTimeout(function () {
+            document.getElementById('name').focus();
+        }, 500)
+    }
     return (
         <>
             <div className="right-content w-100">
@@ -92,7 +119,7 @@ const Services = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' variant="contained"><BsPlusSquareFill />Registrar</Button>
+                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained" data-bs-toggle='modal' data-bs-target='#modalServices'><BsPlusSquareFill />Registrar</Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <SearchBox />
@@ -115,16 +142,16 @@ const Services = () => {
                                     {
                                         services.map((service, i) => (
                                             <tr key={service.id}>
-                                                <td>{(i+1)}</td>
+                                                <td>{(i + 1)}</td>
                                                 <td>{service.name}</td>
-                                                <td>{service.price}</td>
+                                                <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(service.price)}</td>
                                                 <td>{service.description}</td>
                                                 <td>{service.time}</td>
                                                 <td>{service.status}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Button color='primary' className='primary'><FaEye /></Button>
-                                                        <Button color="secondary" className='secondary'><FaPencilAlt /></Button>
+                                                        <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalServices' className='secondary' onClick={() => openModal(2, service.id, service.name, service.price, service.description, service.time, service.status)}><FaPencilAlt /></Button>
                                                         <Button color='error' className='delete'><IoTrashSharp /></Button>
                                                     </div>
                                                 </td>
@@ -139,6 +166,51 @@ const Services = () => {
                         </div>
                     </div>
                 </div>
+                <div id="modalServices" className="modal fade" aria-hidden="true">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <label className="h5">{title}</label>
+                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div className="modal-body">
+                                <input type="hidden" id="id" />
+                                <div className="input-group mb-3">
+                                    <input type="text" id="name" className="form-control" placeholder="Nombre"
+                                        value={name} onChange={(e) => setName(e.target.value)}
+                                    />
+                                </div>
+                                <div className="input-group mb-3">
+                                    <input type="text" id="price" className="form-control" placeholder="Precio"
+                                        value={price} onChange={(e) => setPrice(e.target.value)}
+                                    />
+                                </div>
+                                <div className="input-group mb-3">
+                                    <input type="text" id="description" className="form-control" placeholder="Descripcion"
+                                        value={description} onChange={(e) => setDescription(e.target.value)}
+                                    />
+                                </div>
+                                <div className="input-group mb-3">
+                                    <input type="text" id="time" className="form-control" placeholder="Tiempo"
+                                        value={time} onChange={(e) => setTime(e.target.value)}
+                                    />
+                                </div>
+                                <div className="input-group mb-3">
+                                    <input type="text" id="status" className="form-control" placeholder="Estado"
+                                        value={status} onChange={(e) => setStatus(e.target.value)}
+                                    />
+                                </div>
+                                <div className='d-grid col-4 mx-auto'>
+                                    <Button type='button' className='btn-sucess'>Guardar</Button>
+                                </div>
+                            </div>
+                            <div className='modal-footer'>
+                                <Button type='button' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </>
     );

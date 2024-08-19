@@ -36,6 +36,14 @@ body.dark{
   text-transform: capitalize !important;
 }
 
+.btn-sucess{
+  background: #13993b !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #fff !important;
+  text-transform: capitalize !important;
+}
+
 .btn-content{
   padding-left: 10px;
   padding-right: 10px;
