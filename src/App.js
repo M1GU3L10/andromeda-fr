@@ -17,6 +17,8 @@ import Services from './pages/servicesView';
 import Shopping from './pages/shopping';
 import Suppliers from './pages/suppliers';
 import Users from './pages/users';
+import Absences from './pages/absences';
+
 
 const MyContext = createContext();
 
@@ -72,6 +74,7 @@ function App() {
               <Route path="/shopping" exact={true} element={<Shopping />} />
               <Route path="/suppliers" exact={true} element={<Suppliers />} />
               <Route path="/users" exact={true} element={<Users />} />
+              <Route path="/absences" exact={true} element={<Absences />} />
             </Routes>
           </div>
         </div>
