@@ -46,11 +46,13 @@ body.dark{
 header {
   width: 100%;
   height: 70px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.9);
   position: fixed;
   top: 0px;
   left: 0px;
   z-index: 1000;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
 }
 
 body.dark header{
@@ -584,15 +586,15 @@ body.dark .logoutWrapper .logoutBox{
   flex: 0 0 80%;
 }
 
-.right-content{
-  padding: 40px 30px;
+.right-content {
+  padding: 90px 30px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.right-content .row{
-  margin-top: 70px;
+.right-content .row .spacing{
+  margin: 20px 0px;
   width: 100%;
   height: 74px;
   background: #fff;
@@ -600,11 +602,11 @@ body.dark .logoutWrapper .logoutBox{
   box-shadow: 0 .5rem 1rem #00000026 !important;
 }
 
-body.dark .right-content .row{
+body.dark .right-content .row .spacing{
   background: #1b2b4d !important;
 }
 
-.right-content .row .Title{
+.right-content .row .spacing .Title{
   margin-left: 15px;
   font-family: "Open Sans", sans-serif !important;
   font-size: 20px;
@@ -612,7 +614,7 @@ body.dark .right-content .row{
   color: #403e57 !important;
 }
 
-body.dark .right-content .row .Title{
+body.dark .right-content .row .spacing .Title{
   color: #d0d5db !important;
 }
 
@@ -623,4 +625,97 @@ body.dark .css-1mm5wr7-MuiChip-root .MuiChip-icon {
 body.dark .css-1mm5wr7-MuiChip-root{
   background-color: #112042 !important;
   color: #b7bcc7 !important;
+}
+
+.card{
+  margin: 15px 0px;
+  border-radius: 10px;
+}
+
+.btn-register{
+  font-size: 13px;
+  font-weight: 400;
+  width: 130px;
+  text-transform: none !important;
+  background: #0858f7 !important;
+}
+
+.btn-register svg{
+  margin-right: 16px;
+  font-size: 15px;
+  color: #fff;
+}
+
+.table .table-primary th{
+  background-color: #1866ee !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  font-size: 13px !important;
+
+}
+
+.table tbody td{
+  font-size: 13px !important;
+  color: #403e57 !important;
+  font-weight: 500;
+}
+
+.table tbody .actions button{
+  min-width: 30px !important;
+  width: 25px !important;
+  height: 25px !important;
+  margin: 0px 3px !important;
+}
+
+.table tbody .actions button.secondary svg{
+  color: rgb(155, 39, 176);
+}
+
+.table tbody .actions button.secondary{
+  background: rgb(155, 39, 176, 0.2);
+}
+
+.table tbody .actions button.primary svg{
+  color: rgb(24, 102, 237);
+}
+
+.table tbody .actions button.primary{
+  background: rgb(24, 102, 237, 0.2);
+}
+
+.table tbody .actions button.delete svg{
+  color: rgb(212, 47, 47);
+}
+
+.table tbody .actions button.delete{
+  background: rgb(212, 47, 47, 0.2);
+}
+
+.table tbody .actions button svg{
+  font-size: 30px !important;
+}
+
+table.v-align td{
+  vertical-align: middle !important;
+}
+
+.table-footer{
+  padding-bottom: 20px;
+}
+
+.table-footer .pagination{
+  margin-left: auto;
+}
+
+.css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root.Mui-selected{
+  background-color: #1866ee;
+}
+
+.cardFilters h4{
+  padding: 15px 5px;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: capitalize;
+  color: #403e57;
+  margin-top: 3px;
 }

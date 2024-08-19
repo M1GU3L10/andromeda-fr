@@ -33,7 +33,7 @@ const Appointment = () => {
         <>
             <div className="right-content w-100">
                 <div class="row d-flex align-items-center w-100">
-                    <div className="d-flex align-items-center">
+                    <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
                             <span className='Title'>Citas</span>
                         </div>
