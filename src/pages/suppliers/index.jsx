@@ -2,7 +2,6 @@ import * as React from 'react';
 import axios from 'axios';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
 import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
 import InputLabel from '@mui/material/InputLabel';
@@ -13,6 +12,10 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { FaEye, FaPencilAlt } from 'react-icons/fa';
+import { IoTrashSharp } from 'react-icons/io5';
+import { Button } from 'reactstrap'; // o el componente Button que estés usando
+
 
 const style = {
     position: 'absolute',
@@ -33,12 +36,10 @@ const Suppliers = () => {
     const [openEdit, setOpenEdit] = React.useState(false);
     const [viewData, setViewData] = React.useState({});
     const [formData, setFormData] = React.useState({
-        SupplierName: '',
-        Units: '',
-        UnitPrice: '',
-        TotalPrice: '',
-        CategoryId: '',
-        ProductId: ''
+        Supplier_Name: '',
+        Phone_Number: '',
+        Email: '',
+        Address: '',
     });
     const [supplierData, setSupplierData] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
@@ -69,12 +70,10 @@ const Suppliers = () => {
     const handleClose = () => {
         setOpen(false);
         setFormData({
-            SupplierName: '',
-            Units: '',
-            UnitPrice: '',
-            TotalPrice: '',
-            CategoryId: '',
-            ProductId: ''
+            Supplier_Name: '',
+            Phone_Number: '',
+            Email: '',
+            Address: '',
         });
         setFormErrors({});
     };
@@ -100,12 +99,10 @@ const Suppliers = () => {
 
     const validateForm = () => {
         let errors = {};
-        if (!formData.SupplierName) errors.SupplierName = 'Supplier name is required';
-        if (!formData.Units || isNaN(formData.Units) || formData.Units < 0) errors.Units = 'Units must be a non-negative number';
-        if (!formData.UnitPrice || isNaN(formData.UnitPrice) || formData.UnitPrice <= 0) errors.UnitPrice = 'Unit price must be a positive number';
-        if (!formData.TotalPrice || isNaN(formData.TotalPrice) || formData.TotalPrice <= 0) errors.TotalPrice = 'Total price must be a positive number';
-        if (!formData.CategoryId) errors.CategoryId = 'Category ID is required';
-        if (!formData.ProductId) errors.ProductId = 'Product ID is required';
+        if (!formData.Supplier_Name) errors.Supplier_Name = 'Supplier name is required';
+        if (!formData.Phone_Number) errors.Phone_Number = 'Phone number is required';
+        if (!formData.Email) errors.Email = 'Email is required';
+        if (!formData.Address) errors.Address = 'Address is required';
 
         return errors;
     };
@@ -135,7 +132,7 @@ const Suppliers = () => {
 
     const handleUpdate = async () => {
         try {
-            await axios.put(`http://localhost:1056/api/suppliers/${viewData.Id_Proveedores}`, formData);
+            await axios.put(`http://localhost:1056/api/suppliers/${viewData.id}`, formData);
             handleEditClose();
             fetchSupplierData();
         } catch (err) {
@@ -151,13 +148,23 @@ const Suppliers = () => {
         }
     };
 
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:1056/api/suppliers/${id}`);
+            fetchSupplierData();
+        } catch (err) {
+            console.error('Error deleting supplier:', err);
+            setError('Error deleting supplier');
+        }
+    };
+
     return (
         <>
             <div className="right-content w-100">
                 <div className="row d-flex align-items-center w-100">
                     <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
-                            <span className='Title'>Supplier Management</span>
+                            <span className='Title'>Proveedores</span>
                         </div>
                         <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
                             <div role="presentation">
@@ -171,9 +178,9 @@ const Suppliers = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-4 d-flex align-items-center'>
-                                <Button variant="contained" onClick={handleOpen}>
-                                    Register
-                                </Button>
+                                <button className="btn btn-primary" onClick={handleOpen}>
+                                    Registrar
+                                </button>
                             </div>
                             <div className='col-sm-4 d-flex align-items-center cardFilters'>
                                 <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
@@ -198,7 +205,7 @@ const Suppliers = () => {
                         </div>
                         <div className='table-responsive mt-3'>
                             {loading ? (
-                                <p>Loading...</p>
+                                <p>Cargando...</p>
                             ) : error ? (
                                 <p>{error}</p>
                             ) : (
@@ -206,29 +213,26 @@ const Suppliers = () => {
                                     <thead className='table-primary'>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Supplier Name</th>
-                                            <th>Units</th>
-                                            <th>Unit Price</th>
-                                            <th>Total Price</th>
-                                            <th>Category ID</th>
-                                            <th>Product ID</th>
-                                            <th>Actions</th>
+                                            <th>Proveedor Nombre</th>
+                                            <th>Telefono</th>
+                                            <th>Correo</th>
+                                            <th>Direccion</th>
+                                            <th>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {supplierData.map((item) => (
-                                            <tr key={item.Id_Proveedores}>
-                                                <td>{item.Id_Proveedores}</td>
-                                                <td>{item.Nombre_Proveedor}</td>
-                                                <td>{item.Unidades}</td>
-                                                <td>{item.Precio_unitario}</td>
-                                                <td>{item.Precio_total}</td>
-                                                <td>{item.Id_categoria_producto}</td>
-                                                <td>{item.Id_Producto}</td>
+                                            <tr key={item.id}>
+                                                <td>{item.id}</td>
+                                                <td>{item.Supplier_Name}</td>
+                                                <td>{item.Phone_Number}</td>
+                                                <td>{item.Email}</td>
+                                                <td>{item.Address}</td>
                                                 <td>
-                                                    <Button onClick={() => handleViewOpen(item)}>View</Button>
-                                                    <Button onClick={() => handleEditOpen(item)}>Edit</Button>
-                                                    <Button color='error'>Delete</Button>
+                                                    <button className="btn btn-info me-2" onClick={() => handleViewOpen(item)}>Ver</button>
+                                                    <button className="btn btn-warning me-2" onClick={() => handleEditOpen(item)}>Editar</button>
+                                                    <button className="btn btn-danger" onClick={() => handleDelete(item.id)}>Eliminar</button>
+                                                    
                                                 </td>
                                             </tr>
                                         ))}
@@ -244,169 +248,117 @@ const Suppliers = () => {
             <Modal open={open} onClose={handleClose}>
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Register Supplier
+                        Registar Proveedor
                     </Typography>
                     <TextField
                         label="Supplier Name"
-                        name="SupplierName"
-                        value={formData.SupplierName}
+                        name="Supplier_Name"
+                        value={formData.Supplier_Name}
                         onChange={handleInputChange}
+                        error={!!formErrors.Supplier_Name}
+                        helperText={formErrors.Supplier_Name}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
-                        error={!!formErrors.SupplierName}
-                        helperText={formErrors.SupplierName}
                     />
                     <TextField
-                        label="Units"
-                        name="Units"
-                        value={formData.Units}
+                        label="Phone Number"
+                        name="Phone_Number"
+                        value={formData.Phone_Number}
                         onChange={handleInputChange}
+                        error={!!formErrors.Phone_Number}
+                        helperText={formErrors.Phone_Number}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
-                        error={!!formErrors.Units}
-                        helperText={formErrors.Units}
                     />
                     <TextField
-                        label="Unit Price"
-                        name="UnitPrice"
-                        value={formData.UnitPrice}
+                        label="Email"
+                        name="Email"
+                        value={formData.Email}
                         onChange={handleInputChange}
+                        error={!!formErrors.Email}
+                        helperText={formErrors.Email}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
-                        error={!!formErrors.UnitPrice}
-                        helperText={formErrors.UnitPrice}
                     />
                     <TextField
-                        label="Total Price"
-                        name="TotalPrice"
-                        value={formData.TotalPrice}
+                        label="Address"
+                        name="Address"
+                        value={formData.Address}
                         onChange={handleInputChange}
+                        error={!!formErrors.Address}
+                        helperText={formErrors.Address}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
-                        error={!!formErrors.TotalPrice}
-                        helperText={formErrors.TotalPrice}
                     />
-                    <TextField
-                        label="Category ID"
-                        name="CategoryId"
-                        value={formData.CategoryId}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        error={!!formErrors.CategoryId}
-                        helperText={formErrors.CategoryId}
-                    />
-                    <TextField
-                        label="Product ID"
-                        name="ProductId"
-                        value={formData.ProductId}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        error={!!formErrors.ProductId}
-                        helperText={formErrors.ProductId}
-                    />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleSubmit}
-                        fullWidth
-                        sx={{ mt: 2 }}
-                    >
-                        Register
-                    </Button>
+                    <div className="d-flex justify-content-end mt-4">
+                        <button className="btn btn-primary me-2" onClick={handleSubmit}>Guardar</button>
+                        <button className="btn btn-secondary" onClick={handleClose}>Cancelar</button>
+                    </div>
                 </Box>
             </Modal>
 
             <Modal open={openView} onClose={handleViewClose}>
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Supplier Information
+                        Informacion de proveedor
                     </Typography>
-                    <Typography>Supplier Name: {viewData.SupplierName}</Typography>
-                    <Typography>Units: {viewData.Units}</Typography>
-                    <Typography>Unit Price: {viewData.UnitPrice}</Typography>
-                    <Typography>Total Price: {viewData.TotalPrice}</Typography>
-                    <Typography>Category ID: {viewData.CategoryId}</Typography>
-                    <Typography>Product ID: {viewData.ProductId}</Typography>
+                    <Typography><strong>ID:</strong> {viewData.id}</Typography>
+                    <Typography><strong>Nombre:</strong> {viewData.Supplier_Name}</Typography>
+                    <Typography><strong>Numero:</strong> {viewData.Phone_Number}</Typography>
+                    <Typography><strong>Correo:</strong> {viewData.Email}</Typography>
+                    <Typography><strong>Direccion:</strong> {viewData.Address}</Typography>
                 </Box>
             </Modal>
-
 
             <Modal open={openEdit} onClose={handleEditClose}>
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Edit Supplier
+                        Editar proveedor
                     </Typography>
                     <TextField
-                        label="Supplier Name"
-                        name="SupplierName"
-                        value={formData.SupplierName}
+                        label="Nombre"
+                        name="Supplier_Name"
+                        value={formData.Supplier_Name}
                         onChange={handleInputChange}
+                        error={!!formErrors.Supplier_Name}
+                        helperText={formErrors.Supplier_Name}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
                     />
                     <TextField
-                        label="Units"
-                        name="Units"
-                        value={formData.Units}
+                        label="Numero"
+                        name="Phone_Number"
+                        value={formData.Phone_Number}
                         onChange={handleInputChange}
+                        error={!!formErrors.Phone_Number}
+                        helperText={formErrors.Phone_Number}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
                     />
                     <TextField
-                        label="Unit Price"
-                        name="UnitPrice"
-                        value={formData.UnitPrice}
+                        label="Correo"
+                        name="Email"
+                        value={formData.Email}
                         onChange={handleInputChange}
+                        error={!!formErrors.Email}
+                        helperText={formErrors.Email}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
                     />
                     <TextField
-                        label="Total Price"
-                        name="TotalPrice"
-                        value={formData.TotalPrice}
+                        label="Direccion"
+                        name="Address"
+                        value={formData.Address}
                         onChange={handleInputChange}
+                        error={!!formErrors.Address}
+                        helperText={formErrors.Address}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
                     />
-                    <TextField
-                        label="Category ID"
-                        name="CategoryId"
-                        value={formData.CategoryId}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                    />
-                    <TextField
-                        label="Product ID"
-                        name="ProductId"
-                        value={formData.ProductId}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                    />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleUpdate}
-                        fullWidth
-                        sx={{ mt: 2 }}
-                    >
-                        Update
-                    </Button>
+                    <div className="d-flex justify-content-end mt-4">
+                        <button className="btn btn-primary me-2" onClick={handleUpdate}>Update</button>
+                        <button className="btn btn-secondary" onClick={handleEditClose}>Cancel</button>
+                    </div>
                 </Box>
             </Modal>
         </>
