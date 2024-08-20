@@ -21,6 +21,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import FormHelperText from '@mui/material/FormHelperText';
+import Swal from 'sweetalert2';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[700],
@@ -127,16 +128,77 @@ const Programming = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+
+        // Realizar validación en tiempo real para el campo actual
+        let errors = { ...formErrors };
+
+        switch (name) {
+            case 'startTime':
+                if (!value) {
+                    errors.startTime = 'La hora de inicio es requerida';
+                } else if (!/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(value)) {
+                    errors.startTime = 'La hora de inicio debe estar en formato (HH:MM:SS)';
+                } else {
+                    delete errors.startTime;
+                }
+                break;
+
+            case 'endTime':
+                if (!value) {
+                    errors.endTime = 'La hora de fin es requerida';
+                } else if (!/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(value)) {
+                    errors.endTime = 'La hora de fin debe estar en formato (HH:MM:SS)';
+                } else if (new Date(`1970-01-01T${value}Z`) <= new Date(`1970-01-01T${formData.startTime}Z`)) {
+                    errors.endTime = 'La hora de fin debe ser posterior a la hora de inicio';
+                } else {
+                    delete errors.endTime;
+                }
+                break;
+
+            case 'status':
+                if (!value) {
+                    errors.status = 'El estado es requerido';
+                } else if (!['pending', 'approved', 'rejected'].includes(value)) {
+                    errors.status = 'El estado debe ser uno de los siguientes: pending, approved, rejected';
+                } else {
+                    delete errors.status;
+                }
+                break;
+
+            case 'day':
+                if (!value) {
+                    errors.day = 'El día es requerido';
+                } else if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                    errors.day = 'El día debe estar en formato YYYY-MM-DD';
+                } else {
+                    delete errors.day;
+                }
+                break;
+
+            case 'userId':
+                if (!value) {
+                    errors.userId = 'El ID de usuario es requerido';
+                } else {
+                    delete errors.userId;
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        setFormErrors(errors);
     };
+
 
     const validateForm = () => {
         let errors = {};
         if (!formData.startTime) errors.startTime = 'La hora de inicio es requerida';
-        else if (!/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(formData.startTime)) 
+        else if (!/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(formData.startTime))
             errors.startTime = 'La hora de inicio debe estar en formato (HH:MM:SS)';
 
         if (!formData.endTime) errors.endTime = 'La hora de fin es requerida';
-        else if (!/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(formData.endTime)) 
+        else if (!/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(formData.endTime))
             errors.endTime = 'La hora de fin debe estar en formato (HH:MM:SS)';
         else if (new Date(`1970-01-01T${formData.endTime}Z`) <= new Date(`1970-01-01T${formData.startTime}Z`))
             errors.endTime = 'La hora de fin debe ser posterior a la hora de inicio';
@@ -158,40 +220,95 @@ const Programming = () => {
         const errors = validateForm();
         if (Object.keys(errors).length === 0) {
             try {
-                // Convertir userId a número si es necesario
                 const dataToSend = {
                     ...formData,
                     userId: Number(formData.userId)
                 };
-    
-                console.log('Enviando datos:', dataToSend); // Verifica los datos que se están enviando
-    
+
+                console.log('Enviando datos:', dataToSend);
+
                 await axios.post('http://localhost:1056/api/programming', dataToSend);
-                handleClose(); // Cierra el modal y restablece el formulario
-                fetchProgrammingData(); // Refresca la lista de datos
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: 'Programación registrada exitosamente',
+                });
+                handleClose();
+                fetchProgrammingData();
             } catch (err) {
                 console.error('Error submitting form:', err);
                 if (err.response && err.response.data) {
-                    console.log('Errores de la respuesta:', err.response.data.errors); // Verifica los errores
                     setFormErrors(err.response.data.errors.reduce((acc, curr) => {
-                        acc[curr.param] = curr.msg;
+                        acc[curr.field] = curr.message;
                         return acc;
                     }, {}));
-                } else {
-                    console.error('Error desconocido:', err);
                 }
             }
         } else {
             setFormErrors(errors);
         }
     };
-    
-    
 
-    const handleUpdate = () => {
-        console.log(formData);
-        handleEditClose();
+
+    const handleUpdate = async () => {
+        const errors = validateForm();
+        if (Object.keys(errors).length === 0) {
+            try {
+                await axios.put(`http://localhost:1056/api/programming/${formData.id}`, formData);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: 'Programación actualizada exitosamente',
+                });
+                handleEditClose();
+                fetchProgrammingData();
+            } catch (err) {
+                console.error('Error updating form:', err);
+                if (err.response && err.response.data) {
+                    setFormErrors(err.response.data.errors.reduce((acc, curr) => {
+                        acc[curr.field] = curr.message;
+                        return acc;
+                    }, {}));
+                }
+            }
+        } else {
+            setFormErrors(errors);
+        }
     };
+
+    const handleDelete = async (id) => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¡No podrás revertir esto!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '¡Sí, bórralo!',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(`http://localhost:1056/api/programming/${id}`);
+                fetchProgrammingData(); // Refresca los datos de la tabla
+                Swal.fire(
+                    '¡Borrado!',
+                    'El registro ha sido eliminado.',
+                    'success'
+                );
+            } catch (err) {
+                console.error('Error al borrar el dato:', err);
+                setError('Error al borrar el dato');
+                Swal.fire(
+                    '¡Error!',
+                    'Hubo un problema al borrar el registro.',
+                    'error'
+                );
+            }
+        }
+    };
+
 
     return (
         <>
@@ -283,21 +400,27 @@ const Programming = () => {
                                                 <td>{item.userId}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        <Button 
-                                                            color='primary' 
-                                                            className='primary' 
+                                                        <Button
+                                                            color='primary'
+                                                            className='primary'
                                                             onClick={() => handleViewOpen(item)}
                                                         >
                                                             <FaEye />
                                                         </Button>
-                                                        <Button 
-                                                            color="secondary" 
+                                                        <Button
+                                                            color="secondary"
                                                             className='secondary'
                                                             onClick={() => handleEditOpen(item)}
                                                         >
                                                             <FaPencilAlt />
                                                         </Button>
-                                                        <Button color='error' className='delete'><IoTrashSharp /></Button>
+                                                        <Button
+                                                            color='error'
+                                                            className='delete'
+                                                            onClick={() => handleDelete(item.id)}
+                                                        >
+                                                            <IoTrashSharp />
+                                                        </Button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -334,6 +457,7 @@ const Programming = () => {
                         variant="outlined"
                         error={!!formErrors.startTime}
                         helperText={formErrors.startTime}
+
                     />
                     <TextField
                         label="Fin"
@@ -406,105 +530,60 @@ const Programming = () => {
                     <Typography variant="h6" component="h2" id="modal-view-title" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
                         Detalles de Programación
                     </Typography>
-                    <TextField
-                        label="Inicio"
-                        name="startTime"
-                        value={viewData.startTime || ''}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                    />
-                    <TextField
-                        label="Fin"
-                        name="endTime"
-                        value={viewData.endTime || ''}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                    />
-                    <TextField
-                        label="Estado"
-                        name="status"
-                        value={viewData.status || ''}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                    />
-                    <TextField
-                        label="Día"
-                        name="day"
-                        value={viewData.day || ''}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                    />
-                    <TextField
-                        label="ID Usuario"
-                        name="userId"
-                        value={viewData.userId || ''}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                    />
-                    <Button onClick={handleViewClose} variant="contained" color="primary" sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Inicio:</strong> {viewData.startTime}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Fin:</strong> {viewData.endTime}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Estado:</strong> {viewData.status}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Día:</strong> {viewData.day}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>ID Usuario:</strong> {viewData.userId}</Typography>
+                    <Button onClick={handleViewClose} variant="outlined" color="primary" sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>
                         Cerrar
                     </Button>
                 </Box>
             </Modal>
 
+
             {/* Modal para actualizar */}
-            <Modal
-                open={openEdit}
-                onClose={handleEditClose}
-                aria-labelledby="modal-edit-title"
-                aria-describedby="modal-edit-description"
-            >
+            <Modal open={openEdit} onClose={handleEditClose}>
                 <Box sx={style}>
-                    <Typography variant="h6" component="h2" id="modal-edit-title" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Actualizar Programación
+                    <Typography variant="h6" component="h2" id="modal-title" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
+                        Editar Programación
                     </Typography>
                     <TextField
-                        label="Inicio"
+                        label="Hora de Inicio"
                         name="startTime"
                         value={formData.startTime}
                         onChange={handleInputChange}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
+                        error={!!formErrors.startTime}
+                        helperText={formErrors.startTime}
                     />
                     <TextField
-                        label="Fin"
+                        label="Hora de Fin"
                         name="endTime"
                         value={formData.endTime}
                         onChange={handleInputChange}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
+                        error={!!formErrors.endTime}
+                        helperText={formErrors.endTime}
                     />
-                    <TextField
-                        label="Estado"
-                        name="status"
-                        value={formData.status}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                    />
+                    <FormControl fullWidth margin="normal" error={!!formErrors.status}>
+                        <InputLabel id="status-label-edit">Estado</InputLabel>
+                        <Select
+                            label="status"
+                            name="status"
+                            value={formData.status}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                        >
+                            <MenuItem value="pending">Pendiente</MenuItem>
+                            <MenuItem value="approved">Aprobado</MenuItem>
+                            <MenuItem value="rejected">Rechazado</MenuItem>
+                        </Select>
+                        <FormHelperText>{formErrors.status}</FormHelperText>
+                    </FormControl>
                     <TextField
                         label="Día"
                         name="day"
@@ -512,20 +591,30 @@ const Programming = () => {
                         onChange={handleInputChange}
                         fullWidth
                         margin="normal"
-                        variant="outlined"
+                        error={!!formErrors.day}
+                        helperText={formErrors.day}
                     />
-                    <TextField
-                        label="ID Usuario"
-                        name="userId"
-                        value={formData.userId}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                    />
-                    <Button onClick={handleUpdate} variant="contained" color="primary" sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>
-                        Actualizar
-                    </Button>
+                    <FormControl fullWidth margin="normal" error={!!formErrors.userId}>
+                        <InputLabel id="user-label-edit">Usuario</InputLabel>
+                        <Select
+                            label="user"
+                            name="userId"
+                            value={formData.userId}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                            error={!!formErrors.day}
+                            helperText={formErrors.user}
+                        >
+                            {users.map((user) => (
+                                <MenuItem key={user.id} value={user.id}>
+                                    {user.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        <FormHelperText>{formErrors.userId}</FormHelperText>
+                    </FormControl>
+                    <Button onClick={handleUpdate} variant="contained" color="primary" sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>Actualizar</Button>
                 </Box>
             </Modal>
         </>

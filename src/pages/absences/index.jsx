@@ -19,6 +19,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import Swal from 'sweetalert2';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[700],
@@ -50,14 +51,44 @@ const Absences = () => {
     const [columnsPerPage, setColumnsPerPage] = React.useState('');
     const [open, setOpen] = React.useState(false);
     const [openEdit, setOpenEdit] = React.useState(false);
+    const [openView, setOpenView] = React.useState(false);
     const [editData, setEditData] = React.useState({});
     const [formData, setFormData] = React.useState({
         startTime: '',
         endTime: '',
         date: '',
         description: '',
+        status: 'A',
         userId: ''
     });
+    const [viewData, setViewData] = React.useState({});
+    const [users, setUsers] = React.useState([]);
+    const [errors, setErrors] = React.useState({});
+    const [absences, setAbsences] = React.useState([]);
+
+    React.useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('http://localhost:1056/api/users');
+                const data = await response.json();
+                setUsers(data);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        };
+        fetchUsers();
+        fetchAbsences();
+    }, []);
+
+    const fetchAbsences = async () => {
+        try {
+            const response = await fetch('http://localhost:1056/api/absences');
+            const data = await response.json();
+            setAbsences(data);
+        } catch (error) {
+            console.error('Error fetching absences:', error);
+        }
+    };
 
     const handleChange = (event) => {
         setColumnsPerPage(event.target.value);
@@ -68,27 +99,170 @@ const Absences = () => {
 
     const handleEditOpen = (data) => {
         setEditData(data);
-        setFormData(data); // Populate formData with data to be edited
+        setFormData(data);
         setOpenEdit(true);
     };
 
     const handleEditClose = () => setOpenEdit(false);
+
+    const handleViewOpen = (data) => {
+        setViewData(data);
+        setOpenView(true);
+    };
+
+    const handleViewClose = () => setOpenView(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = () => {
-        // Aquí puedes agregar la lógica para enviar los datos a la API
-        console.log(formData);
-        handleClose();
+    const validateForm = () => {
+        const newErrors = {};
+        const { startTime, endTime, date, userId, status } = formData;
+
+        if (!startTime) newErrors.startTime = 'La hora de inicio es requerida';
+        if (!endTime) newErrors.endTime = 'La hora de fin es requerida';
+        if (!date) newErrors.date = 'La fecha es requerida';
+        if (!userId) newErrors.userId = 'El ID de usuario es requerido';
+        if (!['A', 'I'].includes(status)) newErrors.status = 'El estado debe ser A (Activo) o I (Inactivo)';
+
+        const timeFormat = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+        if (startTime && !timeFormat.test(startTime)) newErrors.startTime = 'La hora de inicio debe estar en formato HH:MM:SS';
+        if (endTime && !timeFormat.test(endTime)) newErrors.endTime = 'La hora de fin debe estar en formato HH:MM:SS';
+
+        if (startTime && endTime && new Date(`1970-01-01T${endTime}`) <= new Date(`1970-01-01T${startTime}`)) {
+            newErrors.endTime = 'La hora de fin debe ser posterior a la hora de inicio';
+        }
+
+        if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) newErrors.date = 'La fecha debe estar en formato YYYY-MM-DD';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    const handleUpdate = () => {
-        // Aquí puedes agregar la lógica para actualizar los datos en la API
-        console.log(formData);
-        handleEditClose();
+    const handleSubmit = async () => {
+        if (!validateForm()) return;
+    
+        try {
+            const response = await fetch('http://localhost:1056/api/absences', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+    
+            const result = await response.json();
+    
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: 'Ausencia registrada exitosamente',
+                });
+                handleClose();
+                fetchAbsences();
+            } else {
+                console.error('Error al registrar ausencia:', result);
+                // Asegúrate de que result.errors exista y sea un array antes de usar reduce
+                if (result.errors && Array.isArray(result.errors)) {
+                    setErrors(result.errors.reduce((acc, err) => ({ ...acc, [err.param]: err.msg }), {}));
+                } else {
+                    // Manejo de casos en los que result.errors no está definido o no es un array
+                    setErrors({ general: 'Ha ocurrido un error inesperado' });
+                }
+            }
+        } catch (error) {
+            console.error('Error en la solicitud:', error);
+            setErrors({ general: 'Error en la solicitud' });
+        }
+    };
+    
+
+    const handleUpdate = async () => {
+        if (!validateForm()) return;
+
+        try {
+            if (!formData.id) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'ID de ausencia no encontrado.',
+                });
+                return;
+            }
+
+            const response = await fetch(`http://localhost:1056/api/absences/${formData.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: 'Ausencia actualizada exitosamente',
+                });
+                handleEditClose();
+                fetchAbsences();
+            } else {
+                console.error('Error al actualizar ausencia:', result);
+                setErrors(result.errors.reduce((acc, err) => ({ ...acc, [err.param]: err.msg }), {}));
+            }
+        } catch (error) {
+            console.error('Error en la solicitud:', error);
+        }
+    };
+
+
+    const handleDelete = async (id) => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`http://localhost:1056/api/absences/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    Swal.fire(
+                        'Eliminado',
+                        'La ausencia ha sido eliminada.',
+                        'success'
+                    );
+                    fetchAbsences();
+                } else {
+                    console.error('Error al eliminar ausencia:', await response.json());
+                    Swal.fire(
+                        'Error',
+                        'No se pudo eliminar la ausencia.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Error en la solicitud:', error);
+                Swal.fire(
+                    'Error',
+                    'Ocurrió un error al intentar eliminar la ausencia.',
+                    'error'
+                );
+            }
+        }
     };
 
     return (
@@ -128,7 +302,7 @@ const Absences = () => {
                         <div className='row'>
                             <div className='col-sm-4 d-flex align-items-center'>
                                 <Button className='btn-register' variant="contained" onClick={handleOpen}>
-                                    <BsPlusSquareFill />Registrar
+                                    <BsPlusSquareFill /> Registrar
                                 </Button>
                             </div>
                             <div className='col-sm-4 d-flex align-items-center cardFilters'>
@@ -166,34 +340,33 @@ const Absences = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>09:00</td>
-                                        <td>13:00</td>
-                                        <td>2024-08-20</td>
-                                        <td>Cita médica</td>
-                                        <td>Aprobado</td>
-                                        <td>123</td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <Button color='primary' className='primary'><FaEye /></Button>
-                                                <Button 
-                                                    color="secondary" 
-                                                    className='secondary'
-                                                    onClick={() => handleEditOpen({
-                                                        startTime: '09:00',
-                                                        endTime: '13:00',
-                                                        date: '2024-08-20',
-                                                        description: 'Cita médica',
-                                                        userId: '123'
-                                                    })}
-                                                >
-                                                    <FaPencilAlt />
-                                                </Button>
-                                                <Button color='error' className='delete'><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {/* Puedes agregar más filas aquí */}
+                                    {absences.map((absence) => (
+                                        <tr key={absence.id}>
+                                            <td>{absence.startTime}</td>
+                                            <td>{absence.endTime}</td>
+                                            <td>{absence.date}</td>
+                                            <td>{absence.description}</td>
+                                            <td>{absence.status === 'A' ? 'Aprobado' : 'Inactivo'}</td>
+                                            <td>{absence.userId}</td>
+                                            <td>
+                                                <div className='actions d-flex align-items-center'>
+                                                    <Button color='primary' className='primary' onClick={() => handleViewOpen(absence)}>
+                                                        <FaEye />
+                                                    </Button>
+                                                    <Button
+                                                        color="secondary"
+                                                        className='secondary'
+                                                        onClick={() => handleEditOpen(absence)}
+                                                    >
+                                                        <FaPencilAlt />
+                                                    </Button>
+                                                    <Button color='error' className='delete' onClick={() => handleDelete(absence.id)}>
+                                                        <IoTrashSharp />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                             <div className="d-flex table-footer">
@@ -223,6 +396,8 @@ const Absences = () => {
                         fullWidth
                         margin="normal"
                         variant="outlined"
+                        error={!!errors.startTime}
+                        helperText={errors.startTime}
                     />
                     <TextField
                         label="Hora Fin"
@@ -232,6 +407,8 @@ const Absences = () => {
                         fullWidth
                         margin="normal"
                         variant="outlined"
+                        error={!!errors.endTime}
+                        helperText={errors.endTime}
                     />
                     <TextField
                         label="Fecha"
@@ -241,6 +418,8 @@ const Absences = () => {
                         fullWidth
                         margin="normal"
                         variant="outlined"
+                        error={!!errors.date}
+                        helperText={errors.date}
                     />
                     <TextField
                         label="Descripción"
@@ -251,15 +430,25 @@ const Absences = () => {
                         margin="normal"
                         variant="outlined"
                     />
-                    <TextField
-                        label="ID Usuario"
-                        name="userId"
-                        value={formData.userId}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                    />
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="user-id-label">ID Usuario</InputLabel>
+                        <Select
+                            labelId="user-id-label"
+                            id="user-id-select"
+                            name="userId"
+                            value={formData.userId}
+                            onChange={handleInputChange}
+                            label="ID Usuario"
+                            error={!!errors.userId}
+                        >
+                            {users.map(user => (
+                                <MenuItem key={user.id} value={user.id}>
+                                    {user.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        {errors.userId && <Typography color="error" variant="caption">{errors.userId}</Typography>}
+                    </FormControl>
                     <Button onClick={handleSubmit} variant="contained" color="primary" sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>
                         Guardar
                     </Button>
@@ -285,6 +474,8 @@ const Absences = () => {
                         fullWidth
                         margin="normal"
                         variant="outlined"
+                        error={!!errors.startTime}
+                        helperText={errors.startTime}
                     />
                     <TextField
                         label="Hora Fin"
@@ -294,6 +485,8 @@ const Absences = () => {
                         fullWidth
                         margin="normal"
                         variant="outlined"
+                        error={!!errors.endTime}
+                        helperText={errors.endTime}
                     />
                     <TextField
                         label="Fecha"
@@ -303,6 +496,8 @@ const Absences = () => {
                         fullWidth
                         margin="normal"
                         variant="outlined"
+                        error={!!errors.date}
+                        helperText={errors.date}
                     />
                     <TextField
                         label="Descripción"
@@ -313,17 +508,66 @@ const Absences = () => {
                         margin="normal"
                         variant="outlined"
                     />
-                    <TextField
-                        label="ID Usuario"
-                        name="userId"
-                        value={formData.userId}
-                        onChange={handleInputChange}
-                        fullWidth
-                        margin="normal"
-                        variant="outlined"
-                    />
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="status-label-edit">Estado</InputLabel>
+                        <Select
+                            labelId="status-label-edit"
+                            id="status-edit-select"
+                            name="status"
+                            value={formData.status}
+                            onChange={handleInputChange}
+                            fullWidth
+                            margin="normal"
+                        >
+                            <MenuItem value="A">Activo</MenuItem>
+                            <MenuItem value="I">Inactivo</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="user-id-edit-label">ID Usuario</InputLabel>
+                        <Select
+                            labelId="user-id-edit-label"
+                            id="user-id-edit-select"
+                            name="userId"
+                            value={formData.userId}
+                            onChange={handleInputChange}
+                            label="ID Usuario"
+                            error={!!errors.userId}
+                        >
+                            {users.map(user => (
+                                <MenuItem key={user.id} value={user.id}>
+                                    {user.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        {errors.userId && <Typography color="error" variant="caption">{errors.userId}</Typography>}
+                    </FormControl>
                     <Button onClick={handleUpdate} variant="contained" color="primary" sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>
                         Actualizar
+                    </Button>
+                </Box>
+            </Modal>
+
+            {/* Modal para ver */}
+            <Modal
+                open={openView}
+                onClose={handleViewClose}
+                aria-labelledby="modal-view-title"
+                aria-describedby="modal-view-description"
+            >
+                <Box sx={style}>
+                    <Typography variant="h6" component="h2" id="modal-view-title" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
+                        Ver Ausencia
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Hora Inicio:</strong> {viewData.startTime}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Hora Fin:</strong> {viewData.endTime}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Fecha:</strong> {viewData.date}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Descripción:</strong> {viewData.description}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>Estado:</strong> {viewData.status === 'A' ? 'Aprobado' : 'Inactivo'}</Typography>
+                    <Typography variant="body1" sx={{ mb: 1 }}><strong>ID Usuario:</strong> {viewData.userId}</Typography>
+                    <Button onClick={handleViewClose} variant="outlined" color="primary" sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>
+                        Cerrar
                     </Button>
                 </Box>
             </Modal>
