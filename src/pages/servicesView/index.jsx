@@ -22,8 +22,17 @@ import axios from 'axios'
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { show_alerta } from '../../assets/functions'
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
+import { alpha } from '@mui/material/styles';
+import { pink } from '@mui/material/colors';
+import Switch from '@mui/material/Switch';
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
+
+
     const backgroundColor =
         theme.palette.mode === 'light'
             ? theme.palette.grey[100]
@@ -43,6 +52,17 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 })
 
+const PinkSwitch = styled(Switch)(({ theme }) => ({
+    '& .MuiSwitch-switchBase.Mui-checked': {
+        color: pink[600],
+        '&:hover': {
+            backgroundColor: alpha(pink[600], theme.palette.action.hoverOpacity),
+        },
+    },
+    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+        backgroundColor: pink[600],
+    },
+}));
 
 const Services = () => {
     const url = 'http://localhost:1056/api/services';
@@ -89,6 +109,86 @@ const Services = () => {
             document.getElementById('name').focus();
         }, 500)
     }
+
+    const validar = () => {
+        var parametros;
+        var metodo;
+        if (name.trim() === '') {
+            show_alerta('Digite el nombre', 'warning')
+        } else if (price === '') {
+            show_alerta('Digite el precio', 'warning')
+        } else if (description.trim() === '') {
+            show_alerta('Digite una descripción', 'warning')
+        } else if (time === '') {
+            show_alerta('Digite el tiempo del servicio', 'warning')
+        } else {
+            const priceFloat = parseFloat(price);
+            const timeInt = parseInt(time, 10);
+            if (operation === 1) {
+                parametros = {
+                    name: name.trim(),
+                    price: priceFloat,
+                    description: description.trim(),
+                    time: timeInt,
+                    status: 'A'
+                }
+                metodo = 'POST';
+                console.log(parametros);
+            } else {
+                parametros = {
+                    id: id,
+                    name: name.trim(),
+                    price: priceFloat,
+                    description: description.trim(),
+                    time: timeInt,
+                    status: 'A'
+                }
+                metodo = 'PUT';
+                console.log(parametros);
+            }
+            enviarSolicitud(metodo, parametros)
+        }
+    }
+
+
+    const enviarSolicitud = async (metodo, parametros) => {
+        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
+        await axios({ method: metodo, url: urlWithId, data: parametros, }).then(function (response) {
+            show_alerta('Operación exitosa', 'success');
+            document.getElementById('btnCerrar').click();
+            getServices();
+        }).catch(function (error) {
+            show_alerta('Error en la solicitud', 'error');
+            console.log(error);
+        })
+    }
+
+    const handleSwitchChange = (id) => (event) => {
+        const newStatus = event.target.checked ? 'A' : 'I';
+        const updatedService = { id, status: newStatus };
+        enviarSolicitud('PUT', updatedService);
+    };
+
+    const deleteService = async (id, name) => {
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: 'Estas seguro que desea eliminar el servicio ' + name + '?',
+            icon: 'question',
+            text: 'No se podrá dar marcha atras',
+            showCancelButton: true,
+            confirmButtonText: 'Si, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setId(id);
+                enviarSolicitud('DELETE', { id: id })
+            } else {
+                show_alerta('El servicio NO fue eliminado', 'info')
+            }
+        })
+    }
+
+
     return (
         <>
             <div className="right-content w-100">
@@ -147,12 +247,17 @@ const Services = () => {
                                                 <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(service.price)}</td>
                                                 <td>{service.description}</td>
                                                 <td>{service.time}</td>
-                                                <td>{service.status}</td>
+                                                <td>{service.status === 'A' ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
+                                                        <PinkSwitch
+                                                            checked={service.status === 'A'}
+                                                            onChange={handleSwitchChange(service.id)}
+                                                            color="success"
+                                                        />
                                                         <Button color='primary' className='primary'><FaEye /></Button>
                                                         <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalServices' className='secondary' onClick={() => openModal(2, service.id, service.name, service.price, service.description, service.time, service.status)}><FaPencilAlt /></Button>
-                                                        <Button color='error' className='delete'><IoTrashSharp /></Button>
+                                                        <Button color='error' className='delete' onClick={() => deleteService(service.id, service.name)}><IoTrashSharp /></Button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -181,7 +286,7 @@ const Services = () => {
                                     />
                                 </div>
                                 <div className="input-group mb-3">
-                                    <input type="text" id="price" className="form-control" placeholder="Precio"
+                                    <input type="number" id="price" className="form-control" placeholder="Precio"
                                         value={price} onChange={(e) => setPrice(e.target.value)}
                                     />
                                 </div>
@@ -191,21 +296,20 @@ const Services = () => {
                                     />
                                 </div>
                                 <div className="input-group mb-3">
-                                    <input type="text" id="time" className="form-control" placeholder="Tiempo"
-                                        value={time} onChange={(e) => setTime(e.target.value)}
-                                    />
+                                    <select class="form-select" id='time' required aria-label="Tiempo" onChange={(e) => setTime(e.target.value)} value={time}>
+                                        <option value="20">20 Minutos</option>
+                                        <option value="30">30 Minutos</option>
+                                        <option value="45">45 Minutos</option>
+                                        <option value="60">60 Minutos</option>
+                                    </select>
+                                    <div class="invalid-feedback">Example invalid select feedback</div>
                                 </div>
-                                <div className="input-group mb-3">
-                                    <input type="text" id="status" className="form-control" placeholder="Estado"
-                                        value={status} onChange={(e) => setStatus(e.target.value)}
-                                    />
-                                </div>
-                                <div className='d-grid col-4 mx-auto'>
+                                <div className='d-grid col-4 mx-auto' onClick={() => validar()}>
                                     <Button type='button' className='btn-sucess'>Guardar</Button>
                                 </div>
                             </div>
                             <div className='modal-footer'>
-                                <Button type='button' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
+                                <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
                             </div>
                         </div>
                     </div>
