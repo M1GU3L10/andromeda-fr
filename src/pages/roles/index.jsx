@@ -3,36 +3,25 @@ import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { GiHairStrands } from "react-icons/gi";
-import { RxScissors } from "react-icons/rx";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
-import { FaEye } from "react-icons/fa";
-import { FaPencilAlt } from "react-icons/fa";
+import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormHelperText from '@mui/material/FormHelperText';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import axios from 'axios'
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { show_alerta } from '../../assets/functions'
+import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
-
-
     const backgroundColor =
         theme.palette.mode === 'light'
             ? theme.palette.grey[100]
@@ -50,7 +39,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
             backgroundColor: emphasize(backgroundColor, 0.12),
         },
     };
-})
+});
 
 const PinkSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
@@ -71,115 +60,108 @@ const Roles = () => {
     const [name, setName] = useState('');
     const [status, setStatus] = useState('');
     const [permission, setPermission] = useState('');
-    
+    const [operation, setOperation] = useState(1);
+    const [title, setTitle] = useState('Registrar servicio');
 
     useEffect(() => {
         getRoles();
-    }, [])
+    }, []);
 
     const getRoles = async () => {
         const response = await axios.get(url);
         setRoles(response.data);
-    }
+    };
 
-    const openModal = (id, name, status, permissions) => {
-        setId('');
-        setName('');
-        setStatus('');
-        setPermission('');
+    const openModal = (op, id = '', name = '', status = '', permissions = '') => {
+        setId(id);
+        setName(name);
+        setStatus(status);
+        setPermission(permissions);
         setOperation(op);
 
         if (op === 1) {
-            setTitle('Registrar servicio');
+            setTitle('Registrar rol');
         } else if (op === 2) {
-            setTitle('Editar servicio');
-            setId(id);
-            setName(name);
-            setStatus(status);
-            setPermission(permission);
+            setTitle('Editar rol');
         }
-        window.setTimeout(function () {
+
+        setTimeout(() => {
             document.getElementById('name').focus();
-        }, 500)
-    }
+        }, 500);
+    };
 
     const validar = () => {
-        var parametros;
-        var metodo;
+        let parametros;
+        let metodo;
+
         if (name.trim() === '') {
-            show_alerta('Digite el nombre', 'warning')
+            show_alerta('Digite el nombre', 'warning');
         } else if (status === '') {
-            show_alerta('Digite el estado', 'warning')
+            show_alerta('Digite el estado', 'warning');
         } else if (permission.trim() === '') {
-            show_alerta('Digite un permiso', 'warning')
+            show_alerta('Digite un permiso', 'warning');
         } else {
-            
             if (operation === 1) {
                 parametros = {
                     name: name.trim(),
                     status: 'A',
                     permission: permission.trim()
-                }
+                };
                 metodo = 'POST';
-                console.log(parametros);
             } else {
                 parametros = {
                     id: id,
                     name: name.trim(),
                     status: 'A',
                     permission: permission.trim()
-                    
-                }
+                };
                 metodo = 'PUT';
-                console.log(parametros);
             }
-            enviarSolicitud(metodo, parametros)
+            enviarSolicitud(metodo, parametros);
         }
-    }
-
+    };
 
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
-        await axios({ method: metodo, url: urlWithId, data: parametros, }).then(function (response) {
+        try {
+            await axios({ method: metodo, url: urlWithId, data: parametros });
             show_alerta('Operación exitosa', 'success');
             document.getElementById('btnCerrar').click();
-            getServices();
-        }).catch(function (error) {
+            getRoles();
+        } catch (error) {
             show_alerta('Error en la solicitud', 'error');
             console.log(error);
-        })
-    }
+        }
+    };
 
     const handleSwitchChange = (id) => (event) => {
         const newStatus = event.target.checked ? 'A' : 'I';
-        const updatedService = { id, status: newStatus };
-        enviarSolicitud('PUT', updatedService);
+        const updatedRole = { id, status: newStatus };
+        enviarSolicitud('PUT', updatedRole);
     };
 
-    const deleteService = async (id, name) => {
+    const deleteRole = async (id, name) => {
         const Myswal = withReactContent(Swal);
         Myswal.fire({
-            title: 'Estas seguro que desea eliminar el rol' + name + '?',
+            title: `¿Está seguro de que desea eliminar el rol ${name}?`,
             icon: 'question',
-            text: 'No se podrá dar marcha atras',
+            text: 'No se podrá dar marcha atrás',
             showCancelButton: true,
-            confirmButtonText: 'Si, eliminar',
+            confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                setId(id);
-                enviarSolicitud('DELETE', { id: id })
+                enviarSolicitud('DELETE', { id });
             } else {
-                show_alerta('El rol NO fue eliminado', 'info')
+                show_alerta('El rol NO fue eliminado', 'info');
             }
-        })
-    }
-
+        });
+    };
 
     return (
         <>
             <div className="right-content w-100">
-                <div class="row d-flex align-items-center w-100">
+                <div className="row d-flex align-items-center w-100">
                     <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
                             <span className='Title'>Roles</span>
@@ -206,7 +188,7 @@ const Roles = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained" data-bs-toggle='modal' data-bs-target='#modalServices'><BsPlusSquareFill />Registrar</Button>
+                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained" data-bs-toggle='modal' data-bs-target='#modalRoles'><BsPlusSquareFill />Registrar</Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <SearchBox />
@@ -227,21 +209,20 @@ const Roles = () => {
                                     {
                                         roles.map((role, i) => (
                                             <tr key={role.id}>
-                                                <td>{(i + 1)}</td>
+                                                <td>{i + 1}</td>
                                                 <td>{role.name}</td>
-                                                <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(service.price)}</td>
                                                 <td>{role.permission}</td>
-                                                <td>{service.status === 'A' ? 'Activo' : 'Inactivo'}</td>
+                                                <td>{role.status === 'A' ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <PinkSwitch
-                                                            checked={service.status === 'A'}
-                                                            onChange={handleSwitchChange(service.id)}
+                                                            checked={role.status === 'A'}
+                                                            onChange={handleSwitchChange(role.id)}
                                                             color="success"
                                                         />
                                                         <Button color='primary' className='primary'><FaEye /></Button>
-                                                        <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalServices' className='secondary' onClick={() => openModal(2, role.id, role.name, role.permission, role.status)}><FaPencilAlt /></Button>
-                                                        <Button color='error' className='delete' onClick={() => deleteService(role.id, role.name)}><IoTrashSharp /></Button>
+                                                        <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalRoles' className='secondary' onClick={() => openModal(2, role.id, role.name, role.status, role.permission)}><FaPencilAlt /></Button>
+                                                        <Button color='error' className='delete' onClick={() => deleteRole(role.id, role.name)}><IoTrashSharp /></Button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -255,7 +236,7 @@ const Roles = () => {
                         </div>
                     </div>
                 </div>
-                <div id="modalServices" className="modal fade" aria-hidden="true">
+                <div id="modalRoles" className="modal fade" aria-hidden="true">
                     <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -274,9 +255,8 @@ const Roles = () => {
                                         value={permission} onChange={(e) => setPermission(e.target.value)}
                                     />
                                 </div>
-                                
                                 <div className='d-grid col-4 mx-auto' onClick={() => validar()}>
-                                    <Button type='button' className='btn-sucess'>Guardar</Button>
+                                    <Button type='button' className='btn-success'>Guardar</Button>
                                 </div>
                             </div>
                             <div className='modal-footer'>
@@ -285,10 +265,9 @@ const Roles = () => {
                         </div>
                     </div>
                 </div>
-
             </div>
         </>
     );
 }
 
-export default Services;
+export default Roles;
