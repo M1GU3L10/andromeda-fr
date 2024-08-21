@@ -3,12 +3,12 @@ import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { GiHairStrands } from "react-icons/gi";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
+import { FaEye } from "react-icons/fa";
+import { GiHairStrands } from 'react-icons/gi';
 import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
 import InputLabel from '@mui/material/InputLabel';
@@ -23,10 +23,12 @@ import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import { Modal, Form } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Styled components
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // <-- Asegúrate de importar ExpandMoreIcon
+
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
+
+
     const backgroundColor =
         theme.palette.mode === 'light'
             ? theme.palette.grey[100]
@@ -44,7 +46,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
             backgroundColor: emphasize(backgroundColor, 0.12),
         },
     };
-});
+})
 
 const PinkSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
@@ -57,6 +59,8 @@ const PinkSwitch = styled(Switch)(({ theme }) => ({
         backgroundColor: pink[600],
     },
 }));
+// Rest of your code...
+
 
 const Users = () => {
     const url = 'http://localhost:1056/api/users';
@@ -213,16 +217,16 @@ const Users = () => {
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
                                 <Button className='btn-register' onClick={() => openModal(1)} variant="contained" color="primary">
-                                    <BsPlusSquareFill /> Registrar Usuario
+                                    <BsPlusSquareFill /> Registrar
                                 </Button>
                             </div>
-                            <div className='col-sm-7 d-flex justify-content-end'>
+                            <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <SearchBox />
                             </div>
                         </div>
-                        <div className='table-responsive'>
-                            <table className="table table-striped">
-                                <thead>
+                        <div className='table-responsive mt-3'>
+                            <table className='table table-bordered table-hover v-align'>
+                                <thead className='table-primary'>
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
@@ -240,19 +244,26 @@ const Users = () => {
                                                 <td>{user.name}</td>
                                                 <td>{user.email}</td>
                                                 <td>{user.phone}</td>
+                                                <td>{user.status === 'A' ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
-                                                    <PinkSwitch
-                                                        checked={user.status === 'A'}
-                                                        onChange={handleSwitchChange(user.id)}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Button onClick={() => openModal(2, user)} variant="outlined" color="primary">
-                                                        <FaPencilAlt />
-                                                    </Button>
-                                                    <Button onClick={() => deleteUser(user.id, user.name)} variant="outlined" color="secondary">
-                                                        <IoTrashSharp />
-                                                    </Button>
+                                                    <div className='actions d-flex align-items-center'>
+
+                                                        <PinkSwitch
+                                                                checked={user.status === 'A'}
+                                                                onChange={handleSwitchChange(user.id)}
+                                                                color="success"
+                                                            />
+
+                                                       <Button color='primary' className='primary'><FaEye /></Button>
+                                                       <Button color="secondary"  className='secondary' onClick={() => openModal(2, user)} >
+                                                            <FaPencilAlt />
+                                                        </Button>
+                                                        <Button color='error' className='delete' onClick={() => deleteUser(user.id, user.name)}>
+                                                            <IoTrashSharp />
+                                                        </Button>
+                                                    </div>
+                                                   
+                                                
                                                 </td>
                                             </tr>
                                         ))
@@ -260,10 +271,8 @@ const Users = () => {
                                 </tbody>
                             </table>
                         </div>
-                        <div className='row'>
-                            <div className='col-sm-12'>
-                                <Pagination count={10} variant="outlined" shape="rounded" />
-                            </div>
+                        <div className="d-flex table-footer">
+                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
                         </div>
                     </div>
                 </div>
@@ -331,6 +340,7 @@ const Users = () => {
             </div>
         </>
     );
+
 };
 
 export default Users;

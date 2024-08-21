@@ -11,7 +11,7 @@ import Appointment from './pages/appointment';
 import Orders from './pages/orders';
 import Products from './pages/products';
 import Programming from './pages/programming';
-import Roles from './pages/roles';
+
 import Sales from './pages/sales';
 import Services from './pages/servicesView';
 import Shopping from './pages/shopping';
@@ -68,7 +68,7 @@ function App() {
               <Route path="/orders" exact={true} element={<Orders />} />
               <Route path="/products" exact={true} element={<Products />} />
               <Route path="/programming" exact={true} element={<Programming />} />
-              <Route path="/roles" exact={true} element={<Roles />} />
+             
               <Route path="/sales" exact={true} element={<Sales />} />
               <Route path="/services" exact={true} element={<Services />} />
               <Route path="/shopping" exact={true} element={<Shopping />} />
