@@ -262,8 +262,6 @@ const Users = () => {
                                                             <IoTrashSharp />
                                                         </Button>
                                                     </div>
-                                                   
-                                                
                                                 </td>
                                             </tr>
                                         ))
