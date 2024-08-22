@@ -78,6 +78,22 @@ const Users = () => {
     const [showDetailModal, setShowDetailModal] = useState(false);  // Nuevo estado para el modal de detalles
     const [detailData, setDetailData] = useState({});
 
+    const [errors, setErrors] = useState({
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+        roleId: ''
+    });
+
+    const [touched, setTouched] = useState({
+        name: false,
+        email: false,
+        password: false,
+        phone: false,
+        roleId: false
+    });
+
     useEffect(() => {
         getUsers();
     }, []);
@@ -115,24 +131,97 @@ const Users = () => {
 
     const handleClose = () => setShowModal(false);
 
-    const validar = () => {
-        if (name.trim() === '') {
-            show_alerta('Digite el nombre', 'warning');
-        } else if (email.trim() === '') {
-            show_alerta('Digite el email', 'warning');
-        } else if (password.trim() === '') {
-            show_alerta('Digite la contraseña', 'warning');
-        } else if (phone.trim() === '') {
-            show_alerta('Digite el teléfono', 'warning');
-        } else if (roleId === '') {
-            show_alerta('Seleccione un rol', 'warning');
-        } else {
-            const isValidEmail = /^\S+@\S+\.\S+$/.test(email);
-            if (!isValidEmail) {
-                show_alerta('El email no es válido', 'warning');
-                return;
-            }
+    const validateName = (value) => {
+        const regex = /^[A-Za-z\s]+$/;
+        return regex.test(value) ? '' : 'El nombre solo debe contener letras';
+    };
 
+    const validateEmail = (value) => {
+        const regex = /^\S+@\S+\.\S+$/;
+        return regex.test(value) ? '' : 'El correo no es válido';
+    };
+
+    const validatePassword = (value) => {
+        return value.length >= 8 ? '' : 'La contraseña debe tener al menos 8 caracteres';
+    };
+
+    const validatePhone = (value) => {
+        const regex = /^\d{10}$/;
+        return regex.test(value) ? '' : 'El teléfono debe contener 10 números';
+    };
+
+    const validateRoleId = (value) => {
+        return value ? '' : 'Debe seleccionar un rol';
+    };
+
+    const handleValidation = (name, value) => {
+        let error = '';
+        switch (name) {
+            case 'name':
+                error = validateName(value);
+                break;
+            case 'email':
+                error = validateEmail(value);
+                break;
+            case 'password':
+                error = validatePassword(value);
+                break;
+            case 'phone':
+                error = validatePhone(value);
+                break;
+            case 'roleId':
+                error = validateRoleId(value);
+                break;
+            default:
+                break;
+        }
+        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        handleValidation(name, value);
+
+        switch (name) {
+            case 'name':
+                setName(value);
+                break;
+            case 'email':
+                setEmail(value);
+                break;
+            case 'password':
+                setPassword(value);
+                break;
+            case 'phone':
+                setPhone(value);
+                break;
+            case 'roleId':
+                setRoleId(value);
+                break;
+            default:
+                break;
+        }
+    };
+
+    const handleBlur = (e) => {
+        const { name } = e.target;
+        setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
+        handleValidation(name, e.target.value);
+    };
+
+    const validar = () => {
+        const isValidEmail = !validateEmail(email);
+        const isValidName = !validateName(name);
+        const isValidPassword = !validatePassword(password);
+        const isValidPhone = !validatePhone(phone);
+        const isValidRoleId = !validateRoleId(roleId);
+
+        if (!isValidName) show_alerta(errors.name, 'warning');
+        else if (!isValidEmail) show_alerta(errors.email, 'warning');
+        else if (!isValidPassword) show_alerta(errors.password, 'warning');
+        else if (!isValidPhone) show_alerta(errors.phone, 'warning');
+        else if (!isValidRoleId) show_alerta(errors.roleId, 'warning');
+        else {
             const parametros = {
                 id: id,
                 name: name.trim(),
@@ -143,77 +232,58 @@ const Users = () => {
                 roleId: roleId
             };
 
-            const isUpdate = operation === 2;  // Si la operación es editar
+            const isUpdate = operation === 2;
             const metodo = isUpdate ? 'PUT' : 'POST';
             enviarSolicitud(metodo, parametros);
         }
     };
 
-    //Cambiar estado
     const handleSwitchChange = (id) => (event) => {
         const newStatus = event.target.checked ? 'A' : 'I';
         const updatedUser = { id, status: newStatus };
 
-        // Actualiza el estado local antes de enviar la solicitud
-        setUsers(users.map(user => 
+        setUsers(users.map(user =>
             user.id === id ? { ...user, status: newStatus } : user
         ));
 
-        // Enviar la solicitud para actualizar el estado en el servidor
         enviarSolicitud('PUT', updatedUser);
     };
-    //fin estado
 
-     // Actualización de la función `enviarSolicitud`
-     const enviarSolicitud = async (metodo, parametros) => {
+    const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
         try {
             await axios({ method: metodo, url: urlWithId, data: parametros });
 
-            // Mostrar alerta y actualizar la lista de usuarios
             show_alerta('Operación exitosa', 'success');
-            getUsers();  // Actualiza la lista de usuarios después de la operación
+            getUsers();
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
             console.log(error);
         }
     };
-    // const handleSwitchChange = (id) => (event) => {
-    //     const newStatus = event.target.checked ? 'A' : 'I';
-    //     const updatedUser = { id, status: newStatus };
-    //     enviarSolicitud('PUT', updatedUser);
-    // };
 
-    
-
-    //Detalle 
     const handleCloseDetail = () => {
         setShowModal(false);
-        setShowDetailModal(false);  // Cierra el modal de detalles
+        setShowDetailModal(false);
     };
-    
 
     const handleViewDetails = (user) => {
-        setDetailData(user);  // Establecer los datos del usuario para mostrar en el modal
-        setShowDetailModal(true);  // Abrir el modal de detalles
+        setDetailData(user);
+        setShowDetailModal(true);
     };
-    //fin detalle
 
     const deleteUser = async (id, name) => {
         const Myswal = withReactContent(Swal);
         Myswal.fire({
             title: `¿Estás seguro que deseas eliminar el usuario ${name}?`,
             icon: 'question',
-            text: 'No se podrá dar marcha atrás',
+            text: 'No se podrá deshacer esta acción',
             showCancelButton: true,
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                setId(id);
-                enviarSolicitud('DELETE', { id: id });
-            } else {
-                show_alerta('El usuario NO fue eliminado', 'info');
+                enviarSolicitud('DELETE', { id });
             }
         });
     };
@@ -288,12 +358,16 @@ const Users = () => {
                                                                 color="success"
                                                             />
                                                        <Button color='primary' className='primary' onClick={() => handleViewDetails(user)}><FaEye /></Button>
-                                                       <Button color="secondary"  className='secondary' onClick={() => openModal(2, user)} >
-                                                            <FaPencilAlt />
-                                                        </Button>
-                                                        <Button color='error' className='delete' onClick={() => deleteUser(user.id, user.name)}>
-                                                            <IoTrashSharp />
-                                                        </Button>
+                                                       {user.status === 'A' && (
+            <>
+                <Button color="secondary" className='secondary' onClick={() => openModal(2, user)} >
+                    <FaPencilAlt />
+                </Button>
+                <Button color='error' className='delete' onClick={() => deleteUser(user.id, user.name)}>
+                    <IoTrashSharp />
+                </Button>
+            </>
+        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -308,73 +382,105 @@ const Users = () => {
                     </div>
                 </div>
 
-                {/* Modal for Register User */}
-                <Modal show={showModal} onHide={handleClose}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>{title}</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group className="mb-3">
-                                
-                                <Form.Control
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="Nombre"
+                {/* Modal para Agregar/Editar Usuario */}
+            <Modal show={showModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group>
+                            <Form.Control
+                                type="text"
+                                name="name"
+                                value={name}
+                                placeholder="Nombre"
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                isInvalid={touched.name && !!errors.name}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.name}
+                            </Form.Control.Feedback>
+                        </Form.Group>
 
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Control
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Correo"
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Control
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Contraseña"
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                
-                                <Form.Control
-                                    type="text"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    placeholder="Telefono"
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <FormControl fullWidth>
-                                    <InputLabel id="roleId">Rol</InputLabel>
-                                    <Select
-                                        labelId="roleId"
-                                        value={roleId}
-                                        label="Rol"
-                                        onChange={(e) => setRoleId(e.target.value)}
-                                    >
-                                        <MenuItem value="1">Administrador</MenuItem>
-                                        <MenuItem value="2">Empleado</MenuItem>
-                                        <MenuItem value="3">Cliente</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Form.Group>
-                            <div className='d-grid col-4 mx-auto' >
-                                    <Button variant="contained" className='btn-sucess' onClick={validar}>Guardar</Button>
-                                </div>
-                        </Form>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        
-                        <Button type='button' id='btnCerrar' className='btn-blue' variant="outlined" onClick={handleClose}>Cerrar</Button>
-                    </Modal.Footer>
-                </Modal>
+                        <Form.Group>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                value={email}
+                                placeholder="Correo"
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                isInvalid={touched.email && !!errors.email}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.email}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group>
+                            <Form.Label>Contraseña</Form.Label>
+                            <Form.Control
+                                type="password"
+                                name="password"
+                                value={password}
+                                placeholder="Contraseña"
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                isInvalid={touched.password && !!errors.password}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.password}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group>
+                            <Form.Label>Teléfono</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="phone"
+                                value={phone}
+                                placeholder="Telefono"
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                isInvalid={touched.phone && !!errors.phone}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.phone}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group>
+                            <Form.Label>Rol</Form.Label>
+                            <Form.Control
+                                as="select"
+                                name="roleId"
+                                value={roleId}
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                isInvalid={touched.roleId && !!errors.roleId}
+                            >
+                                <option value="1">Admin</option>
+                                <option value="2">Empleado</option>
+                                <option value="3">Cliente</option>
+                            </Form.Control>
+                            <Form.Control.Feedback type="invalid">
+                                {errors.roleId}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={validar}>
+                        Guardar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
                 {/* modal detalle */}
                 <Modal show={showDetailModal} onHide={handleCloseDetail}>
                     <Modal.Header closeButton>
