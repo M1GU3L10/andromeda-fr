@@ -1,7 +1,16 @@
 import * as React from 'react';
+import { emphasize, styled } from '@mui/material/styles';
 import axios from 'axios';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
+import HomeIcon from '@mui/icons-material/Home';
+import { GiHairStrands } from "react-icons/gi";
+import Button from '@mui/material/Button';
+import { BsPlusSquareFill } from "react-icons/bs";
+import { FaEye } from "react-icons/fa";
+import { FaPencilAlt } from "react-icons/fa";
+import { IoTrashSharp } from "react-icons/io5";
+import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -11,11 +20,44 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { FaEye, FaPencilAlt } from 'react-icons/fa';
-import { IoTrashSharp } from 'react-icons/io5';
-import { Button } from '@mui/material';
+import { show_alerta } from '../../assets/functions';
+import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
-import SearchBox from '../../components/SearchBox';
+import { alpha } from '@mui/material/styles';
+import { pink } from '@mui/material/colors';
+import Switch from '@mui/material/Switch';
+
+const StyledBreadcrumb = styled(Chip)(({ theme }) => {
+    const backgroundColor =
+        theme.palette.mode === 'light'
+            ? theme.palette.grey[100]
+            : theme.palette.grey[800];
+    return {
+        backgroundColor,
+        height: theme.spacing(3),
+        color: theme.palette.text.primary,
+        fontWeight: theme.typography.fontWeightRegular,
+        '&:hover, &:focus': {
+            backgroundColor: emphasize(backgroundColor, 0.06),
+        },
+        '&:active': {
+            boxShadow: theme.shadows[1],
+            backgroundColor: emphasize(backgroundColor, 0.12),
+        },
+    };
+});
+
+const PinkSwitch = styled(Switch)(({ theme }) => ({
+    '& .MuiSwitch-switchBase.Mui-checked': {
+        color: pink[600],
+        '&:hover': {
+            backgroundColor: alpha(pink[600], theme.palette.action.hoverOpacity),
+        },
+    },
+    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+        backgroundColor: pink[600],
+    },
+}));
 
 const style = {
     position: 'absolute',
@@ -112,11 +154,7 @@ const Suppliers = () => {
         if (Object.keys(errors).length === 0) {
             try {
                 await axios.post('http://localhost:1056/api/suppliers', formData);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Supplier added successfully!',
-                });
+                show_alerta('Supplier added successfully', 'success');
                 handleClose();
                 fetchSupplierData();
             } catch (err) {
@@ -129,6 +167,7 @@ const Suppliers = () => {
                 } else {
                     console.error('Unknown error:', err);
                 }
+                show_alerta('Error al agregar el proveedor', 'error');
             }
         } else {
             setFormErrors(errors);
@@ -136,51 +175,51 @@ const Suppliers = () => {
     };
 
     const handleUpdate = async () => {
-        try {
-            await axios.put(`http://localhost:1056/api/suppliers/${viewData.id}`, formData);
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Proveedor actualizado correctamente!',
-            });
-            handleEditClose();
-            fetchSupplierData();
-        } catch (err) {
-            console.error('Error al actualizar proveedor:', err);
-            if (err.response && err.response.data) {
-                setFormErrors(err.response.data.errors.reduce((acc, curr) => {
-                    acc[curr.param] = curr.msg;
-                    return acc;
-                }, {}));
-            } else {
-                console.error(' error:', err);
+        const errors = validateForm();
+        if (Object.keys(errors).length === 0) {
+            try {
+                await axios.put(`http://localhost:1056/api/suppliers/${formData.id}`, formData);
+                handleEditClose();
+                fetchSupplierData();
+                show_alerta('Proveedor actualizado exitosamente', 'success');
+            } catch (err) {
+                console.error('Error updating supplier:', err);
+                if (err.response && err.response.data) {
+                    setFormErrors(err.response.data.errors.reduce((acc, curr) => {
+                        acc[curr.param] = curr.msg;
+                        return acc;
+                    }, {}));
+                } else {
+                    console.error('Unknown error:', err);
+                }
+                show_alerta('Error al actualizar el proveedor', 'error');
             }
+        } else {
+            setFormErrors(errors);
         }
     };
 
     const handleDelete = async (id, name) => {
-        Swal.fire({
-            title: `Estas seguro de eliminar el proveedor ${name}?`,
-            text: '',
-            icon: 'warning',
+        const MySwal = withReactContent(Swal);
+        MySwal.fire({
+            title: `¿Estás seguro que deseas eliminar el proveedor ${name}?`,
+            icon: 'question',
+            text: 'No se podrá dar marcha atrás',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Si, eliminar!'
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
                     await axios.delete(`http://localhost:1056/api/suppliers/${id}`);
-                    Swal.fire(
-                        'Deleted!',
-                        'Proveedor eliminado.',
-                        'success'
-                    );
                     fetchSupplierData();
+                    show_alerta('Proveedor eliminado exitosamente', 'success');
                 } catch (err) {
                     console.error('Error deleting supplier:', err);
-                    setError('Error deleting supplier');
+                    show_alerta('Error al eliminar el proveedor', 'error');
                 }
+            } else {
+                show_alerta('El proveedor NO fue eliminado', 'info');
             }
         });
     };
@@ -191,32 +230,40 @@ const Suppliers = () => {
                 <div className="row d-flex align-items-center w-100">
                     <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
-                            <span className='Title'>Proveedores</span>
+                            <span className='Title'>Gestión de Proveedores</span>
                         </div>
                         <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
                             <div role="presentation">
                                 <Breadcrumbs aria-label="breadcrumb">
-                                    <Chip label="Home" />
-                                    <Chip label="Suppliers" />
+                                    <StyledBreadcrumb
+                                        component="a"
+                                        href="#"
+                                        label="Home"
+                                        icon={<HomeIcon fontSize="small" />}
+                                    />
+                                    <StyledBreadcrumb
+                                        component="a"
+                                        href="#"
+                                        label="Proveedores"
+                                        icon={<GiHairStrands fontSize="small" />}
+                                    />
                                 </Breadcrumbs>
                             </div>
                         </div>
                     </div>
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
-                            <div className='col-sm-4 d-flex align-items-center'>
-                                <Button variant="contained" color='primary' onClick={handleOpen}>
-                                     Registrar
-                                </Button>
+                            <div className='col-sm-5 d-flex align-items-center'>
+                                <Button className='btn-register' onClick={handleOpen} variant="contained"><BsPlusSquareFill />Registrar</Button>
                             </div>
-                            <div className='col-sm-4 d-flex align-items-center cardFilters'>
+                            <div className='col-sm-3 d-flex align-items-center cardFilters'>
                                 <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
                                     <InputLabel id="columns-per-page-label">Columnas</InputLabel>
                                     <Select
                                         labelId="columns-per-page-label"
                                         id="columns-per-page-select"
                                         value={columnsPerPage}
-                                        label="Columns"
+                                        label="Columnas"
                                         onChange={handleChange}
                                     >
                                         <MenuItem value={12}>12</MenuItem>
@@ -239,155 +286,194 @@ const Suppliers = () => {
                                 <table className='table table-bordered table-hover v-align'>
                                     <thead className='table-primary'>
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Proveedor Nombre</th>
-                                            <th>Telefono</th>
-                                            <th>Correo</th>
-                                            <th>Direccion</th>
+                                            <th>#</th>
+                                            <th>Nombre</th>
+                                            <th>Teléfono</th>
+                                            <th>Email</th>
+                                            <th>Dirección</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {supplierData.map((item) => (
-                                            <tr key={item.id}>
-                                                <td>{item.id}</td>
-                                                <td>{item.Supplier_Name}</td>
-                                                <td>{item.Phone_Number}</td>
-                                                <td>{item.Email}</td>
-                                                <td>{item.Address}</td>
+                                        {supplierData.map((supplier, i) => (
+                                            <tr key={supplier.id}>
+                                                <td>{(i + 1)}</td>
+                                                <td>{supplier.Supplier_Name}</td>
+                                                <td>{supplier.Phone_Number}</td>
+                                                <td>{supplier.Email}</td>
+                                                <td>{supplier.Address}</td>
                                                 <td>
-                                                    <Button variant='contained' color='primary' onClick={() => handleViewOpen(item)}><FaEye /></Button>
-                                                    <Button variant='contained' color='secondary' onClick={() => handleEditOpen(item)}><FaPencilAlt /></Button>
-                                                    <Button variant='contained' color='error' onClick={() => handleDelete(item.id, item.Supplier_Name)}><IoTrashSharp /></Button>
+                                                    <div className='actions d-flex align-items-center'>
+                                                        <Button color='primary' className='primary' onClick={() => handleViewOpen(supplier)}><FaEye /></Button>
+                                                        <Button color="secondary" className='secondary' onClick={() => handleEditOpen(supplier)}><FaPencilAlt /></Button>
+                                                        <Button color='error' className='delete' onClick={() => handleDelete(supplier.id, supplier.Supplier_Name)}><IoTrashSharp /></Button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             )}
-                            <Pagination count={10} color="primary" showFirstButton showLastButton />
+                            <div className="d-flex table-footer">
+                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <Modal open={open} onClose={handleClose}>
+            {/* Modal para agregar proveedor */}
+            <Modal
+                open={open}
+                onClose={handleClose}
+            >
                 <Box sx={style}>
-                    <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Registrar Proveedor
+                    <Typography variant="h6" component="h2">
+                        Agregar Proveedor
                     </Typography>
                     <TextField
-                        label="Supplier Name"
+                        margin="normal"
+                        required
+                        fullWidth
+                        label="Nombre del Proveedor"
                         name="Supplier_Name"
                         value={formData.Supplier_Name}
                         onChange={handleInputChange}
                         error={!!formErrors.Supplier_Name}
                         helperText={formErrors.Supplier_Name}
-                        fullWidth
-                        margin="normal"
                     />
                     <TextField
-                        label="Phone Number"
+                        margin="normal"
+                        required
+                        fullWidth
+                        label="Teléfono"
                         name="Phone_Number"
                         value={formData.Phone_Number}
                         onChange={handleInputChange}
                         error={!!formErrors.Phone_Number}
                         helperText={formErrors.Phone_Number}
-                        fullWidth
-                        margin="normal"
                     />
                     <TextField
+                        margin="normal"
+                        required
+                        fullWidth
                         label="Email"
                         name="Email"
                         value={formData.Email}
                         onChange={handleInputChange}
                         error={!!formErrors.Email}
                         helperText={formErrors.Email}
-                        fullWidth
-                        margin="normal"
                     />
                     <TextField
-                        label="Address"
+                        margin="normal"
+                        required
+                        fullWidth
+                        label="Dirección"
                         name="Address"
                         value={formData.Address}
                         onChange={handleInputChange}
                         error={!!formErrors.Address}
                         helperText={formErrors.Address}
-                        fullWidth
-                        margin="normal"
                     />
-                    <div className="d-flex justify-content-end mt-4">
-                        <Button variant='contained' color='primary' onClick={handleSubmit}>Guardar</Button>
-                        <Button variant='contained' color='secondary' onClick={handleClose}>Cancelar</Button>
-                    </div>
+               
+                   
+                        <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSubmit}
+                        sx={{ mt: 2 }}
+                    >
+                        Guardar
+                    </Button>
                 </Box>
             </Modal>
 
-            <Modal open={openView} onClose={handleViewClose}>
+            {/* Modal para ver proveedor */}
+            <Modal
+                open={openView}
+                onClose={handleViewClose}
+            >
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Información de proveedor
+                        Ver Proveedor
                     </Typography>
-                    <Typography><strong>ID:</strong> {viewData.id}</Typography>
-                    <Typography><strong>Nombre:</strong> {viewData.Supplier_Name}</Typography>
-                    <Typography><strong>Numero:</strong> {viewData.Phone_Number}</Typography>
-                    <Typography><strong>Correo:</strong> {viewData.Email}</Typography>
-                    <Typography><strong>Direccion:</strong> {viewData.Address}</Typography>
-                    <div className="d-flex justify-content-end mt-4">
-                        <Button variant='contained' color='secondary' onClick={handleViewClose}>Cerrar</Button>
-                    </div>
+                    <Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
+                    <Typography variant="body1"><strong>Nombre:</strong> {viewData.Supplier_Name}</Typography>
+                    <Typography variant="body1"><strong>Teléfono:</strong> {viewData.Phone_Number}</Typography>
+                    <Typography variant="body1"><strong>Email:</strong> {viewData.Email}</Typography>
+                    <Typography variant="body1"><strong>Dirección:</strong> {viewData.Address}</Typography>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleViewClose}
+                        sx={{ mt: 2 }}
+                    >
+                        Cerrar
+                    </Button>
                 </Box>
             </Modal>
 
-            <Modal open={openEdit} onClose={handleEditClose}>
+            {/* Modal para editar proveedor */}
+            <Modal
+                open={openEdit}
+                onClose={handleEditClose}
+            >
                 <Box sx={style}>
-                    <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
+                    <Typography variant="h6" component="h2">
                         Editar Proveedor
                     </Typography>
                     <TextField
-                        label="Supplier Name"
+                        margin="normal"
+                        required
+                        fullWidth
+                        label="Nombre del Proveedor"
                         name="Supplier_Name"
                         value={formData.Supplier_Name}
                         onChange={handleInputChange}
                         error={!!formErrors.Supplier_Name}
                         helperText={formErrors.Supplier_Name}
-                        fullWidth
-                        margin="normal"
                     />
                     <TextField
-                        label="Phone Number"
+                        margin="normal"
+                        required
+                        fullWidth
+                        label="Teléfono"
                         name="Phone_Number"
                         value={formData.Phone_Number}
                         onChange={handleInputChange}
                         error={!!formErrors.Phone_Number}
                         helperText={formErrors.Phone_Number}
-                        fullWidth
-                        margin="normal"
                     />
                     <TextField
+                        margin="normal"
+                        required
+                        fullWidth
                         label="Email"
                         name="Email"
                         value={formData.Email}
                         onChange={handleInputChange}
                         error={!!formErrors.Email}
                         helperText={formErrors.Email}
-                        fullWidth
-                        margin="normal"
                     />
                     <TextField
-                        label="Address"
+                        margin="normal"
+                        required
+                        fullWidth
+                        label="Dirección"
                         name="Address"
                         value={formData.Address}
                         onChange={handleInputChange}
                         error={!!formErrors.Address}
                         helperText={formErrors.Address}
-                        fullWidth
-                        margin="normal"
                     />
-                    <div className="d-flex justify-content-end mt-4">
-                        <Button variant='contained' color='primary' onClick={handleUpdate}>Actualizar</Button>
-                        <Button variant='contained' color='secondary' onClick={handleEditClose}>Cancelar</Button>
-                    </div>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleUpdate}
+                        sx={{ mt: 2 }}
+                    >
+                        Actualizar
+                    </Button>
                 </Box>
             </Modal>
         </>
