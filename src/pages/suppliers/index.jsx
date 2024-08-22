@@ -2,7 +2,6 @@ import * as React from 'react';
 import axios from 'axios';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
-import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -14,8 +13,9 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { FaEye, FaPencilAlt } from 'react-icons/fa';
 import { IoTrashSharp } from 'react-icons/io5';
-import { Button } from 'reactstrap'; // o el componente Button que estés usando
-
+import { Button } from '@mui/material';
+import Swal from 'sweetalert2';
+import SearchBox from '../../components/SearchBox';
 
 const style = {
     position: 'absolute',
@@ -57,7 +57,7 @@ const Suppliers = () => {
             setSupplierData(response.data);
             setLoading(false);
         } catch (err) {
-            setError('Error fetching data');
+            setError('Error conexion base de datos');
             setLoading(false);
         }
     };
@@ -112,6 +112,11 @@ const Suppliers = () => {
         if (Object.keys(errors).length === 0) {
             try {
                 await axios.post('http://localhost:1056/api/suppliers', formData);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Supplier added successfully!',
+                });
                 handleClose();
                 fetchSupplierData();
             } catch (err) {
@@ -133,29 +138,51 @@ const Suppliers = () => {
     const handleUpdate = async () => {
         try {
             await axios.put(`http://localhost:1056/api/suppliers/${viewData.id}`, formData);
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Proveedor actualizado correctamente!',
+            });
             handleEditClose();
             fetchSupplierData();
         } catch (err) {
-            console.error('Error updating supplier:', err);
+            console.error('Error al actualizar proveedor:', err);
             if (err.response && err.response.data) {
                 setFormErrors(err.response.data.errors.reduce((acc, curr) => {
                     acc[curr.param] = curr.msg;
                     return acc;
                 }, {}));
             } else {
-                console.error('Unknown error:', err);
+                console.error(' error:', err);
             }
         }
     };
 
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:1056/api/suppliers/${id}`);
-            fetchSupplierData();
-        } catch (err) {
-            console.error('Error deleting supplier:', err);
-            setError('Error deleting supplier');
-        }
+    const handleDelete = async (id, name) => {
+        Swal.fire({
+            title: `Estas seguro de eliminar el proveedor ${name}?`,
+            text: '',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, eliminar!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`http://localhost:1056/api/suppliers/${id}`);
+                    Swal.fire(
+                        'Deleted!',
+                        'Proveedor eliminado.',
+                        'success'
+                    );
+                    fetchSupplierData();
+                } catch (err) {
+                    console.error('Error deleting supplier:', err);
+                    setError('Error deleting supplier');
+                }
+            }
+        });
     };
 
     return (
@@ -178,13 +205,13 @@ const Suppliers = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-4 d-flex align-items-center'>
-                                <button className="btn btn-primary" onClick={handleOpen}>
-                                    Registrar
-                                </button>
+                                <Button variant="contained" color='primary' onClick={handleOpen}>
+                                     Registrar
+                                </Button>
                             </div>
                             <div className='col-sm-4 d-flex align-items-center cardFilters'>
                                 <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
-                                    <InputLabel id="columns-per-page-label">Columns</InputLabel>
+                                    <InputLabel id="columns-per-page-label">Columnas</InputLabel>
                                     <Select
                                         labelId="columns-per-page-label"
                                         id="columns-per-page-select"
@@ -229,10 +256,9 @@ const Suppliers = () => {
                                                 <td>{item.Email}</td>
                                                 <td>{item.Address}</td>
                                                 <td>
-                                                    <button className="btn btn-info me-2" onClick={() => handleViewOpen(item)}>Ver</button>
-                                                    <button className="btn btn-warning me-2" onClick={() => handleEditOpen(item)}>Editar</button>
-                                                    <button className="btn btn-danger" onClick={() => handleDelete(item.id)}>Eliminar</button>
-                                                    
+                                                    <Button variant='contained' color='primary' onClick={() => handleViewOpen(item)}><FaEye /></Button>
+                                                    <Button variant='contained' color='secondary' onClick={() => handleEditOpen(item)}><FaPencilAlt /></Button>
+                                                    <Button variant='contained' color='error' onClick={() => handleDelete(item.id, item.Supplier_Name)}><IoTrashSharp /></Button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -248,7 +274,7 @@ const Suppliers = () => {
             <Modal open={open} onClose={handleClose}>
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Registar Proveedor
+                        Registrar Proveedor
                     </Typography>
                     <TextField
                         label="Supplier Name"
@@ -291,8 +317,8 @@ const Suppliers = () => {
                         margin="normal"
                     />
                     <div className="d-flex justify-content-end mt-4">
-                        <button className="btn btn-primary me-2" onClick={handleSubmit}>Guardar</button>
-                        <button className="btn btn-secondary" onClick={handleClose}>Cancelar</button>
+                        <Button variant='contained' color='primary' onClick={handleSubmit}>Guardar</Button>
+                        <Button variant='contained' color='secondary' onClick={handleClose}>Cancelar</Button>
                     </div>
                 </Box>
             </Modal>
@@ -300,23 +326,26 @@ const Suppliers = () => {
             <Modal open={openView} onClose={handleViewClose}>
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Informacion de proveedor
+                        Información de proveedor
                     </Typography>
                     <Typography><strong>ID:</strong> {viewData.id}</Typography>
                     <Typography><strong>Nombre:</strong> {viewData.Supplier_Name}</Typography>
                     <Typography><strong>Numero:</strong> {viewData.Phone_Number}</Typography>
                     <Typography><strong>Correo:</strong> {viewData.Email}</Typography>
                     <Typography><strong>Direccion:</strong> {viewData.Address}</Typography>
+                    <div className="d-flex justify-content-end mt-4">
+                        <Button variant='contained' color='secondary' onClick={handleViewClose}>Cerrar</Button>
+                    </div>
                 </Box>
             </Modal>
 
             <Modal open={openEdit} onClose={handleEditClose}>
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Editar proveedor
+                        Editar Proveedor
                     </Typography>
                     <TextField
-                        label="Nombre"
+                        label="Supplier Name"
                         name="Supplier_Name"
                         value={formData.Supplier_Name}
                         onChange={handleInputChange}
@@ -326,7 +355,7 @@ const Suppliers = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="Numero"
+                        label="Phone Number"
                         name="Phone_Number"
                         value={formData.Phone_Number}
                         onChange={handleInputChange}
@@ -336,7 +365,7 @@ const Suppliers = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="Correo"
+                        label="Email"
                         name="Email"
                         value={formData.Email}
                         onChange={handleInputChange}
@@ -346,7 +375,7 @@ const Suppliers = () => {
                         margin="normal"
                     />
                     <TextField
-                        label="Direccion"
+                        label="Address"
                         name="Address"
                         value={formData.Address}
                         onChange={handleInputChange}
@@ -356,8 +385,8 @@ const Suppliers = () => {
                         margin="normal"
                     />
                     <div className="d-flex justify-content-end mt-4">
-                        <button className="btn btn-primary me-2" onClick={handleUpdate}>Update</button>
-                        <button className="btn btn-secondary" onClick={handleEditClose}>Cancel</button>
+                        <Button variant='contained' color='primary' onClick={handleUpdate}>Actualizar</Button>
+                        <Button variant='contained' color='secondary' onClick={handleEditClose}>Cancelar</Button>
                     </div>
                 </Box>
             </Modal>
