@@ -75,6 +75,8 @@ const Users = () => {
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);  // Nuevo estado para el modal de detalles
+    const [detailData, setDetailData] = useState({});
 
     useEffect(() => {
         getUsers();
@@ -87,7 +89,7 @@ const Users = () => {
 
     const openModal = (op, user = {}) => {
         setOperation(op);
-        setTitle(op === 1 ? 'Registrar Usuario' : 'Editar Usuario');
+        setTitle(op === 1 ? 'Registrar usuario' : 'Editar usuario');
 
         if (op === 1) {
             // Limpiar los campos para nuevo registro
@@ -167,6 +169,19 @@ const Users = () => {
         enviarSolicitud('PUT', updatedUser);
     };
 
+    //Detalle 
+    const handleCloseDetail = () => {
+        setShowModal(false);
+        setShowDetailModal(false);  // Cierra el modal de detalles
+    };
+    
+
+    const handleViewDetails = (user) => {
+        setDetailData(user);  // Establecer los datos del usuario para mostrar en el modal
+        setShowDetailModal(true);  // Abrir el modal de detalles
+    };
+    //fin detalle
+
     const deleteUser = async (id, name) => {
         const Myswal = withReactContent(Swal);
         Myswal.fire({
@@ -232,6 +247,7 @@ const Users = () => {
                                         <th>Nombre</th>
                                         <th>Email</th>
                                         <th>Teléfono</th>
+                                        <th>Rol Id</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -244,6 +260,7 @@ const Users = () => {
                                                 <td>{user.name}</td>
                                                 <td>{user.email}</td>
                                                 <td>{user.phone}</td>
+                                                <td>{user.roleId === 1 ? 'Administrador' : roleId ===2 ? 'Empleado' : roleId ===3 ? 'Cliente':'Desconocido'}</td>
                                                 <td>{user.status === 'A' ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
@@ -253,8 +270,7 @@ const Users = () => {
                                                                 onChange={handleSwitchChange(user.id)}
                                                                 color="success"
                                                             />
-
-                                                       <Button color='primary' className='primary'><FaEye /></Button>
+                                                       <Button color='primary' className='primary' onClick={() => handleViewDetails(user)}><FaEye /></Button>
                                                        <Button color="secondary"  className='secondary' onClick={() => openModal(2, user)} >
                                                             <FaPencilAlt />
                                                         </Button>
@@ -283,35 +299,38 @@ const Users = () => {
                     <Modal.Body>
                         <Form>
                             <Form.Group className="mb-3">
-                                <Form.Label>Nombre</Form.Label>
+                                
                                 <Form.Control
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
+                                    placeholder="Nombre"
+
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Email</Form.Label>
                                 <Form.Control
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Correo"
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Contraseña</Form.Label>
                                 <Form.Control
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Contraseña"
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Teléfono</Form.Label>
+                                
                                 <Form.Control
                                     type="text"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="Telefono"
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
@@ -324,15 +343,36 @@ const Users = () => {
                                         onChange={(e) => setRoleId(e.target.value)}
                                     >
                                         <MenuItem value="1">Administrador</MenuItem>
-                                        <MenuItem value="2">Usuario</MenuItem>
+                                        <MenuItem value="2">Empleado</MenuItem>
+                                        <MenuItem value="3">Cliente</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Form.Group>
+                            <div className='d-grid col-4 mx-auto' >
+                                    <Button variant="contained" className='btn-sucess' onClick={validar}>Guardar</Button>
+                                </div>
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="contained" onClick={validar}>Guardar</Button>
-                        <Button variant="outlined" onClick={handleClose}>Cerrar</Button>
+                        
+                        <Button type='button' id='btnCerrar' className='btn-blue' variant="outlined" onClick={handleClose}>Cerrar</Button>
+                    </Modal.Footer>
+                </Modal>
+                {/* modal detalle */}
+                <Modal show={showDetailModal} onHide={handleCloseDetail}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Detalle usuario</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p><strong>ID:</strong> {detailData.id}</p>
+                        <p><strong>Nombre:</strong> {detailData.name}</p>
+                        <p><strong>Email:</strong> {detailData.email}</p>
+                        <p><strong>Teléfono:</strong> {detailData.phone}</p>
+                        <p><strong>Rol:</strong> {detailData.roleId === 1 ? 'Administrador' : detailData.roleId === 2 ? 'Empleado' : detailData.roleId === 3 ? 'Cliente' : 'Desconocido'}</p>
+                        <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
                     </Modal.Footer>
                 </Modal>
             </div>
