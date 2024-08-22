@@ -5,24 +5,34 @@ import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { GiHairStrands } from "react-icons/gi";
+import { RxScissors } from "react-icons/rx";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
-import { FaEye, FaPencilAlt } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
+import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
-import axios from 'axios';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import axios from 'axios'
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { show_alerta } from '../../assets/functions';
+import { show_alerta } from '../../assets/functions'
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
+import Modal from 'react-bootstrap/Modal';
 
-// Styled components
+
+
+
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
         theme.palette.mode === 'light'
@@ -66,7 +76,7 @@ const Absences = () => {
 
     useEffect(() => {
         getAbsences();
-        getUsers(); 
+        getUsers();
     }, []);
 
     const getAbsences = async () => {
@@ -101,11 +111,18 @@ const Absences = () => {
         }, 500);
     }
 
-    const handleSwitchChange = (id) => (event) => {
-        const newStatus = event.target.checked ? 'aprobado' : 'no aprobado';
-        const updatedAbsence = { id, status: newStatus };
-        enviarSolicitud('PUT', updatedAbsence);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [detailData, setDetailData] = useState({});
+
+    // Función para abrir el modal de detalles
+    const openDetailModal = (absence) => {
+        setDetailData(absence);
+        setShowDetailModal(true);
     };
+
+    // Función para cerrar el modal de detalles
+    const handleCloseDetail = () => setShowDetailModal(false);
+
 
     const deleteAbsence = async (id, description) => {
         const Myswal = withReactContent(Swal);
@@ -138,25 +155,25 @@ const Absences = () => {
         const date = document.getElementById('date').value;
         const description = document.getElementById('description').value;
         const userId = document.getElementById('userId').value;
-        const status = document.getElementById('status').value;
-    
+
         const data = {
             startTime,
             endTime,
             date,
             description,
             userId,
-            status
         };
-    
+
         if (operation === 1) {
+            data.status = 'en proceso';  // Registrar automáticamente como "en proceso"
             await enviarSolicitud('POST', data);
         } else if (operation === 3) {
             data.id = currentAbsence.id;
+            data.status = document.getElementById('status').value; // Obtener el estado seleccionado al editar
             await enviarSolicitud('PUT', data);
         }
     }
-    
+
     const enviarSolicitud = async (metodo, parametros) => {
         const url = metodo === 'PUT' ? `${urlAbsences}/${parametros.id}` : metodo === 'DELETE' ? `${urlAbsences}/${parametros.id}` : urlAbsences;
         try {
@@ -227,7 +244,7 @@ const Absences = () => {
                                     {
                                         absences.map((absence, i) => (
                                             <tr key={absence.id}>
-                                                <td>{(i + 1)}</td>
+                                                <td>{(absence.id)}</td>
                                                 <td>{absence.startTime}</td>
                                                 <td>{absence.endTime}</td>
                                                 <td>{absence.date}</td>
@@ -236,7 +253,7 @@ const Absences = () => {
                                                 <td>{getUserName(absence.userId)}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        <Button color='primary' className='primary' onClick={() => openModal(2, absence)}><FaEye /></Button>
+                                                        <Button color='primary' className='primary' onClick={() => openDetailModal(absence)}><FaEye /></Button>
                                                         <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalAbsences' className='secondary' onClick={() => openModal(3, absence)}><FaPencilAlt /></Button>
                                                         <Button color='error' className='delete' onClick={() => deleteAbsence(absence.id, absence.description)}><IoTrashSharp /></Button>
                                                     </div>
@@ -254,54 +271,75 @@ const Absences = () => {
                 </div>
 
                 <div id="modalAbsences" className="modal fade" aria-hidden="true">
-            <div className="modal-dialog">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <label className="h5">{title}</label>
-                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div className="modal-body">
-                        <input type="hidden" id="id" value={currentAbsence.id || ''} />
-                        <div className="input-group mb-3">
-                            <input type="time" id="startTime" className="form-control" placeholder="Inicio" defaultValue={currentAbsence.startTime || ''} />
-                        </div>
-                        <div className="input-group mb-3">
-                            <input type="time" id="endTime" className="form-control" placeholder="Fin" defaultValue={currentAbsence.endTime || ''} />
-                        </div>
-                        <div className="input-group mb-3">
-                            <input type="date" id="date" className="form-control" placeholder="Fecha" defaultValue={currentAbsence.date || ''} />
-                        </div>
-                        <div className="input-group mb-3">
-                            <input type="text" id="description" className="form-control" placeholder="Descripción" defaultValue={currentAbsence.description || ''} />
-                        </div>
-                        <div className="input-group mb-3">
-                            <select className="form-select" id='userId' aria-label="Usuario" defaultValue={currentAbsence.userId || ''}>
-                                <option value="">Seleccionar usuario</option>
-                                {FiltrarUsers().map(user => (
-                                    <option key={user.id} value={user.id}>{user.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="input-group mb-3">
-                            <select className="form-select" id='status' aria-label="Estado" defaultValue={currentAbsence.status || 'en proceso'}>
-                                <option value="en proceso">En proceso</option>
-                                <option value="aprobado">Aprobado</option>
-                                <option value="no aprobado">No aprobado</option>
-                            </select>
-                        </div>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <label className="h5">{title}</label>
+                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div className="modal-body">
+                                <input type="hidden" id="id" value={currentAbsence.id || ''} />
+                                <div className="input-group mb-3">
+                                    <input type="time" id="startTime" className="form-control" placeholder="Inicio" defaultValue={currentAbsence.startTime || ''} />
+                                </div>
+                                <div className="input-group mb-3">
+                                    <input type="time" id="endTime" className="form-control" placeholder="Fin" defaultValue={currentAbsence.endTime || ''} />
+                                </div>
+                                <div className="input-group mb-3">
+                                    <input type="date" id="date" className="form-control" placeholder="Fecha" defaultValue={currentAbsence.date || ''} />
+                                </div>
+                                <div className="input-group mb-3">
+                                    <input type="text" id="description" className="form-control" placeholder="Descripción" defaultValue={currentAbsence.description || ''} />
+                                </div>
+                                <div className="input-group mb-3">
+                                    <select className="form-select" id='userId' aria-label="Usuario" defaultValue={currentAbsence.userId || ''}>
+                                        <option value="">Seleccionar usuario</option>
+                                        {FiltrarUsers().map(user => (
+                                            <option key={user.id} value={user.id}>{user.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                        <div className='d-grid col-4 mx-auto'>
-                            {(operation === 1 || operation === 3) && (
-                                <Button type='button' className='btn-success' onClick={() => validar()}>Guardar</Button>
-                            )}
+                                {operation === 3 && (
+                                    <div className="input-group mb-3">
+                                        <select className="form-select" id='status' aria-label="Estado" defaultValue={currentAbsence.status || 'en proceso'}>
+                                            <option value="en proceso">En proceso</option>
+                                            <option value="aprobado">Aprobado</option>
+                                            <option value="no aprobado">No aprobado</option>
+                                        </select>
+                                    </div>
+                                )}
+
+                                <div className='d-grid col-4 mx-auto'>
+                                    {(operation === 1 || operation === 3) && (
+                                        <Button variant="contained" className='btn-sucess' onClick={() => validar()}>Guardar</Button>
+                                    )}
+                                </div>
+                            </div>
+                            <div className='modal-footer'>
+                                <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
+                            </div>
+                            <Modal show={showDetailModal} onHide={handleCloseDetail}>
+                                <Modal.Header closeButton>
+                                    <Modal.Title>Detalle de ausencia</Modal.Title>
+                                </Modal.Header>
+                                <Modal.Body>
+                                    <p><strong>ID:</strong> {detailData.id}</p>
+                                    <p><strong>Inicio:</strong> {detailData.startTime}</p>
+                                    <p><strong>Fin:</strong> {detailData.endTime}</p>
+                                    <p><strong>Fecha:</strong> {detailData.date}</p>
+                                    <p><strong>Descripción:</strong> {detailData.description}</p>
+                                    <p><strong>Usuario:</strong> {getUserName(detailData.userId)}</p>
+                                    <p><strong>Estado:</strong> {detailData.status === 'en proceso' ? 'En proceso' : detailData.status === 'aprobado' ? 'Aprobado' : 'No aprobado'}</p>
+                                </Modal.Body>
+                                <Modal.Footer>
+                                    <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
+                                </Modal.Footer>
+                            </Modal>
+
                         </div>
-                    </div>
-                    <div className='modal-footer'>
-                        <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
                     </div>
                 </div>
-            </div>
-        </div>
 
             </div>
         </>
