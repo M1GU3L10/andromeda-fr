@@ -482,19 +482,36 @@ const Products = () => {
                 open={openView}
                 onClose={handleViewClose}
             >
-                <Box sx={style}>
-                    <Typography variant="h6" component="h2">
-                        Ver Producto
-                    </Typography>
-                    <Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
-                    <Typography variant="body1"><strong>Nombre:</strong> {viewData.Product_Name}</Typography>
-                    <Typography variant="body1"><strong>Stock:</strong> {viewData.Stock}</Typography>
-                    <Typography variant="body1"><strong>Categoria:</strong> {viewData.Category_Id}</Typography>
-                    <Typography variant="body1"><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</Typography>
-                    {viewData.Image && (
-                        <img src={`http://localhost:1056/${viewData.Image}`} alt={viewData.Product_Name} style={{ width: '100%', height: 'auto', marginTop: '16px' }} />
-                    )}
-                </Box>
+    <Box sx={style}>
+    <Typography variant="h6" component="h2">
+        Ver Producto
+    </Typography>
+    <Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
+    <Typography variant="body1"><strong>Nombre:</strong> {viewData.Product_Name}</Typography>
+    <Typography variant="body1"><strong>Stock:</strong> {viewData.Stock}</Typography>
+    <Typography variant="body1"><strong>Categoria:</strong> {viewData.Category_Id}</Typography>
+    <Typography variant="body1"><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</Typography>
+    <Box sx={style}>
+    
+    <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
+    Ver Producto
+</Typography>
+<Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
+<Typography variant="body1"><strong>Nombre:</strong> {viewData.Product_Name}</Typography>
+<Typography variant="body1"><strong>Stock:</strong> {viewData.Stock}</Typography>
+<Typography variant="body1"><strong>Categoria:</strong> {viewData.Category_Id}</Typography>
+<Typography variant="body1"><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</Typography>
+{viewData.Image && (
+    <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+        <img src={viewData.Image} alt={viewData.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+    </Box>
+)}
+
+</Box>
+
+
+</Box>
+
             </Modal>
 
             {/* Modal para editar producto */}
