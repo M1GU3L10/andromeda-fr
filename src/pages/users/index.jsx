@@ -149,25 +149,42 @@ const Users = () => {
         }
     };
 
-    const enviarSolicitud = async (metodo, parametros) => {
-        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
-        await axios({ method: metodo, url: urlWithId, data: parametros })
-            .then(() => {
-                show_alerta('Operación exitosa', 'success');
-                handleClose();
-                getUsers();
-            })
-            .catch((error) => {
-                show_alerta('Error en la solicitud', 'error');
-                console.log(error);
-            });
-    };
-
+    //Cambiar estado
     const handleSwitchChange = (id) => (event) => {
         const newStatus = event.target.checked ? 'A' : 'I';
         const updatedUser = { id, status: newStatus };
+
+        // Actualiza el estado local antes de enviar la solicitud
+        setUsers(users.map(user => 
+            user.id === id ? { ...user, status: newStatus } : user
+        ));
+
+        // Enviar la solicitud para actualizar el estado en el servidor
         enviarSolicitud('PUT', updatedUser);
     };
+    //fin estado
+
+     // Actualización de la función `enviarSolicitud`
+     const enviarSolicitud = async (metodo, parametros) => {
+        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
+        try {
+            await axios({ method: metodo, url: urlWithId, data: parametros });
+
+            // Mostrar alerta y actualizar la lista de usuarios
+            show_alerta('Operación exitosa', 'success');
+            getUsers();  // Actualiza la lista de usuarios después de la operación
+        } catch (error) {
+            show_alerta('Error en la solicitud', 'error');
+            console.log(error);
+        }
+    };
+    // const handleSwitchChange = (id) => (event) => {
+    //     const newStatus = event.target.checked ? 'A' : 'I';
+    //     const updatedUser = { id, status: newStatus };
+    //     enviarSolicitud('PUT', updatedUser);
+    // };
+
+    
 
     //Detalle 
     const handleCloseDetail = () => {
