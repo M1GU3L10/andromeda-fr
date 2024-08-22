@@ -364,15 +364,17 @@ const Products = () => {
                                                 <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
                                                 <td>
                                                     {product.Image && (
-                                                        <img src={`http://localhost:1056/${product.Image}`} alt={product.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                                        <img src={product.Image} alt={product.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                                                     )}
                                                 </td>
+
+
                                                 <td><div className='actions d-flex align-items-center'>
-                                                    
-                                                        <Button color='primary' className='primary' onClick={() => handleViewOpen(product)}><FaEye /></Button>
-                                                        <Button color="secondary" className='secondary' onClick={() => handleEditOpen(product)}><FaPencilAlt /></Button>
-                                                        <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
-                                                    </div>
+
+                                                    <Button color='primary' className='primary' onClick={() => handleViewOpen(product)}><FaEye /></Button>
+                                                    <Button color="secondary" className='secondary' onClick={() => handleEditOpen(product)}><FaPencilAlt /></Button>
+                                                    <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
+                                                </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -487,8 +489,8 @@ const Products = () => {
                     <Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
                     <Typography variant="body1"><strong>Nombre:</strong> {viewData.Product_Name}</Typography>
                     <Typography variant="body1"><strong>Stock:</strong> {viewData.Stock}</Typography>
+                    <Typography variant="body1"><strong>Categoria:</strong> {viewData.Category_Id}</Typography>
                     <Typography variant="body1"><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</Typography>
-                    <Typography variant="body1"><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'No disponible'}</Typography>
                     {viewData.Image && (
                         <img src={`http://localhost:1056/${viewData.Image}`} alt={viewData.Product_Name} style={{ width: '100%', height: 'auto', marginTop: '16px' }} />
                     )}
