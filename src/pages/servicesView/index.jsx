@@ -28,7 +28,7 @@ import Swal from 'sweetalert2';
 import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
-
+import { MdOutlineSave } from "react-icons/md";
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
@@ -52,18 +52,6 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 })
 
-const PinkSwitch = styled(Switch)(({ theme }) => ({
-    '& .MuiSwitch-switchBase.Mui-checked': {
-        color: pink[600],
-        '&:hover': {
-            backgroundColor: alpha(pink[600], theme.palette.action.hoverOpacity),
-        },
-    },
-    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-        backgroundColor: pink[600],
-    },
-}));
-
 const Services = () => {
     const url = 'http://localhost:1056/api/services';
     const [services, setServices] = useState([]);
@@ -75,6 +63,8 @@ const Services = () => {
     const [status, setStatus] = useState('');
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
+    const [switchStates, setSwitchStates] = useState({});
+
 
     useEffect(() => {
         getServices();
@@ -111,63 +101,50 @@ const Services = () => {
     }
 
     const validar = () => {
-        var parametros;
-        var metodo;
         if (name.trim() === '') {
-            show_alerta('Digite el nombre', 'warning')
+            show_alerta('Digite el nombre', 'warning');
         } else if (price === '') {
-            show_alerta('Digite el precio', 'warning')
+            show_alerta('Digite el precio', 'warning');
         } else if (description.trim() === '') {
-            show_alerta('Digite una descripción', 'warning')
+            show_alerta('Digite una descripción', 'warning');
         } else if (time === '') {
-            show_alerta('Digite el tiempo del servicio', 'warning')
+            show_alerta('Digite el tiempo del servicio', 'warning');
         } else {
             const priceFloat = parseFloat(price);
             const timeInt = parseInt(time, 10);
-            if (operation === 1) {
-                parametros = {
-                    name: name.trim(),
-                    price: priceFloat,
-                    description: description.trim(),
-                    time: timeInt,
-                    status: 'A'
-                }
-                metodo = 'POST';
-                console.log(parametros);
-            } else {
-                parametros = {
-                    id: id,
-                    name: name.trim(),
-                    price: priceFloat,
-                    description: description.trim(),
-                    time: timeInt,
-                    status: 'A'
-                }
-                metodo = 'PUT';
-                console.log(parametros);
-            }
-            enviarSolicitud(metodo, parametros)
-        }
-    }
 
+            const parametros = {
+                name: name.trim(),
+                price: priceFloat,
+                description: description.trim(),
+                time: timeInt,
+                status: 'A'
+            };
+
+            const metodo = operation === 1 ? 'POST' : 'PUT';
+            if (operation === 2) {
+                parametros.id = id;
+            }
+
+            console.log(parametros);
+            enviarSolicitud(metodo, parametros);
+        }
+    };
 
     const enviarSolicitud = async (metodo, parametros) => {
-        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
-        await axios({ method: metodo, url: urlWithId, data: parametros, }).then(function (response) {
+        try {
+            const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
+            const response = await axios({ method: metodo, url: urlWithId, data: parametros });
             show_alerta('Operación exitosa', 'success');
             document.getElementById('btnCerrar').click();
             getServices();
-        }).catch(function (error) {
+        } catch (error) {
+            // Manejar errores específicos aquí
+            console.log('Error details:', error.response?.data.errors || error.message);
             show_alerta('Error en la solicitud', 'error');
-            console.log(error);
-        })
-    }
-
-    const handleSwitchChange = (id) => (event) => {
-        const newStatus = event.target.checked ? 'A' : 'I';
-        const updatedService = { id, status: newStatus };
-        enviarSolicitud('PUT', updatedService);
+        }
     };
+
 
     const deleteService = async (id, name) => {
         const Myswal = withReactContent(Swal);
@@ -187,6 +164,56 @@ const Services = () => {
             }
         })
     }
+
+    const handleSwitchChange = async (serviceId, checked) => {
+        // Encuentra el servicio que está siendo actualizado
+        const serviceToUpdate = services.find(service => service.id === serviceId);
+
+        // Prepara el mensaje de confirmación
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el servicio "${serviceToUpdate.name}"?`,
+            icon: 'question',
+            text: 'Esta acción puede afectar la disponibilidad del servicio.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Solo cambia el estado sin modificar el nombre
+                const updatedService = {
+                    ...serviceToUpdate,
+                    status: checked ? 'A' : 'I'
+                };
+
+                try {
+                    // Envía la solicitud PUT con todos los campos, incluyendo el nombre actual
+                    const response = await axios.put(`${url}/${serviceId}`, updatedService);
+                    if (response.status === 200) {
+                        // Actualiza el estado local si la solicitud fue exitosa
+                        setServices(services.map(service =>
+                            service.id === serviceId ? { ...service, status: updatedService.status } : service
+                        ));
+                        show_alerta('Estado del servicio actualizado exitosamente', 'success');
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        console.log('Error details:', error.response.data);
+                        show_alerta('Error al actualizar el estado del servicio: ' + JSON.stringify(error.response.data.errors), 'error');
+                    } else {
+                        console.log('Error details:', error.message);
+                        show_alerta('Error al actualizar el estado del servicio', 'error');
+                    }
+                }
+            } else {
+                // Si el usuario cancela, restablece el switch a su estado original
+                setServices(services.map(service =>
+                    service.id === serviceId ? { ...service, status: !checked ? 'A' : 'I' } : service
+                ));
+                show_alerta('Estado del servicio no cambiado', 'info');
+            }
+        });
+    };
 
 
     return (
@@ -250,10 +277,9 @@ const Services = () => {
                                                 <td>{service.status === 'A' ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        <PinkSwitch
+                                                        <Switch
                                                             checked={service.status === 'A'}
-                                                            onChange={handleSwitchChange(service.id)}
-                                                            color="success"
+                                                            onChange={(e) => handleSwitchChange(service.id, e.target.checked)}
                                                         />
                                                         <Button color='primary' className='primary'><FaEye /></Button>
                                                         <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalServices' className='secondary' onClick={() => openModal(2, service.id, service.name, service.price, service.description, service.time, service.status)}><FaPencilAlt /></Button>
@@ -276,7 +302,6 @@ const Services = () => {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <label className="h5">{title}</label>
-                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div className="modal-body">
                                 <input type="hidden" id="id" />
@@ -297,6 +322,7 @@ const Services = () => {
                                 </div>
                                 <div className="input-group mb-3">
                                     <select class="form-select" id='time' required aria-label="Tiempo" onChange={(e) => setTime(e.target.value)} value={time}>
+                                        <option hidden="">Tiempo</option>
                                         <option value="20">20 Minutos</option>
                                         <option value="30">30 Minutos</option>
                                         <option value="45">45 Minutos</option>
@@ -304,12 +330,12 @@ const Services = () => {
                                     </select>
                                     <div class="invalid-feedback">Example invalid select feedback</div>
                                 </div>
-                                <div className='d-grid col-4 mx-auto' onClick={() => validar()}>
-                                    <Button type='button' className='btn-sucess'>Guardar</Button>
+                                <div className='modal-footer w-100 m-3'>
+                                    <div className='d-grid col-3 Modal-buton' onClick={() => validar()}>
+                                        <Button type='button' className='btn-sucess'><MdOutlineSave/>Guardar</Button>
+                                    </div>
+                                    <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
                                 </div>
-                            </div>
-                            <div className='modal-footer'>
-                                <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
                             </div>
                         </div>
                     </div>
