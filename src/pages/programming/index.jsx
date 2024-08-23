@@ -36,7 +36,6 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
         backgroundColor: emphasize(theme.palette.grey[200], 0.3),
     },
 }));
-
 const style = {
     position: 'absolute',
     top: '50%',
@@ -48,7 +47,6 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-
 const Programming = () => {
     const [columnsPerPage, setColumnsPerPage] = React.useState('');
     const [open, setOpen] = React.useState(false);
@@ -67,12 +65,10 @@ const Programming = () => {
     const [error, setError] = React.useState(null);
     const [users, setUsers] = React.useState([]);
     const [formErrors, setFormErrors] = React.useState({});
-
     React.useEffect(() => {
         fetchProgrammingData();
         fetchUsers();
     }, []);
-
     const fetchProgrammingData = async () => {
         try {
             setLoading(true);
@@ -84,7 +80,6 @@ const Programming = () => {
             setLoading(false);
         }
     };
-
     const fetchUsers = async () => {
         try {
             const response = await axios.get('http://localhost:1056/api/users?roleId=2');
@@ -93,11 +88,9 @@ const Programming = () => {
             console.error('Error fetching users:', err);
         }
     };
-
     const handleChange = (event) => {
         setColumnsPerPage(event.target.value);
     };
-
     const handleOpen = () => setOpen(true);
     const handleClose = () => {
         setOpen(false);
@@ -110,21 +103,16 @@ const Programming = () => {
         });
         setFormErrors({});
     };
-
     const handleViewOpen = (data) => {
         setViewData(data);
         setOpenView(true);
     };
-
     const handleViewClose = () => setOpenView(false);
-
     const handleEditOpen = (data) => {
         setFormData(data);
         setOpenEdit(true);
     };
-
     const handleEditClose = () => setOpenEdit(false);
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -202,20 +190,15 @@ const Programming = () => {
             errors.endTime = 'La hora de fin debe estar en formato (HH:MM:SS)';
         else if (new Date(`1970-01-01T${formData.endTime}Z`) <= new Date(`1970-01-01T${formData.startTime}Z`))
             errors.endTime = 'La hora de fin debe ser posterior a la hora de inicio';
-
         if (!formData.status) errors.status = 'El estado es requerido';
         else if (!['pending', 'approved', 'rejected'].includes(formData.status))
             errors.status = 'El estado debe ser uno de los siguientes: pending, approved, rejected';
-
         if (!formData.day) errors.day = 'El día es requerido';
         else if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.day))
             errors.day = 'El día debe estar en formato YYYY-MM-DD';
-
         if (!formData.userId) errors.userId = 'El ID de usuario es requerido';
-
         return errors;
     };
-
     const handleSubmit = async () => {
         const errors = validateForm();
         if (Object.keys(errors).length === 0) {
@@ -224,7 +207,6 @@ const Programming = () => {
                     ...formData,
                     userId: Number(formData.userId)
                 };
-
                 console.log('Enviando datos:', dataToSend);
 
                 await axios.post('http://localhost:1056/api/programming', dataToSend);
@@ -248,8 +230,6 @@ const Programming = () => {
             setFormErrors(errors);
         }
     };
-
-
     const handleUpdate = async () => {
         const errors = validateForm();
         if (Object.keys(errors).length === 0) {
@@ -435,7 +415,6 @@ const Programming = () => {
                     </div>
                 </div>
             </div>
-
             {/* Modal para registro */}
             <Modal
                 open={open}
@@ -518,7 +497,6 @@ const Programming = () => {
                     </Button>
                 </Box>
             </Modal>
-
             {/* Modal para visualizar */}
             <Modal
                 open={openView}
@@ -620,5 +598,4 @@ const Programming = () => {
         </>
     );
 }
-
 export default Programming;

@@ -3,12 +3,12 @@ import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { GiHairStrands } from "react-icons/gi";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
+import { FaEye } from "react-icons/fa";
+import { GiHairStrands } from 'react-icons/gi';
 import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
 import InputLabel from '@mui/material/InputLabel';
@@ -23,10 +23,12 @@ import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import { Modal, Form } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Styled components
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // <-- Asegúrate de importar ExpandMoreIcon
+
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
+
+
     const backgroundColor =
         theme.palette.mode === 'light'
             ? theme.palette.grey[100]
@@ -44,7 +46,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
             backgroundColor: emphasize(backgroundColor, 0.12),
         },
     };
-});
+})
 
 const PinkSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
@@ -57,6 +59,8 @@ const PinkSwitch = styled(Switch)(({ theme }) => ({
         backgroundColor: pink[600],
     },
 }));
+// Rest of your code...
+
 
 const Users = () => {
     const url = 'http://localhost:1056/api/users';
@@ -71,6 +75,8 @@ const Users = () => {
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);  // Nuevo estado para el modal de detalles
+    const [detailData, setDetailData] = useState({});
 
     useEffect(() => {
         getUsers();
@@ -83,7 +89,7 @@ const Users = () => {
 
     const openModal = (op, user = {}) => {
         setOperation(op);
-        setTitle(op === 1 ? 'Registrar Usuario' : 'Editar Usuario');
+        setTitle(op === 1 ? 'Registrar usuario' : 'Editar usuario');
 
         if (op === 1) {
             // Limpiar los campos para nuevo registro
@@ -143,25 +149,55 @@ const Users = () => {
         }
     };
 
-    const enviarSolicitud = async (metodo, parametros) => {
-        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
-        await axios({ method: metodo, url: urlWithId, data: parametros })
-            .then(() => {
-                show_alerta('Operación exitosa', 'success');
-                handleClose();
-                getUsers();
-            })
-            .catch((error) => {
-                show_alerta('Error en la solicitud', 'error');
-                console.log(error);
-            });
-    };
-
+    //Cambiar estado
     const handleSwitchChange = (id) => (event) => {
         const newStatus = event.target.checked ? 'A' : 'I';
         const updatedUser = { id, status: newStatus };
+
+        // Actualiza el estado local antes de enviar la solicitud
+        setUsers(users.map(user => 
+            user.id === id ? { ...user, status: newStatus } : user
+        ));
+
+        // Enviar la solicitud para actualizar el estado en el servidor
         enviarSolicitud('PUT', updatedUser);
     };
+    //fin estado
+
+     // Actualización de la función `enviarSolicitud`
+     const enviarSolicitud = async (metodo, parametros) => {
+        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
+        try {
+            await axios({ method: metodo, url: urlWithId, data: parametros });
+
+            // Mostrar alerta y actualizar la lista de usuarios
+            show_alerta('Operación exitosa', 'success');
+            getUsers();  // Actualiza la lista de usuarios después de la operación
+        } catch (error) {
+            show_alerta('Error en la solicitud', 'error');
+            console.log(error);
+        }
+    };
+    // const handleSwitchChange = (id) => (event) => {
+    //     const newStatus = event.target.checked ? 'A' : 'I';
+    //     const updatedUser = { id, status: newStatus };
+    //     enviarSolicitud('PUT', updatedUser);
+    // };
+
+    
+
+    //Detalle 
+    const handleCloseDetail = () => {
+        setShowModal(false);
+        setShowDetailModal(false);  // Cierra el modal de detalles
+    };
+    
+
+    const handleViewDetails = (user) => {
+        setDetailData(user);  // Establecer los datos del usuario para mostrar en el modal
+        setShowDetailModal(true);  // Abrir el modal de detalles
+    };
+    //fin detalle
 
     const deleteUser = async (id, name) => {
         const Myswal = withReactContent(Swal);
@@ -213,21 +249,22 @@ const Users = () => {
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
                                 <Button className='btn-register' onClick={() => openModal(1)} variant="contained" color="primary">
-                                    <BsPlusSquareFill /> Registrar Usuario
+                                    <BsPlusSquareFill /> Registrar
                                 </Button>
                             </div>
-                            <div className='col-sm-7 d-flex justify-content-end'>
+                            <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <SearchBox />
                             </div>
                         </div>
-                        <div className='table-responsive'>
-                            <table className="table table-striped">
-                                <thead>
+                        <div className='table-responsive mt-3'>
+                            <table className='table table-bordered table-hover v-align'>
+                                <thead className='table-primary'>
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
                                         <th>Email</th>
                                         <th>Teléfono</th>
+                                        <th>Rol Id</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -240,19 +277,24 @@ const Users = () => {
                                                 <td>{user.name}</td>
                                                 <td>{user.email}</td>
                                                 <td>{user.phone}</td>
+                                                <td>{user.roleId === 1 ? 'Administrador' : roleId ===2 ? 'Empleado' : roleId ===3 ? 'Cliente':'Desconocido'}</td>
+                                                <td>{user.status === 'A' ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
-                                                    <PinkSwitch
-                                                        checked={user.status === 'A'}
-                                                        onChange={handleSwitchChange(user.id)}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <Button onClick={() => openModal(2, user)} variant="outlined" color="primary">
-                                                        <FaPencilAlt />
-                                                    </Button>
-                                                    <Button onClick={() => deleteUser(user.id, user.name)} variant="outlined" color="secondary">
-                                                        <IoTrashSharp />
-                                                    </Button>
+                                                    <div className='actions d-flex align-items-center'>
+
+                                                        <PinkSwitch
+                                                                checked={user.status === 'A'}
+                                                                onChange={handleSwitchChange(user.id)}
+                                                                color="success"
+                                                            />
+                                                       <Button color='primary' className='primary' onClick={() => handleViewDetails(user)}><FaEye /></Button>
+                                                       <Button color="secondary"  className='secondary' onClick={() => openModal(2, user)} >
+                                                            <FaPencilAlt />
+                                                        </Button>
+                                                        <Button color='error' className='delete' onClick={() => deleteUser(user.id, user.name)}>
+                                                            <IoTrashSharp />
+                                                        </Button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))
@@ -260,10 +302,8 @@ const Users = () => {
                                 </tbody>
                             </table>
                         </div>
-                        <div className='row'>
-                            <div className='col-sm-12'>
-                                <Pagination count={10} variant="outlined" shape="rounded" />
-                            </div>
+                        <div className="d-flex table-footer">
+                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
                         </div>
                     </div>
                 </div>
@@ -276,35 +316,38 @@ const Users = () => {
                     <Modal.Body>
                         <Form>
                             <Form.Group className="mb-3">
-                                <Form.Label>Nombre</Form.Label>
+                                
                                 <Form.Control
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
+                                    placeholder="Nombre"
+
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Email</Form.Label>
                                 <Form.Control
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Correo"
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Contraseña</Form.Label>
                                 <Form.Control
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Contraseña"
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Teléfono</Form.Label>
+                                
                                 <Form.Control
                                     type="text"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="Telefono"
                                 />
                             </Form.Group>
                             <Form.Group className="mb-3">
@@ -317,20 +360,42 @@ const Users = () => {
                                         onChange={(e) => setRoleId(e.target.value)}
                                     >
                                         <MenuItem value="1">Administrador</MenuItem>
-                                        <MenuItem value="2">Usuario</MenuItem>
+                                        <MenuItem value="2">Empleado</MenuItem>
+                                        <MenuItem value="3">Cliente</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Form.Group>
+                            <div className='d-grid col-4 mx-auto' >
+                                    <Button variant="contained" className='btn-sucess' onClick={validar}>Guardar</Button>
+                                </div>
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="contained" onClick={validar}>Guardar</Button>
-                        <Button variant="outlined" onClick={handleClose}>Cerrar</Button>
+                        
+                        <Button type='button' id='btnCerrar' className='btn-blue' variant="outlined" onClick={handleClose}>Cerrar</Button>
+                    </Modal.Footer>
+                </Modal>
+                {/* modal detalle */}
+                <Modal show={showDetailModal} onHide={handleCloseDetail}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Detalle usuario</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p><strong>ID:</strong> {detailData.id}</p>
+                        <p><strong>Nombre:</strong> {detailData.name}</p>
+                        <p><strong>Email:</strong> {detailData.email}</p>
+                        <p><strong>Teléfono:</strong> {detailData.phone}</p>
+                        <p><strong>Rol:</strong> {detailData.roleId === 1 ? 'Administrador' : detailData.roleId === 2 ? 'Empleado' : detailData.roleId === 3 ? 'Cliente' : 'Desconocido'}</p>
+                        <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
                     </Modal.Footer>
                 </Modal>
             </div>
         </>
     );
+
 };
 
 export default Users;

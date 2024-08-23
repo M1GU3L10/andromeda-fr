@@ -785,7 +785,6 @@ input:checked + .slider:before {
 }
 
 .modal-header{
-  background: #0858f7 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -793,19 +792,14 @@ input:checked + .slider:before {
 }
 
 .modal-header .h5{
-  color: #f1f1f1 !important;
   font-family: "Open Sans", sans-serif !important;
   font-size: 18px;
 }
 
-.btn-close{
-  background: #f1f1f1 !important;
-}
 
 .modal-dialog .modal-content .modal-body .input-group input, select{
   height: 40px !important;
   width: 100%;
-  border: 1px solid #0858f7 !important;
 }
 
 .modal-dialog .modal-content .modal-body .input-group select {

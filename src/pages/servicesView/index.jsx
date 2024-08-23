@@ -52,6 +52,22 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 })
 
+const verificarNombreExistente = async (name) => {
+    try {
+        // Realizar una solicitud GET a la API para verificar el nombre
+        const response = await fetch(`http://localhost:1056/api/services?name=${encodeURIComponent(name)}`);
+        if (!response.ok) {
+            throw new Error('Error en la solicitud de verificación');
+        }
+        const data = await response.json();
+        // Suponiendo que la API devuelve un array de objetos o una lista de servicios con el nombre
+        return data.some(service => service.name === name.trim());
+    } catch (error) {
+        console.error('Error al verificar el nombre:', error);
+        return false;
+    }
+};
+
 const Services = () => {
     const url = 'http://localhost:1056/api/services';
     const [services, setServices] = useState([]);
@@ -100,8 +116,9 @@ const Services = () => {
         }, 500)
     }
 
-    const validar = () => {
-        if (name.trim() === '') {
+    const validar = async () => {
+        const nombreExiste = await verificarNombreExistente(name.trim());
+        if (name.trim() === '' ) {
             show_alerta('Digite el nombre', 'warning');
         } else if (price === '') {
             show_alerta('Digite el precio', 'warning');
@@ -109,6 +126,10 @@ const Services = () => {
             show_alerta('Digite una descripción', 'warning');
         } else if (time === '') {
             show_alerta('Digite el tiempo del servicio', 'warning');
+        }else 
+        if (nombreExiste) {
+            show_alerta('El nombre ya está registrado', 'warning');
+            return;
         } else {
             const priceFloat = parseFloat(price);
             const timeInt = parseInt(time, 10);
