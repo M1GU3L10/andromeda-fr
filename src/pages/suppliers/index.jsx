@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
+import { MdOutlineSave } from "react-icons/md";
 import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
 import { show_alerta } from '../../assets/functions';
@@ -218,8 +219,7 @@ const Suppliers = () => {
                                                 <div className='actions d-flex align-items-center'>
                                                     <Button color='primary' className='primary'><FaEye /></Button>
                                                     <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalSuppliers' className='secondary' onClick={() => openModal(2, supplier.id, supplier.Supplier_Name, supplier.Phone_Number, supplier.Email, supplier.Address)}><FaPencilAlt /></Button>
-                                                  
-                                                    < Button color='error' className='delete' onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}><IoTrashSharp /></Button>
+                                                    <Button color='error' className='delete' onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}><IoTrashSharp /></Button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -242,25 +242,22 @@ const Suppliers = () => {
                             <div className="modal-body">
                                 <input type="hidden" id="id"></input>
                                 <div className="input-group mb-3">
-                                    <span className="input-group-text">Nombre</span>
                                     <input type="text" id="Supplier_Name" className="form-control" placeholder="Nombre" value={Supplier_Name} onChange={(e) => setSupplierName(e.target.value)} />
                                 </div>
                                 <div className="input-group mb-3">
-                                    <span className="input-group-text">Teléfono</span>
                                     <input type="text" id="Phone_Number" className="form-control" placeholder="Teléfono" value={Phone_Number} onChange={(e) => setPhoneNumber(e.target.value)} />
                                 </div>
                                 <div className="input-group mb-3">
-                                    <span className="input-group-text">Email</span>
                                     <input type="email" id="Email" className="form-control" placeholder="Email" value={Email} onChange={(e) => setEmail(e.target.value)} />
                                 </div>
                                 <div className="input-group mb-3">
-                                    <span className="input-group-text">Dirección</span>
                                     <input type="text" id="Address" className="form-control" placeholder="Dirección" value={Address} onChange={(e) => setAddress(e.target.value)} />
                                 </div>
-                                <div className="d-grid col-6 mx-auto">
-                                    <button onClick={() => validar()} className="btn btn-success">
-                                        Guardar
-                                    </button>
+                                <div className='modal-footer w-100 m-3'>
+                                    <div className='d-grid col-3 Modal-buton' onClick={() => validar()}>
+                                        <Button type='button' className='btn-sucess'><MdOutlineSave/>Guardar</Button>
+                                    </div>
+                                    <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
                                 </div>
                             </div>
                         </div>
@@ -270,5 +267,5 @@ const Suppliers = () => {
         </>
     )
 }
-
+    
 export default Suppliers;
