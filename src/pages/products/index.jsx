@@ -82,7 +82,7 @@ const Products = () => {
         Stock: '',
         Price: '',
         Category_Id: '',
-        Image: null,
+        Image: '',
     });
     const [imagePreviewUrl, setImagePreviewUrl] = React.useState('');
     const [productData, setProductData] = React.useState([]);
@@ -129,7 +129,7 @@ const Products = () => {
             Stock: '',
             Price: '',
             Category_Id: '',
-            Image: null
+            Image: ''
         });
         setImagePreviewUrl('');
         setFormErrors({});
@@ -182,29 +182,45 @@ const Products = () => {
         const errors = validateForm();
         if (Object.keys(errors).length === 0) {
             const data = new FormData();
+    
+            // Imprimir los datos de formData antes de enviarlos
+            console.log('Datos enviados:', formData);
             for (const key in formData) {
-                data.append(key, formData[key]);
+                if (key === 'Image' && formData[key] instanceof File) {
+                    data.append(key, formData[key]);
+                } else {
+                    data.append(key, formData[key]);
+                }
+                console.log(`${key}: ${formData[key]}`);
             }
-
+    
             try {
-                await axios.post('http://localhost:1056/api/products', data, {
+                const response = await axios.post('http://localhost:1056/api/products', data, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
-                handleClose();
-                fetchProductData();
-                show_alerta('Producto agregado exitosamente', 'success');
+    
+                if (response.status === 201 || response.status === 200) {
+                    handleClose();
+                    fetchProductData();
+                    show_alerta('Producto agregado exitosamente', 'success');
+                } else {
+                    show_alerta('Hubo un problema al agregar el producto', 'error');
+                }
             } catch (err) {
                 console.error('Error submitting form:', err);
-                if (err.response && err.response.data) {
-                    setFormErrors(err.response.data.errors.reduce((acc, curr) => {
+    
+                if (err.response) {
+                    console.error('Detalles del error del servidor:', err.response.data);
+                    setFormErrors(err.response.data.errors ? err.response.data.errors.reduce((acc, curr) => {
                         acc[curr.param] = curr.msg;
                         return acc;
-                    }, {}));
+                    }, {}) : {});
                 } else {
                     console.error('Error desconocido:', err);
                 }
+    
                 show_alerta('Error al agregar el producto', 'error');
             }
         } else {
@@ -217,7 +233,11 @@ const Products = () => {
         if (Object.keys(errors).length === 0) {
             const data = new FormData();
             for (const key in formData) {
-                data.append(key, formData[key]);
+                if (key === 'Image' && formData[key] instanceof File) {
+                    data.append(key, formData[key]);
+                } else {
+                    data.append(key, formData[key]);
+                }
             }
 
             try {
@@ -351,12 +371,12 @@ const Products = () => {
                                             <th>Precio</th>
                                             <th>Categoría</th>
                                             <th>Imagen</th>
+                                            
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {productData.map((product, i) => (
-                                            <tr key={product.id}>
+                                        {productData.map((product, i) => (<tr key={product.id}>
                                                 <td>{(i + 1)}</td>
                                                 <td>{product.Product_Name}</td>
                                                 <td>{product.Stock}</td>
@@ -367,14 +387,13 @@ const Products = () => {
                                                         <img src={product.Image} alt={product.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                                                     )}
                                                 </td>
-
-
-                                                <td><div className='actions d-flex align-items-center'>
-
-                                                    <Button color='primary' className='primary' onClick={() => handleViewOpen(product)}><FaEye /></Button>
-                                                    <Button color="secondary" className='secondary' onClick={() => handleEditOpen(product)}><FaPencilAlt /></Button>
-                                                    <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
-                                                </div>
+                                             
+                                                <td>
+                                                    <div className='actions d-flex align-items-center'>
+                                                        <Button color='primary' className='primary' onClick={() => handleViewOpen(product)}><FaEye /></Button>
+                                                        <Button color="secondary" className='secondary' onClick={() => handleEditOpen(product)}><FaPencilAlt /></Button>
+                                                        <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -482,36 +501,21 @@ const Products = () => {
                 open={openView}
                 onClose={handleViewClose}
             >
-    <Box sx={style}>
-    <Typography variant="h6" component="h2">
-        Ver Producto
-    </Typography>
-    <Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
-    <Typography variant="body1"><strong>Nombre:</strong> {viewData.Product_Name}</Typography>
-    <Typography variant="body1"><strong>Stock:</strong> {viewData.Stock}</Typography>
-    <Typography variant="body1"><strong>Categoria:</strong> {viewData.Category_Id}</Typography>
-    <Typography variant="body1"><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</Typography>
-    <Box sx={style}>
-    
-    <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-    Ver Producto
-</Typography>
-<Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
-<Typography variant="body1"><strong>Nombre:</strong> {viewData.Product_Name}</Typography>
-<Typography variant="body1"><strong>Stock:</strong> {viewData.Stock}</Typography>
-<Typography variant="body1"><strong>Categoria:</strong> {viewData.Category_Id}</Typography>
-<Typography variant="body1"><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</Typography>
-{viewData.Image && (
-    <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-        <img src={viewData.Image} alt={viewData.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
-    </Box>
-)}
-
-</Box>
-
-
-</Box>
-
+                <Box sx={style}>
+                    <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
+                        Ver Producto
+                    </Typography>
+                    <Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
+                    <Typography variant="body1"><strong>Nombre:</strong> {viewData.Product_Name}</Typography>
+                    <Typography variant="body1"><strong>Stock:</strong> {viewData.Stock}</Typography>
+                    <Typography variant="body1"><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'No disponible'}</Typography>
+                    <Typography variant="body1"><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</Typography>
+                    {viewData.Image && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+                            <img src={viewData.Image} alt={viewData.Product_Name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                        </Box>
+                    )}
+                </Box>
             </Modal>
 
             {/* Modal para editar producto */}
