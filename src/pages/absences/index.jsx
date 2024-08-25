@@ -28,7 +28,9 @@ import Swal from 'sweetalert2';
 import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
-import Modal from 'react-bootstrap/Modal';
+import { MdOutlineSave } from "react-icons/md";
+import { Modal } from 'react-bootstrap';
+
 
 
 
@@ -53,17 +55,6 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 });
 
-const PinkSwitch = styled(Switch)(({ theme }) => ({
-    '& .MuiSwitch-switchBase.Mui-checked': {
-        color: pink[600],
-        '&:hover': {
-            backgroundColor: alpha(pink[600], theme.palette.action.hoverOpacity),
-        },
-    },
-    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-        backgroundColor: pink[600],
-    },
-}));
 
 const Absences = () => {
     const urlAbsences = 'http://localhost:1056/api/absences';
@@ -148,6 +139,60 @@ const Absences = () => {
             }
         });
     }
+    const [errors, setErrors] = useState({});
+
+    const validateField = (name, value) => {
+        let error = '';
+
+        switch (name) {
+            case 'startTime':
+            case 'endTime':
+                if (!value) {
+                    error = 'La hora es requerida';
+                } else if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(value)) {
+                    error = 'La hora debe estar en formato HH:MM';
+                } else if (name === 'endTime' && value <= document.getElementById('startTime').value) {
+                    error = 'La hora de fin debe ser posterior a la hora de inicio';
+                }
+                break;
+
+            case 'date':
+                if (!value) {
+                    error = 'La fecha es requerida';
+                } else if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                    error = 'La fecha debe estar en formato YYYY-MM-DD';
+                }
+                break;
+            case 'description':
+                if (!value) {
+                    error = 'La descripción es obligatoria';
+                }
+                break;
+
+
+            case 'userId':
+                if (!value) {
+                    error = 'Debe seleccionar un usuario';
+                }
+                break;
+
+            case 'status':
+                if (!['en proceso', 'aprobado', 'no aprobado'].includes(value)) {
+                    error = 'El estado debe ser "en proceso", "aprobado" o "no aprobado"';
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        validateField(name, value);
+    };
 
     const validar = async () => {
         const startTime = document.getElementById('startTime').value;
@@ -156,23 +201,30 @@ const Absences = () => {
         const description = document.getElementById('description').value;
         const userId = document.getElementById('userId').value;
 
-        const data = {
-            startTime,
-            endTime,
-            date,
-            description,
-            userId,
-        };
+        const fields = { startTime, endTime, date, description, userId };
+        let valid = true;
+
+        Object.keys(fields).forEach(field => {
+            validateField(field, fields[field]);
+            if (errors[field]) valid = false;
+        });
+
+        if (!valid) {
+            show_alerta('Por favor corrige los errores antes de continuar', 'error');
+            return;
+        }
+
+        const data = { startTime, endTime, date, description, userId };
 
         if (operation === 1) {
-            data.status = 'en proceso';  // Registrar automáticamente como "en proceso"
+            data.status = 'en proceso';
             await enviarSolicitud('POST', data);
         } else if (operation === 3) {
             data.id = currentAbsence.id;
-            data.status = document.getElementById('status').value; // Obtener el estado seleccionado al editar
+            data.status = document.getElementById('status').value;
             await enviarSolicitud('PUT', data);
         }
-    }
+    };
 
     const enviarSolicitud = async (metodo, parametros) => {
         const url = metodo === 'PUT' ? `${urlAbsences}/${parametros.id}` : metodo === 'DELETE' ? `${urlAbsences}/${parametros.id}` : urlAbsences;
@@ -244,7 +296,7 @@ const Absences = () => {
                                     {
                                         absences.map((absence, i) => (
                                             <tr key={absence.id}>
-                                                <td>{(absence.id)}</td>
+                                                <td>{(i + 1)}</td>
                                                 <td>{absence.startTime}</td>
                                                 <td>{absence.endTime}</td>
                                                 <td>{absence.date}</td>
@@ -280,67 +332,122 @@ const Absences = () => {
                             <div className="modal-body">
                                 <input type="hidden" id="id" value={currentAbsence.id || ''} />
                                 <div className="input-group mb-3">
-                                    <input type="time" id="startTime" className="form-control" placeholder="Inicio" defaultValue={currentAbsence.startTime || ''} />
+                                    <input
+                                        type="time"
+                                        id="startTime"
+                                        name="startTime"
+                                        className="form-control"
+                                        placeholder="Inicio"
+                                        defaultValue={currentAbsence.startTime || ''}
+                                        onChange={handleInputChange}
+                                    />
+                                    {errors.startTime && <div className="text-danger">{errors.startTime}</div>}
                                 </div>
                                 <div className="input-group mb-3">
-                                    <input type="time" id="endTime" className="form-control" placeholder="Fin" defaultValue={currentAbsence.endTime || ''} />
+                                    <input
+                                        type="time"
+                                        id="endTime"
+                                        name="endTime"
+                                        className="form-control"
+                                        placeholder="Fin"
+                                        defaultValue={currentAbsence.endTime || ''}
+                                        onChange={handleInputChange}
+                                    />
+                                    {errors.endTime && <div className="text-danger">{errors.endTime}</div>}
                                 </div>
                                 <div className="input-group mb-3">
-                                    <input type="date" id="date" className="form-control" placeholder="Fecha" defaultValue={currentAbsence.date || ''} />
+                                    <input
+                                        type="date"
+                                        id="date"
+                                        name="date"
+                                        className="form-control"
+                                        placeholder="Fecha"
+                                        defaultValue={currentAbsence.date || ''}
+                                        onChange={handleInputChange}
+                                    />
+                                    {errors.date && <div className="text-danger">{errors.date}</div>}
                                 </div>
                                 <div className="input-group mb-3">
-                                    <input type="text" id="description" className="form-control" placeholder="Descripción" defaultValue={currentAbsence.description || ''} />
+                                    <input
+                                        type="text"
+                                        id="description"
+                                        name="description"
+                                        className="form-control"
+                                        placeholder="Descripción"
+                                        defaultValue={currentAbsence.description || ''}
+                                        onChange={handleInputChange}
+                                    />
+                                    {errors.description && <div className="text-danger">{errors.description}</div>} {/* Añadido aquí */}
                                 </div>
+
                                 <div className="input-group mb-3">
-                                    <select className="form-select" id='userId' aria-label="Usuario" defaultValue={currentAbsence.userId || ''}>
+                                    <select
+                                        className="form-select"
+                                        id='userId'
+                                        name="userId"
+                                        aria-label="Usuario"
+                                        defaultValue={currentAbsence.userId || ''}
+                                        onChange={handleInputChange}
+                                    >
                                         <option value="">Seleccionar usuario</option>
                                         {FiltrarUsers().map(user => (
                                             <option key={user.id} value={user.id}>{user.name}</option>
                                         ))}
                                     </select>
+                                    {errors.userId && <div className="text-danger w-100 mt-1">{errors.userId}</div>} {/* Modificado */}
                                 </div>
 
                                 {operation === 3 && (
                                     <div className="input-group mb-3">
-                                        <select className="form-select" id='status' aria-label="Estado" defaultValue={currentAbsence.status || 'en proceso'}>
+                                        <select
+                                            className="form-select"
+                                            id='status'
+                                            name="status"
+                                            aria-label="Estado"
+                                            defaultValue={currentAbsence.status || 'en proceso'}
+                                            onChange={handleInputChange}
+                                        >
                                             <option value="en proceso">En proceso</option>
                                             <option value="aprobado">Aprobado</option>
                                             <option value="no aprobado">No aprobado</option>
                                         </select>
+                                        {errors.status && <div className="text-danger">{errors.status}</div>}
                                     </div>
                                 )}
 
-                                <div className='d-grid col-4 mx-auto'>
+                                <div className='modal-footer w-100 m-3'>
                                     {(operation === 1 || operation === 3) && (
-                                        <Button variant="contained" className='btn-sucess' onClick={() => validar()}>Guardar</Button>
+                                        <div className='d-grid col-3 Modal-buton' onClick={() => validar()}>
+                                            <Button type='button' className='btn-sucess'>
+                                                <MdOutlineSave /> Guardar
+                                            </Button>
+                                        </div>
                                     )}
+                                    <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
                                 </div>
-                            </div>
-                            <div className='modal-footer'>
-                                <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
-                            </div>
-                            <Modal show={showDetailModal} onHide={handleCloseDetail}>
-                                <Modal.Header closeButton>
-                                    <Modal.Title>Detalle de ausencia</Modal.Title>
-                                </Modal.Header>
-                                <Modal.Body>
-                                    <p><strong>ID:</strong> {detailData.id}</p>
-                                    <p><strong>Inicio:</strong> {detailData.startTime}</p>
-                                    <p><strong>Fin:</strong> {detailData.endTime}</p>
-                                    <p><strong>Fecha:</strong> {detailData.date}</p>
-                                    <p><strong>Descripción:</strong> {detailData.description}</p>
-                                    <p><strong>Usuario:</strong> {getUserName(detailData.userId)}</p>
-                                    <p><strong>Estado:</strong> {detailData.status === 'en proceso' ? 'En proceso' : detailData.status === 'aprobado' ? 'Aprobado' : 'No aprobado'}</p>
-                                </Modal.Body>
-                                <Modal.Footer>
-                                    <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
-                                </Modal.Footer>
-                            </Modal>
 
+                                <Modal show={showDetailModal} onHide={handleCloseDetail}>
+                                    <Modal.Header closeButton>
+                                        <Modal.Title>Detalle de ausencia</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        <p><strong>ID:</strong> {detailData.id}</p>
+                                        <p><strong>Inicio:</strong> {detailData.startTime}</p>
+                                        <p><strong>Fin:</strong> {detailData.endTime}</p>
+                                        <p><strong>Fecha:</strong> {detailData.date}</p>
+                                        <p><strong>Descripción:</strong> {detailData.description}</p>
+                                        <p><strong>Usuario:</strong> {getUserName(detailData.userId)}</p>
+                                        <p><strong>Estado:</strong> {detailData.status === 'en proceso' ? 'En proceso' : detailData.status === 'aprobado' ? 'Aprobado' : 'No aprobado'}</p>
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
+                                    </Modal.Footer>
+                                </Modal>
+
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </>
     );
