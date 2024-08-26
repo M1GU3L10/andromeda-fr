@@ -34,6 +34,21 @@ body.dark {
   font-weight: 500 !important;
   color: #fff !important;
   text-transform: capitalize !important;
+  margin: 10px !important;
+}
+
+textarea.form-control{
+  max-height:120px;
+  min-height: 50px;
+}
+
+.btn-red {
+  background: #f71008d8 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #fff !important;
+  text-transform: capitalize !important;
+  margin: 10px !important;
 }
 
 .btn-sucess {
@@ -641,6 +656,11 @@ body.dark .css-1mm5wr7-MuiChip-root {
   border-radius: 10px;
 }
 
+body.dark .card{
+  background: #112143 !important;
+}
+
+
 .btn-register {
   font-size: 13px;
   font-weight: 400;
@@ -667,6 +687,11 @@ body.dark .css-1mm5wr7-MuiChip-root {
   font-size: 13px !important;
   color: #403e57 !important;
   font-weight: 500;
+}
+
+body.dark .table tbody td {
+  color: #fff !important;
+  background: #112155;
 }
 
 .table tbody .actions button {
