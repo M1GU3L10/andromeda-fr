@@ -255,10 +255,12 @@ const Users = () => {
             await axios({ method: metodo, url: urlWithId, data: parametros });
 
             show_alerta('Operación exitosa', 'success');
+            console.log(parametros)
             getUsers();
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
             console.log(error);
+            console.log(parametros)
         }
     };
 
@@ -347,27 +349,27 @@ const Users = () => {
                                                 <td>{user.name}</td>
                                                 <td>{user.email}</td>
                                                 <td>{user.phone}</td>
-                                                <td>{user.roleId === 1 ? 'Administrador' : roleId ===2 ? 'Empleado' : roleId ===3 ? 'Cliente':'Desconocido'}</td>
+                                                <td>{user.roleId === 1 ? 'Administrador' : roleId === 2 ? 'Empleado' : roleId === 3 ? 'Cliente' : 'Desconocido'}</td>
                                                 <td>{user.status === 'A' ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
 
                                                         <PinkSwitch
-                                                                checked={user.status === 'A'}
-                                                                onChange={handleSwitchChange(user.id)}
-                                                                color="success"
-                                                            />
-                                                       <Button color='primary' className='primary' onClick={() => handleViewDetails(user)}><FaEye /></Button>
-                                                       {user.status === 'A' && (
-            <>
-                <Button color="secondary" className='secondary' onClick={() => openModal(2, user)} >
-                    <FaPencilAlt />
-                </Button>
-                <Button color='error' className='delete' onClick={() => deleteUser(user.id, user.name)}>
-                    <IoTrashSharp />
-                </Button>
-            </>
-        )}
+                                                            checked={user.status === 'A'}
+                                                            onChange={handleSwitchChange(user.id)}
+                                                            color="success"
+                                                        />
+                                                        <Button color='primary' className='primary' onClick={() => handleViewDetails(user)}><FaEye /></Button>
+                                                        {user.status === 'A' && (
+                                                            <>
+                                                                <Button color="secondary" className='secondary' onClick={() => openModal(2, user)} >
+                                                                    <FaPencilAlt />
+                                                                </Button>
+                                                                <Button color='error' className='delete' onClick={() => deleteUser(user.id, user.name)}>
+                                                                    <IoTrashSharp />
+                                                                </Button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -377,109 +379,110 @@ const Users = () => {
                             </table>
                         </div>
                         <div className="d-flex table-footer">
-                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
+                            <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
                         </div>
                     </div>
                 </div>
 
                 {/* Modal para Agregar/Editar Usuario */}
-            <Modal show={showModal} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>{title}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group>
-                            <Form.Control
-                                type="text"
-                                name="name"
-                                value={name}
-                                placeholder="Nombre"
-                                onChange={handleInputChange}
-                                onBlur={handleBlur}
-                                isInvalid={touched.name && !!errors.name}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.name}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                <Modal show={showModal} 
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>{title}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group>
+                                <Form.Control
+                                    type="text"
+                                    name="name"
+                                    value={name}
+                                    placeholder="Nombre"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.name && !!errors.name}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.name}
+                                </Form.Control.Feedback>
+                            </Form.Group>
 
-                        <Form.Group>
-                            <Form.Control
-                                type="email"
-                                name="email"
-                                value={email}
-                                placeholder="Correo"
-                                onChange={handleInputChange}
-                                onBlur={handleBlur}
-                                isInvalid={touched.email && !!errors.email}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.email}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                            <Form.Group>
+                                <Form.Control
+                                    type="email"
+                                    name="email"
+                                    value={email}
+                                    placeholder="Correo"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.email && !!errors.email}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.email}
+                                </Form.Control.Feedback>
+                            </Form.Group>
 
-                        <Form.Group>
-                            <Form.Label>Contraseña</Form.Label>
-                            <Form.Control
-                                type="password"
-                                name="password"
-                                value={password}
-                                placeholder="Contraseña"
-                                onChange={handleInputChange}
-                                onBlur={handleBlur}
-                                isInvalid={touched.password && !!errors.password}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.password}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Contraseña</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    name="password"
+                                    value={password}
+                                    placeholder="Contraseña"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.password && !!errors.password}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.password}
+                                </Form.Control.Feedback>
+                            </Form.Group>
 
-                        <Form.Group>
-                            <Form.Label>Teléfono</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="phone"
-                                value={phone}
-                                placeholder="Telefono"
-                                onChange={handleInputChange}
-                                onBlur={handleBlur}
-                                isInvalid={touched.phone && !!errors.phone}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.phone}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Teléfono</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="phone"
+                                    value={phone}
+                                    placeholder="Telefono"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.phone && !!errors.phone}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.phone}
+                                </Form.Control.Feedback>
+                            </Form.Group>
 
-                        <Form.Group>
-                            <Form.Label>Rol</Form.Label>
-                            <Form.Control
-                                as="select"
-                                name="roleId"
-                                value={roleId}
-                                onChange={handleInputChange}
-                                onBlur={handleBlur}
-                                isInvalid={touched.roleId && !!errors.roleId}
-                            >
-                                <option value="1">Admin</option>
-                                <option value="2">Empleado</option>
-                                <option value="3">Cliente</option>
-                            </Form.Control>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.roleId}
-                            </Form.Control.Feedback>
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Cerrar
-                    </Button>
-                    <Button variant="primary" onClick={validar}>
-                        Guardar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+                            <Form.Group>
+                                <Form.Label>Rol</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    name="roleId"
+                                    value={roleId}
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.roleId && !!errors.roleId}
+                                >
+                                    <option value="1">Admin</option>
+                                    <option value="2">Empleado</option>
+                                    <option value="3">Cliente</option>
+                                </Form.Control>
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.roleId}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                            Cerrar
+                        </Button>
+                        <Button variant="primary" onClick={validar}>
+                            Guardar
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
 
                 {/* modal detalle */}
                 <Modal show={showDetailModal} onHide={handleCloseDetail}>

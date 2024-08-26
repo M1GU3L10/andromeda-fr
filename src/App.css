@@ -11,7 +11,7 @@ body {
   background: #ebe9e9;
 }
 
-body.dark{
+body.dark {
   background: #071638 !important;
 }
 
@@ -34,9 +34,24 @@ body.dark{
   font-weight: 500 !important;
   color: #fff !important;
   text-transform: capitalize !important;
+  margin: 10px !important;
 }
 
-.btn-sucess{
+textarea.form-control{
+  max-height:120px;
+  min-height: 50px;
+}
+
+.btn-red {
+  background: #f71008d8 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #fff !important;
+  text-transform: capitalize !important;
+  margin: 10px !important;
+}
+
+.btn-sucess {
   background: #13993b !important;
   font-size: 14px !important;
   font-weight: 500 !important;
@@ -44,7 +59,7 @@ body.dark{
   text-transform: capitalize !important;
 }
 
-.btn-content{
+.btn-content {
   padding-left: 10px;
   padding-right: 10px;
   width: 100%;
@@ -63,7 +78,7 @@ header {
   backdrop-filter: blur(5px);
 }
 
-body.dark header{
+body.dark header {
   background: #112143 !important;
 }
 
@@ -84,7 +99,7 @@ header .logo span {
   margin-left: 10px;
 }
 
-body.dark header .logo span{
+body.dark header .logo span {
   color: white;
 }
 
@@ -93,7 +108,7 @@ header .row {
   width: 100%;
 }
 
-.parte2{
+.parte2 {
   padding-left: 50px;
 }
 
@@ -116,11 +131,11 @@ header button.rounded-circle:hover svg {
   color: #0858f7 !important;
 }
 
-body.dark header button.rounded-circle{
+body.dark header button.rounded-circle {
   background: #112155 !important;
 }
 
-body.dark header button.rounded-circle svg{
+body.dark header button.rounded-circle svg {
   color: #fff;
 }
 
@@ -151,19 +166,19 @@ body.dark header button.rounded-circle svg{
   color: #292929;
 }
 
-body.dark .searchBox input::-webkit-input-placeholder{
+body.dark .searchBox input::-webkit-input-placeholder {
   color: rgba(255, 255, 255, 0.7);
 }
 
-body.dark .searchBox svg{
+body.dark .searchBox svg {
   color: rgba(255, 255, 255, 0.7);
 }
 
-body.dark .searchBox{
+body.dark .searchBox {
   background: #112155;
 }
 
-body.dark .searchBox input{
+body.dark .searchBox input {
   color: #fff;
 }
 
@@ -222,15 +237,15 @@ body.dark .searchBox input{
   opacity: 0.7;
 }
 
-body.dark .MyAcc .userInfo h5{
+body.dark .MyAcc .userInfo h5 {
   color: #fff;
 }
 
-body.dark .MyAcc .userInfo p{
+body.dark .MyAcc .userInfo p {
   color: #fff;
 }
 
-.dropdownWrapper{
+.dropdownWrapper {
   position: relative;
 }
 
@@ -243,7 +258,8 @@ body.dark .MyAcc .userInfo p{
   font-size: 20px !important;
 }
 
-body.dark #account-menu li, svg{
+body.dark #account-menu li,
+svg {
   color: #d0d3db;
 }
 
@@ -281,7 +297,7 @@ body.dark .dropdown_list h4 {
   padding: 10px 15px !important;
 }
 
-body.dark .dropdown_list li.MuiButtonBase-root{
+body.dark .dropdown_list li.MuiButtonBase-root {
   background: #112143 !important;
   color: #fff;
 }
@@ -313,20 +329,20 @@ body.dark .dropdown_list li.MuiButtonBase-root{
   margin-right: 5px;
 }
 
-.main .sidebarWrapper{
+.main .sidebarWrapper {
   width: 20%;
   flex: 0 0 20%;
-  transition: all 0.3s ;
+  transition: all 0.3s;
 }
 
-.main .sidebarWrapper.toggle{
+.main .sidebarWrapper.toggle {
   width: 0%;
   flex: 0 0 0%;
   transition: all 0.7s;
 }
 
 
-.main .sidebarWrapper .sidebar{
+.main .sidebarWrapper .sidebar {
   width: 20%;
   height: 100vh;
   position: fixed;
@@ -340,38 +356,38 @@ body.dark .dropdown_list li.MuiButtonBase-root{
   transition: all 0.4s;
 }
 
-body.dark .main .sidebarWrapper .sidebar{
+body.dark .main .sidebarWrapper .sidebar {
   background: #112143 !important;
 }
 
-.main .sidebarWrapper.toggle .sidebar{
+.main .sidebarWrapper.toggle .sidebar {
   left: -100%;
 }
 
-.main .sidebarWrapper .sidebar::-webkit-scrollbar{
+.main .sidebarWrapper .sidebar::-webkit-scrollbar {
   width: 3px !important;
 }
 
-.main .sidebarWrapper .sidebar::-webkit-scrollbar-thumb{
+.main .sidebarWrapper .sidebar::-webkit-scrollbar-thumb {
   background: transparent !important;
 }
 
-.main .sidebarWrapper:hover .sidebar::-webkit-scrollbar{
+.main .sidebarWrapper:hover .sidebar::-webkit-scrollbar {
   background: #0858f7 !important;
 
 }
 
-.main .sidebarWrapper .sidebar ul{
+.main .sidebarWrapper .sidebar ul {
   margin-bottom: 0px;
   padding: 10px 15px;
 }
 
-.main .sidebarWrapper .sidebar ul li{
+.main .sidebarWrapper .sidebar ul li {
   list-style: none;
   margin-top: 10px;
 }
 
-.main .sidebarWrapper .sidebar ul li button{  
+.main .sidebarWrapper .sidebar ul li button {
   color: #5e5d72 !important;
   text-align: left;
   justify-content: left;
@@ -383,11 +399,11 @@ body.dark .main .sidebarWrapper .sidebar{
   font-family: "Open Sans", sans-serif !important;
 }
 
-body.dark .main .sidebarWrapper .sidebar ul li button{
+body.dark .main .sidebarWrapper .sidebar ul li button {
   color: #d5d8de !important;
 }
 
-.main .sidebarWrapper .sidebar ul li button .icon{
+.main .sidebarWrapper .sidebar ul li button .icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -396,59 +412,59 @@ body.dark .main .sidebarWrapper .sidebar ul li button{
   margin-right: 10px;
 }
 
-.main .sidebarWrapper .sidebar ul li button .icon svg{
+.main .sidebarWrapper .sidebar ul li button .icon svg {
   color: #000;
   opacity: 0.8;
   font-size: 22px;
 }
 
-body.dark .main .sidebarWrapper .sidebar ul li button .icon svg{
+body.dark .main .sidebarWrapper .sidebar ul li button .icon svg {
   color: #fff;
 }
 
-.main .sidebarWrapper .sidebar ul li button .arrow{
+.main .sidebarWrapper .sidebar ul li button .arrow {
   margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-    width: 25px;
+  width: 25px;
   height: 25px;
   transition: all 0.3s ease-in-out;
 }
 
-.main .sidebarWrapper .sidebar ul li button:hover{
+.main .sidebarWrapper .sidebar ul li button:hover {
   background: #f1f1f1 !important;
 }
 
-body.dark .main .sidebarWrapper .sidebar ul li button:hover{
+body.dark .main .sidebarWrapper .sidebar ul li button:hover {
   background: #2a3957 !important;
 }
 
-.main .sidebarWrapper .sidebar ul li button.active{
+.main .sidebarWrapper .sidebar ul li button.active {
   background: #f1f1f1 !important;
 }
 
-body.dark .main .sidebarWrapper .sidebar ul li button.active{
+body.dark .main .sidebarWrapper .sidebar ul li button.active {
   background: #2a3957 !important;
 }
 
-.main .sidebarWrapper .sidebar ul li button.active .arrow{
+.main .sidebarWrapper .sidebar ul li button.active .arrow {
   transform: rotate(90deg);
 }
 
-.main .sidebarWrapper .sidebar ul li button.active .icon svg{
+.main .sidebarWrapper .sidebar ul li button.active .icon svg {
   color: #0858f7 !important;
 }
 
-.main .sidebarWrapper .sidebar ul li button.active span{
+.main .sidebarWrapper .sidebar ul li button.active span {
   color: #0858f7 !important;
 }
 
-.main .sidebarWrapper .sidebar ul li button.active span .sidebar-option:hover{
+.main .sidebarWrapper .sidebar ul li button.active span .sidebar-option:hover {
   color: #0858f7;
 }
 
-body.dark .main .sidebarWrapper .sidebar ul li button.active span{
+body.dark .main .sidebarWrapper .sidebar ul li button.active span {
   color: #fff !important;
 }
 
@@ -459,7 +475,7 @@ body.dark .main .sidebarWrapper .sidebar ul li button.active span{
   height: 0px;
 }
 
-.main .sidebarWrapper .sidebar ul .submenu::before{
+.main .sidebarWrapper .sidebar ul .submenu::before {
   content: '';
   width: 1px;
   height: 95%;
@@ -469,17 +485,17 @@ body.dark .main .sidebarWrapper .sidebar ul li button.active span{
   background: rgba(0, 0, 0, 0.2);
 }
 
-body.dark .main .sidebarWrapper .sidebar ul .submenu::before{
+body.dark .main .sidebarWrapper .sidebar ul .submenu::before {
   background: rgba(255, 255, 255, 0.445) !important;
 }
 
-.main .sidebarWrapper .sidebar ul .submenu li{
-  width: 100% ;
-  list-style: none ;
+.main .sidebarWrapper .sidebar ul .submenu li {
+  width: 100%;
+  list-style: none;
 }
 
-.main .sidebarWrapper .sidebar ul .submenu li a{
-  color:#5e5d72 !important;
+.main .sidebarWrapper .sidebar ul .submenu li a {
+  color: #5e5d72 !important;
   text-decoration: none;
   display: block;
   padding: 6px 0px;
@@ -488,55 +504,55 @@ body.dark .main .sidebarWrapper .sidebar ul .submenu::before{
   transition: all 0.3s;
 }
 
-body.dark .main .sidebarWrapper .sidebar ul .submenu li a{
+body.dark .main .sidebarWrapper .sidebar ul .submenu li a {
   color: #fffc !important;
 }
 
-body.dark .main .sidebarWrapper .sidebar ul .submenu li a:hover{
+body.dark .main .sidebarWrapper .sidebar ul .submenu li a:hover {
   color: #0858f7 !important;
 }
 
-.main .sidebarWrapper .sidebar ul .submenu  li a:hover{
+.main .sidebarWrapper .sidebar ul .submenu li a:hover {
   color: #0858f7 !important;
 }
 
-.main .sidebarWrapper .sidebar ul .submenuWrapper{
-  transition: all 0.4 s ;
+.main .sidebarWrapper .sidebar ul .submenuWrapper {
+  transition: all 0.4 s;
   height: 0px;
   overflow: hidden;
 }
 
-.main .sidebarWrapper .sidebar ul .submenuWrapper.colapsed .submenu{
+.main .sidebarWrapper .sidebar ul .submenuWrapper.colapsed .submenu {
   opacity: 0;
 }
 
-.main .sidebarWrapper .sidebar ul .submenuWrapper.colapse{
+.main .sidebarWrapper .sidebar ul .submenuWrapper.colapse {
   height: auto;
   overflow: inherit;
 }
 
-.main .sidebarWrapper .sidebar ul .submenuWrapper.colapse .submenu{
+.main .sidebarWrapper .sidebar ul .submenuWrapper.colapse .submenu {
   opacity: 1;
   height: auto;
 }
 
-.main .content{
+.main .content {
   width: 80%;
   flex: 0 0 80%;
   transition: all 0.6s;
 }
 
-.main .content.toggle{
+.main .content.toggle {
   width: 100%;
   flex: 0 0 100%;
 }
 
-.logoutWrapper{
+.logoutWrapper {
   padding: 0px 25px;
   margin-bottom: 10px;
 }
 
-.logoutWrapper .logoutBox{
+.logoutWrapper .logoutBox {
   width: 100%;
   height: 130px;
   padding: 25px;
@@ -550,7 +566,7 @@ body.dark .main .sidebarWrapper .sidebar ul .submenu li a:hover{
   overflow: hidden;
 }
 
-.logoutWrapper .logoutBox::before{
+.logoutWrapper .logoutBox::before {
   content: '';
   width: 70px;
   height: 70px;
@@ -562,7 +578,7 @@ body.dark .main .sidebarWrapper .sidebar ul .submenu li a:hover{
   opacity: 0.5;
 }
 
-.logoutWrapper .logoutBox::after{
+.logoutWrapper .logoutBox::after {
   content: '';
   width: 30px;
   height: 30px;
@@ -574,22 +590,22 @@ body.dark .main .sidebarWrapper .sidebar ul .submenu li a:hover{
   opacity: 0.5;
 }
 
-.logoutWrapper .logoutBox button{
+.logoutWrapper .logoutBox button {
   font-size: 14px !important;
   font-weight: 600 !important;
 }
 
-.logoutWrapper .logoutBox button svg{
+.logoutWrapper .logoutBox button svg {
   margin-right: 5px;
   font-size: 18px;
 }
 
-body.dark .logoutWrapper .logoutBox{
+body.dark .logoutWrapper .logoutBox {
   background: transparent;
-  background-image: linear-gradient(#183e8c,#163474) !important;
+  background-image: linear-gradient(#183e8c, #163474) !important;
 }
 
-.main .content{
+.main .content {
   width: 80%;
   flex: 0 0 80%;
 }
@@ -601,7 +617,7 @@ body.dark .logoutWrapper .logoutBox{
   justify-content: center;
 }
 
-.right-content .row .spacing{
+.right-content .row .spacing {
   margin: 20px 0px;
   width: 100%;
   height: 74px;
@@ -610,11 +626,11 @@ body.dark .logoutWrapper .logoutBox{
   box-shadow: 0 .5rem 1rem #00000026 !important;
 }
 
-body.dark .right-content .row .spacing{
+body.dark .right-content .row .spacing {
   background: #1b2b4d !important;
 }
 
-.right-content .row .spacing .Title{
+.right-content .row .spacing .Title {
   margin-left: 15px;
   font-family: "Open Sans", sans-serif !important;
   font-size: 20px;
@@ -622,7 +638,7 @@ body.dark .right-content .row .spacing{
   color: #403e57 !important;
 }
 
-body.dark .right-content .row .spacing .Title{
+body.dark .right-content .row .spacing .Title {
   color: #d0d5db !important;
 }
 
@@ -630,17 +646,22 @@ body.dark .css-1mm5wr7-MuiChip-root .MuiChip-icon {
   color: #b7bcc7;
 }
 
-body.dark .css-1mm5wr7-MuiChip-root{
+body.dark .css-1mm5wr7-MuiChip-root {
   background-color: #112042 !important;
   color: #b7bcc7 !important;
 }
 
-.card{
+.card {
   margin: 15px 0px;
   border-radius: 10px;
 }
 
-.btn-register{
+body.dark .card{
+  background: #112143 !important;
+}
+
+
+.btn-register {
   font-size: 13px;
   font-weight: 400;
   width: 130px;
@@ -648,13 +669,13 @@ body.dark .css-1mm5wr7-MuiChip-root{
   background: #0858f7 !important;
 }
 
-.btn-register svg{
+.btn-register svg {
   margin-right: 16px;
   font-size: 13px;
   color: #fff;
 }
 
-.table .table-primary th{
+.table .table-primary th {
   background-color: #1866ee !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #fff !important;
@@ -662,68 +683,164 @@ body.dark .css-1mm5wr7-MuiChip-root{
 
 }
 
-.table tbody td{
+.table tbody td {
   font-size: 13px !important;
   color: #403e57 !important;
   font-weight: 500;
 }
 
-.table tbody .actions button{
+body.dark .table tbody td {
+  color: #fff !important;
+  background: #112155;
+}
+
+.table tbody .actions button {
   min-width: 30px !important;
   width: 25px !important;
   height: 25px !important;
   margin: 0px 3px !important;
 }
 
-.table tbody .actions button.secondary svg{
+.table tbody .actions button.secondary svg {
   color: rgb(155, 39, 176);
 }
 
-.table tbody .actions button.secondary{
+.table tbody .actions button.secondary {
   background: rgb(155, 39, 176, 0.2);
 }
 
-.table tbody .actions button.primary svg{
+.table tbody .actions button.primary svg {
   color: rgb(24, 102, 237);
 }
 
-.table tbody .actions button.primary{
+.table tbody .actions button.primary {
   background: rgb(24, 102, 237, 0.2);
 }
 
-.table tbody .actions button.delete svg{
+.table tbody .actions button.delete svg {
   color: rgb(212, 47, 47);
 }
 
-.table tbody .actions button.delete{
+.table tbody .actions button.delete {
   background: rgb(212, 47, 47, 0.2);
 }
 
-.table tbody .actions button svg{
+.table tbody .actions button svg {
   font-size: 30px !important;
 }
 
-table.v-align td{
+table.v-align td {
   vertical-align: middle !important;
 }
 
-.table-footer{
+.table-footer {
   padding-bottom: 20px;
 }
 
-.table-footer .pagination{
+.table-footer .pagination {
   margin-left: auto;
 }
 
-.css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root.Mui-selected{
+.css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root.Mui-selected {
   background-color: #1866ee;
 }
 
-.cardFilters h4{
+.cardFilters h4 {
   padding: 15px 5px;
   font-size: 14px;
   font-weight: 800;
   text-transform: capitalize;
   color: #403e57;
   margin-top: 3px;
+}
+
+.switch {
+  font-size: 9px;
+  position: relative;
+  display: inline-block;
+  width: 3.5em;
+  height: 2em;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #fff;
+  border: 1px solid #adb5bd;
+  transition: .4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 1.4em;
+  width: 1.4em;
+  border-radius: 20px;
+  left: 0.27em;
+  bottom: 0.25em;
+  background-color: #adb5bd;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #007bff;
+  border: 1px solid #007bff;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #007bff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(1.4em);
+  background-color: #fff;
+}
+
+.modal-header{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-header .h5{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 18px;
+}
+
+
+.modal-dialog .modal-content .modal-body .input-group input, select{
+  height: 40px !important;
+  width: 100%;
+}
+
+.modal-dialog .modal-content .modal-body .input-group select {
+  color: rgba(0, 0, 0, 0.637) !important;
+}
+
+.modal-dialog .modal-content .modal-body .input-group select option{
+  color: rgba(0, 0, 0, 0.637) !important;
+}
+
+.Modal-buton svg{
+  color: #fff;
+  font-size: 17px;
+  margin-right: 5px;
+}
+
+.modal-dialog .modal-content .modal-body .input-group input::-webkit-input-placeholder {
+  color: rgba(0, 0, 0, 0.637);
 }
