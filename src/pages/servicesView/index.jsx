@@ -10,7 +10,6 @@ import { FaEye } from "react-icons/fa";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import SearchBox from '../../components/SearchBox';
-import Pagination from 'react-bootstrap/Pagination';
 import axios from 'axios'
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -20,6 +19,8 @@ import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Switch from '@mui/material/Switch';
 import { Modal, Form } from 'react-bootstrap';
+import { IoSearch } from "react-icons/io5";
+import Pagination from '../../components/pagination/index';
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -58,8 +59,11 @@ const Services = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
-    
-    
+    const [value, setValue] = useState([]);
+    const [search, setSearch] = useState('');
+    const [dataQt, setDataQt] = useState(3);
+    const [currentPages, setCurrentPages] = useState(1);
+
 
     const [errors, setErrors] = useState({
         name: '',
@@ -83,6 +87,23 @@ const Services = () => {
     const getServices = async () => {
         const response = await axios.get(url);
         setServices(response.data);
+    }
+
+    const searcher = (e) => {
+        setSearch(e.target.value);
+        console.log(e.target.value)
+    }
+
+    const indexEnd = currentPages * dataQt;
+    const indexStart = indexEnd - dataQt;
+
+    const nPages = Math.ceil(services.length / dataQt);
+
+    let results = []
+    if (!search) {
+        results = services.slice(indexStart,indexEnd);
+    } else{
+        results = services.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
     }
 
     const openModal = (op, id, name, price, description, time) => {
@@ -387,7 +408,10 @@ const Services = () => {
                                 <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
-                                <SearchBox />
+                                <div className="searchBox position-relative d-flex align-items-center">
+                                    <IoSearch className="mr-2" />
+                                    <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
+                                </div>
                             </div>
                         </div>
                         <div className='table-responsive mt-3'>
@@ -405,7 +429,7 @@ const Services = () => {
                                 </thead>
                                 <tbody>
                                     {
-                                        services.map((service, i) => (
+                                        results.map((service, i) => (
                                             <tr key={service.id}>
                                                 <td>{(i + 1)}</td>
                                                 <td>{service.name}</td>
@@ -436,7 +460,10 @@ const Services = () => {
                                 </tbody>
                             </table>
                             <div className="d-flex table-footer">
-                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
+                                <Pagination 
+                                setCurrentPages = {setCurrentPages} 
+                                currentPages={currentPages}
+                                nPages = {nPages}/>
                             </div>
                         </div>
                     </div>
@@ -533,7 +560,7 @@ const Services = () => {
                         <p><strong>Nombre:</strong> {detailData.name}</p>
                         <p><strong>Precio:</strong> {detailData.price}</p>
                         <p><strong>Descripción:</strong> {detailData.description}</p>
-                        <p><strong>Tiempo:</strong> {detailData.time === 20 ? '20 Minutos' : detailData.time === 30 ? '30 Minutos' : detailData.time === 45 ? '45 Minutos' : detailData.time === 60 ? '60 Minutos' :'Desconocido'}</p>
+                        <p><strong>Tiempo:</strong> {detailData.time === 20 ? '20 Minutos' : detailData.time === 30 ? '30 Minutos' : detailData.time === 45 ? '45 Minutos' : detailData.time === 60 ? '60 Minutos' : 'Desconocido'}</p>
                         <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
                     </Modal.Body>
                     <Modal.Footer>
