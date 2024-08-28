@@ -215,23 +215,49 @@ const Products = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
+    
         const errors = validateForm();
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
             return;
         }
-
+    
+        const formData = new FormData();
+        formData.append('Product_Name', formData.Product_Name);
+        formData.append('Price', parseFloat(formData.Price));
+        formData.append('Stock', parseInt(formData.Stock, 10));
+        formData.append('Category_Id', formData.Category_Id);
+        
+        if (formData.Image instanceof File) {
+            formData.append('Image', formData.Image);
+        }
+    
         try {
-            await axios.post('http://localhost:1056/api/products', {
-                Product_Name: formData.Product_Name,
-                Price: parseFloat(formData.Price),
-                Stock: parseInt(formData.Stock, 10)
+            const response = await axios.post('http://localhost:1056/api/products', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
-            // Manejar éxito
+            
+            if (response.status === 201) {
+                handleClose();
+                fetchProductData();
+                show_alerta('Producto creado exitosamente', 'success');
+            } else {
+                show_alerta('Hubo un problema al crear el producto', 'error');
+            }
         } catch (error) {
             console.error('Error al enviar el formulario:', error);
-            // Manejar el error de la solicitud aquí
+            
+            if (error.response) {
+                console.error('Detalles del error del servidor:', error.response.data);
+                setFormErrors(error.response.data.errors ? error.response.data.errors.reduce((acc, curr) => {
+                    acc[curr.param] = curr.msg;
+                    return acc;
+                }, {}) : {});
+            }
+            
+            show_alerta('Error al crear el producto', 'error');
         }
     };
 
@@ -426,93 +452,44 @@ const Products = () => {
                 </div>
             </div>
 
-            {/* Modal para agregar producto */}
-            <Modal
-                open={open}
-                onClose={handleClose}
-            >
-                <Box sx={style}>
-                    <Typography variant="h6" component="h2">
-                        Agregar Producto
-                    </Typography>
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Nombre del Producto"
-                        name="Product_Name"
-                        value={formData.Product_Name}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Product_Name}
-                        helperText={formErrors.Product_Name}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Stock"
-                        type="number"
-                        name="Stock"
-                        value={formData.Stock}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Stock}
-                        helperText={formErrors.Stock}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Precio"
-                        type="number"
-                        name="Price"
-                        value={formData.Price}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Price}
-                        helperText={formErrors.Price}
-                    />
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel id="category-label">Categoría</InputLabel>
-                        <Select
-                            labelId="category-label"
-                            id="category-select"
-                            name="Category_Id"
-                            value={formData.Category_Id}
-                            onChange={handleInputChange}
-                            error={!!formErrors.Category_Id}
-                        >
-                            {categories.map((cat) => (
-                                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-                            ))}
-                        </Select>
-                        {formErrors.Category_Id && <Typography color="error">{formErrors.Category_Id}</Typography>}
-                    </FormControl>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                    />
-
-                    <label htmlFor="image-upload">
-                        <Button variant="contained" component="span" sx={{ mt: 2 }}>
-                            Subir Imagen
-                        </Button>
-                    </label>
-                    {imagePreviewUrl && (
-                        <Box mt={2}>
-                            <img src={imagePreviewUrl} alt="Vista previa" style={{ width: '100%', height: 'auto' }} />
-                        </Box>
-                    )}
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleSubmit}
-                        sx={{ mt: 2 }}
-                    >
-                        Guardar
-                    </Button>
-                </Box>
-            </Modal>
-
+            <div id="modalProducts" className="modal fade" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <label className="h5">{title}</label>
+                            <button type="button" id="btnCerrar" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div className="modal-body">
+                            <input type="hidden" id="id"></input>
+                            <div className="input-group mb-3">
+                                <input type="text" id="Product_Name" className="form-control" placeholder="Nombre del Producto" value={formData.Product_Name} onChange={(e) => setFormData({...formData, Product_Name: e.target.value})} />
+                            </div>
+                            <div className="input-group mb-3">
+                                <input type="number" id="Stock" className="form-control" placeholder="Stock" value={formData.Stock} onChange={(e) => setFormData({...formData, Stock: e.target.value})} />
+                            </div>
+                            <div className="input-group mb-3">
+                                <input type="number" id="Price" className="form-control" placeholder="Precio" value={formData.Price} onChange={(e) => setFormData({...formData, Price: e.target.value})} />
+                            </div>
+                            <div className="input-group mb-3">
+                                <select id="Category_Id" className="form-control" value={formData.Category_Id} onChange={(e) => setFormData({...formData, Category_Id: e.target.value})}>
+                                    <option value="">Seleccione una categoría</option>
+                                    {categories.map((category) => (
+                                        <option key={category.id} value={category.id}>{category.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="input-group mb-3">
+                                <input type="file" id="Image" className="form-control" onChange={handleFileChange} />
+                            </div>
+                            <div className='modal-footer'>
+                                <div className='d-grid col-6 mx-auto'>
+                                    <Button onClick={() => validar()} className='btn-success'><MdOutlineSave />Guardar</Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {/* Modal para ver producto */}
             <Modal
                 open={openView}
