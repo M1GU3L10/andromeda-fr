@@ -64,7 +64,9 @@ const PinkSwitch = styled(Switch)(({ theme }) => ({
 
 const Users = () => {
     const url = 'http://localhost:1056/api/users';
+    const urlRoles = 'http://localhost:1056/api/roles';
     const [users, setUsers] = useState([]);
+    const [roles, setRoles] = useState([]);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -96,7 +98,23 @@ const Users = () => {
 
     useEffect(() => {
         getUsers();
+        getRoles();
     }, []);
+
+    ////////
+    const getRoles = async () => {
+        try {
+            const response = await axios.get(urlRoles);
+            setRoles(response.data);
+        } catch (error) {
+            show_alerta('Error al obtener los roles', 'error');
+        }
+    }
+
+    
+
+
+    ///////////
 
     const getUsers = async () => {
         const response = await axios.get(url);
@@ -290,6 +308,7 @@ const Users = () => {
         });
     };
 
+ 
     return (
         <>
             <div className="right-content w-100">
@@ -387,12 +406,13 @@ const Users = () => {
                 {/* Modal para Agregar/Editar Usuario */}
                 <Modal show={showModal} 
                 >
-                    <Modal.Header closeButton>
+                    <Modal.Header>
                         <Modal.Title>{title}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
                             <Form.Group>
+                            <Form.Label>Nombre</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="name"
@@ -408,6 +428,7 @@ const Users = () => {
                             </Form.Group>
 
                             <Form.Group>
+                            <Form.Label>Correo</Form.Label>
                                 <Form.Control
                                     type="email"
                                     name="email"
@@ -457,16 +478,17 @@ const Users = () => {
                             <Form.Group>
                                 <Form.Label>Rol</Form.Label>
                                 <Form.Control
-                                    as="select"
-                                    name="roleId"
-                                    value={roleId}
-                                    onChange={handleInputChange}
-                                    onBlur={handleBlur}
-                                    isInvalid={touched.roleId && !!errors.roleId}
-                                >
-                                    <option value="1">Admin</option>
-                                    <option value="2">Empleado</option>
-                                    <option value="3">Cliente</option>
+                                     as="select"
+                                     name="roleId"
+                                     value={roleId}
+                                     onChange={handleInputChange}
+                                     onBlur={handleBlur}
+                                     isInvalid={touched.roleId && !!errors.roleId}
+                                 >
+                                      <option value="">Seleccionar rol</option>
+                                {roles.map(role => ( // Mapeo directo de los roles
+                                    <option key={role.id} value={role.id}>{role.name}</option>
+                                ))}
                                 </Form.Control>
                                 <Form.Control.Feedback type="invalid">
                                     {errors.roleId}
@@ -475,11 +497,11 @@ const Users = () => {
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={handleClose}>
-                            Cerrar
-                        </Button>
-                        <Button variant="primary" onClick={validar}>
+                        <Button variant="primary" onClick={validar} className='btn-sucess'>
                             Guardar
+                        </Button>
+                        <Button variant="secondary" onClick={handleClose} className='btn-red'>
+                            Cerrar
                         </Button>
                     </Modal.Footer>
                 </Modal>
