@@ -34,6 +34,21 @@ body.dark {
   font-weight: 500 !important;
   color: #fff !important;
   text-transform: capitalize !important;
+  margin: 10px !important;
+}
+
+textarea.form-control{
+  max-height:120px;
+  min-height: 50px;
+}
+
+.btn-red {
+  background: #f71008d8 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #fff !important;
+  text-transform: capitalize !important;
+  margin: 10px !important;
 }
 
 .btn-sucess {
@@ -132,8 +147,12 @@ body.dark header button.rounded-circle svg {
   padding: 3px 15px;
 }
 
+body.dark .searchBox{
+  background: #112155 !important;
+}
+
 .searchBox input {
-  background: transparent;
+  background: #f0f5ff !important;
   border: 0px;
   outline: none;
   padding-left: 10px;
@@ -141,6 +160,9 @@ body.dark header button.rounded-circle svg {
   color: #292929;
 }
 
+body.dark .searchBox input{
+  color: #fff;
+}
 
 .searchBox input::-webkit-input-placeholder {
   color: rgba(0, 0, 0, 0.6);
@@ -148,7 +170,7 @@ body.dark header button.rounded-circle svg {
 
 .searchBox svg {
   font-size: 15px;
-  color: #292929;
+  color: #616161;
 }
 
 body.dark .searchBox input::-webkit-input-placeholder {
@@ -164,7 +186,8 @@ body.dark .searchBox {
 }
 
 body.dark .searchBox input {
-  color: #fff;
+  color: #fff !important;
+  background: #112155 !important;
 }
 
 .MyAcc {
@@ -641,6 +664,11 @@ body.dark .css-1mm5wr7-MuiChip-root {
   border-radius: 10px;
 }
 
+body.dark .card{
+  background: #112143 !important;
+}
+
+
 .btn-register {
   font-size: 13px;
   font-weight: 400;
@@ -667,6 +695,20 @@ body.dark .css-1mm5wr7-MuiChip-root {
   font-size: 13px !important;
   color: #403e57 !important;
   font-weight: 500;
+}
+
+body.dark .table thead tr{
+  border-color: #1b2b4d !important;
+}
+
+body.dark .table tbody tr{
+  border-color: #1b2b4d !important;
+}
+
+body.dark .table tbody td {
+  color: #fff !important;
+  background: #071638 !important;
+  border-color: #1b2b4d !important;
 }
 
 .table tbody .actions button {
@@ -818,4 +860,21 @@ input:checked + .slider:before {
 
 .modal-dialog .modal-content .modal-body .input-group input::-webkit-input-placeholder {
   color: rgba(0, 0, 0, 0.637);
+}
+
+body.dark .page-link{
+  background: #071638 !important;
+  color: #fff !important;
+  border-color: #071638 !important;
+}
+
+body.dark .active>.page-link {
+  background: #1b2b4d !important;
+  border-color: #1b2b4d !important;
+  color: #fff;
+}
+
+body.dark li.page-item.disabled {
+  background: #1b2b4d !important;
+  border-color: #1b2b4d !important;
 }
