@@ -9,14 +9,11 @@ import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye } from "react-icons/fa";
 import { FaPencilAlt } from "react-icons/fa";
-
-
 import { IoTrashSharp } from "react-icons/io5";
 import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Modal from '@mui/material/Modal';
@@ -88,7 +85,6 @@ const Products = () => {
         Image: '',
     });
     const [imagePreviewUrl, setImagePreviewUrl] = React.useState('');
-
     const [productData, setProductData] = React.useState([]);
     const [categories, setCategories] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
@@ -120,27 +116,10 @@ const Products = () => {
             setLoading(false);
         }
     };
+
     const handleChange = (event) => {
         setColumnsPerPage(event.target.value);
     };
-    
-
-    const handleImageChange = (event) => {
-        const file = event.target.files[0]; // Obtén el primer archivo de la lista
-
-        if (file && file.type.startsWith('image/')) { // Verifica que sea una imagen
-            const reader = new FileReader();
-
-            reader.onloadend = () => {
-                setImagePreviewUrl(reader.result); // Establece la URL de vista previa
-            };
-
-            reader.readAsDataURL(file); // Lee el archivo como una URL de datos
-        } else {
-            alert('Por favor, selecciona un archivo de imagen.');
-        }
-    };
-
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => {
@@ -177,65 +156,77 @@ const Products = () => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
+
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            setFormData({ ...formData, Image: file });
+        setFormData({ ...formData, Image: file });
 
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreviewUrl(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreviewUrl(reader.result);
+        };
+        reader.readAsDataURL(file);
     };
 
     const validateForm = () => {
-        const errors = {};
-
-        if (!formData.Product_Name) {
-            errors.Product_Name = 'El nombre del producto es requerido';
-        }
-
-        const price = parseFloat(formData.Price);
-        if (isNaN(price)) {
-            errors.Price = 'El precio debe ser un número decimal positivo';
-        } else if (price < 0) {
-            errors.Price = 'El precio debe ser mayor o igual a 0';
-        }
-
-        const stock = parseInt(formData.Stock, 10);
-        if (isNaN(stock) || stock < 0) {
-            errors.Stock = 'El stock debe ser un número entero positivo o cero';
-        }
+        let errors = {};
+        if (!formData.Product_Name) errors.Product_Name = 'El nombre del producto es obligatorio';
+        if (!formData.Stock || isNaN(formData.Stock) || formData.Stock < 0) errors.Stock = 'El stock debe ser un número positivo';
+        if (!formData.Price || isNaN(formData.Price) || formData.Price < 0) errors.Price = 'El precio debe ser un número positivo';
+        if (!formData.Category_Id) errors.Category_Id = 'La categoría es obligatoria';
 
         return errors;
     };
 
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
+    const handleSubmit = async () => {
         const errors = validateForm();
-        if (Object.keys(errors).length > 0) {
+        if (Object.keys(errors).length === 0) {
+            const data = new FormData();
+    
+            // Imprimir los datos de formData antes de enviarlos
+            console.log('Datos enviados:', formData);
+            for (const key in formData) {
+                if (key === 'Image' && formData[key] instanceof File) {
+                    data.append(key, formData[key]);
+                } else {
+                    data.append(key, formData[key]);
+                }
+                console.log(`${key}: ${formData[key]}`);
+            }
+    
+            try {
+                const response = await axios.post('http://localhost:1056/api/products', data, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+    
+                if (response.status === 201 || response.status === 200) {
+                    handleClose();
+                    fetchProductData();
+                    show_alerta('Producto agregado exitosamente', 'success');
+                } else {
+                    show_alerta('Hubo un problema al agregar el producto', 'error');
+                }
+            } catch (err) {
+                console.error('Error submitting form:', err);
+    
+                if (err.response) {
+                    console.error('Detalles del error del servidor:', err.response.data);
+                    setFormErrors(err.response.data.errors ? err.response.data.errors.reduce((acc, curr) => {
+                        acc[curr.param] = curr.msg;
+                        return acc;
+                    }, {}) : {});
+                } else {
+                    console.error('Error desconocido:', err);
+                }
+    
+                show_alerta('Error al agregar el producto', 'error');
+            }
+        } else {
             setFormErrors(errors);
-            return;
-        }
-
-        try {
-            await axios.post('http://localhost:1056/api/products', {
-                Product_Name: formData.Product_Name,
-                Price: parseFloat(formData.Price),
-                Stock: parseInt(formData.Stock, 10)
-            });
-            // Manejar éxito
-        } catch (error) {
-            console.error('Error al enviar el formulario:', error);
-            // Manejar el error de la solicitud aquí
         }
     };
-
-
 
     const handleUpdate = async () => {
         const errors = validateForm();
@@ -250,39 +241,30 @@ const Products = () => {
             }
 
             try {
-                const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`, data, {
+                await axios.put(`http://localhost:1056/api/products/${formData.id}`, data, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
-
-                if (response.status === 200) {
-                    handleEditClose();
-                    fetchProductData();
-                    show_alerta('Producto actualizado exitosamente', 'success');
-                } else {
-                    show_alerta('Hubo un problema al actualizar el producto', 'error');
-                }
+                handleEditClose();
+                fetchProductData();
+                show_alerta('Producto actualizado exitosamente', 'success');
             } catch (err) {
                 console.error('Error updating product:', err);
-
-                if (err.response) {
-                    console.error('Detalles del error del servidor:', err.response.data);
-                    setFormErrors(err.response.data.errors ? err.response.data.errors.reduce((acc, curr) => {
+                if (err.response && err.response.data) {
+                    setFormErrors(err.response.data.errors.reduce((acc, curr) => {
                         acc[curr.param] = curr.msg;
                         return acc;
-                    }, {}) : {});
+                    }, {}));
                 } else {
                     console.error('Error desconocido:', err);
                 }
-
                 show_alerta('Error al actualizar el producto', 'error');
             }
         } else {
             setFormErrors(errors);
         }
     };
-
 
     const handleDelete = async (id, name) => {
         const MySwal = withReactContent(Swal);
@@ -361,7 +343,7 @@ const Products = () => {
                                         id="columns-per-page-select"
                                         value={columnsPerPage}
                                         label="Columnas"
-                                        onChange={handleImageChange}
+                                        onChange={handleChange}
                                     >
                                         <MenuItem value={12}>12</MenuItem>
                                         <MenuItem value={24}>24</MenuItem>
@@ -389,31 +371,31 @@ const Products = () => {
                                             <th>Precio</th>
                                             <th>Categoría</th>
                                             <th>Imagen</th>
-
+                                            
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {productData.map((product, i) => (<tr key={product.id}>
-                                            <td>{(i + 1)}</td>
-                                            <td>{product.Product_Name}</td>
-                                            <td>{product.Stock}</td>
-                                            <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
-                                            <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
-                                            <td>
-                                                {product.Image && (
-                                                    <img src={product.Image} alt={product.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
-                                                )}
-                                            </td>
-
-                                            <td>
-                                                <div className='actions d-flex align-items-center'>
-                                                    <Button color='primary' className='primary' onClick={() => handleViewOpen(product)}><FaEye /></Button>
-                                                    <Button color="secondary" className='secondary' onClick={() => handleEditOpen(product)}><FaPencilAlt /></Button>
-                                                    <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                <td>{(i + 1)}</td>
+                                                <td>{product.Product_Name}</td>
+                                                <td>{product.Stock}</td>
+                                                <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
+                                                <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
+                                                <td>
+                                                    {product.Image && (
+                                                        <img src={product.Image} alt={product.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                                    )}
+                                                </td>
+                                             
+                                                <td>
+                                                    <div className='actions d-flex align-items-center'>
+                                                        <Button color='primary' className='primary' onClick={() => handleViewOpen(product)}><FaEye /></Button>
+                                                        <Button color="secondary" className='secondary' onClick={() => handleEditOpen(product)}><FaPencilAlt /></Button>
+                                                        <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         ))}
                                     </tbody>
                                 </table>
@@ -487,11 +469,12 @@ const Products = () => {
                         {formErrors.Category_Id && <Typography color="error">{formErrors.Category_Id}</Typography>}
                     </FormControl>
                     <input
-                        type="file"
                         accept="image/*"
-                        onChange={handleImageChange}
+                        type="file"
+                        id="image-upload"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
                     />
-
                     <label htmlFor="image-upload">
                         <Button variant="contained" component="span" sx={{ mt: 2 }}>
                             Subir Imagen

@@ -558,8 +558,7 @@ const Services = () => {
                             Guardar
                         </Button>
                         <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                            Cerrar
-                        </Button>
+                            Cerrar                        </Button>
                     </Modal.Footer>
                 </Modal>
                 <Modal show={showDetailModal} onHide={handleCloseDetail}>

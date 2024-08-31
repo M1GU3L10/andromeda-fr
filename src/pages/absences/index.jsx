@@ -3,35 +3,23 @@ import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { GiHairStrands } from "react-icons/gi";
-import { RxScissors } from "react-icons/rx";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye } from "react-icons/fa";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
-import SearchBox from '../../components/SearchBox';
-import Pagination from '@mui/material/Pagination';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormHelperText from '@mui/material/FormHelperText';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import axios from 'axios'
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { show_alerta } from '../../assets/functions'
+import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
-import { alpha } from '@mui/material/styles';
-import { pink } from '@mui/material/colors';
-import Switch from '@mui/material/Switch';
+import { Modal, Form } from 'react-bootstrap';
+import { IoSearch } from "react-icons/io5";
+import Pagination from '../../components/pagination/index';
 import { MdOutlineSave } from "react-icons/md";
-import { Modal } from 'react-bootstrap';
-
-
 
 
 
@@ -55,7 +43,6 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 });
 
-
 const Absences = () => {
     const urlAbsences = 'http://localhost:1056/api/absences';
     const urlUsers = 'http://localhost:1056/api/users';
@@ -64,6 +51,23 @@ const Absences = () => {
     const [currentAbsence, setCurrentAbsence] = useState({});
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
+    const [errors, setErrors] = useState({});
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [detailData, setDetailData] = useState({});
+    const [search, setSearch] = useState('');
+    const [currentPages, setCurrentPages] = useState(1);
+    const [dataQt, setDataQt] = useState(3);
+
+    const [formValues, setFormValues] = useState({
+        startTime: '',
+        endTime: '',
+        date: '',
+        description: '',
+        userId: '',
+        status: 'en proceso'
+    });
+
+
 
     useEffect(() => {
         getAbsences();
@@ -79,6 +83,8 @@ const Absences = () => {
         }
     }
 
+    const [showModal, setShowModal] = useState(false);
+
     const getUsers = async () => {
         try {
             const response = await axios.get(urlUsers);
@@ -93,31 +99,52 @@ const Absences = () => {
         return user ? user.name : 'Desconocido';
     }
 
+    const searcher = (e) => {
+        setSearch(e.target.value);
+    }
+
+    const indexEnd = currentPages * dataQt;
+    const indexStart = indexEnd - dataQt;
+
+    const nPages = Math.ceil(absences.length / dataQt);
+
+    let results = []
+    if (!search) {
+        results = absences.slice(indexStart, indexEnd);
+    } else {
+        results = absences.filter((dato) =>
+            dato.description.toLowerCase().includes(search.toLocaleLowerCase()) ||
+            getUserName(dato.userId).toLowerCase().includes(search.toLocaleLowerCase())
+        ).slice(indexStart, indexEnd);
+    }
+
     const openModal = (op, absence) => {
         setCurrentAbsence(absence);
         setOperation(op);
         setTitle(op === 1 ? 'Registrar ausencia' : (op === 2 ? 'Ver ausencia' : 'Editar ausencia'));
-        window.setTimeout(() => {
-            document.getElementById('description').focus();
-        }, 500);
+        setShowModal(true);
     }
 
-    const [showDetailModal, setShowDetailModal] = useState(false);
-    const [detailData, setDetailData] = useState({});
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setErrors({});
+    }
 
-    // Función para abrir el modal de detalles
     const openDetailModal = (absence) => {
         setDetailData(absence);
         setShowDetailModal(true);
     };
 
-    // Función para cerrar el modal de detalles
     const handleCloseDetail = () => setShowDetailModal(false);
 
+    // funcion para que no traiga usuarios que tengan otro rol diferente a empleados
+    const FiltrarUsers = () => {
+        return users.filter(user => user.roleId === 2);
+    }
 
     const deleteAbsence = async (id, description) => {
-        const Myswal = withReactContent(Swal);
-        Myswal.fire({
+        const MySwal = withReactContent(Swal);
+        MySwal.fire({
             title: `¿Estás seguro que deseas eliminar la ausencia ${description}?`,
             icon: 'question',
             text: 'No se podrá dar marcha atrás',
@@ -139,7 +166,6 @@ const Absences = () => {
             }
         });
     }
-    const [errors, setErrors] = useState({});
 
     const validateField = (name, value) => {
         let error = '';
@@ -151,7 +177,7 @@ const Absences = () => {
                     error = 'La hora es requerida';
                 } else if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(value)) {
                     error = 'La hora debe estar en formato HH:MM';
-                } else if (name === 'endTime' && value <= document.getElementById('startTime').value) {
+                } else if (name === 'endTime' && value <= formValues.startTime) {
                     error = 'La hora de fin debe ser posterior a la hora de inicio';
                 }
                 break;
@@ -168,7 +194,6 @@ const Absences = () => {
                     error = 'La descripción es obligatoria';
                 }
                 break;
-
 
             case 'userId':
                 if (!value) {
@@ -191,15 +216,12 @@ const Absences = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        setFormValues(prevValues => ({ ...prevValues, [name]: value }));
         validateField(name, value);
     };
 
     const validar = async () => {
-        const startTime = document.getElementById('startTime').value;
-        const endTime = document.getElementById('endTime').value;
-        const date = document.getElementById('date').value;
-        const description = document.getElementById('description').value;
-        const userId = document.getElementById('userId').value;
+        const { startTime, endTime, date, description, userId, status } = formValues;
 
         const fields = { startTime, endTime, date, description, userId };
         let valid = true;
@@ -214,34 +236,28 @@ const Absences = () => {
             return;
         }
 
-        const data = { startTime, endTime, date, description, userId };
+        const data = { startTime, endTime, date, description, userId, status };
 
         if (operation === 1) {
             data.status = 'en proceso';
             await enviarSolicitud('POST', data);
         } else if (operation === 3) {
             data.id = currentAbsence.id;
-            data.status = document.getElementById('status').value;
+            data.status = formValues.status;
             await enviarSolicitud('PUT', data);
         }
     };
-
     const enviarSolicitud = async (metodo, parametros) => {
         const url = metodo === 'PUT' ? `${urlAbsences}/${parametros.id}` : metodo === 'DELETE' ? `${urlAbsences}/${parametros.id}` : urlAbsences;
         try {
             await axios({ method: metodo, url, data: parametros });
             show_alerta('Operación exitosa', 'success');
-            document.getElementById('btnCerrar').click();
+            handleCloseModal();
             getAbsences();
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
             console.log(error);
         }
-    }
-
-    // funcion para que no traiga usuarios que tengan otro rol diferente a empleados
-    const FiltrarUsers = () => {
-        return users.filter(user => user.roleId === 2);
     }
 
     return (
@@ -272,14 +288,19 @@ const Absences = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={() => openModal(1, {})} variant="contained" data-bs-toggle='modal' data-bs-target='#modalAbsences'><BsPlusSquareFill />Registrar</Button>
+                                <Button className='btn-register' onClick={() => openModal(1, {})} variant="contained">
+                                    <BsPlusSquareFill />Registrar
+                                </Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
-                                <SearchBox />
+                                <div className="searchBox position-relative d-flex align-items-center">
+                                    <IoSearch className="mr-2" />
+                                    <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
+                                </div>
                             </div>
                         </div>
                         <div className='table-responsive mt-3'>
-                            <table className='table table-bordered table-hover v-align'>
+                            <table className='table table-bordered table-hover v-align table-striped'>
                                 <thead className='table-primary'>
                                     <tr>
                                         <th>#</th>
@@ -294,7 +315,7 @@ const Absences = () => {
                                 </thead>
                                 <tbody>
                                     {
-                                        absences.map((absence, i) => (
+                                        results.map((absence, i) => (
                                             <tr key={absence.id}>
                                                 <td>{(i + 1)}</td>
                                                 <td>{absence.startTime}</td>
@@ -306,7 +327,7 @@ const Absences = () => {
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Button color='primary' className='primary' onClick={() => openDetailModal(absence)}><FaEye /></Button>
-                                                        <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalAbsences' className='secondary' onClick={() => openModal(3, absence)}><FaPencilAlt /></Button>
+                                                        <Button color="secondary" className='secondary' onClick={() => openModal(3, absence)}><FaPencilAlt /></Button>
                                                         <Button color='error' className='delete' onClick={() => deleteAbsence(absence.id, absence.description)}><IoTrashSharp /></Button>
                                                     </div>
                                                 </td>
@@ -316,138 +337,151 @@ const Absences = () => {
                                 </tbody>
                             </table>
                             <div className="d-flex table-footer">
-                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
+                                <Pagination
+                                    setCurrentPages={setCurrentPages}
+                                    currentPages={currentPages}
+                                    nPages={nPages}
+                                />
                             </div>
+
                         </div>
                     </div>
                 </div>
 
-                <div id="modalAbsences" className="modal fade" aria-hidden="true">
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <label className="h5">{title}</label>
-                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div className="modal-body">
-                                <input type="hidden" id="id" value={currentAbsence.id || ''} />
-                                <div className="input-group mb-3">
-                                    <input
-                                        type="time"
-                                        id="startTime"
-                                        name="startTime"
-                                        className="form-control"
-                                        placeholder="Inicio"
-                                        defaultValue={currentAbsence.startTime || ''}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.startTime && <div className="text-danger">{errors.startTime}</div>}
-                                </div>
-                                <div className="input-group mb-3">
-                                    <input
-                                        type="time"
-                                        id="endTime"
-                                        name="endTime"
-                                        className="form-control"
-                                        placeholder="Fin"
-                                        defaultValue={currentAbsence.endTime || ''}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.endTime && <div className="text-danger">{errors.endTime}</div>}
-                                </div>
-                                <div className="input-group mb-3">
-                                    <input
-                                        type="date"
-                                        id="date"
-                                        name="date"
-                                        className="form-control"
-                                        placeholder="Fecha"
-                                        defaultValue={currentAbsence.date || ''}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.date && <div className="text-danger">{errors.date}</div>}
-                                </div>
-                                <div className="input-group mb-3">
-                                    <input
-                                        type="text"
-                                        id="description"
-                                        name="description"
-                                        className="form-control"
-                                        placeholder="Descripción"
-                                        defaultValue={currentAbsence.description || ''}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.description && <div className="text-danger">{errors.description}</div>} {/* Añadido aquí */}
-                                </div>
+                <Modal show={showModal} onHide={handleCloseModal}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{title}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group className="mb-3">
+                                <Form.Control
+                                    type="time"
+                                    id="startTime"
+                                    name="startTime"
+                                    placeholder="Inicio"
+                                    defaultValue={currentAbsence.startTime || ''}
+                                    onChange={handleInputChange}
+                                    isInvalid={!!errors.startTime}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.startTime}
+                                </Form.Control.Feedback>
+                            </Form.Group>
 
-                                <div className="input-group mb-3">
-                                    <select
-                                        className="form-select"
-                                        id='userId'
-                                        name="userId"
-                                        aria-label="Usuario"
-                                        defaultValue={currentAbsence.userId || ''}
+                            <Form.Group className="mb-3">
+                                <Form.Control
+                                    type="time"
+                                    id="endTime"
+                                    name="endTime"
+                                    placeholder="Fin"
+                                    defaultValue={currentAbsence.endTime || ''}
+                                    onChange={handleInputChange}
+                                    isInvalid={!!errors.endTime}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.endTime}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+
+                            <Form.Group className="mb-3">
+                                <Form.Control
+                                    type="date"
+                                    id="date"
+                                    name="date"
+                                    placeholder="Fecha"
+                                    defaultValue={currentAbsence.date || ''}
+                                    onChange={handleInputChange}
+                                    isInvalid={!!errors.date}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.date}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+
+                            <Form.Group className="mb-3">
+                                <Form.Control
+                                    as="textarea" rows={2}
+                                    id="description"
+                                    name="description"
+                                    placeholder="Descripción"
+                                    defaultValue={currentAbsence.description || ''}
+                                    onChange={handleInputChange}
+                                    isInvalid={!!errors.description}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.description}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+
+                            <Form.Group className="mb-3">
+                                <Form.Select
+                                    id='userId'
+                                    name="userId"
+                                    defaultValue={currentAbsence.userId || ''}
+                                    onChange={handleInputChange}
+                                    isInvalid={!!errors.userId}
+                                >
+                                    <option value="">Seleccionar usuario</option>
+                                    {FiltrarUsers().map(user => (
+                                        <option key={user.id} value={user.id}>{user.name}</option>
+                                    ))}
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.userId}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+
+                            {operation === 3 && (
+                                <Form.Group className="mb-3">
+                                    <Form.Select
+                                        id='status'
+                                        name="status"
+                                        defaultValue={currentAbsence.status || 'en proceso'}
                                         onChange={handleInputChange}
+                                        isInvalid={!!errors.status}
                                     >
-                                        <option value="">Seleccionar usuario</option>
-                                        {FiltrarUsers().map(user => (
-                                            <option key={user.id} value={user.id}>{user.name}</option>
-                                        ))}
-                                    </select>
-                                    {errors.userId && <div className="text-danger w-100 mt-1">{errors.userId}</div>} {/* Modificado */}
-                                </div>
+                                        <option value="en proceso">En proceso</option>
+                                        <option value="aprobado">Aprobado</option>
+                                        <option value="no aprobado">No aprobado</option>
+                                    </Form.Select>
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.status}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            )}
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        {(operation === 1 || operation === 3) && (
+                            <Button variant="primary" className='btn-sucess' onClick={validar}>
+                                <MdOutlineSave /> Guardar
+                            </Button>
+                        )}
+                        <Button variant="secondary" className='btn-red' onClick={handleCloseModal}>
+                            Cerrar
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
 
-                                {operation === 3 && (
-                                    <div className="input-group mb-3">
-                                        <select
-                                            className="form-select"
-                                            id='status'
-                                            name="status"
-                                            aria-label="Estado"
-                                            defaultValue={currentAbsence.status || 'en proceso'}
-                                            onChange={handleInputChange}
-                                        >
-                                            <option value="en proceso">En proceso</option>
-                                            <option value="aprobado">Aprobado</option>
-                                            <option value="no aprobado">No aprobado</option>
-                                        </select>
-                                        {errors.status && <div className="text-danger">{errors.status}</div>}
-                                    </div>
-                                )}
+                <Modal show={showDetailModal} onHide={handleCloseDetail}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Detalle de ausencia</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p><strong>ID:</strong> {detailData.id}</p>
+                        <p><strong>Inicio:</strong> {detailData.startTime}</p>
+                        <p><strong>Fin:</strong> {detailData.endTime}</p>
+                        <p><strong>Fecha:</strong> {detailData.date}</p>
+                        <p><strong>Descripción:</strong> {detailData.description}</p>
+                        <p><strong>Usuario:</strong> {getUserName(detailData.userId)}</p>
+                        <p><strong>Estado:</strong> {detailData.status === 'en proceso' ? 'En proceso' : detailData.status === 'aprobado' ? 'Aprobado' : 'No aprobado'}</p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
+                    </Modal.Footer>
+                </Modal>
 
-                                <div className='modal-footer w-100 m-3'>
-                                    {(operation === 1 || operation === 3) && (
-                                        <div className='d-grid col-3 Modal-buton' onClick={() => validar()}>
-                                            <Button type='button' className='btn-sucess'>
-                                                <MdOutlineSave /> Guardar
-                                            </Button>
-                                        </div>
-                                    )}
-                                    <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
-                                </div>
-
-                                <Modal show={showDetailModal} onHide={handleCloseDetail}>
-                                    <Modal.Header closeButton>
-                                        <Modal.Title>Detalle de ausencia</Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body>
-                                        <p><strong>ID:</strong> {detailData.id}</p>
-                                        <p><strong>Inicio:</strong> {detailData.startTime}</p>
-                                        <p><strong>Fin:</strong> {detailData.endTime}</p>
-                                        <p><strong>Fecha:</strong> {detailData.date}</p>
-                                        <p><strong>Descripción:</strong> {detailData.description}</p>
-                                        <p><strong>Usuario:</strong> {getUserName(detailData.userId)}</p>
-                                        <p><strong>Estado:</strong> {detailData.status === 'en proceso' ? 'En proceso' : detailData.status === 'aprobado' ? 'Aprobado' : 'No aprobado'}</p>
-                                    </Modal.Body>
-                                    <Modal.Footer>
-                                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
-                                    </Modal.Footer>
-                                </Modal>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </>
     );

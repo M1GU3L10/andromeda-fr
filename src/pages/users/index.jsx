@@ -9,8 +9,9 @@ import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
 import { GiHairStrands } from 'react-icons/gi';
+
 import SearchBox from '../../components/SearchBox';
-import Pagination from '@mui/material/Pagination';
+
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -23,6 +24,9 @@ import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import { Modal, Form } from 'react-bootstrap';
+import { IoSearch } from "react-icons/io5";
+import Pagination from '../../components/pagination/index';
+
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // <-- Asegúrate de importar ExpandMoreIcon
 
@@ -64,7 +68,9 @@ const PinkSwitch = styled(Switch)(({ theme }) => ({
 
 const Users = () => {
     const url = 'http://localhost:1056/api/users';
+    const urlRoles = 'http://localhost:1056/api/roles';
     const [users, setUsers] = useState([]);
+    const [roles, setRoles] = useState([]);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -77,6 +83,10 @@ const Users = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);  // Nuevo estado para el modal de detalles
     const [detailData, setDetailData] = useState({});
+    const [value, setValue] = useState([]);
+    const [search, setSearch] = useState('');
+    const [dataQt, setDataQt] = useState(3);
+    const [currentPages, setCurrentPages] = useState(1);
 
     const [errors, setErrors] = useState({
         name: '',
@@ -96,12 +106,51 @@ const Users = () => {
 
     useEffect(() => {
         getUsers();
+        getRoles();
     }, []);
+
+    ////////
+    const getRoles = async () => {
+        try {
+            const response = await axios.get(urlRoles);
+            setRoles(response.data);
+        } catch (error) {
+            show_alerta('Error al obtener los roles', 'error');
+        }
+    }
+
+    
+
+
+    ///////////
+   
+    //////////
+
 
     const getUsers = async () => {
         const response = await axios.get(url);
         setUsers(response.data);
     };
+
+     ///////////
+     const searcher = (e) => {
+        setSearch(e.target.value);
+        console.log(e.target.value)
+    }
+
+    const indexEnd = currentPages * dataQt;
+    const indexStart = indexEnd - dataQt;
+
+    const nPages = Math.ceil(users.length / dataQt);
+
+    let results = []
+    if (!search) {
+        results = users.slice(indexStart,indexEnd);
+    } else{
+        results = users.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
+    }
+
+    //////////
 
     const openModal = (op, user = {}) => {
         setOperation(op);
@@ -251,18 +300,35 @@ const Users = () => {
 
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
+        
         try {
-            await axios({ method: metodo, url: urlWithId, data: parametros });
-
-            show_alerta('Operación exitosa', 'success');
-            console.log(parametros)
-            getUsers();
+            // Mostrar alerta de confirmación
+            const confirmation = await Swal.fire({
+                title: `¿Estás seguro que deseas actualizar el usuario`,
+                icon: 'question',
+                text: 'Esta acción puede afectar la disponibilidad del usuario.',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, confirmar',
+                cancelButtonText: 'Cancelar'
+            });
+    
+            if (confirmation.isConfirmed) {
+                // Si el usuario confirma, realizar la solicitud
+                await axios({ method: metodo, url: urlWithId, data: parametros });
+                show_alerta('Actualizacion del estado exitosa', 'success');
+                console.log(parametros);
+                getUsers();
+            } else {
+                // Si el usuario cancela, puedes manejarlo si es necesario
+                show_alerta('Acción cancelada', 'info');
+            }
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
             console.log(error);
-            console.log(parametros)
+            console.log(parametros);
         }
     };
+    
 
     const handleCloseDetail = () => {
         setShowModal(false);
@@ -290,6 +356,7 @@ const Users = () => {
         });
     };
 
+ 
     return (
         <>
             <div className="right-content w-100">
@@ -325,7 +392,10 @@ const Users = () => {
                                 </Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
-                                <SearchBox />
+                                <div className="searchBox position-relative d-flex align-items-center">
+                                    <IoSearch className="mr-2" />
+                                    <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
+                                </div>
                             </div>
                         </div>
                         <div className='table-responsive mt-3'>
@@ -343,7 +413,7 @@ const Users = () => {
                                 </thead>
                                 <tbody>
                                     {
-                                        users.map((user,i) => (
+                                        results.map((user,i) => (
                                             <tr key={user.id}>
                                                 <td>{i+1}</td>
                                                 <td>{user.name}</td>
@@ -379,20 +449,24 @@ const Users = () => {
                             </table>
                         </div>
                         <div className="d-flex table-footer">
-                            <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
-                        </div>
+                        <Pagination 
+                                setCurrentPages = {setCurrentPages} 
+                                currentPages={currentPages}
+                                nPages = {nPages}/>
+                                 </div>
                     </div>
                 </div>
 
                 {/* Modal para Agregar/Editar Usuario */}
                 <Modal show={showModal} 
                 >
-                    <Modal.Header closeButton>
+                    <Modal.Header>
                         <Modal.Title>{title}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
                             <Form.Group>
+                            <Form.Label>Nombre</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="name"
@@ -408,6 +482,7 @@ const Users = () => {
                             </Form.Group>
 
                             <Form.Group>
+                            <Form.Label>Correo</Form.Label>
                                 <Form.Control
                                     type="email"
                                     name="email"
@@ -457,16 +532,17 @@ const Users = () => {
                             <Form.Group>
                                 <Form.Label>Rol</Form.Label>
                                 <Form.Control
-                                    as="select"
-                                    name="roleId"
-                                    value={roleId}
-                                    onChange={handleInputChange}
-                                    onBlur={handleBlur}
-                                    isInvalid={touched.roleId && !!errors.roleId}
-                                >
-                                    <option value="1">Admin</option>
-                                    <option value="2">Empleado</option>
-                                    <option value="3">Cliente</option>
+                                     as="select"
+                                     name="roleId"
+                                     value={roleId}
+                                     onChange={handleInputChange}
+                                     onBlur={handleBlur}
+                                     isInvalid={touched.roleId && !!errors.roleId}
+                                 >
+                                      <option value="">Seleccionar rol</option>
+                                {roles.map(role => ( // Mapeo directo de los roles
+                                    <option key={role.id} value={role.id}>{role.name}</option>
+                                ))}
                                 </Form.Control>
                                 <Form.Control.Feedback type="invalid">
                                     {errors.roleId}
@@ -475,11 +551,11 @@ const Users = () => {
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={handleClose}>
-                            Cerrar
-                        </Button>
-                        <Button variant="primary" onClick={validar}>
+                        <Button variant="primary" onClick={validar} className='btn-sucess'>
                             Guardar
+                        </Button>
+                        <Button variant="secondary" onClick={handleClose} className='btn-red'>
+                            Cerrar
                         </Button>
                     </Modal.Footer>
                 </Modal>
