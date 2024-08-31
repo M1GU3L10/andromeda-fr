@@ -742,6 +742,14 @@ body.dark .table tbody td {
   background: rgb(212, 47, 47, 0.2);
 }
 
+.table tbody .actions button.warning svg {
+  color: rgb(212, 160, 47);
+}
+
+.table tbody .actions button.warning {
+  background: rgb(212, 160, 47, 0.2);
+}
+
 .table tbody .actions button svg {
   font-size: 30px !important;
 }
