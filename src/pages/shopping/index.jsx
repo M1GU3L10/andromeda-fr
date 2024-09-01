@@ -3,9 +3,18 @@ import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { FaCartPlus } from "react-icons/fa6";
 import { IoCart } from "react-icons/io5";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { FcSalesPerformance } from "react-icons/fc";
+import { FaMoneyBillWave } from "react-icons/fa";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { BsPlusSquareFill } from "react-icons/bs";
+import { IoSearch } from "react-icons/io5";
+import Button from '@mui/material/Button';
+import { FaEye } from "react-icons/fa";
+import { TbFileDownload } from "react-icons/tb";
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -29,6 +38,33 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 })
 
 const Shopping = () => {
+    //useStates
+    const url = 'http://localhost:1056/api/shopping'
+    const urlSupplier = 'http://localhost:1056/api/suppliers'
+    const [shopping, SetShopping] = useState([])
+    const [suppliers, SetSuppliers] = useState([])
+
+    useEffect(() => {
+        getShopping();
+        getSuppliers();
+    }, [])
+
+    const getShopping = async ()=>{
+        const response = await axios.get(url)
+        SetShopping(response.data)
+    }
+
+    const getSuppliers = async () => {
+        const response = await axios.get(urlSupplier)
+        SetSuppliers(response.data)
+    }
+
+    const supplierName = (supplierId) =>{
+        const supplier = suppliers.find(supplier => supplier.id === supplierId)
+        return supplier ? supplier.Supplier_Name : 'Desconocido'
+    }
+
+
     return (
         <>
             <div className="right-content w-100">
@@ -62,10 +98,62 @@ const Shopping = () => {
                             </div>
                         </div>
                     </div>
+                    <div className='card shadow border-0 p-3'>
+                        <div className='row'>
+                            <div className='col-sm-5 d-flex align-items-center'>
+                                <Button className='btn-register' variant="contained"><BsPlusSquareFill />Registrar</Button>
+                            </div>
+                            <div className='col-sm-7 d-flex align-items-center justify-content-end'>
+                                <div className="searchBox position-relative d-flex align-items-center">
+                                    <IoSearch className="mr-2" />
+                                    <input type="text" placeholder='Buscar...' className='form-control' />
+                                </div>
+                            </div>
+                        </div>
+                        <div className='table-responsive mt-3'>
+                            <table className='table table-bordered table-hover v-align table-striped'>
+                                <thead className='table-primary'>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>codigo</th>
+                                        <th>Fecha compra</th>
+                                        <th>Fecha registro</th>
+                                        <th>Monto Total</th>
+                                        <th>Proveedor</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        shopping.map((shopping, i) => (
+                                            <tr key={shopping.id}>
+                                                <td>{(i + 1)}</td>
+                                                <td>{shopping.code}</td>
+                                                <td>{shopping.purchaseDate}</td>
+                                                <td>{shopping.registrationDate}</td>
+                                                <td>{shopping.total_price}</td>
+                                                <td>{supplierName(shopping.supplierId)}</td>
+                                                <td>{shopping.status}</td>
+                                                <td>
+                                                    <div className='actions d-flex align-items-center'>
+                                                        <Button color="primary" className='primary' ><FaEye /></Button>
+                                                        <Button color='warning' className='warning'><TbFileDownload /></Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>
     );
 }
+
+
 
 export default Shopping;
