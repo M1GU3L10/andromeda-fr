@@ -63,7 +63,6 @@ const Services = () => {
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
 
-
     const [errors, setErrors] = useState({
         name: '',
         price: '',
@@ -435,7 +434,7 @@ const Services = () => {
                                                 <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(service.price)}</td>
                                                 <td>{service.description}</td>
                                                 <td>{service.time}</td>
-                                                <td>{service.status === 'A' ? 'Activo' : 'Inactivo'}</td>
+                                                <td><span  className= {`serviceStatus ${service.status ===  'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Switch
