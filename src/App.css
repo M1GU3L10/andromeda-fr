@@ -904,3 +904,14 @@ body.dark li.page-item.disabled {
   color: #c23939cc;
   font-size: 12px;
 }
+
+.fc .fc-toolbar-title{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 24px;
+  font-weight: 500;
+  color: #403e57 !important;
+}
+
+body.dark .fc .fc-toolbar-title{
+  color: #fff;
+}

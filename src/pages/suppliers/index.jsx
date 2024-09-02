@@ -10,8 +10,8 @@ import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import { MdOutlineSave } from "react-icons/md";
-import SearchBox from '../../components/SearchBox';
-import Pagination from '@mui/material/Pagination';
+import { IoSearch } from "react-icons/io5";
+import Pagination from '../../components/pagination/index';
 import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
@@ -63,6 +63,9 @@ const Suppliers = () => {
     const [Address, setAddress] = React.useState('');
     const [operation, setOperation] = React.useState(1);
     const [title, setTitle] = React.useState('');
+    const [search, setSearch] = React.useState('');
+    const [dataQt, setDataQt] = React.useState(3);
+    const [currentPages, setCurrentPages] = React.useState(1);
 
     React.useEffect(() => {
         getSuppliers();
@@ -75,6 +78,22 @@ const Suppliers = () => {
         } catch (error) {
             show_alerta('Error al obtener proveedores', 'error');
         }
+    }
+
+    const searcher = (e) => {
+        setSearch(e.target.value);
+    }
+
+    const indexEnd = currentPages * dataQt;
+    const indexStart = indexEnd - dataQt;
+
+    const nPages = Math.ceil(suppliers.length / dataQt);
+
+    let results = []
+    if (!search) {
+        results = suppliers.slice(indexStart, indexEnd);
+    } else {
+        results = suppliers.filter((dato) => dato.Supplier_Name.toLowerCase().includes(search.toLocaleLowerCase()))
     }
 
     const openModal = (op, id, Supplier_Name, Phone_Number, Email, Address) => {
@@ -159,6 +178,10 @@ const Suppliers = () => {
         });
     }
 
+    const handleViewDetails = (supplier) => {
+        // Implementa la lógica para ver los detalles del proveedor
+    }
+
     return (
         <>
             <div className="right-content w-100">
@@ -192,11 +215,14 @@ const Suppliers = () => {
                                 <Button className='btn-register' onClick={() => openModal(1)} variant="contained" data-bs-toggle='modal' data-bs-target='#modalSuppliers'><BsPlusSquareFill />Registrar</Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
-                                <SearchBox />
+                                <div className="searchBox position-relative d-flex align-items-center">
+                                    <IoSearch className="mr-2" />
+                                    <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
+                                </div>
                             </div>
                         </div>
                         <div className='table-responsive mt-3'>
-                            <table className='table table-bordered table-hover v-align'>
+                            <table className='table table-bordered table-hover v-align table-striped'>
                                 <thead className='table-primary'>
                                     <tr>
                                         <th>#</th>
@@ -208,7 +234,7 @@ const Suppliers = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {suppliers.map((supplier, i) => (
+                                    {results.map((supplier, i) => (
                                         <tr key={supplier.id}>
                                             <td>{(i + 1)}</td>
                                             <td>{supplier.Supplier_Name}</td>
@@ -217,7 +243,7 @@ const Suppliers = () => {
                                             <td>{supplier.Address}</td>
                                             <td>
                                                 <div className='actions d-flex align-items-center'>
-                                                    <Button color='primary' className='primary'><FaEye /></Button>
+                                                    <Button color='primary' className='primary' onClick={() => handleViewDetails(supplier)}><FaEye /></Button>
                                                     <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalSuppliers' className='secondary' onClick={() => openModal(2, supplier.id, supplier.Supplier_Name, supplier.Phone_Number, supplier.Email, supplier.Address)}><FaPencilAlt /></Button>
                                                     <Button color='error' className='delete' onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}><IoTrashSharp /></Button>
                                                 </div>
@@ -226,18 +252,28 @@ const Suppliers = () => {
                                     ))}
                                 </tbody>
                             </table>
-                            <div className="d-flex table-footer">
-                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
-                            </div>
+                            {
+                                results.length > 0 ? (
+                                    <div className="d-flex table-footer">
+                                        <Pagination
+                                            setCurrentPages={setCurrentPages}
+                                            currentPages={currentPages}
+                                            nPages={nPages} />
+                                    </div>
+                                ) : (<div className="d-flex table-footer">
+                                </div>)
+                            }
                         </div>
                     </div>
                 </div>
+
+
+                
                 <div id="modalSuppliers" className="modal fade" aria-hidden="true">
                     <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <label className="h5">{title}</label>
-                                <button type="button" id="btnCerrar" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div className="modal-body">
                                 <input type="hidden" id="id"></input>
@@ -257,7 +293,7 @@ const Suppliers = () => {
                                     <div className='d-grid col-3 Modal-buton' onClick={() => validar()}>
                                         <Button type='button' className='btn-sucess'><MdOutlineSave/>Guardar</Button>
                                     </div>
-                                    <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
+                                    <Button type='button' id='btnCerrar' className='btn-red' data-bs-dismiss='modal'>Cerrar</Button>
                                 </div>
                             </div>
                         </div>
