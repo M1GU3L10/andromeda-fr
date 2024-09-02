@@ -130,7 +130,23 @@ const Products = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        let updatedValue = value;
+    
+        // Manejo específico para campos numéricos
+        if (name === 'Stock') {
+            updatedValue = value === '' ? '' : Math.max(0, parseInt(value) || 0);
+        } else if (name === 'Price') {
+            updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
+        } else if (name === 'Product_Name') {
+            updatedValue = value.trim();
+        }
+    
+        setFormData(prevData => {
+            const newData = { ...prevData, [name]: updatedValue };
+            console.log(`Updated ${name}:`, updatedValue);
+            console.log('New form data:', newData);
+            return newData;
+        });
     };
 
     const handleFileChange = (e) => {
@@ -143,64 +159,66 @@ const Products = () => {
         };
         reader.readAsDataURL(file);
     };
-
     const validateForm = () => {
         let errors = {};
         if (!formData.Product_Name.trim()) errors.Product_Name = 'El nombre del producto es obligatorio';
-        if (!formData.Stock || isNaN(parseInt(formData.Stock)) || parseInt(formData.Stock) < 0) errors.Stock = 'El stock debe ser un número entero positivo o cero';
-        if (!formData.Price || isNaN(parseFloat(formData.Price)) || parseFloat(formData.Price) < 0) errors.Price = 'El precio debe ser un número decimal positivo';
+        if (formData.Stock === '' || isNaN(Number(formData.Stock)) || Number(formData.Stock) < 0) {
+            errors.Stock = 'El stock debe ser un número entero positivo o cero';
+        }
+        if (formData.Price === '' || isNaN(Number(formData.Price)) || Number(formData.Price) < 0) {
+            errors.Price = 'El precio debe ser un número decimal positivo';
+        }
         if (!formData.Category_Id) errors.Category_Id = 'La categoría es obligatoria';
-
+        
+        console.log('Validation errors:', errors);
         return errors;
     };
 
     const handleSubmit = async () => {
-        const errors = validateForm();
-        if (Object.keys(errors).length === 0) {
-            const formDataToSend = new FormData();
-            formDataToSend.append('Product_Name', formData.Product_Name.trim());
-            formDataToSend.append('Stock', parseInt(formData.Stock));
-            formDataToSend.append('Price', parseFloat(formData.Price).toFixed(2));
-            formDataToSend.append('Category_Id', formData.Category_Id);
+        const dataToSend = {
+            Product_Name: formData.Product_Name.trim(),
+            Stock: parseInt(formData.Stock),
+            Price: parseFloat(formData.Price),
+            Category_Id: parseInt(formData.Category_Id)
             
-            if (formData.Image instanceof File) {
-                formDataToSend.append('Image', formData.Image);
-                formDataToSend.append('ImageFileName', formData.Image.name);
-                formDataToSend.append('ImageMimeType', formData.Image.type);
-            }
+        };
     
-            try {
-                const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
+        console.log('Sending data:', dataToSend);
+    
+        try {
+            const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+    
+            console.log('Server response:', response);
+    
+            if (response.status === 200 || response.status === 201) {
+                document.getElementById('btnCerrar').click();
+                fetchProductData();
+                show_alerta('Producto agregado exitosamente', 'success');
+            } else {
+                show_alerta('Hubo un problema al agregar el producto', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (error.response && error.response.data) {
+                console.log('Server error response:', error.response.data);
+            }
+            if (error.response && error.response.data && error.response.data.errors) {
+                const serverErrors = {};
+                error.response.data.errors.forEach(err => {
+                    serverErrors[err.path] = err.msg;
                 });
-    
-                if (response.status === 200 || response.status === 201) {
-                    document.getElementById('btnCerrar').click();
-                    fetchProductData();
-                    show_alerta('Producto agregado exitosamente', 'success');
-                } else {
-                    show_alerta('Hubo un problema al agregar el producto', 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                if (error.response && error.response.data && error.response.data.errors) {
-                    const serverErrors = {};
-                    error.response.data.errors.forEach(err => {
-                        serverErrors[err.path] = err.msg;
-                    });
-                    setFormErrors(serverErrors);
-                    show_alerta('Por favor, corrija los errores en el formulario', 'error');
-                } else {
-                    show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
-                }
+                setFormErrors(serverErrors);
+                show_alerta('Por favor, corrija los errores en el formulario', 'error');
+            } else {
+                show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
             }
-        } else {
-            setFormErrors(errors);
-            show_alerta('Por favor, corrija los errores en el formulario', 'error');
         }
     };
+    
 
     const handleUpdate = async () => {
         const errors = validateForm();
@@ -213,8 +231,6 @@ const Products = () => {
             
             if (formData.Image instanceof File) {
                 formDataToSend.append('Image', formData.Image);
-                formDataToSend.append('ImageFileName', formData.Image.name);
-                formDataToSend.append('ImageMimeType', formData.Image.type);
             }
 
             try {
@@ -249,7 +265,6 @@ const Products = () => {
             show_alerta('Por favor, corrija los errores en el formulario', 'error');
         }
     };
-
     const handleDelete = async (id, name) => {
         const MySwal = withReactContent(Swal);
         MySwal.fire({
