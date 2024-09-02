@@ -742,6 +742,14 @@ body.dark .table tbody td {
   background: rgb(212, 47, 47, 0.2);
 }
 
+.table tbody .actions button.warning svg {
+  color: rgb(212, 160, 47);
+}
+
+.table tbody .actions button.warning {
+  background: rgb(212, 160, 47, 0.2);
+}
+
 .table tbody .actions button svg {
   font-size: 30px !important;
 }
@@ -877,4 +885,33 @@ body.dark .active>.page-link {
 body.dark li.page-item.disabled {
   background: #1b2b4d !important;
   border-color: #1b2b4d !important;
+}
+
+.serviceStatus{
+  background: #49c2395b;
+  padding: 1px;
+  border-radius: 3px;
+  border: 1px solid #49c239ab;
+  color: #49c239cc;
+  font-size: 12px;
+}
+
+.serviceStatus.Inactive{
+  background: #c239395b;
+  padding: 1px;
+  border-radius: 3px;
+  border: 1px solid #c23939ab;
+  color: #c23939cc;
+  font-size: 12px;
+}
+
+.fc .fc-toolbar-title{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 24px;
+  font-weight: 500;
+  color: #403e57 !important;
+}
+
+body.dark .fc .fc-toolbar-title{
+  color: #fff;
 }

@@ -34,7 +34,7 @@ const Pagination = ({ nPages, currentPages, setCurrentPages }) => {
                     <ul className="pagination">
                         <li className={`page-item ${currentPages === 1 ? 'disabled' : ''}`}>
                             <a className="page-link" href="#" aria-label="Previous" onClick={Prev}>
-                                <span aria-hidden="true"><FaAngleLeft/></span>
+                                <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
                         {[...Array(nPages)].map((_, i) => (
@@ -50,7 +50,7 @@ const Pagination = ({ nPages, currentPages, setCurrentPages }) => {
                         ))}
                         <li className={`page-item ${currentPages === nPages ? 'disabled' : ''}`}>
                             <a className="page-link" href="#" aria-label="Next" onClick={Next}>
-                                <span aria-hidden="true"><FaAngleRight/></span>
+                                <span aria-hidden="true">&raquo;</span>
                             </a>
                         </li>
                     </ul>

@@ -9,7 +9,6 @@ import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye } from "react-icons/fa";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
-import SearchBox from '../../components/SearchBox';
 import axios from 'axios'
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -64,7 +63,6 @@ const Services = () => {
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
 
-
     const [errors, setErrors] = useState({
         name: '',
         price: '',
@@ -101,8 +99,8 @@ const Services = () => {
 
     let results = []
     if (!search) {
-        results = services.slice(indexStart,indexEnd);
-    } else{
+        results = services.slice(indexStart, indexEnd);
+    } else {
         results = services.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
     }
 
@@ -428,7 +426,7 @@ const Services = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {
+                                    {results.length > 0 ? (
                                         results.map((service, i) => (
                                             <tr key={service.id}>
                                                 <td>{(i + 1)}</td>
@@ -436,7 +434,7 @@ const Services = () => {
                                                 <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(service.price)}</td>
                                                 <td>{service.description}</td>
                                                 <td>{service.time}</td>
-                                                <td>{service.status === 'A' ? 'Activo' : 'Inactivo'}</td>
+                                                <td><span  className= {`serviceStatus ${service.status ===  'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Switch
@@ -456,15 +454,26 @@ const Services = () => {
                                                 </td>
                                             </tr>
                                         ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className='text-center'>No hay Servicios disponibles</td>
+                                        </tr>
+                                    )
+
                                     }
                                 </tbody>
                             </table>
-                            <div className="d-flex table-footer">
-                                <Pagination 
-                                setCurrentPages = {setCurrentPages} 
-                                currentPages={currentPages}
-                                nPages = {nPages}/>
-                            </div>
+                            {
+                                results.length > 0 ? (
+                                    <div className="d-flex table-footer">
+                                        <Pagination
+                                            setCurrentPages={setCurrentPages}
+                                            currentPages={currentPages}
+                                            nPages={nPages} />
+                                    </div>
+                                ) : (<div className="d-flex table-footer">
+                                </div>)
+                            }
                         </div>
                     </div>
                 </div>

@@ -59,6 +59,7 @@ const Absences = () => {
     const [dataQt, setDataQt] = useState(3);
 
     const [formValues, setFormValues] = useState({
+        id: '',
         startTime: '',
         endTime: '',
         date: '',
@@ -122,13 +123,36 @@ const Absences = () => {
         setCurrentAbsence(absence);
         setOperation(op);
         setTitle(op === 1 ? 'Registrar ausencia' : (op === 2 ? 'Ver ausencia' : 'Editar ausencia'));
+        if (op === 3) {
+            setFormValues({
+                id: absence.id,
+                startTime: absence.startTime,
+                endTime: absence.endTime,
+                date: absence.date,
+                description: absence.description,
+                userId: absence.userId,
+                status: absence.status
+            });
+        } else {
+            setFormValues({
+                id: '',
+                startTime: '',
+                endTime: '',
+                date: '',
+                description: '',
+                userId: '',
+                status: 'en proceso'
+            });
+        }
         setShowModal(true);
     }
+
 
     const handleCloseModal = () => {
         setShowModal(false);
         setErrors({});
-    }
+    };
+
 
     const openDetailModal = (absence) => {
         setDetailData(absence);
@@ -169,19 +193,32 @@ const Absences = () => {
 
     const validateField = (name, value) => {
         let error = '';
-
+    
+        if (operation === 3 && value === '') {
+            setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
+            return; // Si está en edición y el campo está vacío, no lo valida
+        }
+    
         switch (name) {
             case 'startTime':
-            case 'endTime':
                 if (!value) {
-                    error = 'La hora es requerida';
-                } else if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(value)) {
-                    error = 'La hora debe estar en formato HH:MM';
-                } else if (name === 'endTime' && value <= formValues.startTime) {
-                    error = 'La hora de fin debe ser posterior a la hora de inicio';
+                    error = 'La hora de inicio es requerida';
                 }
                 break;
-
+    
+            case 'endTime':
+                if (!value) {
+                    error = 'La hora de fin es requerida';
+                } else {
+                    const startTime = new Date(`1970-01-01T${formValues.startTime}:00`);
+                    const endTime = new Date(`1970-01-01T${value}:00`);
+                    const diffInHours = (endTime - startTime) / (1000 * 60 * 60);
+                    if (diffInHours < 2) {
+                        error = 'La hora de fin debe ser al menos 2 horas más tarde que la hora de inicio';
+                    }
+                }
+                break;
+    
             case 'date':
                 if (!value) {
                     error = 'La fecha es requerida';
@@ -189,30 +226,34 @@ const Absences = () => {
                     error = 'La fecha debe estar en formato YYYY-MM-DD';
                 }
                 break;
+    
             case 'description':
                 if (!value) {
                     error = 'La descripción es obligatoria';
+                } else if (value.length < 5) {
+                    error = 'La descripción debe tener al menos 5 caracteres';
                 }
                 break;
-
+    
             case 'userId':
                 if (!value) {
                     error = 'Debe seleccionar un usuario';
                 }
                 break;
-
+    
             case 'status':
                 if (!['en proceso', 'aprobado', 'no aprobado'].includes(value)) {
                     error = 'El estado debe ser "en proceso", "aprobado" o "no aprobado"';
                 }
                 break;
-
+    
             default:
                 break;
         }
-
+    
         setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
     };
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -222,43 +263,64 @@ const Absences = () => {
 
     const validar = async () => {
         const { startTime, endTime, date, description, userId, status } = formValues;
-
+    
         const fields = { startTime, endTime, date, description, userId };
         let valid = true;
-
+    
         Object.keys(fields).forEach(field => {
-            validateField(field, fields[field]);
-            if (errors[field]) valid = false;
+            if (operation !== 3 || fields[field] || field === 'status') { // Solo valida si es un nuevo registro o si el campo fue modificado
+                validateField(field, fields[field]);
+                if (errors[field]) valid = false;
+            }
         });
-
+    
         if (!valid) {
             show_alerta('Por favor corrige los errores antes de continuar', 'error');
             return;
         }
-
-        const data = { startTime, endTime, date, description, userId, status };
-
+    
+        const data = {
+            id: formValues.id,
+            startTime: startTime,
+            endTime: endTime,
+            date: date,
+            description: description,
+            userId: userId,
+            status: status
+        };
+    
+        // Depurar valores
+        console.log('Data a enviar:', data);
+    
         if (operation === 1) {
-            data.status = 'en proceso';
             await enviarSolicitud('POST', data);
         } else if (operation === 3) {
-            data.id = currentAbsence.id;
-            data.status = formValues.status;
+            if (!data.id) {
+                show_alerta('ID no encontrado para actualizar', 'error');
+                return;
+            }
             await enviarSolicitud('PUT', data);
         }
     };
+    
+
     const enviarSolicitud = async (metodo, parametros) => {
-        const url = metodo === 'PUT' ? `${urlAbsences}/${parametros.id}` : metodo === 'DELETE' ? `${urlAbsences}/${parametros.id}` : urlAbsences;
+        const url = metodo === 'PUT' || metodo === 'DELETE'
+            ? `${urlAbsences}/${parametros.id}`
+            : urlAbsences;
+
         try {
             await axios({ method: metodo, url, data: parametros });
             show_alerta('Operación exitosa', 'success');
             handleCloseModal();
             getAbsences();
+            console.log('Parámetros enviados:', parametros); // Para depuración
         } catch (error) {
+            console.error('Error en la solicitud:', error.response?.status, error.response?.data);
             show_alerta('Error en la solicitud', 'error');
-            console.log(error);
         }
-    }
+    };
+
 
     return (
         <>
@@ -349,7 +411,7 @@ const Absences = () => {
                 </div>
 
                 <Modal show={showModal} onHide={handleCloseModal}>
-                    <Modal.Header closeButton>
+                    <Modal.Header>
                         <Modal.Title>{title}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
@@ -360,7 +422,7 @@ const Absences = () => {
                                     id="startTime"
                                     name="startTime"
                                     placeholder="Inicio"
-                                    defaultValue={currentAbsence.startTime || ''}
+                                    value={formValues.startTime}
                                     onChange={handleInputChange}
                                     isInvalid={!!errors.startTime}
                                 />
@@ -375,7 +437,7 @@ const Absences = () => {
                                     id="endTime"
                                     name="endTime"
                                     placeholder="Fin"
-                                    defaultValue={currentAbsence.endTime || ''}
+                                    value={formValues.endTime}
                                     onChange={handleInputChange}
                                     isInvalid={!!errors.endTime}
                                 />
@@ -390,7 +452,7 @@ const Absences = () => {
                                     id="date"
                                     name="date"
                                     placeholder="Fecha"
-                                    defaultValue={currentAbsence.date || ''}
+                                    value={formValues.date}
                                     onChange={handleInputChange}
                                     isInvalid={!!errors.date}
                                 />
@@ -405,7 +467,7 @@ const Absences = () => {
                                     id="description"
                                     name="description"
                                     placeholder="Descripción"
-                                    defaultValue={currentAbsence.description || ''}
+                                    value={formValues.description}
                                     onChange={handleInputChange}
                                     isInvalid={!!errors.description}
                                 />
@@ -418,7 +480,7 @@ const Absences = () => {
                                 <Form.Select
                                     id='userId'
                                     name="userId"
-                                    defaultValue={currentAbsence.userId || ''}
+                                    value={formValues.userId}
                                     onChange={handleInputChange}
                                     isInvalid={!!errors.userId}
                                 >
@@ -437,7 +499,7 @@ const Absences = () => {
                                     <Form.Select
                                         id='status'
                                         name="status"
-                                        defaultValue={currentAbsence.status || 'en proceso'}
+                                        value={formValues.status}
                                         onChange={handleInputChange}
                                         isInvalid={!!errors.status}
                                     >

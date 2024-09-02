@@ -7,18 +7,15 @@ import HomeIcon from '@mui/icons-material/Home';
 import { GiHairStrands } from "react-icons/gi";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
-import { FaEye } from "react-icons/fa";
-import { FaPencilAlt } from "react-icons/fa";
+import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
+import { MdOutlineSave } from "react-icons/md";
 import SearchBox from '../../components/SearchBox';
 import Pagination from '@mui/material/Pagination';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
@@ -26,6 +23,8 @@ import Swal from 'sweetalert2';
 import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -59,30 +58,18 @@ const PinkSwitch = styled(Switch)(({ theme }) => ({
     },
 }));
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    borderRadius: '8px',
-    boxShadow: 24,
-    p: 4,
-};
-
 const Products = () => {
     const [columnsPerPage, setColumnsPerPage] = React.useState('');
-    const [open, setOpen] = React.useState(false);
-    const [openView, setOpenView] = React.useState(false);
-    const [openEdit, setOpenEdit] = React.useState(false);
+    const [operation, setOperation] = React.useState(1);
+    const [title, setTitle] = React.useState('');
     const [viewData, setViewData] = React.useState({});
     const [formData, setFormData] = React.useState({
+        id: '',
         Product_Name: '',
         Stock: '',
         Price: '',
         Category_Id: '',
-        Image: '',
+        Image: null,
     });
     const [imagePreviewUrl, setImagePreviewUrl] = React.useState('');
     const [productData, setProductData] = React.useState([]);
@@ -102,6 +89,7 @@ const Products = () => {
             setCategories(response.data);
         } catch (err) {
             console.error('Error fetching categories:', err);
+            show_alerta('Error al cargar las categorías', 'error');
         }
     };
 
@@ -112,8 +100,9 @@ const Products = () => {
             setProductData(response.data);
             setLoading(false);
         } catch (err) {
-            setError('Error fetching data');
+            setError('Error al cargar los productos');
             setLoading(false);
+            show_alerta('Error al cargar los productos', 'error');
         }
     };
 
@@ -121,40 +110,43 @@ const Products = () => {
         setColumnsPerPage(event.target.value);
     };
 
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => {
-        setOpen(false);
+    const openModal = (op, id, Product_Name, Stock, Price, Category_Id, Image) => {
+        setOperation(op);
         setFormData({
-            Product_Name: '',
-            Stock: '',
-            Price: '',
-            Category_Id: '',
-            Image: ''
+            id: id || '',
+            Product_Name: Product_Name || '',
+            Stock: Stock || '',
+            Price: Price || '',
+            Category_Id: Category_Id || '',
+            Image: null,
         });
-        setImagePreviewUrl('');
+        setImagePreviewUrl(Image || '');
         setFormErrors({});
-    };
-
-    const handleViewOpen = (data) => {
-        setViewData(data);
-        setOpenView(true);
-    };
-
-    const handleViewClose = () => setOpenView(false);
-
-    const handleEditOpen = (data) => {
-        setFormData(data);
-        setOpenEdit(true);
-    };
-
-    const handleEditClose = () => {
-        setOpenEdit(false);
-        setImagePreviewUrl('');
+        setTitle(op === 1 ? 'Registrar Producto' : 'Editar Producto');
+        window.setTimeout(function () {
+            document.getElementById('Product_Name').focus();
+        }, 500);
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        let updatedValue = value;
+    
+        // Manejo específico para campos numéricos
+        if (name === 'Stock') {
+            updatedValue = value === '' ? '' : Math.max(0, parseInt(value) || 0);
+        } else if (name === 'Price') {
+            updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
+        } else if (name === 'Product_Name') {
+            updatedValue = value.trim();
+        }
+    
+        setFormData(prevData => {
+            const newData = { ...prevData, [name]: updatedValue };
+            console.log(`Updated ${name}:`, updatedValue);
+            console.log('New form data:', newData);
+            return newData;
+        });
     };
 
     const handleFileChange = (e) => {
@@ -167,105 +159,112 @@ const Products = () => {
         };
         reader.readAsDataURL(file);
     };
-
     const validateForm = () => {
         let errors = {};
-        if (!formData.Product_Name) errors.Product_Name = 'El nombre del producto es obligatorio';
-        if (!formData.Stock || isNaN(formData.Stock) || formData.Stock < 0) errors.Stock = 'El stock debe ser un número positivo';
-        if (!formData.Price || isNaN(formData.Price) || formData.Price < 0) errors.Price = 'El precio debe ser un número positivo';
+        if (!formData.Product_Name.trim()) errors.Product_Name = 'El nombre del producto es obligatorio';
+        if (formData.Stock === '' || isNaN(Number(formData.Stock)) || Number(formData.Stock) < 0) {
+            errors.Stock = 'El stock debe ser un número entero positivo o cero';
+        }
+        if (formData.Price === '' || isNaN(Number(formData.Price)) || Number(formData.Price) < 0) {
+            errors.Price = 'El precio debe ser un número decimal positivo';
+        }
         if (!formData.Category_Id) errors.Category_Id = 'La categoría es obligatoria';
-
+        
+        console.log('Validation errors:', errors);
         return errors;
     };
 
     const handleSubmit = async () => {
-        const errors = validateForm();
-        if (Object.keys(errors).length === 0) {
-            const data = new FormData();
+        const dataToSend = {
+            Product_Name: formData.Product_Name.trim(),
+            Stock: parseInt(formData.Stock),
+            Price: parseFloat(formData.Price),
+            Category_Id: parseInt(formData.Category_Id)
+            
+        };
     
-            // Imprimir los datos de formData antes de enviarlos
-            console.log('Datos enviados:', formData);
-            for (const key in formData) {
-                if (key === 'Image' && formData[key] instanceof File) {
-                    data.append(key, formData[key]);
-                } else {
-                    data.append(key, formData[key]);
+        console.log('Sending data:', dataToSend);
+    
+        try {
+            const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-                console.log(`${key}: ${formData[key]}`);
-            }
+            });
     
-            try {
-                const response = await axios.post('http://localhost:1056/api/products', data, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
+            console.log('Server response:', response);
+    
+            if (response.status === 200 || response.status === 201) {
+                document.getElementById('btnCerrar').click();
+                fetchProductData();
+                show_alerta('Producto agregado exitosamente', 'success');
+            } else {
+                show_alerta('Hubo un problema al agregar el producto', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (error.response && error.response.data) {
+                console.log('Server error response:', error.response.data);
+            }
+            if (error.response && error.response.data && error.response.data.errors) {
+                const serverErrors = {};
+                error.response.data.errors.forEach(err => {
+                    serverErrors[err.path] = err.msg;
                 });
-    
-                if (response.status === 201 || response.status === 200) {
-                    handleClose();
-                    fetchProductData();
-                    show_alerta('Producto agregado exitosamente', 'success');
-                } else {
-                    show_alerta('Hubo un problema al agregar el producto', 'error');
-                }
-            } catch (err) {
-                console.error('Error submitting form:', err);
-    
-                if (err.response) {
-                    console.error('Detalles del error del servidor:', err.response.data);
-                    setFormErrors(err.response.data.errors ? err.response.data.errors.reduce((acc, curr) => {
-                        acc[curr.param] = curr.msg;
-                        return acc;
-                    }, {}) : {});
-                } else {
-                    console.error('Error desconocido:', err);
-                }
-    
-                show_alerta('Error al agregar el producto', 'error');
+                setFormErrors(serverErrors);
+                show_alerta('Por favor, corrija los errores en el formulario', 'error');
+            } else {
+                show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
             }
-        } else {
-            setFormErrors(errors);
         }
     };
+    
 
     const handleUpdate = async () => {
         const errors = validateForm();
         if (Object.keys(errors).length === 0) {
-            const data = new FormData();
-            for (const key in formData) {
-                if (key === 'Image' && formData[key] instanceof File) {
-                    data.append(key, formData[key]);
-                } else {
-                    data.append(key, formData[key]);
-                }
+            const formDataToSend = new FormData();
+            formDataToSend.append('Product_Name', formData.Product_Name.trim());
+            formDataToSend.append('Stock', parseInt(formData.Stock));
+            formDataToSend.append('Price', parseFloat(formData.Price).toFixed(2));
+            formDataToSend.append('Category_Id', formData.Category_Id);
+            
+            if (formData.Image instanceof File) {
+                formDataToSend.append('Image', formData.Image);
             }
 
             try {
-                await axios.put(`http://localhost:1056/api/products/${formData.id}`, data, {
+                const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`, formDataToSend, {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
+                        'Content-Type': 'multipart/form-data'
+                    }
                 });
-                handleEditClose();
-                fetchProductData();
-                show_alerta('Producto actualizado exitosamente', 'success');
-            } catch (err) {
-                console.error('Error updating product:', err);
-                if (err.response && err.response.data) {
-                    setFormErrors(err.response.data.errors.reduce((acc, curr) => {
-                        acc[curr.param] = curr.msg;
-                        return acc;
-                    }, {}));
+
+                if (response.status === 200) {
+                    document.getElementById('btnCerrar').click();
+                    fetchProductData();
+                    show_alerta('Producto actualizado exitosamente', 'success');
                 } else {
-                    console.error('Error desconocido:', err);
+                    show_alerta('Hubo un problema al actualizar el producto', 'error');
                 }
-                show_alerta('Error al actualizar el producto', 'error');
+            } catch (error) {
+                console.error('Error:', error);
+                if (error.response && error.response.data && error.response.data.errors) {
+                    const serverErrors = {};
+                    error.response.data.errors.forEach(err => {
+                        serverErrors[err.path] = err.msg;
+                    });
+                    setFormErrors(serverErrors);
+                    show_alerta('Por favor, corrija los errores en el formulario', 'error');
+                } else {
+                    show_alerta('Error al actualizar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
+                }
             }
         } else {
             setFormErrors(errors);
+            show_alerta('Por favor, corrija los errores en el formulario', 'error');
         }
     };
-
     const handleDelete = async (id, name) => {
         const MySwal = withReactContent(Swal);
         MySwal.fire({
@@ -333,7 +332,7 @@ const Products = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={handleOpen} variant="contained"><BsPlusSquareFill />Registrar</Button>
+                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained" data-bs-toggle='modal' data-bs-target='#modalProducts'><BsPlusSquareFill />Registrar</Button>
                             </div>
                             <div className='col-sm-3 d-flex align-items-center cardFilters'>
                                 <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
@@ -371,12 +370,12 @@ const Products = () => {
                                             <th>Precio</th>
                                             <th>Categoría</th>
                                             <th>Imagen</th>
-                                            
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {productData.map((product, i) => (<tr key={product.id}>
+                                        {productData.map((product, i) => (
+                                            <tr key={product.id}>
                                                 <td>{(i + 1)}</td>
                                                 <td>{product.Product_Name}</td>
                                                 <td>{product.Stock}</td>
@@ -387,12 +386,12 @@ const Products = () => {
                                                         <img src={product.Image} alt={product.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                                                     )}
                                                 </td>
-                                             
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        <Button color='primary' className='primary' onClick={() => handleViewOpen(product)}><FaEye /></Button>
-                                                        <Button color="secondary" className='secondary' onClick={() => handleEditOpen(product)}><FaPencilAlt /></Button>
+                                                        <Button color='primary' className='primary' data-bs-toggle='modal' data-bs-target='#modalViewProduct' onClick={() => setViewData(product)}><FaEye /></Button>
+                                                        <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalProducts' className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Stock, product.Price, product.Category_Id, product.Image)}><FaPencilAlt /></Button>
                                                         <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
+                                                        
                                                     </div>
                                                 </td>
                                             </tr>
@@ -408,203 +407,119 @@ const Products = () => {
                 </div>
             </div>
 
-            {/* Modal para agregar producto */}
-            <Modal
-                open={open}
-                onClose={handleClose}
-            >
-                <Box sx={style}>
-                    <Typography variant="h6" component="h2">
-                        Agregar Producto
-                    </Typography>
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Nombre del Producto"
-                        name="Product_Name"
-                        value={formData.Product_Name}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Product_Name}
-                        helperText={formErrors.Product_Name}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Stock"
-                        type="number"
-                        name="Stock"
-                        value={formData.Stock}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Stock}
-                        helperText={formErrors.Stock}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Precio"
-                        type="number"
-                        name="Price"
-                        value={formData.Price}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Price}
-                        helperText={formErrors.Price}
-                    />
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel id="category-label">Categoría</InputLabel>
-                        <Select
-                            labelId="category-label"
-                            id="category-select"
-                            name="Category_Id"
-                            value={formData.Category_Id}
-                            onChange={handleInputChange}
-                            error={!!formErrors.Category_Id}
-                        >
-                            {categories.map((cat) => (
-                                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-                            ))}
-                        </Select>
-                        {formErrors.Category_Id && <Typography color="error">{formErrors.Category_Id}</Typography>}
-                    </FormControl>
-                    <input
-                        accept="image/*"
-                        type="file"
-                        id="image-upload"
-                        onChange={handleFileChange}
-                        style={{ display: 'none' }}
-                    />
-                    <label htmlFor="image-upload">
-                        <Button variant="contained" component="span" sx={{ mt: 2 }}>
-                            Subir Imagen
-                        </Button>
-                    </label>
-                    {imagePreviewUrl && (
-                        <Box mt={2}>
-                            <img src={imagePreviewUrl} alt="Vista previa" style={{ width: '100%', height: 'auto' }} />
-                        </Box>
-                    )}
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleSubmit}
-                        sx={{ mt: 2 }}
-                    >
-                        Guardar
-                    </Button>
-                </Box>
-            </Modal>
+            {/* Modal para agregar/editar producto */}
+            <div id="modalProducts" className="modal fade" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <label className="h5">{title}</label>
+                            <button type="button" id="btnCerrar" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div className="modal-body">
+                            <input type="hidden" id="id" value={formData.id}></input>
+                            <div className="input-group mb-3">
+                                <input
+                                    type="text"
+                                    id="Product_Name"
+                                    name="Product_Name"
+                                    className={`form-control ${formErrors.Product_Name ? 'is-invalid' : ''}`}
+                                    placeholder="Nombre del Producto"
+                                    value={formData.Product_Name}
+                                    onChange={handleInputChange}
+                                />
+                                {formErrors.Product_Name && <div className="invalid-feedback">{formErrors.Product_Name}</div>}
+                            </div>
+                            <div className="input-group mb-3">
+                                <input
+                                    type="number"
+                                    id="Stock"
+                                    name="Stock"
+                                    className={`form-control ${formErrors.Stock ? 'is-invalid' : ''}`}
+                                    placeholder="Stock"
+                                    value={formData.Stock}
+                                    onChange={handleInputChange}
+                                />
+                                {formErrors.Stock && <div className="invalid-feedback">{formErrors.Stock}</div>}
+                            </div>
+                            <div className="input-group mb-3">
+                                <input
+                                    type="number"
+                                    id="Price"
+                                    name="Price"
+                                    className={`form-control ${formErrors.Price ? 'is-invalid' : ''}`}
+                                    placeholder="Precio"
+                                    value={formData.Price}
+                                    onChange={handleInputChange}
+                                    step="0.01"
+                                />
+                                {formErrors.Price && <div className="invalid-feedback">{formErrors.Price}</div>}
+                            </div>
+                            <div className="input-group mb-3">
+                                <select
+                                    id="Category_Id"
+                                    name="Category_Id"
+                                    className={`form-control ${formErrors.Category_Id ? 'is-invalid' : ''}`}
+                                    value={formData.Category_Id}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="">Seleccione una categoría</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                                {formErrors.Category_Id && <div className="invalid-feedback">{formErrors.Category_Id}</div>}
+                            </div>
+                            <div className="input-group mb-3">
+                                <input
+                                    type="file"
+                                    id="Image"
+                                    name="Image"
+                                    className="form-control"
+                                    onChange={handleFileChange}
+                                />
+                            </div>
+                            {imagePreviewUrl && (
+                                <div className="mb-3">
+                                    <img src={imagePreviewUrl} alt="Vista previa" style={{ width: '100%', height: 'auto' }} />
+                                </div>
+                            )}
+                            <div className='modal-footer w-100 m-3'>
+                                <div className='d-grid col-3 Modal-buton' onClick={operation === 1 ? handleSubmit : handleUpdate}>
+                                    <Button type='button' className='btn-sucess'><MdOutlineSave/>Guardar</Button>
+                                </div>
+                                <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Modal para ver producto */}
-            <Modal
-                open={openView}
-                onClose={handleViewClose}
-            >
-                <Box sx={style}>
-                    <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                        Ver Producto
-                    </Typography>
-                    <Typography variant="body1"><strong>ID:</strong> {viewData.id}</Typography>
-                    <Typography variant="body1"><strong>Nombre:</strong> {viewData.Product_Name}</Typography>
-                    <Typography variant="body1"><strong>Stock:</strong> {viewData.Stock}</Typography>
-                    <Typography variant="body1"><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'No disponible'}</Typography>
-                    <Typography variant="body1"><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</Typography>
-                    {viewData.Image && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-                            <img src={viewData.Image} alt={viewData.Product_Name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
-                        </Box>
-                    )}
-                </Box>
-            </Modal>
-
-            {/* Modal para editar producto */}
-            <Modal
-                open={openEdit}
-                onClose={handleEditClose}
-            >
-                <Box sx={style}>
-                    <Typography variant="h6" component="h2">
-                        Editar Producto
-                    </Typography>
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Nombre del Producto"
-                        name="Product_Name"
-                        value={formData.Product_Name}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Product_Name}
-                        helperText={formErrors.Product_Name}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Stock"
-                        type="number"
-                        name="Stock"
-                        value={formData.Stock}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Stock}
-                        helperText={formErrors.Stock}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Precio"
-                        type="number"
-                        name="Price"
-                        value={formData.Price}
-                        onChange={handleInputChange}
-                        error={!!formErrors.Price}
-                        helperText={formErrors.Price}
-                    />
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel id="category-edit-label">Categoría</InputLabel>
-                        <Select
-                            labelId="category-edit-label"
-                            id="category-edit-select"
-                            name="Category_Id"
-                            value={formData.Category_Id}
-                            onChange={handleInputChange}
-                            error={!!formErrors.Category_Id}
-                        >
-                            {categories.map((cat) => (
-                                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-                            ))}
-                        </Select>
-                        {formErrors.Category_Id && <Typography color="error">{formErrors.Category_Id}</Typography>}
-                    </FormControl>
-                    <input
-                        accept="image/*"
-                        type="file"
-                        id="image-upload-edit"
-                        onChange={handleFileChange}
-                        style={{ display: 'none' }}
-                    />
-                    <label htmlFor="image-upload-edit">
-                        <Button variant="contained" component="span" sx={{ mt: 2 }}>
-                            Subir Imagen
-                        </Button>
-                    </label>
-                    {imagePreviewUrl && (
-                        <Box mt={2}>
-                            <img src={imagePreviewUrl} alt="Vista previa" style={{ width: '100%', height: 'auto' }} />
-                        </Box>
-                    )}
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleUpdate}
-                        sx={{ mt: 2 }}
-                    >
-                        Actualizar
-                    </Button>
-                </Box>
-            </Modal>
+            <div id="modalViewProduct" className="modal fade" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <label className="h5">Ver Producto</label>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div className="modal-body">
+                            <p><strong>ID:</strong> {viewData.id}</p>
+                            <p><strong>Nombre:</strong> {viewData.Product_Name}</p>
+                            <p><strong>Stock:</strong> {viewData.Stock}</p>
+                            <p><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'No disponible'}</p>
+                            <p><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</p>
+                            {viewData.Image && (
+                                <div className="text-center mt-3">
+                                    <img src={viewData.Image} alt={viewData.Product_Name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </>
     );
 };
