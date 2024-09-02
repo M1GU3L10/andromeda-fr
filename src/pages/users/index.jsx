@@ -21,7 +21,7 @@ import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import { alpha } from '@mui/material/styles';
-import { pink } from '@mui/material/colors';
+import { blue } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import { Modal, Form } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
@@ -54,13 +54,13 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 const PinkSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
-        color: pink[600],
+        color: blue[600],
         '&:hover': {
-            backgroundColor: alpha(pink[600], theme.palette.action.hoverOpacity),
+            backgroundColor: alpha(blue[600], theme.palette.action.hoverOpacity),
         },
     },
     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-        backgroundColor: pink[600],
+        backgroundColor: blue[600],
     },
 }));
 // Rest of your code...
@@ -118,6 +118,16 @@ const Users = () => {
             show_alerta('Error al obtener los roles', 'error');
         }
     }
+
+    const getRolesNames = (role_Id) => {
+        try {
+            const role = roles.find(role => role.id === role_Id);
+            return role ? role.name : 'Desconocido';
+        } catch (error) {
+            show_alerta('Error al obtener los nombres de los roles', 'error');
+        }
+    }
+    
 
     
 
@@ -178,7 +188,31 @@ const Users = () => {
         setShowModal(true);
     };
 
-    const handleClose = () => setShowModal(false);
+    const handleClose = () => {
+        setId('');
+        setName('');
+        setEmail('');
+        setPassword('');
+        setPhone('');
+        setStatus('A');  // Por defecto, nuevo usuario está activo
+        setRoleId('');
+        
+
+        setErrors({
+            name: '',
+            email: '',
+            password: '',
+            phone: '',
+        });
+        setTouched({
+            name: false,
+            email: false,
+            password: false,
+            phone: false,
+        });
+
+        setShowModal(false);
+    };
 
     const validateName = (value) => {
         const regex = /^[A-Za-z\s]+$/;
@@ -300,46 +334,46 @@ const Users = () => {
 
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
-        
+    
         try {
-            // Mostrar alerta de confirmación
+            let title, text, successMessage;
+            
+            if (metodo === 'PUT' && parametros.hasOwnProperty('status')) {
+                title = `¿Estás seguro que deseas ${parametros.status === 'A' ? 'activar' : 'desactivar'} el usuario?`;
+                text = 'Esta acción puede afectar la disponibilidad del servicio.';
+                successMessage = 'Estado del usuario actualizado exitosamente';
+            } else if (metodo === 'DELETE') {
+                title = `¿Estás seguro que deseas eliminar el usuario?`;
+                text = 'No se podrá deshacer esta acción.';
+                successMessage = 'Usuario eliminado exitosamente';
+            } else {
+                title = `¿Estás seguro que deseas ${metodo === 'POST' ? 'registrar' : 'actualizar'} el usuario?`;
+                text = 'Confirma para proceder.';
+                successMessage = `Usuario ${metodo === 'POST' ? 'registrado' : 'actualizado'} exitosamente`;
+            }
+    
             const confirmation = await Swal.fire({
-                title: `¿Estás seguro que deseas actualizar el usuario`,
+                title: title,
                 icon: 'question',
-                text: 'Esta acción puede afectar la disponibilidad del usuario.',
+                text: text,
                 showCancelButton: true,
                 confirmButtonText: 'Sí, confirmar',
                 cancelButtonText: 'Cancelar'
             });
     
             if (confirmation.isConfirmed) {
-                // Si el usuario confirma, realizar la solicitud
                 await axios({ method: metodo, url: urlWithId, data: parametros });
-                show_alerta('Actualizacion del estado exitosa', 'success');
-                console.log(parametros);
+                show_alerta(successMessage, 'success');
                 getUsers();
             } else {
-                // Si el usuario cancela, puedes manejarlo si es necesario
                 show_alerta('Acción cancelada', 'info');
             }
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
-            console.log(error);
-            console.log(parametros);
+            console.error(error);
         }
     };
     
-
-    const handleCloseDetail = () => {
-        setShowModal(false);
-        setShowDetailModal(false);
-    };
-
-    const handleViewDetails = (user) => {
-        setDetailData(user);
-        setShowDetailModal(true);
-    };
-
     const deleteUser = async (id, name) => {
         const Myswal = withReactContent(Swal);
         Myswal.fire({
@@ -355,6 +389,19 @@ const Users = () => {
             }
         });
     };
+    
+
+    const handleCloseDetail = () => {
+        setShowModal(false);
+        setShowDetailModal(false);
+    };
+
+    const handleViewDetails = (user) => {
+        setDetailData(user);
+        setShowDetailModal(true);
+    };
+
+ 
 
  
     return (
@@ -419,7 +466,7 @@ const Users = () => {
                                                 <td>{user.name}</td>
                                                 <td>{user.email}</td>
                                                 <td>{user.phone}</td>
-                                                <td>{user.roleId === 1 ? 'Administrador' : roleId === 2 ? 'Empleado' : roleId === 3 ? 'Cliente' : 'Desconocido'}</td>
+                                                <td>{getRolesNames(user.roleId)}</td>
                                                 <td>{user.status === 'A' ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
