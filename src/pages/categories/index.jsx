@@ -381,7 +381,7 @@ const Categories = () => {
                                                 <td>{(i + 1)}</td>
                                                 <td>{category.name}</td>
                                                 <td>{category.description}</td>
-                                                <td>{category.status === 'A' ? 'Activo' : 'Inactivo'}</td>
+                                                <td><span  className= {`serviceStatus ${category.status ===  'A' ? '' : 'Inactive'}`}>{category.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Switch
