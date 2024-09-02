@@ -7,9 +7,11 @@ import { FaUserCog } from "react-icons/fa";
 import { RxScissors } from "react-icons/rx";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import Button from '@mui/material/Button';
-import { BsPlusSquareFill } from "react-icons/bs";
-
+import IconButton from '@mui/material/IconButton';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import axios from 'axios';
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -33,19 +35,24 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const Programming = () => {
+    const urlUsers= 'http://localhost:1056/api/users'
     const calendarRef = useRef(null);
     const [events, setEvents] = useState([]);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [users, SetUsers] = useState([])
+    const [selectedEvent, setSelectedEvent] = useState(null);
+
 
     useEffect(() => {
         const fetchEvents = async () => {
             try {
+                getUsers();
                 const response = await fetch('http://localhost:1056/api/programming');
                 const data = await response.json();
 
-                // Transform the data to match FullCalendar's expected format
                 const transformedEvents = data.map(event => ({
-                    id: event.id.toString(), // Ensure ID is a string
-                    title: `User ${event.userId}`, // Customize as needed
+                    id: event.id.toString(),
+                    title: `${userName(event.userId)}`,
                     start: `${event.day}T${event.startTime}`,
                     end: `${event.day}T${event.endTime}`,
                     extendedProps: {
@@ -60,13 +67,59 @@ const Programming = () => {
         };
 
         fetchEvents();
+        
     }, []);
 
-    const handleDateClick = (arg) => {
-        alert(`Date clicked: ${arg.dateStr}`);
+    const getUsers = async () => {
+        const response = await axios.get(urlUsers)
+        SetUsers(response.data)
+    }
+
+    const userName = (userId) =>{
+        const user = users.find(user => user.id === userId)
+        return user ? user.name : 'Desconocido'
+    }
+
+    const FiltrarUsers = () => {
+        return users.filter(user => user.roleId === 2);
+    }
+
+    const handleMenuClick = (event, eventData) => {
+        setAnchorEl(event.currentTarget);
+        setSelectedEvent(eventData);
     };
 
-    
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setSelectedEvent(null);
+    };
+
+    const handleEdit = () => {
+        handleMenuClose();
+    };
+
+    const handleView = () => {
+        handleMenuClose();
+    };
+
+    const handleDelete = () => {
+        handleMenuClose();
+    };
+
+    const eventRender = (info) => {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>{info.event.title}</span>
+                <IconButton
+                    aria-controls="simple-menu"
+                    aria-haspopup="true"
+                    onClick={(event) => handleMenuClick(event, info.event)}
+                >
+                    <MoreVertIcon />
+                </IconButton>
+            </div>
+        );
+    };
 
     return (
         <>
@@ -110,12 +163,25 @@ const Programming = () => {
                                 ref={calendarRef}
                                 plugins={[dayGridPlugin]}
                                 initialView="dayGridMonth"
-                                events={events} // Pass the transformed events to FullCalendar
+                                events={events}
+                                eventContent={eventRender} // Usa eventRender para personalizar la celda del evento
                             />
                         </div>
                     </div>
                 </div>
             </div>
+
+            <Menu
+                id="simple-menu"
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+            >
+                <MenuItem onClick={handleView}>Ver</MenuItem>
+                <MenuItem onClick={handleEdit}>Editar</MenuItem>
+                <MenuItem onClick={handleDelete}>Eliminar</MenuItem>
+            </Menu>
         </>
     );
 }
