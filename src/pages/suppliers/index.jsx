@@ -179,7 +179,19 @@ const Suppliers = () => {
     }
 
     const handleViewDetails = (supplier) => {
-        // Implementa la lógica para ver los detalles del proveedor
+        Swal.fire({
+            title: 'Detalles del Proveedor',
+            html: `
+                <div class="text-left">
+                    <p><strong>Nombre:</strong> ${supplier.Supplier_Name}</p>
+                    <p><strong>Teléfono:</strong> ${supplier.Phone_Number}</p>
+                    <p><strong>Email:</strong> ${supplier.Email}</p>
+                    <p><strong>Dirección:</strong> ${supplier.Address}</p>
+                </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Cerrar'
+        });
     }
 
     return (
@@ -267,8 +279,6 @@ const Suppliers = () => {
                     </div>
                 </div>
 
-
-                
                 <div id="modalSuppliers" className="modal fade" aria-hidden="true">
                     <div className="modal-dialog">
                         <div className="modal-content">
@@ -303,5 +313,5 @@ const Suppliers = () => {
         </>
     )
 }
-    
+
 export default Suppliers;

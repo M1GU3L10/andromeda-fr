@@ -24,6 +24,7 @@ import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -131,7 +132,7 @@ const Products = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         let updatedValue = value;
-    
+
         // Manejo específico para campos numéricos
         if (name === 'Stock') {
             updatedValue = value === '' ? '' : Math.max(0, parseInt(value) || 0);
@@ -140,7 +141,7 @@ const Products = () => {
         } else if (name === 'Product_Name') {
             updatedValue = value.trim();
         }
-    
+
         setFormData(prevData => {
             const newData = { ...prevData, [name]: updatedValue };
             console.log(`Updated ${name}:`, updatedValue);
@@ -169,7 +170,7 @@ const Products = () => {
             errors.Price = 'El precio debe ser un número decimal positivo';
         }
         if (!formData.Category_Id) errors.Category_Id = 'La categoría es obligatoria';
-        
+
         console.log('Validation errors:', errors);
         return errors;
     };
@@ -180,20 +181,20 @@ const Products = () => {
             Stock: parseInt(formData.Stock),
             Price: parseFloat(formData.Price),
             Category_Id: parseInt(formData.Category_Id)
-            
+
         };
-    
+
         console.log('Sending data:', dataToSend);
-    
+
         try {
             const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-    
+
             console.log('Server response:', response);
-    
+
             if (response.status === 200 || response.status === 201) {
                 document.getElementById('btnCerrar').click();
                 fetchProductData();
@@ -218,7 +219,7 @@ const Products = () => {
             }
         }
     };
-    
+
 
     const handleUpdate = async () => {
         const errors = validateForm();
@@ -228,7 +229,7 @@ const Products = () => {
             formDataToSend.append('Stock', parseInt(formData.Stock));
             formDataToSend.append('Price', parseFloat(formData.Price).toFixed(2));
             formDataToSend.append('Category_Id', formData.Category_Id);
-            
+
             if (formData.Image instanceof File) {
                 formDataToSend.append('Image', formData.Image);
             }
@@ -383,15 +384,20 @@ const Products = () => {
                                                 <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
                                                 <td>
                                                     {product.Image && (
-                                                        <img src={product.Image} alt={product.Product_Name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                                        <img
+                                                            src={`http://localhost:1056/api/products/image/${product.id}`}
+                                                            alt={product.Product_Name}
+                                                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                                        />
                                                     )}
                                                 </td>
+
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Button color='primary' className='primary' data-bs-toggle='modal' data-bs-target='#modalViewProduct' onClick={() => setViewData(product)}><FaEye /></Button>
                                                         <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalProducts' className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Stock, product.Price, product.Category_Id, product.Image)}><FaPencilAlt /></Button>
                                                         <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
-                                                        
+
                                                     </div>
                                                 </td>
                                             </tr>
@@ -485,7 +491,7 @@ const Products = () => {
                             )}
                             <div className='modal-footer w-100 m-3'>
                                 <div className='d-grid col-3 Modal-buton' onClick={operation === 1 ? handleSubmit : handleUpdate}>
-                                    <Button type='button' className='btn-sucess'><MdOutlineSave/>Guardar</Button>
+                                    <Button type='button' className='btn-sucess'><MdOutlineSave />Guardar</Button>
                                 </div>
                                 <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
                             </div>
