@@ -13,7 +13,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import axios from 'axios';
 
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
         theme.palette.mode === 'light'
@@ -35,54 +34,50 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const Programming = () => {
-    const urlUsers= 'http://localhost:1056/api/users'
+    const urlUsers = 'http://localhost:1056/api/users';
+    const urlProgramming = 'http://localhost:1056/api/programming';
     const calendarRef = useRef(null);
     const [events, setEvents] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
-    const [users, SetUsers] = useState([])
+    const [users, setUsers] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
 
-
     useEffect(() => {
-        const fetchEvents = async () => {
+        const fetchData = async () => {
             try {
-                getUsers();
-                const response = await fetch('http://localhost:1056/api/programming');
-                const data = await response.json();
+                const [userResponse, programmingResponse] = await Promise.all([
+                    axios.get(urlUsers),
+                    axios.get(urlProgramming),
+                ]);
 
-                const transformedEvents = data.map(event => ({
+                const usersData = userResponse.data;
+                const programmingData = programmingResponse.data;
+
+                setUsers(usersData);
+
+                const transformedEvents = programmingData.map(event => ({
                     id: event.id.toString(),
-                    title: `${userName(event.userId)}`,
+                    title: `${getUserName(usersData, event.userId)}`,
                     start: `${event.day}T${event.startTime}`,
                     end: `${event.day}T${event.endTime}`,
                     extendedProps: {
-                        status: event.status
+                        status: event.status,
                     }
                 }));
 
                 setEvents(transformedEvents);
             } catch (error) {
-                console.error('Error fetching events:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchEvents();
-        
+        fetchData();
     }, []);
 
-    const getUsers = async () => {
-        const response = await axios.get(urlUsers)
-        SetUsers(response.data)
-    }
-
-    const userName = (userId) =>{
-        const user = users.find(user => user.id === userId)
-        return user ? user.name : 'Desconocido'
-    }
-
-    const FiltrarUsers = () => {
-        return users.filter(user => user.roleId === 2);
-    }
+    const getUserName = (users, userId) => {
+        const user = users.find(user => user.id === userId);
+        return user ? user.name : 'Desconocido';
+    };
 
     const handleMenuClick = (event, eventData) => {
         setAnchorEl(event.currentTarget);
@@ -108,15 +103,8 @@ const Programming = () => {
 
     const eventRender = (info) => {
         return (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span>{info.event.title}</span>
-                <IconButton
-                    aria-controls="simple-menu"
-                    aria-haspopup="true"
-                    onClick={(event) => handleMenuClick(event, info.event)}
-                >
-                    <MoreVertIcon />
-                </IconButton>
+            <div className='programming-content' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className='span-programming'>{info.event.title}</span>
             </div>
         );
     };
@@ -170,20 +158,8 @@ const Programming = () => {
                     </div>
                 </div>
             </div>
-
-            <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
-                keepMounted
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-            >
-                <MenuItem onClick={handleView}>Ver</MenuItem>
-                <MenuItem onClick={handleEdit}>Editar</MenuItem>
-                <MenuItem onClick={handleDelete}>Eliminar</MenuItem>
-            </Menu>
         </>
     );
-}
+};
 
 export default Programming;
