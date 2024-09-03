@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 // import * as React from 'react';
 // import { emphasize, styled } from '@mui/material/styles';
 // import axios from 'axios';
@@ -529,7 +529,6 @@
 // };
 
 // export default Orders;
-=======
 import * as React from 'react';
 import { emphasize, styled } from '@mui/material/styles';
 import axios from 'axios';
@@ -831,4 +830,3 @@ const Orders = () => {
 }
 
 export default Orders;
->>>>>>> 34af6587a3a6f03abdd9547733d18ee4eacf7f1d

@@ -888,19 +888,13 @@ body.dark li.page-item.disabled {
 }
 
 .serviceStatus{
-  background: #49c2395b;
   padding: 1px;
-  border-radius: 3px;
-  border: 1px solid #49c239ab;
   color: #49c239cc;
   font-size: 12px;
 }
 
 .serviceStatus.Inactive{
-  background: #c239395b;
   padding: 1px;
-  border-radius: 3px;
-  border: 1px solid #c23939ab;
   color: #c23939cc;
   font-size: 12px;
 }
