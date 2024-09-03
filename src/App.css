@@ -888,19 +888,13 @@ body.dark li.page-item.disabled {
 }
 
 .serviceStatus{
-  background: #49c2395b;
   padding: 1px;
-  border-radius: 3px;
-  border: 1px solid #49c239ab;
   color: #49c239cc;
   font-size: 12px;
 }
 
 .serviceStatus.Inactive{
-  background: #c239395b;
   padding: 1px;
-  border-radius: 3px;
-  border: 1px solid #c23939ab;
   color: #c23939cc;
   font-size: 12px;
 }
@@ -914,4 +908,59 @@ body.dark li.page-item.disabled {
 
 body.dark .fc .fc-toolbar-title{
   color: #fff;
+}
+
+.fc .fc-daygrid-event-harness {
+  background: rgb(54, 118, 245);
+  position: relative;
+  color: #f1f1f1;
+  border-radius: 10px;
+  max-height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px;
+}
+
+.span-programming{
+  color: #f1f1f1;
+  font-size: 13px;
+  font-family: "Open Sans", sans-serif !important;
+}
+
+.fc-daygrid-dot-event.fc-event-mirror, .fc-daygrid-dot-event:hover{
+  background: rgb(54, 118, 245) !important;
+  cursor: default;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: rgba(97, 97, 97, 0.758);
+  text-decoration: none;
+  display: inline-block;
+  padding: 2px 4px;
+  font-family: "Open Sans", sans-serif !important;
+}
+
+a{
+  color: rgba(97, 97, 97, 0.758);
+  text-decoration: none;
+  font-weight: 600;
+  font-family: "Open Sans", sans-serif !important;
+}
+
+.fc .fc-daygrid-day.fc-day-today{
+  background: rgba(54, 118, 245, 0.1);
+}
+
+.fc .fc-daygrid-day-top{
+  justify-content: center;
+}
+
+.fc .fc-button-primary{
+  background: rgb(54, 118, 245) !important;
+  border-color: rgb(54, 118, 245) !important; 
+}
+
+.fc .fc-scrollgrid{
+  border-radius: 10px;
 }

@@ -7,10 +7,11 @@ import { FaUserCog } from "react-icons/fa";
 import { RxScissors } from "react-icons/rx";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import Button from '@mui/material/Button';
-import { BsPlusSquareFill } from "react-icons/bs";
-
-
+import IconButton from '@mui/material/IconButton';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import axios from 'axios';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -33,40 +34,80 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const Programming = () => {
+    const urlUsers = 'http://localhost:1056/api/users';
+    const urlProgramming = 'http://localhost:1056/api/programming';
     const calendarRef = useRef(null);
     const [events, setEvents] = useState([]);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [users, setUsers] = useState([]);
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
     useEffect(() => {
-        const fetchEvents = async () => {
+        const fetchData = async () => {
             try {
-                const response = await fetch('http://localhost:1056/api/programming');
-                const data = await response.json();
+                const [userResponse, programmingResponse] = await Promise.all([
+                    axios.get(urlUsers),
+                    axios.get(urlProgramming),
+                ]);
 
-                // Transform the data to match FullCalendar's expected format
-                const transformedEvents = data.map(event => ({
-                    id: event.id.toString(), // Ensure ID is a string
-                    title: `User ${event.userId}`, // Customize as needed
+                const usersData = userResponse.data;
+                const programmingData = programmingResponse.data;
+
+                setUsers(usersData);
+
+                const transformedEvents = programmingData.map(event => ({
+                    id: event.id.toString(),
+                    title: `${getUserName(usersData, event.userId)}`,
                     start: `${event.day}T${event.startTime}`,
                     end: `${event.day}T${event.endTime}`,
                     extendedProps: {
-                        status: event.status
+                        status: event.status,
                     }
                 }));
 
                 setEvents(transformedEvents);
             } catch (error) {
-                console.error('Error fetching events:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchEvents();
+        fetchData();
     }, []);
 
-    const handleDateClick = (arg) => {
-        alert(`Date clicked: ${arg.dateStr}`);
+    const getUserName = (users, userId) => {
+        const user = users.find(user => user.id === userId);
+        return user ? user.name : 'Desconocido';
     };
 
-    
+    const handleMenuClick = (event, eventData) => {
+        setAnchorEl(event.currentTarget);
+        setSelectedEvent(eventData);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setSelectedEvent(null);
+    };
+
+    const handleEdit = () => {
+        handleMenuClose();
+    };
+
+    const handleView = () => {
+        handleMenuClose();
+    };
+
+    const handleDelete = () => {
+        handleMenuClose();
+    };
+
+    const eventRender = (info) => {
+        return (
+            <div className='programming-content' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className='span-programming'>{info.event.title}</span>
+            </div>
+        );
+    };
 
     return (
         <>
@@ -110,7 +151,8 @@ const Programming = () => {
                                 ref={calendarRef}
                                 plugins={[dayGridPlugin]}
                                 initialView="dayGridMonth"
-                                events={events} // Pass the transformed events to FullCalendar
+                                events={events}
+                                eventContent={eventRender} // Usa eventRender para personalizar la celda del evento
                             />
                         </div>
                     </div>
@@ -118,6 +160,6 @@ const Programming = () => {
             </div>
         </>
     );
-}
+};
 
 export default Programming;
