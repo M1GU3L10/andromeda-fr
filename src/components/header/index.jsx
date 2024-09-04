@@ -58,7 +58,13 @@ const Header = () => {
 
                         </div>
                         <div className="col-sm-3 d-flex align-items-center parte2">
-                            <Button className='rounded-circle mr-3' onClick={() => context.setIsToggleSidebar(!context.isToggleSidebar)}>
+                            <Button className='rounded-circle mr-3' onClick={() => {
+                                const newValue = !context.isToggleSidebar;
+                                context.setIsToggleSidebar(newValue);
+                                if (context.onSidebarToggle) {
+                                    context.onSidebarToggle(newValue); // Notifica a Programming sobre el cambio
+                                }
+                            }}>
                                 {
                                     context.isToggleSidebar === false ? <MdMenuOpen /> : <MdOutlineMenu />
                                 }

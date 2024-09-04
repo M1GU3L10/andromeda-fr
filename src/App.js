@@ -26,6 +26,7 @@ function App() {
 
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
   const [themeMode, setThemeMode] = useState('true');
+  
 
   useEffect(() => {
     if (themeMode === true) {
@@ -68,7 +69,6 @@ function App() {
               <Route path="/orders" exact={true} element={<Orders />} />
               <Route path="/products" exact={true} element={<Products />} />
               <Route path="/programming" exact={true} element={<Programming />} />
-             
               <Route path="/sales" exact={true} element={<Sales />} />
               <Route path="/services" exact={true} element={<Services />} />
               <Route path="/shopping" exact={true} element={<Shopping />} />
