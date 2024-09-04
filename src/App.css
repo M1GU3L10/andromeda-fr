@@ -969,3 +969,17 @@ a{
   border-radius: 10px;
 }
 
+<<<<<<< HEAD
+=======
+.userStatus {
+  font-weight: normal; /* Elimina la negrilla */
+}
+
+.userStatus.active {
+  color: green;
+}
+
+.userStatus.inactive {
+  color: #ff4d4d;
+}
+>>>>>>> 2fc7970dd3870a5bac5db97709a93199857cf53a
