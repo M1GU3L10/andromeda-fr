@@ -27,6 +27,25 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 });
 
+const EventComponent = ({ info }) => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+        <div
+            className='programming-content'
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            {!isHovered ? (
+                <span className='span-programming'>{info.event.title}</span>
+            ) : (
+                <span className='span-programming'>{info.event.extendedProps.startTime}-{info.event.extendedProps.endTime}</span>
+            )}
+        </div>
+    );
+};
+
 const Programming = () => {
     const urlUsers = 'http://localhost:1056/api/users';
     const urlProgramming = 'http://localhost:1056/api/programming';
@@ -55,6 +74,8 @@ const Programming = () => {
                     end: `${event.day}T${event.endTime}`,
                     extendedProps: {
                         status: event.status,
+                        startTime: event.startTime,
+                        endTime: event.endTime,
                     }
                 }));
 
@@ -72,19 +93,10 @@ const Programming = () => {
             window.dispatchEvent(new Event('resize'));
         }, 300);  // Agregar un pequeño retraso antes de disparar el evento resize
     }, [isToggleSidebar]);
-    
 
     const getUserName = (users, userId) => {
         const user = users.find(user => user.id === userId);
         return user ? user.name : 'Desconocido';
-    };
-
-    const eventRender = (info) => {
-        return (
-            <div className='programming-content' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span className='span-programming'>{info.event.title}</span>
-            </div>
-        );
     };
 
     return (
@@ -126,7 +138,7 @@ const Programming = () => {
                             plugins={[dayGridPlugin]}
                             initialView="dayGridMonth"
                             events={events}
-                            eventContent={eventRender} // Usa eventRender para personalizar la celda del evento
+                            eventContent={(info) => <EventComponent info={info} />}
                         />
                     </div>
                 </div>
