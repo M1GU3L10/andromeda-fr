@@ -341,7 +341,7 @@ const Users = () => {
             if (metodo === 'PUT' && parametros.hasOwnProperty('status')) {
                 title = `¿Estás seguro que deseas ${parametros.status === 'A' ? 'activar' : 'desactivar'} el usuario?`;
                 text = 'Esta acción puede afectar la disponibilidad del servicio.';
-                successMessage = 'Estado del usuario actualizado exitosamente';
+                successMessage = 'Usuario actualizado exitosamente';
             } else if (metodo === 'DELETE') {
                 title = `¿Estás seguro que deseas eliminar el usuario?`;
                 text = 'No se podrá deshacer esta acción.';
@@ -467,7 +467,12 @@ const Users = () => {
                                                 <td>{user.email}</td>
                                                 <td>{user.phone}</td>
                                                 <td>{getRolesNames(user.roleId)}</td>
-                                                <td>{user.status === 'A' ? 'Activo' : 'Inactivo'}</td>
+                                                <td>
+                                                    <span className={`userStatus ${user.status === 'A' ? 'active' : 'inactive'}`}>
+                                                        {user.status === 'A' ? 'Activo' : 'Inactivo'}
+                                                    </span>
+                                                </td>
+
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
 

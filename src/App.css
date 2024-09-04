@@ -964,3 +964,15 @@ a{
 .fc .fc-scrollgrid{
   border-radius: 10px;
 }
+
+.userStatus {
+  font-weight: normal; /* Elimina la negrilla */
+}
+
+.userStatus.active {
+  color: green;
+}
+
+.userStatus.inactive {
+  color: #ff4d4d;
+}

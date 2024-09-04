@@ -6,22 +6,23 @@ import HomeIcon from '@mui/icons-material/Home';
 import { GiHairStrands } from "react-icons/gi";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
-import { FaEye, FaPencilAlt } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
+import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
-import SearchBox from '../../components/SearchBox';
-import Pagination from '@mui/material/Pagination';
-import axios from 'axios';
+import axios from 'axios'
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { show_alerta } from '../../assets/functions';
+import { show_alerta } from '../../assets/functions'
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
-import { alpha } from '@mui/material/styles';
-import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
+import { Modal, Form } from 'react-bootstrap';
+import { IoSearch } from "react-icons/io5";
+import Pagination from '../../components/pagination/index';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
+
     const backgroundColor =
         theme.palette.mode === 'light'
             ? theme.palette.grey[100]
@@ -39,129 +40,304 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
             backgroundColor: emphasize(backgroundColor, 0.12),
         },
     };
-});
+})
 
-const PinkSwitch = styled(Switch)(({ theme }) => ({
-    '& .MuiSwitch-switchBase.Mui-checked': {
-        color: pink[600],
-        '&:hover': {
-            backgroundColor: alpha(pink[600], theme.palette.action.hoverOpacity),
-        },
-    },
-    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-        backgroundColor: pink[600],
-    },
-}));
 
 const Roles = () => {
     const url = 'http://localhost:1056/api/roles';
-    const [roles, setRoles] = useState([]);
+    const [services, setServices] = useState([]);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [status, setStatus] = useState('');
-    const [permission, setPermission] = useState('');
     const [operation, setOperation] = useState(1);
-    const [title, setTitle] = useState('Registrar servicio');
+    const [title, setTitle] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [detailData, setDetailData] = useState({});
+    const [value, setValue] = useState([]);
+    const [search, setSearch] = useState('');
+    const [dataQt, setDataQt] = useState(3);
+    const [currentPages, setCurrentPages] = useState(1);
+
+
+    const [errors, setErrors] = useState({
+        name: '',
+    });
+
+
+    const [touched, setTouched] = useState({
+        name: false,
+    });
+
+
+
 
     useEffect(() => {
-        getRoles();
-    }, []);
+        getServices();
+    }, [])
 
-    const getRoles = async () => {
+
+    const getServices = async () => {
         const response = await axios.get(url);
-        setRoles(response.data);
-    };
+        setServices(response.data);
+    }
 
-    const openModal = (op, id = '', name = '', status = '', permissions = '') => {
-        setId(id);
-        setName(name);
-        setStatus(status);
-        setPermission(permissions);
+
+    const searcher = (e) => {
+        setSearch(e.target.value);
+        console.log(e.target.value)
+    }
+
+
+    const indexEnd = currentPages * dataQt;
+    const indexStart = indexEnd - dataQt;
+
+
+    const nPages = Math.ceil(services.length / dataQt);
+
+
+    let results = []
+    if (!search) {
+        results = services.slice(indexStart, indexEnd);
+    } else {
+        results = services.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
+    }
+
+
+    const openModal = (op, id, name) => {
+        setId('');
+        setName('');
+        setStatus('A');
         setOperation(op);
+
 
         if (op === 1) {
             setTitle('Registrar rol');
+            setName('');
+            setStatus('A');  
         } else if (op === 2) {
             setTitle('Editar rol');
+            setId(id);
+            setName(name);
         }
+        setShowModal(true);
+    }
 
-        setTimeout(() => {
-            document.getElementById('name').focus();
-        }, 500);
+
+    const handleClose = () => {
+        setId('');
+        setName('');
+        setStatus('A');
+
+
+        setErrors({
+            name: '',
+        });
+        setTouched({
+            name: false,
+        });
+
+
+        setShowModal(false);
     };
 
-    const validar = () => {
-        let parametros;
-        let metodo;
 
-        if (name.trim() === '') {
-            show_alerta('Digite el nombre', 'warning');
-        } else if (status === '') {
-            show_alerta('Digite el estado', 'warning');
-        } else if (permission.trim() === '') {
-            show_alerta('Digite un permiso', 'warning');
-        } else {
-            if (operation === 1) {
-                parametros = {
-                    name: name.trim(),
-                    status: 'A',
-                    permission: permission.trim()
-                };
-                metodo = 'POST';
-            } else {
-                parametros = {
-                    id: id,
-                    name: name.trim(),
-                    status: 'A',
-                    permission: permission.trim()
-                };
-                metodo = 'PUT';
+
+
+    const validateName = (value) => {
+        const regex = /^[A-Za-z\s]+$/;
+        return regex.test(value) ? '' : 'El nombre solo debe contener letras';
+    };
+
+
+    const checkIfServiceExists = async (name) => {
+        try {
+            const response = await axios.get(`${url}`, {
+                params: { name }
+            });
+            return response.data.some(service => service.name.trim().toLowerCase() === name.trim().toLowerCase());
+        } catch (error) {
+            console.error('Error al verificar la existencia del rol:', error);
+            return false;
+        }
+    };
+
+
+   
+    const handleValidation = (name, value) => {
+        let error = '';
+        switch (name) {
+            case 'name':
+                error = validateName(value);
+                break;
+            default:
+                break;
+        }
+        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+    };
+
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        handleValidation(name, value);
+
+
+        switch (name) {
+            case 'name':
+                setName(value);
+                break;
+            default:
+                break;
+        }
+    };
+
+
+    const handleBlur = (e) => {
+        const { name } = e.target;
+        setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
+        handleValidation(name, e.target.value);
+    };
+
+
+    const validar = async () => {
+        if (errors.name || !name.trim()) {
+            show_alerta(errors.name || 'Por favor, complete el nombre del rol.', 'warning');
+            return;
+        }
+
+
+        // Verifica la existencia
+        if (operation === 1) {
+            const serviceExists = await checkIfServiceExists(name.trim());
+
+
+            if (serviceExists) {
+                show_alerta('El rol con este nombre ya existe. Por favor, elija otro nombre.', 'warning');
+                return;
             }
+        }
+
+
+        const isValidName = !validateName(name);
+
+
+        if (!isValidName) show_alerta(errors.name, 'warning');
+        else {
+            const parametros = {
+                id: id,
+                name: name.trim(),
+                status: status,
+            };
+
+
+            const isUpdate = operation === 2;
+            const metodo = isUpdate ? 'PUT' : 'POST';
             enviarSolicitud(metodo, parametros);
         }
     };
+
 
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
         try {
             await axios({ method: metodo, url: urlWithId, data: parametros });
             show_alerta('Operación exitosa', 'success');
-            document.getElementById('btnCerrar').click();
-            getRoles();
+            if (metodo === 'PUT' || metodo === 'POST') {
+                document.getElementById('btnCerrar').click();
+            }
+            getServices();
+            console.log(parametros);
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
             console.log(error);
+            console.log(parametros);
         }
     };
 
-    const handleSwitchChange = (id) => (event) => {
-        const newStatus = event.target.checked ? 'A' : 'I';
-        const updatedRole = { id, status: newStatus };
-        enviarSolicitud('PUT', updatedRole);
+
+    const handleCloseDetail = () => {
+        setShowModal(false);
+        setShowDetailModal(false);
     };
 
-    const deleteRole = async (id, name) => {
+
+    const handleViewDetails = (service) => {
+        setDetailData(service);
+        setShowDetailModal(true);
+    };
+
+
+    const deleteService = async (id, name) => {
         const Myswal = withReactContent(Swal);
         Myswal.fire({
-            title: `¿Está seguro de que desea eliminar el rol ${name}?`,
+            title: 'Estas seguro que desea eliminar el rol ' + name + '?',
             icon: 'question',
-            text: 'No se podrá dar marcha atrás',
+            text: 'No se podrá dar marcha atras',
             showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
+            confirmButtonText: 'Si, eliminar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                enviarSolicitud('DELETE', { id });
+                setId(id);
+                enviarSolicitud('DELETE', { id: id })
             } else {
-                show_alerta('El rol NO fue eliminado', 'info');
+                show_alerta('El rol NO fue eliminado', 'info')
+            }
+        })
+    }
+
+
+    const handleSwitchChange = async (serviceId, checked) => {
+        // Encuentra el servicio que está siendo actualizado
+        const serviceToUpdate = services.find(service => service.id === serviceId);
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el rol "${serviceToUpdate.name}"?`,
+            icon: 'question',
+            text: 'Esta acción puede afectar la disponibilidad del rol.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const updatedService = {
+                    ...serviceToUpdate,
+                    status: checked ? 'A' : 'I'
+                };
+                try {
+                    const response = await axios.put(`${url}/${serviceId}`, updatedService);
+                    if (response.status === 200) {
+                        setServices(services.map(service =>
+                            service.id === serviceId ? { ...service, status: updatedService.status } : service
+                        ));
+                        show_alerta('Estado del rol actualizado exitosamente', 'success');
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        console.log('Error details:', error.response.data);
+                        show_alerta('Error al actualizar el estado del rol: ' + JSON.stringify(error.response.data.errors), 'error');
+                    } else {
+                        console.log('Error details:', error.message);
+                        show_alerta('Error al actualizar el estado del rol', 'error');
+                    }
+                }
+            } else {
+                // Si el usuario cancela, restablece el switch a su estado original
+                setServices(services.map(service =>
+                    service.id === serviceId ? { ...service, status: !checked ? 'A' : 'I' } : service
+                ));
+                show_alerta('Estado del rol no cambiado', 'info');
             }
         });
     };
 
+
+
+
     return (
         <>
             <div className="right-content w-100">
-                <div className="row d-flex align-items-center w-100">
+                <div class="row d-flex align-items-center w-100">
                     <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
                             <span className='Title'>Roles</span>
@@ -178,7 +354,7 @@ const Roles = () => {
                                     <StyledBreadcrumb
                                         component="a"
                                         href="#"
-                                        label="Servicios"
+                                        label="Roles"
                                         icon={<GiHairStrands fontSize="small" />}
                                     />
                                 </Breadcrumbs>
@@ -188,86 +364,122 @@ const Roles = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained" data-bs-toggle='modal' data-bs-target='#modalRoles'><BsPlusSquareFill />Registrar</Button>
+                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
-                                <SearchBox />
+                                <div className="searchBox position-relative d-flex align-items-center">
+                                    <IoSearch className="mr-2" />
+                                    <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
+                                </div>
                             </div>
                         </div>
                         <div className='table-responsive mt-3'>
-                            <table className='table table-bordered table-hover v-align'>
+                            <table className='table table-bordered table-hover v-align table-striped'>
                                 <thead className='table-primary'>
                                     <tr>
                                         <th>#</th>
                                         <th>Nombre</th>
-                                        <th>Permiso</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {
-                                        roles.map((role, i) => (
-                                            <tr key={role.id}>
-                                                <td>{i + 1}</td>
-                                                <td>{role.name}</td>
-                                                <td>{role.permission}</td>
-                                                <td>{role.status === 'A' ? 'Activo' : 'Inactivo'}</td>
+                                    {results.length > 0 ? (
+                                        results.map((service, i) => (
+                                            <tr key={service.id}>
+                                                <td>{(i + 1)}</td>
+                                                <td>{service.name}</td>
+                                                <td><span  className= {`serviceStatus ${service.status ===  'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        <PinkSwitch
-                                                            checked={role.status === 'A'}
-                                                            onChange={handleSwitchChange(role.id)}
-                                                            color="success"
+                                                        <Switch
+                                                            checked={service.status === 'A'}
+                                                            onChange={(e) => handleSwitchChange(service.id, e.target.checked)}
                                                         />
-                                                        <Button color='primary' className='primary'><FaEye /></Button>
-                                                        <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalRoles' className='secondary' onClick={() => openModal(2, role.id, role.name, role.status, role.permission)}><FaPencilAlt /></Button>
-                                                        <Button color='error' className='delete' onClick={() => deleteRole(role.id, role.name)}><IoTrashSharp /></Button>
+                                                        <Button color='primary' className='primary' onClick={() => handleViewDetails(service)}><FaEye /></Button>
+                                                        {
+                                                            service.status === 'A' && (
+                                                                <>
+                                                                    <Button color="secondary" className='secondary' onClick={() => openModal(2, service.id, service.name)}><FaPencilAlt /></Button>
+                                                                    <Button color='error' className='delete' onClick={() => deleteService(service.id, service.name)}><IoTrashSharp /></Button>
+                                                                </>
+                                                            )
+                                                        }
                                                     </div>
                                                 </td>
                                             </tr>
                                         ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className='text-center'>No hay roles disponibles</td>
+                                        </tr>
+                                    )
+
+
                                     }
                                 </tbody>
                             </table>
-                            <div className="d-flex table-footer">
-                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
-                            </div>
+                            {
+                                results.length > 0 ? (
+                                    <div className="d-flex table-footer">
+                                        <Pagination
+                                            setCurrentPages={setCurrentPages}
+                                            currentPages={currentPages}
+                                            nPages={nPages} />
+                                    </div>
+                                ) : (<div className="d-flex table-footer">
+                                </div>)
+                            }
                         </div>
                     </div>
                 </div>
-                <div id="modalRoles" className="modal fade" aria-hidden="true">
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <label className="h5">{title}</label>
-                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div className="modal-body">
-                                <input type="hidden" id="id" />
-                                <div className="input-group mb-3">
-                                    <input type="text" id="name" className="form-control" placeholder="Nombre"
-                                        value={name} onChange={(e) => setName(e.target.value)}
-                                    />
-                                </div>
-                                <div className="input-group mb-3">
-                                    <input type="text" id="permission" className="form-control" placeholder="Permisos"
-                                        value={permission} onChange={(e) => setPermission(e.target.value)}
-                                    />
-                                </div>
-                                <div className='d-grid col-4 mx-auto' onClick={() => validar()}>
-                                    <Button type='button' className='btn-success'>Guardar</Button>
-                                </div>
-                            </div>
-                            <div className='modal-footer'>
-                                <Button type='button' id='btnCerrar' className='btn-blue' data-bs-dismiss='modal'>Cerrar</Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <Modal show={showModal}>
+                    <Modal.Header>
+                        <Modal.Title>{title}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group>
+                                <Form.Label>Nombre</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="name"
+                                    value={name}
+                                    placeholder="Nombre"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.name && !!errors.name}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.name}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="primary" onClick={validar} className='btn-sucess'>
+                            Guardar
+                        </Button>
+                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                            Cerrar                        </Button>
+                    </Modal.Footer>
+                </Modal>
+                <Modal show={showDetailModal} onHide={handleCloseDetail}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Detalle rol</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p><strong>Nombre:</strong> {detailData.name}</p>
+                        <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         </>
     );
 }
+
 
 export default Roles;

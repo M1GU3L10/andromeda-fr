@@ -17,6 +17,7 @@ import Services from './pages/servicesView';
 import Shopping from './pages/shopping';
 import Suppliers from './pages/suppliers';
 import Users from './pages/users';
+import Roles from './pages/roles';
 import Absences from './pages/absences';
 
 
@@ -74,6 +75,7 @@ function App() {
               <Route path="/shopping" exact={true} element={<Shopping />} />
               <Route path="/suppliers" exact={true} element={<Suppliers />} />
               <Route path="/users" exact={true} element={<Users />} />
+              <Route path="/roles" exact={true} element={<Roles />} />
               <Route path="/absences" exact={true} element={<Absences />} />
             </Routes>
           </div>
