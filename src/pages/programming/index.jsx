@@ -35,14 +35,16 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 const EventComponent = ({ info }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
-    const menuRef = useRef(null); // Referencia para el menú
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
+        setIsMenuOpen(true); // Abrir el menú
     };
 
     const handleClose = () => {
         setAnchorEl(null);
+        setIsMenuOpen(false); // Cerrar el menú
     };
 
     const handleEdit = () => {
@@ -60,25 +62,17 @@ const EventComponent = ({ info }) => {
         handleClose();
     };
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                handleClose();
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
     return (
         <div
             className='programming-content'
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseLeave={() => {
+                setIsHovered(false);
+                if (!isMenuOpen) {
+                    handleClose(); // Cerrar el menú si no está abierto
+                }
+            }}
             onClick={handleClick}  // Abrir el menú al hacer clic
         >
             {!isHovered ? (
@@ -89,20 +83,34 @@ const EventComponent = ({ info }) => {
 
             {/* Menu component */}
             <Menu
-                ref={menuRef} // Asignar la referencia al menú
                 className='Menu-programming'
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
                 PaperProps={{
+                    onMouseEnter: () => setIsMenuOpen(true), // Mantener abierto cuando el mouse entra
+                    onMouseLeave: handleClose, // Cerrar cuando el mouse sale
                     style: {
                         maxHeight: 48 * 4.5,
                     },
                 }}
             >
-                <MenuItem className='Menu-programming-item' onClick={handleEdit}><Button color='primary' className='primary'><FaEye /></Button></MenuItem>
-                <MenuItem className='Menu-programming-item' onClick={handleView}><Button color="secondary" className='secondary'><FaPencilAlt /></Button></MenuItem>
-                <MenuItem className='Menu-programming-item' onClick={handleDelete}><Button color='error' className='delete' ><IoTrashSharp /></Button></MenuItem>
+
+                <MenuItem className='Menu-programming-item' onClick={handleEdit}>
+                    <Button color='primary' className='primary'>
+                        <FaEye />
+                    </Button>
+                </MenuItem>
+                <MenuItem className='Menu-programming-item' onClick={handleView}>
+                    <Button color="secondary" className='secondary'>
+                        <FaPencilAlt />
+                    </Button>
+                </MenuItem>
+                <MenuItem className='Menu-programming-item' onClick={handleDelete}>
+                    <Button color='error' className='delete'>
+                        <IoTrashSharp />
+                    </Button>
+                </MenuItem>
             </Menu>
         </div>
     );
