@@ -8,7 +8,12 @@ import { RxScissors } from "react-icons/rx";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import axios from 'axios';
-import { MyContext } from '../../App'; // Asegúrate de tener el contexto para el sidebar
+import { MyContext } from '../../App';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { FaEye, FaPencilAlt } from "react-icons/fa";
+import { IoTrashSharp } from "react-icons/io5";
+import Button from '@mui/material/Button';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800];
@@ -29,6 +34,44 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 const EventComponent = ({ info }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const menuRef = useRef(null); // Referencia para el menú
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleEdit = () => {
+        console.log("Editar evento:", info.event);
+        handleClose();
+    };
+
+    const handleView = () => {
+        console.log("Ver detalles del evento:", info.event);
+        handleClose();
+    };
+
+    const handleDelete = () => {
+        console.log("Eliminar evento:", info.event);
+        handleClose();
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                handleClose();
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     return (
         <div
@@ -36,12 +79,31 @@ const EventComponent = ({ info }) => {
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onClick={handleClick}  // Abrir el menú al hacer clic
         >
             {!isHovered ? (
                 <span className='span-programming'>{info.event.title}</span>
             ) : (
                 <span className='span-programming'>{info.event.extendedProps.startTime}-{info.event.extendedProps.endTime}</span>
             )}
+
+            {/* Menu component */}
+            <Menu
+                ref={menuRef} // Asignar la referencia al menú
+                className='Menu-programming'
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+                PaperProps={{
+                    style: {
+                        maxHeight: 48 * 4.5,
+                    },
+                }}
+            >
+                <MenuItem className='Menu-programming-item' onClick={handleEdit}><Button color='primary' className='primary'><FaEye /></Button></MenuItem>
+                <MenuItem className='Menu-programming-item' onClick={handleView}><Button color="secondary" className='secondary'><FaPencilAlt /></Button></MenuItem>
+                <MenuItem className='Menu-programming-item' onClick={handleDelete}><Button color='error' className='delete' ><IoTrashSharp /></Button></MenuItem>
+            </Menu>
         </div>
     );
 };
@@ -50,7 +112,7 @@ const Programming = () => {
     const urlUsers = 'http://localhost:1056/api/users';
     const urlProgramming = 'http://localhost:1056/api/programming';
     const calendarRef = useRef(null);
-    const { isToggleSidebar } = useContext(MyContext); // Obtén el estado del sidebar
+    const { isToggleSidebar } = useContext(MyContext);
     const [events, setEvents] = useState([]);
     const [users, setUsers] = useState([]);
 

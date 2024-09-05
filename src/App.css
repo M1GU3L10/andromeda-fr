@@ -722,6 +722,22 @@ body.dark .table tbody td {
   margin: 0px 3px !important;
 }
 
+.Menu-programming{
+  background: transparent !important;
+}
+
+.Menu-programming .Menu-programming-item button{
+  min-width: 30px !important;
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.Menu-programming .Menu-programming-item{
+  width: 45px !important;
+  height: 35px !important;
+  padding: 5px;
+}
+
 .table tbody .actions button.secondary svg {
   color: rgb(155, 39, 176);
 }
@@ -729,6 +745,32 @@ body.dark .table tbody td {
 .table tbody .actions button.secondary {
   background: rgb(155, 39, 176, 0.2);
 }
+
+button.primary svg {
+  color: rgb(24, 102, 237) !important;
+}
+
+button.primary{
+  background: rgb(24, 102, 237, 0.2) !important;
+}
+
+button.secondary svg {
+  color: rgb(155, 39, 176) !important;
+}
+
+button.secondary{
+  background: rgb(155, 39, 176, 0.2) !important;
+
+}
+
+button.delete{
+  background: rgb(212, 47, 47, 0.2) !important;
+}
+
+button.delete svg {
+  color: rgb(212, 47, 47) !important;
+}
+
 
 .table tbody .actions button.primary svg {
   color: rgb(24, 102, 237);
@@ -919,7 +961,7 @@ body.dark .fc .fc-toolbar-title{
   position: relative;
   color: #f1f1f1;
   border-radius: 10px;
-  max-height: 35px;
+  max-height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -934,7 +976,7 @@ body.dark .fc .fc-toolbar-title{
 
 .fc-daygrid-dot-event.fc-event-mirror, .fc-daygrid-dot-event:hover{
   background: rgb(54, 118, 245) !important;
-  cursor: default;
+  cursor: pointer;
 }
 
 .fc .fc-col-header-cell-cushion {
@@ -979,4 +1021,15 @@ a{
 
 .userStatus.inactive {
   color: #ff4d4d;
+}
+
+.css-6hp17o-MuiList-root-MuiMenu-list{
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.css-6hp17o-MuiList-root-MuiMenu-list{
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
 }
