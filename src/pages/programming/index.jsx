@@ -13,7 +13,14 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
+import interactionPlugin from "@fullcalendar/interaction";
+import { Modal, Form } from 'react-bootstrap';
 import Button from '@mui/material/Button';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
+import { show_alerta } from '../../assets/functions'
+
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800];
@@ -123,6 +130,32 @@ const Programming = () => {
     const { isToggleSidebar } = useContext(MyContext);
     const [events, setEvents] = useState([]);
     const [users, setUsers] = useState([]);
+    const [programming, setProgramming] = useState([]);
+    const [id, setId] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
+    const [day, setDay] = useState('');
+    const [userid, setUserid] = useState('');
+    const [operation, setOperation] = useState(1);
+    const [title, setTitle] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [detailData, setDetailData] = useState({});
+
+    const [errors, setErrors] = useState({
+        startTime: '',
+        endTime: '',
+        day: '',
+        userid: '',
+    });
+
+    const [touched, setTouched] = useState({
+        startTime: false,
+        endTime: false,
+        day: false,
+        tiuseridme: false,
+    });
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -169,6 +202,152 @@ const Programming = () => {
         return user ? user.name : 'Desconocido';
     };
 
+    const FiltrarUsers = () => {
+        return users.filter(user => user.roleId === 2);
+    }
+
+    const EventComponent = ({ info }) => {
+        const [isHovered, setIsHovered] = useState(false);
+        const [anchorEl, setAnchorEl] = useState(null);
+        const [isMenuOpen, setIsMenuOpen] = useState(false);
+    
+        const handleClick = (event) => {
+            setAnchorEl(event.currentTarget);
+            setIsMenuOpen(true); // Abrir el menú
+        };
+    
+        const handleClose = () => {
+            setAnchorEl(null);
+            setIsMenuOpen(false); // Cerrar el menú
+        };
+    
+        const handleEdit = () => {
+            console.log("Editar evento:", info.event);
+            handleClose();
+        };
+    
+        const handleView = () => {
+            console.log("Ver detalles del evento:", info.event);
+            handleClose();
+        };
+    
+        const handleDelete = () => {
+            console.log("Eliminar evento:", info.event);
+            handleClose();
+        };
+    
+        return (
+            <div
+                className='programming-content'
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => {
+                    setIsHovered(false);
+                    if (!isMenuOpen) {
+                        handleClose(); // Cerrar el menú si no está abierto
+                    }
+                }}
+                onClick={handleClick}  // Abrir el menú al hacer clic
+            >
+                {!isHovered ? (
+                    <span className='span-programming'>{info.event.title}</span>
+                ) : (
+                    <span className='span-programming'>{info.event.extendedProps.startTime}-{info.event.extendedProps.endTime}</span>
+                )}
+    
+                {/* Menu component */}
+                <Menu
+                    className='Menu-programming'
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                    PaperProps={{
+                        onMouseEnter: () => setIsMenuOpen(true), // Mantener abierto cuando el mouse entra
+                        onMouseLeave: handleClose, // Cerrar cuando el mouse sale
+                        style: {
+                            maxHeight: 48 * 4.5,
+                        },
+                    }}
+                >
+    
+                    <MenuItem className='Menu-programming-item' onClick={handleEdit}>
+                        <Button color='primary' className='primary'>
+                            <FaEye />
+                        </Button>
+                    </MenuItem>
+                    <MenuItem className='Menu-programming-item' onClick={()=>openModal(2)}>
+                        <Button color="secondary"  className='secondary'>
+                            <FaPencilAlt />
+                        </Button>
+                    </MenuItem>
+                    <MenuItem className='Menu-programming-item' onClick={()=>deleteProgramming(info.event.id, info.event.title)}>
+                        <Button color='error' className='delete'>
+                            <IoTrashSharp />
+                        </Button>
+                    </MenuItem>
+                </Menu>
+            </div>
+        );
+    };
+
+    const openModal = (op, id, startTime, endTime, day, userid) => {
+        setId('');
+        setStartTime('');
+        setEndTime('');
+        setDay('');
+        setUserid('');
+        setOperation(op);
+
+        if (op === 1) {
+            setTitle('Registrar servicio');
+        } else if (op === 2) {
+            setTitle('Editar servicio');
+            setId(id);
+            setStartTime(startTime);
+            setEndTime(endTime);
+            setDay(day);
+            setUserid(userid);
+        }
+        setShowModal(true);
+    }
+
+    const handleClose = () => setShowModal(false);
+
+    const enviarSolicitud = async (metodo, parametros) => {
+        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${urlProgramming}/${parametros.id}` : urlProgramming;
+        try {
+            await axios({ method: metodo, url: urlWithId, data: parametros });
+            show_alerta('Operación exitosa', 'success');
+            if (metodo === 'PUT' || metodo === 'POST') {
+                document.getElementById('btnCerrar').click();
+            }
+            console.log(parametros);
+        } catch (error) {
+            show_alerta('Error en la solicitud', 'error');
+            console.log(error);
+            console.log(parametros);
+        }
+    };
+
+    const deleteProgramming = async (id, userid) => {
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: 'Estas seguro que desea eliminar la programacion del empleado ' + userid + '?',
+            icon: 'question',
+            text: 'No se podrá dar marcha atras',
+            showCancelButton: true,
+            confirmButtonText: 'Si, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setId(id);
+                enviarSolicitud('DELETE', { id: id })
+            } else {
+                show_alerta('La programacion NO fue eliminado', 'info')
+            }
+        })
+    }
+
     return (
         <div className="right-content w-100">
             <div className="row d-flex align-items-center w-100">
@@ -205,14 +384,90 @@ const Programming = () => {
                     <div className='table-responsive mt-3'>
                         <FullCalendar
                             ref={calendarRef}
-                            plugins={[dayGridPlugin]}
                             initialView="dayGridMonth"
                             events={events}
                             eventContent={(info) => <EventComponent info={info} />}
+                            plugins={[dayGridPlugin, interactionPlugin]}
+                            dateClick={() => openModal(1)}
                         />
                     </div>
                 </div>
             </div>
+            <Modal show={showModal}>
+                <Modal.Header>
+                    <Modal.Title>{title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Hora de inicio</Form.Label>
+                            <Form.Control
+                                type="time"
+                                id="startTime"
+                                name="startTime"
+                                placeholder="Inicio"
+                                value={startTime}
+                                isInvalid={!!errors.startTime}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.startTime}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Hora de fin</Form.Label>
+                            <Form.Control
+                                type="time"
+                                id="endTime"
+                                name="endTime"
+                                placeholder="Fin"
+                                value={endTime}
+                                isInvalid={!!errors.endTime}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.endTime}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Dia</Form.Label>
+                            <Form.Control
+                                type="date"
+                                id="date"
+                                name="date"
+                                placeholder="Fecha"
+                                value={day}
+                                isInvalid={!!errors.date}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.date}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Select
+                                id='userId'
+                                name="userId"
+                                value={userid}
+                                isInvalid={!!errors.userid}
+                            >
+                                <option value="">Seleccionar usuario</option>
+                                {FiltrarUsers().map(user => (
+                                    <option key={user.id} value={user.id}>{user.name}</option>
+                                ))}
+                            </Form.Select>
+                            <Form.Control.Feedback type="invalid">
+                                {errors.userid}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" className='btn-sucess'>
+                        Guardar
+                    </Button>
+                    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                        Cerrar                        </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };
