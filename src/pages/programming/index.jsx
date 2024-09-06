@@ -210,32 +210,32 @@ const Programming = () => {
         const [isHovered, setIsHovered] = useState(false);
         const [anchorEl, setAnchorEl] = useState(null);
         const [isMenuOpen, setIsMenuOpen] = useState(false);
-    
+
         const handleClick = (event) => {
             setAnchorEl(event.currentTarget);
             setIsMenuOpen(true); // Abrir el menú
         };
-    
+
         const handleClose = () => {
             setAnchorEl(null);
             setIsMenuOpen(false); // Cerrar el menú
         };
-    
+
         const handleEdit = () => {
             console.log("Editar evento:", info.event);
             handleClose();
         };
-    
+
         const handleView = () => {
             console.log("Ver detalles del evento:", info.event);
             handleClose();
         };
-    
+
         const handleDelete = () => {
             console.log("Eliminar evento:", info.event);
             handleClose();
         };
-    
+
         return (
             <div
                 className='programming-content'
@@ -254,7 +254,7 @@ const Programming = () => {
                 ) : (
                     <span className='span-programming'>{info.event.extendedProps.startTime}-{info.event.extendedProps.endTime}</span>
                 )}
-    
+
                 {/* Menu component */}
                 <Menu
                     className='Menu-programming'
@@ -269,18 +269,18 @@ const Programming = () => {
                         },
                     }}
                 >
-    
+
                     <MenuItem className='Menu-programming-item' onClick={handleEdit}>
                         <Button color='primary' className='primary'>
                             <FaEye />
                         </Button>
                     </MenuItem>
-                    <MenuItem className='Menu-programming-item' onClick={()=>openModal(2)}>
-                        <Button color="secondary"  className='secondary'>
+                    <MenuItem className='Menu-programming-item' onClick={() => openModal(2)}>
+                        <Button color="secondary" className='secondary'>
                             <FaPencilAlt />
                         </Button>
                     </MenuItem>
-                    <MenuItem className='Menu-programming-item' onClick={()=>deleteProgramming(info.event.id, info.event.title)}>
+                    <MenuItem className='Menu-programming-item' onClick={() => deleteProgramming(info.event.id, info.event.title)}>
                         <Button color='error' className='delete'>
                             <IoTrashSharp />
                         </Button>
@@ -290,24 +290,15 @@ const Programming = () => {
         );
     };
 
-    const openModal = (op, id, startTime, endTime, day, userid) => {
-        setId('');
-        setStartTime('');
-        setEndTime('');
-        setDay('');
-        setUserid('');
+    const openModal = (op, id = '', startTime = '', endTime = '', day = '', userid = '') => {
+        setId(id);
+        setStartTime(startTime);
+        setEndTime(endTime);
+        setDay(day);
+        setUserid(userid);
         setOperation(op);
 
-        if (op === 1) {
-            setTitle('Registrar servicio');
-        } else if (op === 2) {
-            setTitle('Editar servicio');
-            setId(id);
-            setStartTime(startTime);
-            setEndTime(endTime);
-            setDay(day);
-            setUserid(userid);
-        }
+        setTitle(op === 1 ? 'Registrar servicio' : 'Editar servicio');
         setShowModal(true);
     }
 
@@ -393,8 +384,8 @@ const Programming = () => {
                     </div>
                 </div>
             </div>
-            <Modal show={showModal}>
-                <Modal.Header>
+            <Modal show={showModal} onHide={handleClose}>
+                <Modal.Header closeButton>
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -407,6 +398,7 @@ const Programming = () => {
                                 name="startTime"
                                 placeholder="Inicio"
                                 value={startTime}
+                                onChange={(e) => setStartTime(e.target.value)}
                                 isInvalid={!!errors.startTime}
                             />
                             <Form.Control.Feedback type="invalid">
@@ -422,6 +414,7 @@ const Programming = () => {
                                 name="endTime"
                                 placeholder="Fin"
                                 value={endTime}
+                                onChange={(e) => setEndTime(e.target.value)}
                                 isInvalid={!!errors.endTime}
                             />
                             <Form.Control.Feedback type="invalid">
@@ -429,13 +422,14 @@ const Programming = () => {
                             </Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Dia</Form.Label>
+                            <Form.Label>Día</Form.Label>
                             <Form.Control
                                 type="date"
                                 id="date"
                                 name="date"
                                 placeholder="Fecha"
                                 value={day}
+                                onChange={(e) => setDay(e.target.value)}
                                 isInvalid={!!errors.date}
                             />
                             <Form.Control.Feedback type="invalid">
@@ -447,6 +441,7 @@ const Programming = () => {
                                 id='userId'
                                 name="userId"
                                 value={userid}
+                                onChange={(e) => setUserid(e.target.value)}
                                 isInvalid={!!errors.userid}
                             >
                                 <option value="">Seleccionar usuario</option>
@@ -465,7 +460,8 @@ const Programming = () => {
                         Guardar
                     </Button>
                     <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                        Cerrar                        </Button>
+                        Cerrar
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </div>
