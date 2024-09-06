@@ -141,6 +141,7 @@ const Programming = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
+    
 
     const [errors, setErrors] = useState({
         startTime: '',
@@ -298,7 +299,7 @@ const Programming = () => {
         setUserid(userid);
         setOperation(op);
 
-        setTitle(op === 1 ? 'Registrar servicio' : 'Editar servicio');
+        setTitle(op === 1 ? 'Registrar Programación' : 'Editar Programación');
         setShowModal(true);
     }
 
@@ -334,7 +335,7 @@ const Programming = () => {
                 setId(id);
                 enviarSolicitud('DELETE', { id: id })
             } else {
-                show_alerta('La programacion NO fue eliminado', 'info')
+                show_alerta('La programacion no fue eliminado', 'info')
             }
         })
     }
@@ -344,7 +345,7 @@ const Programming = () => {
             <div className="row d-flex align-items-center w-100">
                 <div className="spacing d-flex align-items-center">
                     <div className='col-sm-5'>
-                        <span className='Title'>Programacion de empleados</span>
+                        <span className='Title'>Programación de empleados</span>
                     </div>
                     <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
                         <div role="presentation">
@@ -437,6 +438,7 @@ const Programming = () => {
                             </Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
+                        <Form.Label>Usuario</Form.Label>
                             <Form.Select
                                 id='userId'
                                 name="userId"
