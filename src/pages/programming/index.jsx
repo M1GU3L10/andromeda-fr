@@ -141,7 +141,7 @@ const Programming = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
-    
+
 
     const [errors, setErrors] = useState({
         startTime: '',
@@ -438,7 +438,7 @@ const Programming = () => {
                             </Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
-                        <Form.Label>Usuario</Form.Label>
+                            <Form.Label>Usuario</Form.Label>
                             <Form.Select
                                 id='userId'
                                 name="userId"
@@ -458,9 +458,19 @@ const Programming = () => {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="primary" className='btn-sucess'>
+                    <Button
+                        variant="primary"
+                        className='btn-sucess'
+                        onClick={() => enviarSolicitud('POST', {
+                            startTime: `${startTime}:00`,
+                            endTime: `${endTime}:00`,
+                            day,
+                            userId: parseInt(userid, 10)
+                        })}
+                    >
                         Guardar
                     </Button>
+
                     <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
                         Cerrar
                     </Button>
