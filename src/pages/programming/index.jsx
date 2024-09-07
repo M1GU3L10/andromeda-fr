@@ -198,6 +198,27 @@ const Programming = () => {
         }, 300);  // Agregar un pequeño retraso antes de disparar el evento resize
     }, [isToggleSidebar]);
 
+    const getProgramming = async () => {
+        try {
+            const response = await axios.get(urlProgramming);
+            const programmingData = response.data;
+            const transformedEvents = programmingData.map(event => ({
+                id: event.id.toString(),
+                title: `${getUserName(users, event.userId)}`,
+                start: `${event.day}T${event.startTime}`,
+                end: `${event.day}T${event.endTime}`,
+                extendedProps: {
+                    status: event.status,
+                    startTime: event.startTime,
+                    endTime: event.endTime,
+                }
+            }));
+            setEvents(transformedEvents);
+        } catch (error) {
+            console.error('Error fetching programming:', error);
+        }
+    };
+
     const getUserName = (users, userId) => {
         const user = users.find(user => user.id === userId);
         return user ? user.name : 'Desconocido';
@@ -305,6 +326,132 @@ const Programming = () => {
 
     const handleClose = () => setShowModal(false);
 
+    const validateStartTime = (value) => {
+        if (!value) {
+            return 'La hora de inicio es requerida';
+        }
+        return '';
+    };
+    
+    const validateEndTime = (value, startTime) => {
+        if (!value) {
+            return 'La hora de fin es requerida';
+        }
+        if (startTime && value <= startTime) {
+            return 'La hora de fin debe ser mayor que la hora de inicio';
+        }
+        return '';
+    };
+    
+    const validateDate = (value) => {
+        if (!value) {
+            return 'La fecha es requerida';
+        }
+        return '';
+    };
+    
+    const validateUserId = (value) => {
+        if (!value) {
+            return 'Debe seleccionar un usuario';
+        }
+        return '';
+    };
+
+    const handleValidation = (name, value) => {
+        let error = '';
+        switch (name) {
+            case 'startTime':
+                error = validateStartTime(value);
+                break;
+            case 'endTime':
+                error = validateEndTime(value);
+                break;
+            case 'day':
+                error = validateDate(value);
+                break;
+            case 'userId':
+                error = validateUserId(value);
+                break;
+            default:
+                break;
+        }
+        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        handleValidation(name, value);
+
+        switch (name) {
+            case 'startTime':
+                setStartTime(value);
+                break;
+            case 'endTime':
+                setEndTime(value);
+                break;
+            case 'date':
+                setDay(value);
+                break;
+            case 'userId':
+                setUserid(value)
+                break;
+            default:
+                break;
+        }
+    };
+
+    const handleBlur = (e) => {
+        const { name } = e.target;
+        setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
+        handleValidation(name, e.target.value);
+    };
+
+    const validar = async () => {
+        
+        if (errors.startTime || !startTime.trim()) {
+            show_alerta(errors.startTime || 'Por favor, Seleccione una hora de inicio.', 'warning');
+            return;
+        }
+
+        if (errors.endTime || !endTime.trim()) {
+            show_alerta(errors.endTime || 'Por favor, Seleccione una hora de fin.', 'warning');
+            return;
+        }
+
+        if (errors.day || !day.trim()) {
+            show_alerta(errors.day || 'Por favor, Seleccione un dia.', 'warning');
+            return;
+        }
+
+        if (errors.userid || !userid.trim()) {
+            show_alerta(errors.userid || 'Por favor, Seleccione un usuario.', 'warning');
+            return;
+        }
+
+        const isValidStartTime = !validateEndTime(startTime);
+        const isValidEndTime = !validateEndTime(endTime);
+        const isValidDate = !validateDate(day);
+        const isValidUser = !validateUserId(userid);
+
+        if (!isValidStartTime) show_alerta(errors.startTime, 'warning');
+        else if (!isValidEndTime) show_alerta(errors.endTime, 'warning');
+        else if (!isValidDate) show_alerta(errors.day, 'warning');
+        else if (!isValidUser) show_alerta(errors.userid, 'warning');
+        else {
+            const parametros = {
+                id: id,
+                startTime: `${startTime}:00`,
+                endTime: `${endTime}:00`,
+                day: day,
+                userId: userid,
+            };
+
+            const isUpdate = operation === 2;
+            const metodo = isUpdate ? 'PUT' : 'POST';
+            enviarSolicitud(metodo, parametros);
+        }
+    };
+
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${urlProgramming}/${parametros.id}` : urlProgramming;
         try {
@@ -313,6 +460,7 @@ const Programming = () => {
             if (metodo === 'PUT' || metodo === 'POST') {
                 document.getElementById('btnCerrar').click();
             }
+            getProgramming();
             console.log(parametros);
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
@@ -386,7 +534,7 @@ const Programming = () => {
                 </div>
             </div>
             <Modal show={showModal} onHide={handleClose}>
-                <Modal.Header closeButton>
+                <Modal.Header >
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -399,7 +547,7 @@ const Programming = () => {
                                 name="startTime"
                                 placeholder="Inicio"
                                 value={startTime}
-                                onChange={(e) => setStartTime(e.target.value)}
+                                onChange={handleInputChange}
                                 isInvalid={!!errors.startTime}
                             />
                             <Form.Control.Feedback type="invalid">
@@ -415,7 +563,7 @@ const Programming = () => {
                                 name="endTime"
                                 placeholder="Fin"
                                 value={endTime}
-                                onChange={(e) => setEndTime(e.target.value)}
+                                onChange={handleInputChange}
                                 isInvalid={!!errors.endTime}
                             />
                             <Form.Control.Feedback type="invalid">
@@ -430,7 +578,7 @@ const Programming = () => {
                                 name="date"
                                 placeholder="Fecha"
                                 value={day}
-                                onChange={(e) => setDay(e.target.value)}
+                                onChange={handleInputChange}
                                 isInvalid={!!errors.date}
                             />
                             <Form.Control.Feedback type="invalid">
@@ -443,7 +591,7 @@ const Programming = () => {
                                 id='userId'
                                 name="userId"
                                 value={userid}
-                                onChange={(e) => setUserid(e.target.value)}
+                                onChange={handleInputChange}
                                 isInvalid={!!errors.userid}
                             >
                                 <option value="">Seleccionar usuario</option>
@@ -461,13 +609,7 @@ const Programming = () => {
                     <Button
                         variant="primary"
                         className='btn-sucess'
-                        onClick={() => enviarSolicitud('POST', {
-                            startTime: `${startTime}:00`,
-                            endTime: `${endTime}:00`,
-                            day,
-                            userId: parseInt(userid, 10)
-                        })}
-                    >
+                        onClick={() => validar()}>
                         Guardar
                     </Button>
 
