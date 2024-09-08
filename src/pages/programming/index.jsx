@@ -143,6 +143,9 @@ const Programming = () => {
     const [detailData, setDetailData] = useState({});
 
 
+
+    const handleCloseDetailModal = () => setShowDetailModal(false);
+
     const [errors, setErrors] = useState({
         startTime: '',
         endTime: '',
@@ -235,26 +238,33 @@ const Programming = () => {
 
         const handleClick = (event) => {
             setAnchorEl(event.currentTarget);
-            setIsMenuOpen(true); // Abrir el menú
+            setIsMenuOpen(true);
         };
 
         const handleClose = () => {
             setAnchorEl(null);
-            setIsMenuOpen(false); // Cerrar el menú
+            setIsMenuOpen(false);
         };
 
-        const handleEdit = () => {
-            console.log("Editar evento:", info.event);
+        const handleEditClick = () => {
+            handleEdit(info.event);
             handleClose();
         };
 
-        const handleView = () => {
-            console.log("Ver detalles del evento:", info.event);
+        const handleViewClick = () => {
+            setDetailData({
+                title: info.event.title,
+                start: info.event.start,
+                end: info.event.end,
+                startTime: info.event.extendedProps.startTime,
+                endTime: info.event.extendedProps.endTime,
+            });
+            setShowDetailModal(true);
             handleClose();
         };
 
-        const handleDelete = () => {
-            console.log("Eliminar evento:", info.event);
+        const handleDeleteClick = () => {
+            deleteProgramming(info.event.id, info.event.title);
             handleClose();
         };
 
@@ -266,43 +276,44 @@ const Programming = () => {
                 onMouseLeave={() => {
                     setIsHovered(false);
                     if (!isMenuOpen) {
-                        handleClose(); // Cerrar el menú si no está abierto
+                        handleClose();
                     }
                 }}
-                onClick={handleClick}  // Abrir el menú al hacer clic
+                onClick={handleClick}
             >
                 {!isHovered ? (
                     <span className='span-programming'>{info.event.title}</span>
                 ) : (
-                    <span className='span-programming'>{info.event.extendedProps.startTime}-{info.event.extendedProps.endTime}</span>
+                    <span className='span-programming'>
+                        {info.event.extendedProps.startTime.slice(0, 5)} - {info.event.extendedProps.endTime.slice(0, 5)}
+                    </span>
+
                 )}
 
-                {/* Menu component */}
                 <Menu
                     className='Menu-programming'
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                     PaperProps={{
-                        onMouseEnter: () => setIsMenuOpen(true), // Mantener abierto cuando el mouse entra
-                        onMouseLeave: handleClose, // Cerrar cuando el mouse sale
+                        onMouseEnter: () => setIsMenuOpen(true),
+                        onMouseLeave: handleClose,
                         style: {
                             maxHeight: 48 * 4.5,
                         },
                     }}
                 >
-
-                    <MenuItem className='Menu-programming-item' onClick={handleEdit}>
+                    <MenuItem className='Menu-programming-item' onClick={handleViewClick}>
                         <Button color='primary' className='primary'>
                             <FaEye />
                         </Button>
                     </MenuItem>
-                    <MenuItem className='Menu-programming-item' onClick={() => openModal(2)}>
+                    <MenuItem className='Menu-programming-item' onClick={handleEditClick}>
                         <Button color="secondary" className='secondary'>
                             <FaPencilAlt />
                         </Button>
                     </MenuItem>
-                    <MenuItem className='Menu-programming-item' onClick={() => deleteProgramming(info.event.id, info.event.title)}>
+                    <MenuItem className='Menu-programming-item' onClick={handleDeleteClick}>
                         <Button color='error' className='delete'>
                             <IoTrashSharp />
                         </Button>
@@ -312,12 +323,44 @@ const Programming = () => {
         );
     };
 
-    const openModal = (op, id = '', startTime = '', endTime = '', day = '', userid = '') => {
-        setId(id);
-        setStartTime(startTime);
-        setEndTime(endTime);
-        setDay(day);
+
+    const handleEdit = (event) => {
+        // Extraer los valores del evento
+        const { id, extendedProps, start, end } = event;
+
+
+        const startDate = start ? new Date(start) : new Date();
+        //si viene vacio enddate se asignara un valor mayor por una hora a start si quiere se puede quitar
+        const endDate = end ? new Date(end) : new Date(startDate.getTime() + 3600000);
+
+        const formatTime = (date) => {
+            return date.toTimeString().slice(0, 5);
+        };
+
+        const formatDate = (date) => {
+            return date.toISOString().split('T')[0];
+        };
+
+        // Asigna los valores a los estados del formulario
+        setId(id || '');
+        setStartTime(formatTime(startDate));
+        setEndTime(formatTime(endDate));
+        setDay(formatDate(startDate));
         setUserid(userid);
+
+
+        setTitle('Editar Programación');
+        setOperation(2);  // Indicar que es una operación de edición
+
+        setShowModal(true);
+    };
+
+    const openModal = (op, date = null, id = '', start = '', end = '', userid = '') => {
+        setId(id);
+        setStartTime(start ? start.slice(0, 5) : '');
+        setEndTime(end ? end.slice(0, 5) : '');
+        setDay(date ? date.toISOString().split('T')[0] : '');
+        setUserid(userid ? userid.toString() : '');
         setOperation(op);
 
         setTitle(op === 1 ? 'Registrar Programación' : 'Editar Programación');
@@ -332,7 +375,7 @@ const Programming = () => {
         }
         return '';
     };
-    
+
     const validateEndTime = (value, startTime) => {
         if (!value) {
             return 'La hora de fin es requerida';
@@ -342,14 +385,14 @@ const Programming = () => {
         }
         return '';
     };
-    
+
     const validateDate = (value) => {
         if (!value) {
             return 'La fecha es requerida';
         }
         return '';
     };
-    
+
     const validateUserId = (value) => {
         if (!value) {
             return 'Debe seleccionar un usuario';
@@ -407,7 +450,7 @@ const Programming = () => {
     };
 
     const validar = async () => {
-        
+
         if (errors.startTime || !startTime.trim()) {
             show_alerta(errors.startTime || 'Por favor, Seleccione una hora de inicio.', 'warning');
             return;
@@ -528,13 +571,13 @@ const Programming = () => {
                             events={events}
                             eventContent={(info) => <EventComponent info={info} />}
                             plugins={[dayGridPlugin, interactionPlugin]}
-                            dateClick={() => openModal(1)}
+                            dateClick={(info) => openModal(1, info.date)}
                         />
                     </div>
                 </div>
             </div>
             <Modal show={showModal} onHide={handleClose}>
-                <Modal.Header >
+                <Modal.Header>
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -616,6 +659,20 @@ const Programming = () => {
                     <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
                         Cerrar
                     </Button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showDetailModal} onHide={handleCloseDetailModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Detalles de la Programación</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p><strong>Empleado:</strong> {detailData.title}</p>
+                    <p><strong>Fecha:</strong> {detailData.start ? new Date(detailData.start).toLocaleDateString() : 'N/A'}</p>
+                    <p><strong>Hora de inicio:</strong> {detailData.startTime}</p>
+                    <p><strong>Hora de fin:</strong> {detailData.endTime}</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetailModal}>Cerrar</Button>
                 </Modal.Footer>
             </Modal>
         </div>
