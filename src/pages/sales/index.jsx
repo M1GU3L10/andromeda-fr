@@ -13,6 +13,7 @@ import { IoSearch } from "react-icons/io5";
 import Button from '@mui/material/Button';
 import { FaEye } from "react-icons/fa";
 import { TbFileDownload } from "react-icons/tb";
+import { Link } from 'react-router-dom';
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -98,7 +99,7 @@ const Sales = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' variant="contained"><BsPlusSquareFill />Registrar</Button>
+                                <Link className='btn-register' variant="contained" to="/salesRegister"><BsPlusSquareFill />Registrar</Link>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">

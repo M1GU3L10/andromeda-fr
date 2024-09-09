@@ -654,6 +654,10 @@ body.dark .right-content .row .spacing .Title {
   color: #d0d5db !important;
 }
 
+body.dark .Title {
+  color: #d0d5db !important;
+}
+
 body.dark .css-1mm5wr7-MuiChip-root .MuiChip-icon {
   color: #b7bcc7;
 }
@@ -689,10 +693,8 @@ body.dark .card{
 
 .table .table-primary th {
   background-color: #1866ee !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
   color: #fff !important;
   font-size: 13px !important;
-
 }
 
 .table tbody td {
@@ -1032,4 +1034,93 @@ a{
 .css-6hp17o-MuiList-root-MuiMenu-list{
   padding-top: 0px !important;
   padding-bottom: 0px !important;
+}
+
+.card-detail{
+  background: #fff;
+  width: 100%;
+  margin: 15px 0px;
+  border-radius: 10px;
+}
+
+.colorTransparent{
+  background: none !important;
+}
+
+.card-detail .row .bcg-w{
+  background: #fff !important;
+}
+
+.card-detail .row .bcg-w .Title{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 18px;
+  font-weight: 500;
+  color: #403e57 !important;
+}
+
+.cont-title{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgb(223, 226, 230);
+  padding: 3px !important;
+}
+
+.cont-title .Title{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 20px;
+  font-weight: 500;
+  color: #403e57 !important;
+  margin: 10px;
+}
+
+.form{
+  width: 100%;
+}
+
+.table-responsive{
+  padding: 0px 20px;
+}
+
+.table-responsive button{
+  min-width: 30px !important;
+  width: 25px !important;
+  height: 25px !important;
+  margin: 0px 3px !important;
+}
+
+.table-responsive .actions-quantity button{
+  min-width: 10px !important;
+  margin: 0px 3px !important;
+  border-radius: 50% !important;
+  border: 1px solid #1866ee;
+}
+
+.table-responsive .actions-quantity button svg{
+  font-size: 20px !important;
+}
+
+.Monto-content .Monto{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 13px;
+  font-weight: 700;
+  color: #403e57 !important;
+  margin: 5px;
+}
+
+.Monto-content .valor{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 15px;
+  font-weight: 700;
+  color: #403e57 !important;
+}
+
+.table .table-light th {
+  background-color: rgb(247, 249, 250) !important;
+  color: rgba(0, 0, 0, 0.568) !important;
+  font-size: 13px !important;
+}
+
+.table .table-light tr{
+  border: 1px solid rgba(0, 0, 0, 0.11) !important;
 }
