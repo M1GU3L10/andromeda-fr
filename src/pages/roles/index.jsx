@@ -93,8 +93,8 @@ const Roles = () => {
         }
     };
 
-     // Obtener relación de permisos y roles
-     const getPermissionsRole = async () => {
+    // Obtener relación de permisos y roles
+    const getPermissionsRole = async () => {
         try {
             const response = await axios.get(urlPermissionsRoles);
             setPermissionsRole(response.data);
@@ -129,7 +129,7 @@ const Roles = () => {
     const getPermissionsForRole = (roleId) => {
         // Filtrar permisosRole por roleId
         const rolePermissions = permissionsRole.filter(pr => pr.roleId === roleId);
-        
+
         // Mapear los permisosId a los nombres de permisos
         return rolePermissions.map(rp => {
             const permission = permissions.find(p => p.id === rp.permissionId);
@@ -177,12 +177,12 @@ const Roles = () => {
         if (op === 1) {
             setTitle('Registrar rol');
             setName('');
-            setStatus('A');  
+            setStatus('A');
         } else if (op === 2) {
             setTitle('Editar rol');
             setId(id);
             setName(name);
-            setSelectedPermissions(getPermissionsForRoleId(id).map(permission => permission.id));
+            setSelectedPermissions(getPermissionsForRoleId(id));
         }
         setShowModal(true);
     }
@@ -227,7 +227,7 @@ const Roles = () => {
     };
 
 
-   
+
     const handleValidation = (name, value) => {
         let error = '';
         switch (name) {
@@ -291,7 +291,7 @@ const Roles = () => {
                 id: id,
                 name: name.trim(),
                 status: status,
-                permissions: selectedPermissions 
+                permissions: selectedPermissions
             };
 
 
@@ -311,6 +311,8 @@ const Roles = () => {
                 document.getElementById('btnCerrar').click();
             }
             getServices();
+            getPermissions();
+            getPermissionsRole();
             console.log(parametros);
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
@@ -456,7 +458,7 @@ const Roles = () => {
                                                 <td>{(i + 1)}</td>
                                                 <td>{service.name}</td>
                                                 <td>{getPermissionsForRole(service.id)}</td>
-                                                <td><span  className= {`serviceStatus ${service.status ===  'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
+                                                <td><span className={`serviceStatus ${service.status === 'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Switch
@@ -522,16 +524,18 @@ const Roles = () => {
                                 </Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group>
-                            <Form.Label>Permisos</Form.Label>
+                                <Form.Label>Permisos</Form.Label>
                                 {permissions.map(permission => (
-                                    <Form.Check
-                                        key={permission.id}
-                                        type="checkbox"
-                                        label={permission.name}
-                                        checked={selectedPermissions.includes(permission.id)}
-                                        onChange={() => handleCheckboxChange(permission.id)}
-                                    />
+                                    <div key={permission.id}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedPermissions.includes(permission.id)}
+                                            onChange={() => handleCheckboxChange(permission.id)}
+                                        />
+                                        <label>{permission.name}</label>
+                                    </div>
                                 ))}
+
                             </Form.Group>
                         </Form>
                     </Modal.Body>
