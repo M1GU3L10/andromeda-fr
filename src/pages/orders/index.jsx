@@ -72,12 +72,20 @@
 
       const getUsers = async () => {
         try {
-          const response = await axios.get(usersUrl)
-          setUsers(response.data)
+          const response = await axios.get(usersUrl);
+          setUsers(response.data);
+          console.log('Users loaded:', response.data); // Verificar los datos obtenidos
         } catch (error) {
-          show_alerta('Error al obtener usuarios', 'error')
+          show_alerta('Error al obtener usuarios', 'error');
+          console.error('Error al obtener usuarios:', error);
         }
-      }
+      };
+
+      const getUserName = (userId) => {
+        const user = users.find(u => u.id === userId); // Busca el usuario por su ID
+        return user ? user.name : 'Usuario no encontrado'; // Devuelve el nombre si existe, si no, un mensaje de error
+      };
+      
       
 
       const searcher = (e) => {
@@ -302,7 +310,8 @@
                         <td>{new Date(`2000-01-01T${order.Order_Time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
                         <td>{order.Total_Amount}</td>
                         <td>{order.Status}</td>
-                        <td>{order.User_Id}</td>
+                        <td>{getUserName(order.User_Id)}</td> {/* Muestra el nombre del usuario */}
+                          
                         <td>
                           <div className='actions d-flex align-items-center'>
                             <Button color='primary' className='primary' onClick={() => handleViewDetails(order)}><FaEye /></Button>
