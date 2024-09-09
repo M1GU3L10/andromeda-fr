@@ -69,6 +69,7 @@
           show_alerta('Error al obtener órdenes', 'error')
         }
       }
+      
 
       const getUsers = async () => {
         try {
@@ -224,10 +225,10 @@
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`http://localhost:1056/api/orders/${id}`) // Aquí incluimos el ID en la URL
+                axios.delete(`http://localhost:1056/api/orders/${id}`)
                     .then((response) => {
                         show_alerta('Orden eliminada correctamente', 'success');
-                        // Aquí puedes actualizar la lista de órdenes si es necesario
+                        getOrders(); // Llama a la función para obtener la lista actualizada de órdenes
                     })
                     .catch((error) => {
                         show_alerta('Error al eliminar la orden', 'error');
