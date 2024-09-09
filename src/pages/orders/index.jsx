@@ -213,24 +213,32 @@
           confirmButtonText: 'Entendido'
         })
       }
-
       const deleteOrder = (id, Order_Date) => {
-        const MySwal = withReactContent(Swal)
+        const MySwal = withReactContent(Swal);
         MySwal.fire({
-          title: `¿Estás seguro que deseas eliminar la orden del ${new Date(Order_Date).toLocaleDateString()}?`,
-          icon: 'question',
-          text: 'No se podrá dar marcha atrás',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, eliminar',
-          cancelButtonText: 'Cancelar'
+            title: `¿Estás seguro que deseas eliminar la orden del ${new Date(Order_Date).toLocaleDateString()}?`,
+            icon: 'question',
+            text: 'No se podrá dar marcha atrás',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
         }).then((result) => {
-          if (result.isConfirmed) {
-            enviarSolicitud('DELETE', { id: id })
-          } else {
-            show_alerta('La orden NO fue eliminada', 'info')
-          }
-        })
-      }
+            if (result.isConfirmed) {
+                axios.delete(`http://localhost:1056/api/orders/${id}`) // Aquí incluimos el ID en la URL
+                    .then((response) => {
+                        show_alerta('Orden eliminada correctamente', 'success');
+                        // Aquí puedes actualizar la lista de órdenes si es necesario
+                    })
+                    .catch((error) => {
+                        show_alerta('Error al eliminar la orden', 'error');
+                        console.error('Error details:', error);
+                    });
+            } else {
+                show_alerta('La orden NO fue eliminada', 'info');
+            }
+        });
+    };
+    
 
       const handleViewDetails = (order) => {
         setDetailData(order)
