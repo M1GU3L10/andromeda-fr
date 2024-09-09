@@ -1005,8 +1005,12 @@ a{
 }
 
 .fc .fc-button-primary{
+  width: 50px  !important;
+  height: 40px !important;
+  padding: 0px !important;
   background: rgb(54, 118, 245) !important;
-  border-color: rgb(54, 118, 245) !important; 
+  border-color: rgb(54, 118, 245) !important;
+  margin: 0px !important;
 }
 
 .fc .fc-scrollgrid{
