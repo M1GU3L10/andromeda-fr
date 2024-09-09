@@ -25,11 +25,11 @@ const MyContext = createContext();
 function App() {
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
   const [themeMode, setThemeMode] = useState('true');
-<<<<<<< HEAD
+
   const [isLogin, setIsLogin] = useState(false);
-=======
+
   
->>>>>>> d4340483e8cead01d6d653d9ce89d06e52968554
+
 
   useEffect(() => {
     if (themeMode === true) {
@@ -55,10 +55,10 @@ function App() {
   return (
     <BrowserRouter>
       <MyContext.Provider value={values}>
-<<<<<<< HEAD
+
         {/* Renderiza el contenido que necesita usar `useLocation` */}
         <AppContent />
-=======
+
         <Header />
         <div className='main d-flex'>
           <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
@@ -84,7 +84,7 @@ function App() {
             </Routes>
           </div>
         </div>
->>>>>>> d4340483e8cead01d6d653d9ce89d06e52968554
+
       </MyContext.Provider>
     </BrowserRouter>
   );
