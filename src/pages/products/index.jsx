@@ -24,7 +24,6 @@ import { alpha } from '@mui/material/styles';
 import { pink } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -70,7 +69,7 @@ const Products = () => {
         Stock: '',
         Price: '',
         Category_Id: '',
-        Image: null,
+        Image: '',
     });
     const [imagePreviewUrl, setImagePreviewUrl] = React.useState('');
     const [productData, setProductData] = React.useState([]);
@@ -98,7 +97,11 @@ const Products = () => {
         try {
             setLoading(true);
             const response = await axios.get('http://localhost:1056/api/products');
-            setProductData(response.data);
+            const productsWithParsedImage = response.data.map(product => ({
+                ...product,
+                Image: product.Image ? `data:image/jpeg;base64,${product.Image}` : null
+            }));
+            setProductData(productsWithParsedImage);
             setLoading(false);
         } catch (err) {
             setError('Error al cargar los productos');
@@ -107,27 +110,45 @@ const Products = () => {
         }
     };
 
-    const handleChange = (event) => {
-        setColumnsPerPage(event.target.value);
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
     };
 
     const openModal = (op, id, Product_Name, Stock, Price, Category_Id, Image) => {
+        console.log('Opening modal with ID:', id); // Añade esto para depurar
         setOperation(op);
         setFormData({
-            id: id || '',
+            id,
             Product_Name: Product_Name || '',
             Stock: Stock || '',
             Price: Price || '',
             Category_Id: Category_Id || '',
             Image: null,
         });
-        setImagePreviewUrl(Image || '');
+        setImagePreviewUrl(Image || ''); // Establece la URL de vista previa
         setFormErrors({});
         setTitle(op === 1 ? 'Registrar Producto' : 'Editar Producto');
         window.setTimeout(function () {
             document.getElementById('Product_Name').focus();
         }, 500);
     };
+    
+
+
+    const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreviewUrl(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -160,67 +181,83 @@ const Products = () => {
         };
         reader.readAsDataURL(file);
     };
-    const validateForm = () => {
-        let errors = {};
-        if (!formData.Product_Name.trim()) errors.Product_Name = 'El nombre del producto es obligatorio';
-        if (formData.Stock === '' || isNaN(Number(formData.Stock)) || Number(formData.Stock) < 0) {
-            errors.Stock = 'El stock debe ser un número entero positivo o cero';
-        }
-        if (formData.Price === '' || isNaN(Number(formData.Price)) || Number(formData.Price) < 0) {
-            errors.Price = 'El precio debe ser un número decimal positivo';
-        }
-        if (!formData.Category_Id) errors.Category_Id = 'La categoría es obligatoria';
 
-        console.log('Validation errors:', errors);
-        return errors;
+    const validateForm = () => {
+        const errors = {};
+
+        if (!formData.Product_Name || formData.Product_Name.trim() === '') {
+            errors.Product_Name = 'El nombre del producto es obligatorio';
+        }
+
+        if (!formData.Stock || isNaN(formData.Stock) || parseInt(formData.Stock) < 0) {
+            errors.Stock = 'El stock debe ser un número válido y no negativo';
+        }
+
+        if (!formData.Price || isNaN(formData.Price) || parseFloat(formData.Price) <= 0) {
+            errors.Price = 'El precio debe ser un número mayor a cero';
+        }
+
+        if (!formData.Category_Id || isNaN(formData.Category_Id)) {
+            errors.Category_Id = 'Debe seleccionar una categoría válida';
+        }
+
+        return errors; // Retornar un objeto vacío si no hay errores
     };
 
     const handleUpdate = async () => {
-        const errors = validateForm();
-        if (Object.keys(errors).length === 0) {
-            const formDataToSend = new FormData();
-            formDataToSend.append('Product_Name', formData.Product_Name.trim());
-            formDataToSend.append('Stock', parseInt(formData.Stock));
-            formDataToSend.append('Price', parseFloat(formData.Price).toFixed(2));
-            formDataToSend.append('Category_Id', formData.Category_Id);
-    
-            if (formData.Image instanceof File) {
-                formDataToSend.append('Image', formData.Image);
+        if (!formData.Product_Id) {
+            show_alerta('ID del producto no proporcionada', 'error');
+            return;
+        }
+
+
+        const dataToSend = {
+            Product_Name: formData.Product_Name.trim(),
+            Stock: parseInt(formData.Stock),
+            Price: parseFloat(formData.Price),
+            Category_Id: parseInt(formData.Category_Id),
+            // Incluye el ID del producto que estás actualizando
+            Product_Id: formData.Product_Id
+        };
+
+        console.log('Sending data:', dataToSend);
+
+        try {
+            const response = await axios.put(`http://localhost:1056/api/products/${dataToSend.Product_Id}`, dataToSend, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Server response:', response);
+
+            if (response.status === 200 || response.status === 204) {
+                document.getElementById('btnCerrar').click();
+                fetchProductData();
+                show_alerta('Producto actualizado exitosamente', 'success');
+            } else {
+                show_alerta('Hubo un problema al actualizar el producto', 'error');
             }
-    
-            try {
-                const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`, formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
+        } catch (error) {
+            console.error('Error:', error);
+            if (error.response && error.response.data) {
+                console.log('Server error response:', error.response.data);
+            }
+            if (error.response && error.response.data && error.response.data.errors) {
+                const serverErrors = {};
+                error.response.data.errors.forEach(err => {
+                    serverErrors[err.path] = err.msg;
                 });
-    
-                if (response.status === 200) {
-                    document.getElementById('btnCerrar').click();
-                    fetchProductData();
-                    show_alerta('Producto actualizado exitosamente', 'success');
-                } else {
-                    show_alerta('Hubo un problema al actualizar el producto', 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                if (error.response && error.response.data && error.response.data.errors) {
-                    const serverErrors = {};
-                    error.response.data.errors.forEach(err => {
-                        serverErrors[err.path] = err.msg;
-                    });
-                    setFormErrors(serverErrors);
-                    show_alerta('Por favor, corrija los errores en el formulario', 'error');
-                } else {
-                    show_alerta('Error al actualizar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
-                }
+                setFormErrors(serverErrors);
+                show_alerta('Por favor, corrija los errores en el formulario', 'error');
+            } else {
+                show_alerta('Error al actualizar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
             }
-        } else {
-            setFormErrors(errors);
-            show_alerta('Por favor, corrija los errores en el formulario', 'error');
         }
     };
-    
+
+
+
     const handleSubmit = async () => {
         const dataToSend = {
             Product_Name: formData.Product_Name.trim(),
@@ -228,18 +265,18 @@ const Products = () => {
             Price: parseFloat(formData.Price),
             Category_Id: parseInt(formData.Category_Id)
         };
-    
+
         console.log('Sending data:', dataToSend);
-    
+
         try {
             const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-    
+
             console.log('Server response:', response);
-    
+
             if (response.status === 200 || response.status === 201) {
                 document.getElementById('btnCerrar').click();
                 fetchProductData();
@@ -264,6 +301,7 @@ const Products = () => {
             }
         }
     };
+
     const handleDelete = async (id, name) => {
         const MySwal = withReactContent(Swal);
         MySwal.fire({
@@ -357,52 +395,51 @@ const Products = () => {
                         <div className='table-responsive mt-3'>
                             {loading ? (
                                 <p>Cargando...</p>
-                            ) : error ? (
-                                <p>{error}</p>
-                            ) : (
-                                <table className='table table-bordered table-hover v-align'>
-                                    <thead className='table-primary'>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Nombre</th>
-                                            <th>Stock</th>
-                                            <th>Precio</th>
-                                            <th>Categoría</th>
-                                            <th>Imagen</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {productData.map((product, i) => (
-                                            <tr key={product.id}>
-                                                <td>{(i + 1)}</td>
-                                                <td>{product.Product_Name}</td>
-                                                <td>{product.Stock}</td>
-                                                <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
-                                                <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
-                                                <td>
-                                                    {product.Image && (
-                                                        <img
-                                                            src={`http://localhost:1056/api/products/image/${product.id}`}
-                                                            alt={product.Product_Name}
-                                                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                                                        />
-                                                    )}
-                                                </td>
-
-                                                <td>
-                                                    <div className='actions d-flex align-items-center'>
-                                                        <Button color='primary' className='primary' data-bs-toggle='modal' data-bs-target='#modalViewProduct' onClick={() => setViewData(product)}><FaEye /></Button>
-                                                        <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalProducts' className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Stock, product.Price, product.Category_Id, product.Image)}><FaPencilAlt /></Button>
-                                                        <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
-
-                                                    </div>
-                                                </td>
+                            )
+                                : error ? (
+                                    <p>{error}</p>
+                                ) : (
+                                    <table className='table table-bordered table-hover v-align'>
+                                        <thead className='table-primary'>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Nombre</th>
+                                                <th>Stock</th>
+                                                <th>Precio</th>
+                                                <th>Categoría</th>
+                                                <th>Imagen</th>
+                                                <th>Acciones</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
+                                        </thead>
+                                        <tbody>
+                                            {productData.map((product, i) => (
+                                                <tr key={product.id}>
+                                                    <td>{(i + 1)}</td>
+                                                    <td>{product.Product_Name}</td>
+                                                    <td>{product.Stock}</td>
+                                                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
+                                                    <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
+                                                    <td>
+                                                        {product.Image && (
+                                                            <img
+                                                                src={`http://localhost:1056/api/products/image/${product.id}`}
+                                                                alt={product.Product_Name}
+                                                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                                            />
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <div className='actions d-flex align-items-center'>
+                                                            <Button color='primary' className='primary' data-bs-toggle='modal' data-bs-target='#modalViewProduct' onClick={() => setViewData(product)}><FaEye /></Button>
+                                                            <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalProducts' className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Stock, product.Price, product.Category_Id, product.Image)}><FaPencilAlt /></Button>
+                                                            <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
                             <div className="d-flex table-footer">
                                 <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
                             </div>
@@ -480,6 +517,12 @@ const Products = () => {
                                     name="Image"
                                     className="form-control"
                                     onChange={handleFileChange}
+                                />
+                                <input
+                                    type="text"
+                                    name="Product_Id"
+                                    value={formData.Product_Id || ''}
+                                    onChange={handleChange}
                                 />
                             </div>
                             {imagePreviewUrl && (
