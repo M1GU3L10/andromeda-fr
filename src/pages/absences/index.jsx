@@ -417,6 +417,7 @@ const Absences = () => {
                     <Modal.Body>
                         <Form>
                             <Form.Group className="mb-3">
+                            <Form.Label>Hora inicio</Form.Label>
                                 <Form.Control
                                     type="time"
                                     id="startTime"
@@ -432,6 +433,7 @@ const Absences = () => {
                             </Form.Group>
 
                             <Form.Group className="mb-3">
+                            <Form.Label>Hora fin</Form.Label>
                                 <Form.Control
                                     type="time"
                                     id="endTime"
@@ -447,6 +449,7 @@ const Absences = () => {
                             </Form.Group>
 
                             <Form.Group className="mb-3">
+                            <Form.Label>Día</Form.Label>
                                 <Form.Control
                                     type="date"
                                     id="date"
@@ -462,6 +465,7 @@ const Absences = () => {
                             </Form.Group>
 
                             <Form.Group className="mb-3">
+                            <Form.Label>Descripción</Form.Label>
                                 <Form.Control
                                     as="textarea" rows={2}
                                     id="description"
@@ -477,6 +481,7 @@ const Absences = () => {
                             </Form.Group>
 
                             <Form.Group className="mb-3">
+                            <Form.Label>Usuario</Form.Label>
                                 <Form.Select
                                     id='userId'
                                     name="userId"
@@ -496,6 +501,7 @@ const Absences = () => {
 
                             {operation === 3 && (
                                 <Form.Group className="mb-3">
+                                    <Form.Label>Estado</Form.Label>
                                     <Form.Select
                                         id='status'
                                         name="status"

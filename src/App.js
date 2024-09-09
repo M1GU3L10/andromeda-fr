@@ -18,13 +18,18 @@ import Users from './pages/users';
 import Roles from './pages/roles';
 import Login from './auth/login';
 import Absences from './pages/absences';
+import RegisterSales from './pages/sales/registerSales';
 
 const MyContext = createContext();
 
 function App() {
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
   const [themeMode, setThemeMode] = useState('true');
+<<<<<<< HEAD
   const [isLogin, setIsLogin] = useState(false);
+=======
+  
+>>>>>>> d4340483e8cead01d6d653d9ce89d06e52968554
 
   useEffect(() => {
     if (themeMode === true) {
@@ -50,8 +55,36 @@ function App() {
   return (
     <BrowserRouter>
       <MyContext.Provider value={values}>
+<<<<<<< HEAD
         {/* Renderiza el contenido que necesita usar `useLocation` */}
         <AppContent />
+=======
+        <Header />
+        <div className='main d-flex'>
+          <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
+            <Sidebar />
+          </div>
+          <div className={`content ${isToggleSidebar === true ? 'toggle' : ''}`}>
+            <Routes>
+              <Route path="/" exact={true} element={<Dashboard />} />
+              <Route path="/dashboard" exact={true} element={<Dashboard />} />
+              <Route path="/categories" exact={true} element={<Categories />} />
+              <Route path="/appointment" exact={true} element={<Appointment />} />
+              <Route path="/orders" exact={true} element={<Orders />} />
+              <Route path="/products" exact={true} element={<Products />} />
+              <Route path="/programming" exact={true} element={<Programming />} />
+              <Route path="/sales" exact={true} element={<Sales />} />
+              <Route path="/salesRegister" exact={true} element={<RegisterSales />} />
+              <Route path="/services" exact={true} element={<Services />} />
+              <Route path="/shopping" exact={true} element={<Shopping />} />
+              <Route path="/suppliers" exact={true} element={<Suppliers />} />
+              <Route path="/users" exact={true} element={<Users />} />
+              <Route path="/roles" exact={true} element={<Roles />} />
+              <Route path="/absences" exact={true} element={<Absences />} />
+            </Routes>
+          </div>
+        </div>
+>>>>>>> d4340483e8cead01d6d653d9ce89d06e52968554
       </MyContext.Provider>
     </BrowserRouter>
   );

@@ -555,6 +555,10 @@ body.dark .main .sidebarWrapper .sidebar ul .submenu li a:hover {
   flex: 0 0 100%;
 }
 
+.main .content.toggle.fc-daygrid-body .fc-daygrid-body-unbalanced{
+  width: 1679px !important;
+}
+
 .logoutWrapper {
   padding: 0px 25px;
   margin-bottom: 10px;
@@ -650,6 +654,10 @@ body.dark .right-content .row .spacing .Title {
   color: #d0d5db !important;
 }
 
+body.dark .Title {
+  color: #d0d5db !important;
+}
+
 body.dark .css-1mm5wr7-MuiChip-root .MuiChip-icon {
   color: #b7bcc7;
 }
@@ -685,10 +693,8 @@ body.dark .card{
 
 .table .table-primary th {
   background-color: #1866ee !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
   color: #fff !important;
   font-size: 13px !important;
-
 }
 
 .table tbody td {
@@ -718,6 +724,22 @@ body.dark .table tbody td {
   margin: 0px 3px !important;
 }
 
+.Menu-programming{
+  background: transparent !important;
+}
+
+.Menu-programming .Menu-programming-item button{
+  min-width: 30px !important;
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.Menu-programming .Menu-programming-item{
+  width: 45px !important;
+  height: 35px !important;
+  padding: 5px;
+}
+
 .table tbody .actions button.secondary svg {
   color: rgb(155, 39, 176);
 }
@@ -725,6 +747,32 @@ body.dark .table tbody td {
 .table tbody .actions button.secondary {
   background: rgb(155, 39, 176, 0.2);
 }
+
+button.primary svg {
+  color: rgb(24, 102, 237) !important;
+}
+
+button.primary{
+  background: rgb(24, 102, 237, 0.2) !important;
+}
+
+button.secondary svg {
+  color: rgb(155, 39, 176) !important;
+}
+
+button.secondary{
+  background: rgb(155, 39, 176, 0.2) !important;
+
+}
+
+button.delete{
+  background: rgb(212, 47, 47, 0.2) !important;
+}
+
+button.delete svg {
+  color: rgb(212, 47, 47) !important;
+}
+
 
 .table tbody .actions button.primary svg {
   color: rgb(24, 102, 237);
@@ -915,7 +963,7 @@ body.dark .fc .fc-toolbar-title{
   position: relative;
   color: #f1f1f1;
   border-radius: 10px;
-  max-height: 35px;
+  max-height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -930,7 +978,7 @@ body.dark .fc .fc-toolbar-title{
 
 .fc-daygrid-dot-event.fc-event-mirror, .fc-daygrid-dot-event:hover{
   background: rgb(54, 118, 245) !important;
-  cursor: default;
+  cursor: pointer;
 }
 
 .fc .fc-col-header-cell-cushion {
@@ -977,8 +1025,110 @@ a{
   color: #ff4d4d;
 }
 
+<<<<<<< HEAD
 /* login */
 
 
 
 
+=======
+.css-6hp17o-MuiList-root-MuiMenu-list{
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.css-6hp17o-MuiList-root-MuiMenu-list{
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+
+.card-detail{
+  background: #fff;
+  width: 100%;
+  margin: 15px 0px;
+  border-radius: 10px;
+}
+
+.colorTransparent{
+  background: none !important;
+}
+
+.card-detail .row .bcg-w{
+  background: #fff !important;
+}
+
+.card-detail .row .bcg-w .Title{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 18px;
+  font-weight: 500;
+  color: #403e57 !important;
+}
+
+.cont-title{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgb(223, 226, 230);
+  padding: 3px !important;
+}
+
+.cont-title .Title{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 20px;
+  font-weight: 500;
+  color: #403e57 !important;
+  margin: 10px;
+}
+
+.form{
+  width: 100%;
+}
+
+.table-responsive{
+  padding: 0px 20px;
+}
+
+.table-responsive button{
+  min-width: 30px !important;
+  width: 25px !important;
+  height: 25px !important;
+  margin: 0px 3px !important;
+}
+
+.table-responsive .actions-quantity button{
+  min-width: 10px !important;
+  margin: 0px 3px !important;
+  border-radius: 50% !important;
+  border: 1px solid #1866ee;
+}
+
+.table-responsive .actions-quantity button svg{
+  font-size: 20px !important;
+}
+
+.Monto-content .Monto{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 13px;
+  font-weight: 700;
+  color: #403e57 !important;
+  margin: 5px;
+}
+
+.Monto-content .valor{
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 15px;
+  font-weight: 700;
+  color: #403e57 !important;
+}
+
+.table .table-light th {
+  background-color: rgb(247, 249, 250) !important;
+  color: rgba(0, 0, 0, 0.568) !important;
+  font-size: 13px !important;
+}
+
+.table .table-light tr{
+  border: 1px solid rgba(0, 0, 0, 0.11) !important;
+}
+>>>>>>> d4340483e8cead01d6d653d9ce89d06e52968554

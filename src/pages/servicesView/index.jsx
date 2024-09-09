@@ -179,7 +179,7 @@ const Services = () => {
     };
 
     const validateDescription = (value) => {
-        if (value.length < 10 || value.length > 500) {
+        if (value.length < 5 || value.length > 500) {
             return 'La descripción debe tener entre 10 y 500 caracteres';
         }
         return '';
@@ -244,6 +244,17 @@ const Services = () => {
             show_alerta(errors.name || 'Por favor, complete el nombre del servicio.', 'warning');
             return;
         }
+
+        if (errors.price || !price.trim()) {
+            show_alerta(errors.price || 'Por favor, complete el precio del servicio.', 'warning');
+            return;
+        }
+
+        if (errors.time || !time.trim()) {
+            show_alerta(errors.time || 'Por favor, seleccione un tiempo del servicio.', 'warning');
+            return;
+        }
+
 
         // Verifica la existencia
         if (operation === 1) {
