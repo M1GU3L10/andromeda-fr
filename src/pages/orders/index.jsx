@@ -78,6 +78,7 @@
           show_alerta('Error al obtener usuarios', 'error')
         }
       }
+      
 
       const searcher = (e) => {
         setSearch(e.target.value)
@@ -134,47 +135,64 @@
       }
 
       const handleSubmit = () => {
-    if (validar()) {
-      const orderDate = new Date(`${Order_Date}T${Order_Time}`);
-
-      const parametros = {
-        orderDate: orderDate.toISOString(),
-        totalAmount: parseFloat(Total_Amount).toFixed(2),
-        status: Status,
-        userId: parseInt(User_Id)
+        if (validar()) {
+          const now = new Date();
+      
+          // Crear una fecha para `Order_Date` y mantener solo el formato `YYYY-MM-DDTHH:MM:SSZ`
+          const orderDateISO = new Date(`${Order_Date}T${Order_Time}`).toISOString();
+      
+          // Mantener solo el formato `HH:MM:SS` para `Order_Time`
+          const formattedOrderTime = new Date(`${Order_Date}T${Order_Time}`).toTimeString().split(' ')[0];
+      
+          const parametros = {
+            Order_Date: orderDateISO, // Enviar en formato ISO completo
+            Order_Time: formattedOrderTime, // Enviar solo la hora HH:MM:SS
+            Total_Amount: parseFloat(Total_Amount).toFixed(2),
+            Status: Status,
+            User_Id: parseInt(User_Id),
+            Token_Expiration: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString()
+          };
+      
+          // Solo incluir id si estamos editando una orden existente
+          if (operation === 2 && id) {
+            parametros.id = parseInt(id);
+          }
+      
+          console.log('Sending data:', parametros);
+      
+          const metodo = operation === 1 ? 'POST' : 'PUT';
+          enviarSolicitud(metodo, parametros);
+        }
       };
-
-      console.log('Sending data:', parametros);
-
-      const metodo = operation === 1 ? 'POST' : 'PUT';
-      enviarSolicitud(metodo, parametros);
-    }
-  };
-
       const enviarSolicitud = async (metodo, parametros) => {
-        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url
+        const urlWithId = metodo === 'PUT' && parametros.id ? `${url}/${parametros.id}` : url;
         try {
           const response = await axios({
             method: metodo,
             url: urlWithId,
             data: parametros,
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          console.log('Response:', response)
-          show_alerta('Operación exitosa', 'success')
+          });
+          console.log('Response:', response);
+          show_alerta('Operación exitosa', 'success');
           if (metodo === 'POST') {
-            showExpirationMessage(response.data.Token_Expiration)
+            showExpirationMessage(response.data.Token_Expiration);
           }
-          handleClose()
-          getOrders()
+          handleClose();
+          getOrders();
         } catch (error) {
-          console.error('Error details:', error.response)
-          show_alerta(`Error en la solicitud: ${error.response?.data?.message || error.message}`, 'error')
+          console.error('Error details:', error.response);
+          
+          // Imprimir los detalles del error
+          if (error.response?.data?.errors) {
+            console.error('Validation errors:', error.response.data.errors);
+          }
+      
+          show_alerta(`Error en la solicitud: ${error.response?.data?.message || error.message}`, 'error');
         }
-      }
-
+      };
+      
       const showExpirationMessage = (expirationDate) => {
         const expDate = new Date(expirationDate)
         Swal.fire({

@@ -1,6 +1,8 @@
-import * as React from 'react';
-import { emphasize, styled } from '@mui/material/styles';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Pagination from '@mui/material/Pagination';
+import SearchBox from '../../components/SearchBox';
+import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
@@ -10,8 +12,6 @@ import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import { MdOutlineSave } from "react-icons/md";
-import SearchBox from '../../components/SearchBox';
-import Pagination from '@mui/material/Pagination';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -59,11 +59,11 @@ const PinkSwitch = styled(Switch)(({ theme }) => ({
 }));
 
 const Products = () => {
-    const [columnsPerPage, setColumnsPerPage] = React.useState('');
-    const [operation, setOperation] = React.useState(1);
-    const [title, setTitle] = React.useState('');
-    const [viewData, setViewData] = React.useState({});
-    const [formData, setFormData] = React.useState({
+    const [columnsPerPage, setColumnsPerPage] = useState('');
+    const [operation, setOperation] = useState(1);
+    const [title, setTitle] = useState('');
+    const [viewData, setViewData] = useState({});
+    const [formData, setFormData] = useState({
         id: '',
         Product_Name: '',
         Stock: '',
@@ -71,14 +71,17 @@ const Products = () => {
         Category_Id: '',
         Image: '',
     });
-    const [imagePreviewUrl, setImagePreviewUrl] = React.useState('');
-    const [productData, setProductData] = React.useState([]);
-    const [categories, setCategories] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState(null);
-    const [formErrors, setFormErrors] = React.useState({});
+    const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+    const [productData, setProductData] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [formErrors, setFormErrors] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    React.useEffect(() => {
+    useEffect(() => {
         fetchCategories();
         fetchProductData();
     }, []);
@@ -135,8 +138,6 @@ const Products = () => {
             document.getElementById('Product_Name').focus();
         }, 500);
     };
-    
-
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -148,7 +149,6 @@ const Products = () => {
             reader.readAsDataURL(file);
         }
     };
-
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -210,7 +210,6 @@ const Products = () => {
             return;
         }
 
-
         const dataToSend = {
             Product_Name: formData.Product_Name.trim(),
             Stock: parseInt(formData.Stock),
@@ -255,8 +254,6 @@ const Products = () => {
             }
         }
     };
-
-
 
     const handleSubmit = async () => {
         const dataToSend = {
@@ -339,6 +336,23 @@ const Products = () => {
         }
     };
 
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = productData.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (event, value) => {
+        setCurrentPage(value);
+    };
+
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+        setCurrentPage(1); // Reiniciar a la primera página cuando cambia el término de búsqueda
+    };
+
+    const filteredItems = currentItems.filter((product) =>
+        product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <>
             <div className="right-content w-100">
@@ -389,7 +403,7 @@ const Products = () => {
                                 </FormControl>
                             </div>
                             <div className='col-sm-4 d-flex align-items-center justify-content-end'>
-                                <SearchBox />
+                                <SearchBox value={searchTerm} onChange={handleSearchChange} />
                             </div>
                         </div>
                         <div className='table-responsive mt-3'>
@@ -412,7 +426,7 @@ const Products = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {productData.map((product, i) => (
+                                            {filteredItems.map((product, i) => (
                                                 <tr key={product.id}>
                                                     <td>{(i + 1)}</td>
                                                     <td>{product.Product_Name}</td>
@@ -441,7 +455,15 @@ const Products = () => {
                                     </table>
                                 )}
                             <div className="d-flex table-footer">
-                                <Pagination count={10} color="primary" className='pagination' showFirstButton showLastButton />
+                                <Pagination
+                                    count={Math.ceil(productData.length / itemsPerPage)}
+                                    page={currentPage}
+                                    onChange={handlePageChange}
+                                    color="primary"
+                                    className="pagination"
+                                    showFirstButton
+                                    showLastButton
+                                />
                             </div>
                         </div>
                     </div>
@@ -539,7 +561,7 @@ const Products = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>  
 
             {/* Modal para ver producto */}
             <div id="modalViewProduct" className="modal fade" aria-hidden="true">
