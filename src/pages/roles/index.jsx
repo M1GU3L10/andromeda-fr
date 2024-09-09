@@ -45,7 +45,12 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 const Roles = () => {
     const url = 'http://localhost:1056/api/roles';
+    const urlPermissions = 'http://localhost:1056/api/permissions';
+    const urlPermissionsRoles = 'http://localhost:1056/api/permissionsRole';
     const [services, setServices] = useState([]);
+    const [permissions, setPermissions] = useState([]);
+    const [selectedPermissions, setSelectedPermissions] = useState([]);
+    const [permissionsRole, setPermissionsRole] = useState([]);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [status, setStatus] = useState('');
@@ -74,8 +79,59 @@ const Roles = () => {
 
     useEffect(() => {
         getServices();
+        getPermissions();
+        getPermissionsRole();
     }, [])
 
+    //Renderizar permisos
+    const getPermissions = async () => {
+        try {
+            const response = await axios.get(urlPermissions);
+            setPermissions(response.data);
+        } catch (error) {
+            console.error('Error al obtener los permisos', error);
+        }
+    };
+
+     // Obtener relación de permisos y roles
+     const getPermissionsRole = async () => {
+        try {
+            const response = await axios.get(urlPermissionsRoles);
+            setPermissionsRole(response.data);
+        } catch (error) {
+            console.error('Error al obtener los permisosRole', error);
+        }
+    };
+
+
+    //
+
+    const handleCheckboxChange = (permissionId) => {
+        setSelectedPermissions(prevSelected => {
+            if (prevSelected.includes(permissionId)) {
+                return prevSelected.filter(id => id !== permissionId);
+            } else {
+                return [...prevSelected, permissionId];
+            }
+        });
+    };
+
+
+    //
+
+    // Obtener permisos por rol
+    const getPermissionsForRole = (roleId) => {
+        // Filtrar permisosRole por roleId
+        const rolePermissions = permissionsRole.filter(pr => pr.roleId === roleId);
+        
+        // Mapear los permisosId a los nombres de permisos
+        return rolePermissions.map(rp => {
+            const permission = permissions.find(p => p.id === rp.permissionId);
+            return permission ? permission.name : '';
+        }).join(', ');
+    };
+
+    //
 
     const getServices = async () => {
         const response = await axios.get(url);
@@ -104,10 +160,11 @@ const Roles = () => {
     }
 
 
-    const openModal = (op, id, name) => {
+    const openModal = (op, id, name, selectedPermissions = []) => {
         setId('');
         setName('');
         setStatus('A');
+        setSelectedPermissions(selectedPermissions);
         setOperation(op);
 
 
@@ -227,6 +284,7 @@ const Roles = () => {
                 id: id,
                 name: name.trim(),
                 status: status,
+                permissions: selectedPermissions 
             };
 
 
@@ -379,6 +437,7 @@ const Roles = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Nombre</th>
+                                        <th>Permisos</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -389,6 +448,7 @@ const Roles = () => {
                                             <tr key={service.id}>
                                                 <td>{(i + 1)}</td>
                                                 <td>{service.name}</td>
+                                                <td>{getPermissionsForRole(service.id)}</td>
                                                 <td><span  className= {`serviceStatus ${service.status ===  'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
@@ -453,6 +513,18 @@ const Roles = () => {
                                 <Form.Control.Feedback type="invalid">
                                     {errors.name}
                                 </Form.Control.Feedback>
+                            </Form.Group>
+                            <Form.Group>
+                            <Form.Label>Permisos</Form.Label>
+                                {permissions.map(permission => (
+                                    <Form.Check
+                                        key={permission.id}
+                                        type="checkbox"
+                                        label={permission.name}
+                                        checked={selectedPermissions.includes(permission.id)}
+                                        onChange={() => handleCheckboxChange(permission.id)}
+                                    />
+                                ))}
                             </Form.Group>
                         </Form>
                     </Modal.Body>

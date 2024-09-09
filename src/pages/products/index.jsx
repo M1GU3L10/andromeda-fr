@@ -175,52 +175,6 @@ const Products = () => {
         return errors;
     };
 
-    const handleSubmit = async () => {
-        const dataToSend = {
-            Product_Name: formData.Product_Name.trim(),
-            Stock: parseInt(formData.Stock),
-            Price: parseFloat(formData.Price),
-            Category_Id: parseInt(formData.Category_Id)
-
-        };
-
-        console.log('Sending data:', dataToSend);
-
-        try {
-            const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            console.log('Server response:', response);
-
-            if (response.status === 200 || response.status === 201) {
-                document.getElementById('btnCerrar').click();
-                fetchProductData();
-                show_alerta('Producto agregado exitosamente', 'success');
-            } else {
-                show_alerta('Hubo un problema al agregar el producto', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            if (error.response && error.response.data) {
-                console.log('Server error response:', error.response.data);
-            }
-            if (error.response && error.response.data && error.response.data.errors) {
-                const serverErrors = {};
-                error.response.data.errors.forEach(err => {
-                    serverErrors[err.path] = err.msg;
-                });
-                setFormErrors(serverErrors);
-                show_alerta('Por favor, corrija los errores en el formulario', 'error');
-            } else {
-                show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
-            }
-        }
-    };
-
-
     const handleUpdate = async () => {
         const errors = validateForm();
         if (Object.keys(errors).length === 0) {
@@ -229,18 +183,18 @@ const Products = () => {
             formDataToSend.append('Stock', parseInt(formData.Stock));
             formDataToSend.append('Price', parseFloat(formData.Price).toFixed(2));
             formDataToSend.append('Category_Id', formData.Category_Id);
-
+    
             if (formData.Image instanceof File) {
                 formDataToSend.append('Image', formData.Image);
             }
-
+    
             try {
                 const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`, formDataToSend, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 });
-
+    
                 if (response.status === 200) {
                     document.getElementById('btnCerrar').click();
                     fetchProductData();
@@ -264,6 +218,50 @@ const Products = () => {
         } else {
             setFormErrors(errors);
             show_alerta('Por favor, corrija los errores en el formulario', 'error');
+        }
+    };
+    
+    const handleSubmit = async () => {
+        const dataToSend = {
+            Product_Name: formData.Product_Name.trim(),
+            Stock: parseInt(formData.Stock),
+            Price: parseFloat(formData.Price),
+            Category_Id: parseInt(formData.Category_Id)
+        };
+    
+        console.log('Sending data:', dataToSend);
+    
+        try {
+            const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+    
+            console.log('Server response:', response);
+    
+            if (response.status === 200 || response.status === 201) {
+                document.getElementById('btnCerrar').click();
+                fetchProductData();
+                show_alerta('Producto agregado exitosamente', 'success');
+            } else {
+                show_alerta('Hubo un problema al agregar el producto', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (error.response && error.response.data) {
+                console.log('Server error response:', error.response.data);
+            }
+            if (error.response && error.response.data && error.response.data.errors) {
+                const serverErrors = {};
+                error.response.data.errors.forEach(err => {
+                    serverErrors[err.path] = err.msg;
+                });
+                setFormErrors(serverErrors);
+                show_alerta('Por favor, corrija los errores en el formulario', 'error');
+            } else {
+                show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
+            }
         }
     };
     const handleDelete = async (id, name) => {
