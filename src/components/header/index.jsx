@@ -28,6 +28,8 @@ const Header = () => {
     const open = Boolean(anchorEl);
     const openNoti = Boolean(openNotifications);
 
+    const [isLogin, setIsLogin] = useState(true);
+
     const context = useContext(MyContext);
 
     const handleClick = (event) => {
@@ -309,7 +311,9 @@ const Header = () => {
                                         <ListItemIcon>
                                             <Logout fontSize="small" />
                                         </ListItemIcon>
+                                        <Link to="/login">
                                         Logout
+                                    </Link>
                                     </MenuItem>
                                 </Menu>
                             </div>
