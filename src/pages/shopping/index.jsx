@@ -15,6 +15,8 @@ import { IoSearch } from "react-icons/io5";
 import Button from '@mui/material/Button';
 import { FaEye } from "react-icons/fa";
 import { TbFileDownload } from "react-icons/tb";
+import { Link } from 'react-router-dom';
+
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -49,7 +51,7 @@ const Shopping = () => {
         getSuppliers();
     }, [])
 
-    const getShopping = async ()=>{
+    const getShopping = async () => {
         const response = await axios.get(url)
         SetShopping(response.data)
     }
@@ -59,7 +61,7 @@ const Shopping = () => {
         SetSuppliers(response.data)
     }
 
-    const supplierName = (supplierId) =>{
+    const supplierName = (supplierId) => {
         const supplier = suppliers.find(supplier => supplier.id === supplierId)
         return supplier ? supplier.Supplier_Name : 'Desconocido'
     }
@@ -101,8 +103,11 @@ const Shopping = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' variant="contained"><BsPlusSquareFill />Registrar</Button>
+                                <Link className='btn-register btn btn-primary' to="/shoppingRegister">
+                                    <BsPlusSquareFill /> Registrar
+                                </Link>
                             </div>
+
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
                                     <IoSearch className="mr-2" />

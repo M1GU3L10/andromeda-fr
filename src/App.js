@@ -19,6 +19,8 @@ import Roles from './pages/roles';
 import Login from './auth/login';
 import Absences from './pages/absences';
 import RegisterSales from './pages/sales/registerSales';
+import RegisterShopping from './pages/shopping/registerShopping';
+
 
 const MyContext = createContext();
 
@@ -76,6 +78,7 @@ function App() {
               <Route path="/salesRegister" exact={true} element={<RegisterSales />} />
               <Route path="/services" exact={true} element={<Services />} />
               <Route path="/shopping" exact={true} element={<Shopping />} />
+              <Route path="/shoppingRegister" exact={true} element={<RegisterShopping />} />
               <Route path="/suppliers" exact={true} element={<Suppliers />} />
               <Route path="/users" exact={true} element={<Users />} />
               <Route path="/roles" exact={true} element={<Roles />} />
