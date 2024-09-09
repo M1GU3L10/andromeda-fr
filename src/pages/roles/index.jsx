@@ -104,6 +104,12 @@ const Roles = () => {
     };
 
 
+    //array que devuelve id
+    const getPermissionsForRoleId = (roleId) => {
+        const rolePermissions = permissionsRole.filter(pr => pr.roleId === roleId);
+        return rolePermissions.map(rp => rp.permissionId);
+    };
+
     //
 
     const handleCheckboxChange = (permissionId) => {
@@ -176,6 +182,7 @@ const Roles = () => {
             setTitle('Editar rol');
             setId(id);
             setName(name);
+            setSelectedPermissions(getPermissionsForRoleId(id).map(permission => permission.id));
         }
         setShowModal(true);
     }
@@ -543,6 +550,7 @@ const Roles = () => {
                     <Modal.Body>
                         <p><strong>Nombre:</strong> {detailData.name}</p>
                         <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+                        <p><strong>Permisos:</strong> {getPermissionsForRole(detailData.id)}</p>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
