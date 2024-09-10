@@ -20,6 +20,7 @@ import Login from './auth/login';
 import Absences from './pages/absences';
 import RegisterSales from './pages/sales/registerSales';
 import RegisterShopping from './pages/shopping/registerShopping';
+import RegisterAppointment from './pages/appointment/registerAppointment';
 
 
 const MyContext = createContext();
@@ -71,6 +72,7 @@ function App() {
               <Route path="/dashboard" exact={true} element={<Dashboard />} />
               <Route path="/categories" exact={true} element={<Categories />} />
               <Route path="/appointment" exact={true} element={<Appointment />} />
+              <Route path="/appointmentRegister" exact={true} element={<RegisterAppointment />} />
               <Route path="/orders" exact={true} element={<Orders />} />
               <Route path="/products" exact={true} element={<Products />} />
               <Route path="/programming" exact={true} element={<Programming />} />
