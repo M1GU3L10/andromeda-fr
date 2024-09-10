@@ -59,6 +59,12 @@ textarea.form-control{
   text-transform: capitalize !important;
 }
 
+.btn-clear{
+  background: orange;
+  font-size: 14px !important;
+  border-radius: 50%;
+}
+
 .btn-content {
   padding-left: 10px;
   padding-right: 10px;
@@ -1142,5 +1148,20 @@ a{
 
 }
 
+.product-search-results {
+  height: auto;
+  width: 220px !important;
+  position: absolute;
+  z-index: 1000;
+}
 
 
+.product-search-results .product-item{
+  border-radius: 10px;  
+  height: 40px !important;
+  margin: 3px;
+  display: flex;
+  align-items: center;
+  background: #fff !important;
+  justify-content: center;
+}

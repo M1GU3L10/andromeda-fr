@@ -45,6 +45,7 @@ const RegisterShopping = () => {
     const [products, setProducts] = useState([]);
     const [shoppingDetails, setShoppingDetails] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    
     const [formData, setFormData] = useState({
         code: '',
         purchaseDate: '',
@@ -79,8 +80,8 @@ const RegisterShopping = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
+    const handleProductSearch = (event) => {
+        setSearchTerm(event.target.value);
     };
 
     // filteredProducts: Filtra los productos según el término de búsqueda
@@ -194,23 +195,23 @@ const RegisterShopping = () => {
                                             <IoSearch className="mr-2" />
                                             <input
                                                 type="text"
-                                                placeholder='Buscar productos...'
+                                                placeholder='Buscar producto...'
                                                 className='form-control'
                                                 value={searchTerm}
-                                                onChange={handleSearch}
+                                                onChange={handleProductSearch}
                                             />
                                         </div>
                                     </div>
-                                    <div className='mt-3'>
-                                    <ul>
-                                        {filteredProducts.map(product => (
-                                            <li key={product.id}>
-                                                {product.Product_Name} - ${product.Price}
-                                                <Button onClick={() => addProductToDetails(product)}>Agregar</Button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                                    {/* Product search results */}
+                                    <div className='d-flex aline-items-center justify-content-end'>
+                                        <div className="product-search-results">
+                                            {searchTerm && filteredProducts.map(product => (
+                                                <div key={product.id} className="product-item shadow border-0" onClick={() => addProductToDetails(product)}>
+                                                    {product.Product_Name} - ${product.Price}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <div className='table-responsive mt-3 w-80'>

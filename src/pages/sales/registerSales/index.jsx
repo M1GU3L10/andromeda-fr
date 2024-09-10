@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import { IoTrashSharp } from "react-icons/io5";
 import { FaPlus, FaMinus } from "react-icons/fa6";
 import { Form, Col, Row } from 'react-bootstrap';
+import { FaBroom } from 'react-icons/fa';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -110,7 +111,7 @@ const RegisterSales = () => {
                 id_producto: product.id
             }))
         };
-    
+
         try {
             await axios.post('http://localhost:1056/api/sales', saleData);
             alert('Venta registrada con éxito');
@@ -126,7 +127,7 @@ const RegisterSales = () => {
             alert('Error al registrar la venta');
         }
     };
-    
+
 
     return (
         <div className="right-content w-100">
@@ -166,12 +167,14 @@ const RegisterSales = () => {
                                         </div>
                                     </div>
                                     {/* Product search results */}
-                                    <div className="product-search-results">
-                                        {searchTerm && filteredProducts.map(product => (
-                                            <div key={product.id} className="product-item" onClick={() => addProduct(product)}>
-                                                {product.Product_Name} - ${product.Price}
-                                            </div>
-                                        ))}
+                                    <div className='d-flex aline-items-center justify-content-end'>
+                                        <div className="product-search-results">
+                                            {searchTerm && filteredProducts.map(product => (
+                                                <div key={product.id} className="product-item shadow border-0" onClick={() => addProduct(product)}>
+                                                    {product.Product_Name} - ${product.Price}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className='table-responsive mt-3 w-80'>
@@ -193,7 +196,7 @@ const RegisterSales = () => {
                                                     <td>{product.Price}</td>
                                                     <td>{product.Price * product.quantity}</td>
                                                     <td>
-                                                        <div className='d-flex align-items-center'>
+                                                        <div className='d-flex align-items-center position-static'>
                                                             <Button color='error' className='delete' onClick={() => removeProduct(product.id)}><IoTrashSharp /></Button>
                                                             <div className='actions-quantity'>
                                                                 <Button className='primary' onClick={() => updateQuantity(product.id, 1)}><FaPlus /></Button>
@@ -260,7 +263,10 @@ const RegisterSales = () => {
                                                 <Button variant="primary" type="submit" className='btn-sucess'>
                                                     Guardar
                                                 </Button>
-                                                <Button variant="secondary" className='btn-red' onClick={() => {
+                                                <Button variant="secondary" className='btn-red' href="/Sales">
+                                                    Cerrar
+                                                </Button>
+                                                {/* <Button variant="warning" className='btn-clear' onClick={() => {
                                                     setSaleInfo({
                                                         Billnumber: '',
                                                         SaleDate: new Date().toISOString().split('T')[0],
@@ -268,8 +274,9 @@ const RegisterSales = () => {
                                                     });
                                                     setSelectedProducts([]);
                                                 }}>
-                                                    Limpiar
-                                                </Button>
+                                                    <FaBroom style={{ marginRight: '5px' }} />
+                                                    
+                                                </Button> */}
                                             </Form.Group>
                                         </Form>
                                     </div>
