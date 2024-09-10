@@ -99,7 +99,7 @@ const Sales = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Link className='btn-register' variant="contained" to="/salesRegister"><BsPlusSquareFill />Registrar</Link>
+                                <Link className='btn-register btn btn-primary' variant="contained" to="/salesRegister"><BsPlusSquareFill />Registrar</Link>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">

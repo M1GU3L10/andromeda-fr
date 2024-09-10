@@ -11,6 +11,9 @@ import Button from '@mui/material/Button';
 import { IoTrashSharp } from "react-icons/io5";
 import { FaPlus, FaMinus } from "react-icons/fa6";
 import { Form, Col, Row } from 'react-bootstrap';
+import Swal from 'sweetalert2';
+import { show_alerta } from '../../../assets/functions'
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -49,6 +52,7 @@ const RegisterSales = () => {
             setUsers(response.data.filter(user => user.roleId === 3));
         } catch (error) {
             console.error('Error fetching users:', error);
+            Swal.fire('Error', 'No se pudieron cargar los usuarios', 'error');
         }
     };
 
@@ -58,6 +62,7 @@ const RegisterSales = () => {
             setProducts(response.data);
         } catch (error) {
             console.error('Error fetching products:', error);
+            Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
         }
     };
 
@@ -72,6 +77,10 @@ const RegisterSales = () => {
     const addProduct = (product) => {
         const existingProduct = selectedProducts.find(p => p.id === product.id);
         if (existingProduct) {
+            if (existingProduct.quantity + 1 > product.Stock) {
+                Swal.fire('Error', `No hay suficiente stock para ${product.Product_Name}`, 'error');
+                return;
+            }
             setSelectedProducts(selectedProducts.map(p =>
                 p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
             ));
@@ -85,9 +94,19 @@ const RegisterSales = () => {
     };
 
     const updateQuantity = (productId, change) => {
-        setSelectedProducts(selectedProducts.map(p =>
-            p.id === productId ? { ...p, quantity: Math.max(1, p.quantity + change) } : p
-        ));
+        const product = products.find(p => p.id === productId);
+        const updatedProducts = selectedProducts.map(p => {
+            if (p.id === productId) {
+                const newQuantity = Math.max(1, p.quantity + change);
+                if (newQuantity > product.Stock) {
+                    Swal.fire('Error', `No hay suficiente stock para ${product.Product_Name}`, 'error');
+                    return p;
+                }
+                return { ...p, quantity: newQuantity };
+            }
+            return p;
+        });
+        setSelectedProducts(updatedProducts);
     };
 
     const calculateTotal = () => {
@@ -99,21 +118,37 @@ const RegisterSales = () => {
         setSaleInfo({ ...saleInfo, [name]: value });
     };
 
+    const validateBillNumber = (billNumber) => {
+        const regex = /^\d{6}$/;
+        return regex.test(billNumber);
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
+        
+        if (!validateBillNumber(saleInfo.Billnumber)) {
+            show_alerta('El número de factura debe contener exactamente 6 dígitos', 'warning');
+            return;
+        }
+
+        if (!saleInfo.id_usuario) {
+            show_alerta('Debe seleccionar un cliente', 'warning');
+            return;
+        }
+
         const saleData = {
             ...saleInfo,
             total_price: calculateTotal(),
-            status: 'Completada', // Agregar el estado por defecto aquí
+            status: 'Completada',
             saleDetails: selectedProducts.map(product => ({
                 quantity: product.quantity,
                 id_producto: product.id
             }))
         };
-    
+
         try {
             await axios.post('http://localhost:1056/api/sales', saleData);
-            alert('Venta registrada con éxito');
+            show_alerta('Venta registrada con éxito', 'success');
             // Resetear el formulario y los productos seleccionados
             setSaleInfo({
                 Billnumber: '',
@@ -123,10 +158,9 @@ const RegisterSales = () => {
             setSelectedProducts([]);
         } catch (error) {
             console.error('Error al registrar la venta:', error);
-            alert('Error al registrar la venta');
+            show_alerta('Error al registrar la venta', 'error');
         }
     };
-    
 
     return (
         <div className="right-content w-100">
@@ -166,12 +200,14 @@ const RegisterSales = () => {
                                         </div>
                                     </div>
                                     {/* Product search results */}
-                                    <div className="product-search-results">
-                                        {searchTerm && filteredProducts.map(product => (
-                                            <div key={product.id} className="product-item" onClick={() => addProduct(product)}>
-                                                {product.Product_Name} - ${product.Price}
-                                            </div>
-                                        ))}
+                                    <div className='d-flex aline-items-center justify-content-end'>
+                                        <div className="product-search-results">
+                                            {searchTerm && filteredProducts.map(product => (
+                                                <div key={product.id} className="product-item shadow border-0" onClick={() => addProduct(product)}>
+                                                    {product.Product_Name} - ${product.Price}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className='table-responsive mt-3 w-80'>
@@ -193,7 +229,7 @@ const RegisterSales = () => {
                                                     <td>{product.Price}</td>
                                                     <td>{product.Price * product.quantity}</td>
                                                     <td>
-                                                        <div className='d-flex align-items-center'>
+                                                        <div className='d-flex align-items-center position-static'>
                                                             <Button color='error' className='delete' onClick={() => removeProduct(product.id)}><IoTrashSharp /></Button>
                                                             <div className='actions-quantity'>
                                                                 <Button className='primary' onClick={() => updateQuantity(product.id, 1)}><FaPlus /></Button>
@@ -228,17 +264,17 @@ const RegisterSales = () => {
                                                         name="Billnumber"
                                                         value={saleInfo.Billnumber}
                                                         onChange={handleInputChange}
-                                                        required
+                
                                                     />
                                                 </Col>
                                                 <Col sm="6">
                                                     <Form.Label>Fecha venta</Form.Label>
                                                     <Form.Control
+                                                        placeholder='fecha venta'
                                                         type="date"
                                                         name="SaleDate"
-                                                        value={saleInfo.SaleDate}
+                                                        value={FormData.SaleDate}
                                                         onChange={handleInputChange}
-                                                        required
                                                     />
                                                 </Col>
                                             </Form.Group>
@@ -248,7 +284,6 @@ const RegisterSales = () => {
                                                     name="id_usuario"
                                                     value={saleInfo.id_usuario}
                                                     onChange={handleInputChange}
-                                                    required
                                                 >
                                                     <option value="">Seleccionar cliente</option>
                                                     {users.map(user => (
@@ -260,7 +295,10 @@ const RegisterSales = () => {
                                                 <Button variant="primary" type="submit" className='btn-sucess'>
                                                     Guardar
                                                 </Button>
-                                                <Button variant="secondary" className='btn-red' onClick={() => {
+                                                <Button variant="secondary" className='btn-red' href="/Sales">
+                                                    Cerrar
+                                                </Button>
+                                                {/* <Button variant="warning" className='btn-clear' onClick={() => {
                                                     setSaleInfo({
                                                         Billnumber: '',
                                                         SaleDate: new Date().toISOString().split('T')[0],
@@ -268,8 +306,9 @@ const RegisterSales = () => {
                                                     });
                                                     setSelectedProducts([]);
                                                 }}>
-                                                    Limpiar
-                                                </Button>
+                                                    <FaBroom style={{ marginRight: '5px' }} />
+                                                    
+                                                </Button> */}
                                             </Form.Group>
                                         </Form>
                                     </div>
