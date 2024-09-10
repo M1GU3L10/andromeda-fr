@@ -16,6 +16,7 @@ import Button from '@mui/material/Button';
 import { FaEye } from "react-icons/fa";
 import { TbFileDownload } from "react-icons/tb";
 import { Link } from 'react-router-dom';
+import Pagination from '../../components/pagination/index';
 
 
 
@@ -45,11 +46,32 @@ const Shopping = () => {
     const urlSupplier = 'http://localhost:1056/api/suppliers'
     const [shopping, SetShopping] = useState([])
     const [suppliers, SetSuppliers] = useState([])
+    const [dataQt, setDataQt] = useState(5);
+    const [currentPages, setCurrentPages] = useState(1);
+    const [search, setSearch] = useState('');  // Estado para la búsqueda
+
 
     useEffect(() => {
         getShopping();
         getSuppliers();
     }, [])
+
+
+    const indexEnd = currentPages * dataQt;
+    const indexStart = indexEnd - dataQt;
+
+    const nPages = Math.ceil(shopping.length / dataQt);
+
+
+    let results = [];
+    if (!search) {
+        results = shopping.slice(indexStart, indexEnd); 
+    } else {
+        results = shopping.filter((dato) =>
+            dato.code.toLowerCase().includes(search.toLowerCase())
+        );
+    }
+
 
     const getShopping = async () => {
         const response = await axios.get(url)
@@ -151,6 +173,17 @@ const Shopping = () => {
                                     }
                                 </tbody>
                             </table>
+                            {
+                                results.length > 0 ? (
+                                    <div className="d-flex table-footer">
+                                        <Pagination
+                                            setCurrentPages={setCurrentPages}
+                                            currentPages={currentPages}
+                                            nPages={nPages} />
+                                    </div>
+                                ) : (<div className="d-flex table-footer">
+                                </div>)
+                            }
                         </div>
                     </div>
                 </div>
