@@ -18,8 +18,6 @@ import { TbFileDownload } from "react-icons/tb";
 import { Link } from 'react-router-dom';
 import Pagination from '../../components/pagination/index';
 
-
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
         theme.palette.mode === 'light'
@@ -38,61 +36,57 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
             backgroundColor: emphasize(backgroundColor, 0.12),
         },
     };
-})
+});
 
 const Shopping = () => {
     //useStates
     const url = 'http://localhost:1056/api/shopping'
     const urlSupplier = 'http://localhost:1056/api/suppliers'
-    const [shopping, SetShopping] = useState([])
-    const [suppliers, SetSuppliers] = useState([])
+    const [shopping, SetShopping] = useState([]);
+    const [suppliers, SetSuppliers] = useState([]);
     const [dataQt, setDataQt] = useState(5);
     const [currentPages, setCurrentPages] = useState(1);
     const [search, setSearch] = useState('');  // Estado para la búsqueda
 
-
     useEffect(() => {
         getShopping();
         getSuppliers();
-    }, [])
-
+    }, []);
 
     const indexEnd = currentPages * dataQt;
     const indexStart = indexEnd - dataQt;
 
-    const nPages = Math.ceil(shopping.length / dataQt);
+    const filteredResults = shopping.filter((dato) =>
+        dato.code.toLowerCase().includes(search.toLowerCase())
+    );
 
-
-    let results = [];
-    if (!search) {
-        results = shopping.slice(indexStart, indexEnd); 
-    } else {
-        results = shopping.filter((dato) =>
-            dato.code.toLowerCase().includes(search.toLowerCase())
-        );
-    }
-
+    const paginatedResults = filteredResults.slice(indexStart, indexEnd);
+    const nPages = Math.ceil(filteredResults.length / dataQt);
 
     const getShopping = async () => {
-        const response = await axios.get(url)
-        SetShopping(response.data)
-    }
+        const response = await axios.get(url);
+        SetShopping(response.data);
+    };
 
     const getSuppliers = async () => {
-        const response = await axios.get(urlSupplier)
-        SetSuppliers(response.data)
-    }
+        const response = await axios.get(urlSupplier);
+        SetSuppliers(response.data);
+    };
 
     const supplierName = (supplierId) => {
-        const supplier = suppliers.find(supplier => supplier.id === supplierId)
-        return supplier ? supplier.Supplier_Name : 'Desconocido'
-    }
+        const supplier = suppliers.find(supplier => supplier.id === supplierId);
+        return supplier ? supplier.Supplier_Name : 'Desconocido';
+    };
 
+    const handleSearch = (e) => {
+        setSearch(e.target.value);
+        setCurrentPages(1); // Resetear la paginación al hacer una búsqueda
+    };
 
     return (
         <>
             <div className="right-content w-100">
-                <div class="row d-flex align-items-center w-100">
+                <div className="row d-flex align-items-center w-100">
                     <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
                             <span className='Title'>Compras</span>
@@ -133,7 +127,13 @@ const Shopping = () => {
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
                                     <IoSearch className="mr-2" />
-                                    <input type="text" placeholder='Buscar...' className='form-control' />
+                                    <input
+                                        type="text"
+                                        placeholder='Buscar...'
+                                        className='form-control'
+                                        value={search}
+                                        onChange={handleSearch}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -142,7 +142,7 @@ const Shopping = () => {
                                 <thead className='table-primary'>
                                     <tr>
                                         <th>#</th>
-                                        <th>codigo</th>
+                                        <th>Codigo</th>
                                         <th>Fecha compra</th>
                                         <th>Fecha registro</th>
                                         <th>Monto Total</th>
@@ -153,9 +153,9 @@ const Shopping = () => {
                                 </thead>
                                 <tbody>
                                     {
-                                        shopping.map((shopping, i) => (
+                                        paginatedResults.map((shopping, i) => (
                                             <tr key={shopping.id}>
-                                                <td>{(i + 1)}</td>
+                                                <td>{(indexStart + i + 1)}</td>
                                                 <td>{shopping.code}</td>
                                                 <td>{shopping.purchaseDate}</td>
                                                 <td>{shopping.registrationDate}</td>
@@ -174,7 +174,7 @@ const Shopping = () => {
                                 </tbody>
                             </table>
                             {
-                                results.length > 0 ? (
+                                filteredResults.length > 0 ? (
                                     <div className="d-flex table-footer">
                                         <Pagination
                                             setCurrentPages={setCurrentPages}
@@ -182,6 +182,7 @@ const Shopping = () => {
                                             nPages={nPages} />
                                     </div>
                                 ) : (<div className="d-flex table-footer">
+                                    No se encontraron resultados.
                                 </div>)
                             }
                         </div>
@@ -191,7 +192,5 @@ const Shopping = () => {
         </>
     );
 }
-
-
 
 export default Shopping;

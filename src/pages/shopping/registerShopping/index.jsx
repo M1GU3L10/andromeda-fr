@@ -15,6 +15,7 @@ import Row from 'react-bootstrap/Row';
 import { IoTrashSharp } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
+import Swal from 'sweetalert2';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -84,12 +85,10 @@ const RegisterShopping = () => {
         setSearchTerm(event.target.value);
     };
 
-    // filteredProducts: Filtra los productos según el término de búsqueda
     const filteredProducts = products.filter(product =>
         product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // addProductToDetails: Agrega un producto a los detalles de compra o actualiza su cantidad
     const addProductToDetails = (product) => {
         const existingProduct = shoppingDetails.find(item => item.product_id === product.id);
         if (existingProduct) {
@@ -105,7 +104,6 @@ const RegisterShopping = () => {
         }
     };
 
-     // updateQuantity: Actualiza la cantidad de un producto en los detalles de compra
     const updateQuantity = (productId, newQuantity) => {
         setShoppingDetails(shoppingDetails.map(item => {
             if (item.product_id === productId) {
@@ -116,22 +114,27 @@ const RegisterShopping = () => {
         }));
     };
 
-
-       // removeProduct: Elimina un producto de los detalles de compra
     const removeProduct = (productId) => {
         setShoppingDetails(shoppingDetails.filter(item => item.product_id !== productId));
     };
 
-    // calculateTotal: Calcula el total de la compra sumando los subtotales de cada producto
     const calculateTotal = () => {
         return shoppingDetails.reduce((total, item) => total + item.total_price, 0);
     };
 
-
-
-    // handleSubmit: Envía los datos del formulario a la API y registra la compra
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validación de campos
+        if (!formData.code || !formData.purchaseDate || !formData.supplierId || shoppingDetails.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Por favor, complete todos los campos y agregue al menos un producto.',
+            });
+            return;
+        }
+
         const shoppingData = {
             ...formData,
             status: "completada",
@@ -140,13 +143,21 @@ const RegisterShopping = () => {
 
         try {
             await axios.post(urlShopping, shoppingData);
-            alert('Compra registrada con éxito');
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: 'Compra registrada con éxito',
+            });
             // Reset form and shopping details
             setFormData({ code: '', purchaseDate: '', supplierId: '' });
             setShoppingDetails([]);
         } catch (error) {
             console.error('Error al registrar la compra', error);
-            alert('Error al registrar la compra');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al registrar la compra',
+            });
         }
     };
 
@@ -270,7 +281,6 @@ const RegisterShopping = () => {
                                                         name="code"
                                                         value={formData.code}
                                                         onChange={handleInputChange}
-                                                        required
                                                     />
                                                 </Col>
                                                 <Col sm="6">
@@ -281,7 +291,6 @@ const RegisterShopping = () => {
                                                         name="purchaseDate"
                                                         value={formData.purchaseDate}
                                                         onChange={handleInputChange}
-                                                        required
                                                     />
                                                 </Col>
                                             </Form.Group>
@@ -291,7 +300,6 @@ const RegisterShopping = () => {
                                                     name="supplierId"
                                                     value={formData.supplierId}
                                                     onChange={handleInputChange}
-                                                    required
                                                 >
                                                     <option value="">Seleccionar proveedor</option>
                                                     {suppliers.map((supplier) => (
