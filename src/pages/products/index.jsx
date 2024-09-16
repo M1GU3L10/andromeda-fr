@@ -11,10 +11,6 @@ import Button from '@mui/material/Button'
 import { BsPlusSquareFill } from "react-icons/bs"
 import { FaEye, FaPencilAlt } from "react-icons/fa"
 import { IoTrashSharp, IoSearch } from "react-icons/io5"
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import FormControl from '@mui/material/FormControl'
-import Select from '@mui/material/Select'
 import { show_alerta } from '../../assets/functions'
 import withReactContent from 'sweetalert2-react-content'
 import Swal from 'sweetalert2'
@@ -60,10 +56,11 @@ const Products = () => {
     const [formData, setFormData] = useState({
         id: '',
         Product_Name: '',
-        Stock: '',
+        
         Price: '',
         Category_Id: '',
         Image: '',
+        status: 'A',
     })
     const [imagePreviewUrl, setImagePreviewUrl] = useState('')
     const [productData, setProductData] = useState([])
@@ -116,15 +113,16 @@ const Products = () => {
         })
     }
 
-    const openModal = (op, id, Product_Name, Stock, Price, Category_Id, Image) => {
+    const openModal = (op, id, Product_Name, Price, Category_Id, Image, status) => {
         setOperation(op)
         setFormData({
             id,
             Product_Name: Product_Name || '',
-            Stock: Stock || '',
+            
             Price: Price || '',
             Category_Id: Category_Id || '',
             Image: null,
+            status: status || 'A',
         })
         setImagePreviewUrl(Image || '')
         setFormErrors({})
@@ -137,22 +135,21 @@ const Products = () => {
     }
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target
-        let updatedValue = value
-
-        if (name === 'Stock') {
-            updatedValue = value === '' ? '' : Math.max(0, parseInt(value) || 0)
-        } else if (name === 'Price') {
-            updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0)
+        const { name, value } = e.target;
+        let updatedValue = value;
+    
+        if (name === 'Price') {
+            updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
         } else if (name === 'Product_Name') {
-            updatedValue = value.trim()
+            updatedValue = value.trim();
         }
-
+    
         setFormData(prevData => ({
             ...prevData,
             [name]: updatedValue
-        }))
+        }));
     }
+    
 
     const handleFileChange = (e) => {
         const file = e.target.files[0]
@@ -172,9 +169,7 @@ const Products = () => {
             errors.Product_Name = 'El nombre del producto es obligatorio'
         }
 
-        if (!formData.Stock || isNaN(formData.Stock) || parseInt(formData.Stock) < 0) {
-            errors.Stock = 'El stock debe ser un número válido y no negativo'
-        }
+   
 
         if (!formData.Price || isNaN(formData.Price) || parseFloat(formData.Price) <= 0) {
             errors.Price = 'El precio debe ser un número mayor a cero'
@@ -196,10 +191,11 @@ const Products = () => {
 
         const dataToSend = {
             Product_Name: formData.Product_Name.trim(),
-            Stock: parseInt(formData.Stock),
+           
             Price: parseFloat(formData.Price),
             Category_Id: parseInt(formData.Category_Id),
-            Product_Id: formData.id
+            Product_Id: formData.id,
+            status: formData.status
         }
 
         try {
@@ -231,9 +227,10 @@ const Products = () => {
 
         const dataToSend = {
             Product_Name: formData.Product_Name.trim(),
-            Stock: parseInt(formData.Stock),
+           
             Price: parseFloat(formData.Price),
-            Category_Id: parseInt(formData.Category_Id)
+            Category_Id: parseInt(formData.Category_Id),
+            status: formData.status
         }
 
         try {
@@ -363,10 +360,11 @@ const Products = () => {
                                 <tr>
                                     <th>#</th>
                                     <th>Nombre</th>
-                                    <th>Stock</th>
+                                    
                                     <th>Precio</th>
                                     <th>Categoría</th>
                                     <th>Imagen</th>
+                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -375,7 +373,7 @@ const Products = () => {
                                     <tr key={product.id}>
                                         <td>{indexOfFirstItem + i + 1}</td>
                                         <td>{product.Product_Name}</td>
-                                        <td>{product.Stock}</td>
+                                        
                                         <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
                                         <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
                                         <td>
@@ -388,9 +386,18 @@ const Products = () => {
                                             )}
                                         </td>
                                         <td>
+                                            <span className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>
+                                                {product.status === 'A' ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </td>
+                                        <td>
                                             <div className='actions d-flex align-items-center'>
+                                                <PinkSwitch
+                                                    checked={product.status === 'A'}
+                                                    onChange={handleSwitchChange(product.id)}
+                                                />
                                                 <Button color='primary' className='primary' onClick={() => handleViewDetails(product)}><FaEye /></Button>
-                                                <Button color="secondary" className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Stock, product.Price, product.Category_Id, product.Image)}><FaPencilAlt /></Button>
+                                                <Button color="secondary" className='secondary' onClick={() => openModal(2, product.id, product.Product_Name,  product.Price, product.Category_Id, product.Image, product.status)}><FaPencilAlt /></Button>
                                                 <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
                                             </div>
                                         </td>
@@ -432,19 +439,7 @@ const Products = () => {
                                 {formErrors.Product_Name}
                             </Form.Control.Feedback>
                         </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Stock</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="Stock"
-                                value={formData.Stock}
-                                onChange={handleInputChange}
-                                isInvalid={!!formErrors.Stock}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {formErrors.Stock}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                   
                         <Form.Group className="mb-3">
                             <Form.Label>Precio</Form.Label>
                             <Form.Control
@@ -489,6 +484,17 @@ const Products = () => {
                                 <img src={imagePreviewUrl} alt="Vista previa" style={{ width: '100%', height: 'auto' }} />
                             </div>
                         )}
+                        <Form.Group className="mb-3">
+                            <Form.Label>Estado</Form.Label>
+                            <Form.Select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleInputChange}
+                            >
+                                <option value="A">Activo</option>
+                                <option value="I">Inactivo</option>
+                            </Form.Select>
+                        </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -507,9 +513,10 @@ const Products = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <p><strong>Nombre:</strong> {viewData.Product_Name}</p>
-                    <p><strong>Stock:</strong> {viewData.Stock}</p>
+                    
                     <p><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</p>
                     <p><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'No disponible'}</p>
+                    <p><strong>Estado:</strong> {viewData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
                     {viewData.Image && (
                         <div className="text-center mt-3">
                             <img src={`http://localhost:1056/api/products/image/${viewData.id}`} alt={viewData.Product_Name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
