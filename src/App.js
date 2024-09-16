@@ -19,6 +19,7 @@ import Roles from './pages/roles';
 import Absences from './pages/absences';
 import RegisterSales from './pages/sales/registerSales';
 import RegisterShopping from './pages/shopping/registerShopping';
+import ViewShopping from './pages/shopping/viewShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
 import Login from './pages/Login';
 
@@ -88,6 +89,7 @@ function App() {
               <Route path="/services" exact={true} element={<Services />} />
               <Route path="/shopping" exact={true} element={<Shopping />} />
               <Route path="/shoppingRegister" exact={true} element={<RegisterShopping />} />
+              <Route path="/ViewShopping/:shoppingId" element={<ViewShopping />} />
               <Route path="/suppliers" exact={true} element={<Suppliers />} />
               <Route path="/users" exact={true} element={<Users />} />
               <Route path="/roles" exact={true} element={<Roles />} />
