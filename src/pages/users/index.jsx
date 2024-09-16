@@ -52,7 +52,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 })
 
-const PinkSwitch = styled(Switch)(({ theme }) => ({
+const BlueSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
         color: blue[600],
         '&:hover': {
@@ -476,7 +476,7 @@ const Users = () => {
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
 
-                                                        <PinkSwitch
+                                                        <blueSwitch
                                                             checked={user.status === 'A'}
                                                             onChange={handleSwitchChange(user.id)}
                                                             color="success"

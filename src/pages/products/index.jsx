@@ -15,7 +15,7 @@ import { show_alerta } from '../../assets/functions'
 import withReactContent from 'sweetalert2-react-content'
 import Swal from 'sweetalert2'
 import { alpha } from '@mui/material/styles'
-import { pink } from '@mui/material/colors'
+import { blue } from '@mui/material/colors'
 import Switch from '@mui/material/Switch'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
@@ -36,15 +36,15 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     },
 }))
 
-const PinkSwitch = styled(Switch)(({ theme }) => ({
+const BlueSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
-        color: pink[600],
+        color: blue[600],
         '&:hover': {
-            backgroundColor: alpha(pink[600], theme.palette.action.hoverOpacity),
+            backgroundColor: alpha(blue[600], theme.palette.action.hoverOpacity),
         },
     },
     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-        backgroundColor: pink[600],
+        backgroundColor: blue[600],
     },
 }))
 
@@ -392,7 +392,7 @@ const Products = () => {
                                         </td>
                                         <td>
                                             <div className='actions d-flex align-items-center'>
-                                                <PinkSwitch
+                                                <BlueSwitch
                                                     checked={product.status === 'A'}
                                                     onChange={handleSwitchChange(product.id)}
                                                 />
