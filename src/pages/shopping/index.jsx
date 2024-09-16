@@ -17,6 +17,10 @@ import { FaEye } from "react-icons/fa";
 import { TbFileDownload } from "react-icons/tb";
 import { Link } from 'react-router-dom';
 import Pagination from '../../components/pagination/index';
+import { useNavigate } from 'react-router-dom';
+import DocumentPdf from './viewShopping';
+import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
+import Modal from 'react-bootstrap/Modal'; // Importación del modal de React-Bootstrap
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -39,18 +43,19 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const Shopping = () => {
-    //useStates
-    const url = 'http://localhost:1056/api/shopping'
-    const urlSupplier = 'http://localhost:1056/api/suppliers'
-    const [shopping, SetShopping] = useState([]);
-    const [suppliers, SetSuppliers] = useState([]);
+    const [shopping, setShopping] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+    const [products, setProducts] = useState([]);
     const [dataQt, setDataQt] = useState(5);
     const [currentPages, setCurrentPages] = useState(1);
-    const [search, setSearch] = useState('');  // Estado para la búsqueda
+    const [search, setSearch] = useState('');
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedShopping, setSelectedShopping] = useState(null);
 
     useEffect(() => {
         getShopping();
         getSuppliers();
+        getProducts();
     }, []);
 
     const indexEnd = currentPages * dataQt;
@@ -64,14 +69,25 @@ const Shopping = () => {
     const nPages = Math.ceil(filteredResults.length / dataQt);
 
     const getShopping = async () => {
-        const response = await axios.get(url);
-        SetShopping(response.data);
+        const response = await axios.get('http://localhost:1056/api/shopping');
+        setShopping(response.data);
     };
 
     const getSuppliers = async () => {
-        const response = await axios.get(urlSupplier);
-        SetSuppliers(response.data);
+        const response = await axios.get('http://localhost:1056/api/suppliers');
+        setSuppliers(response.data);
     };
+
+    const getProducts = async () => {
+        try {
+            const response = await axios.get('http://localhost:1056/api/products');
+            setProducts(response.data || []); // Asegúrate de que response.data sea un array
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            setProducts([]); // Inicializa como un array vacío en caso de error
+        }
+    };
+
 
     const supplierName = (supplierId) => {
         const supplier = suppliers.find(supplier => supplier.id === supplierId);
@@ -81,6 +97,16 @@ const Shopping = () => {
     const handleSearch = (e) => {
         setSearch(e.target.value);
         setCurrentPages(1); // Resetear la paginación al hacer una búsqueda
+    };
+
+    const handleOpenModal = (shoppingItem) => {
+        setSelectedShopping(shoppingItem);
+        setShowDetailModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowDetailModal(false);
+        setSelectedShopping(null);
     };
 
     return (
@@ -164,8 +190,12 @@ const Shopping = () => {
                                                 <td>{shopping.status}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        <Button color="primary" className='primary' ><FaEye /></Button>
-                                                        <Button color='warning' className='warning'><TbFileDownload /></Button>
+                                                        <Button color='primary' className='primary' onClick={() => handleOpenModal(shopping)}>
+                                                            <FaEye />
+                                                        </Button>
+                                                        <PDFDownloadLink document={<DocumentPdf shopping={shopping} />} fileName={`Detalle Compra ${shopping.code}.pdf`}>
+                                                            <Button color='warning' className='warning'><TbFileDownload /></Button>
+                                                        </PDFDownloadLink>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -189,8 +219,21 @@ const Shopping = () => {
                     </div>
                 </div>
             </div>
+            <Modal show={showDetailModal}>
+                <Modal.Body>
+                    {selectedShopping && products.length > 0 && (
+                        <PDFViewer className='Pdf-Modal' width="100%" height="500px">
+                            <DocumentPdf shopping={selectedShopping} suppliers={suppliers} products={products} />
+                        </PDFViewer>
+                    )}
+                </Modal.Body>
+
+                <Modal.Footer>
+                    <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseModal}>Cerrar</Button>
+                </Modal.Footer>
+            </Modal>
         </>
     );
-}
+};
 
 export default Shopping;
