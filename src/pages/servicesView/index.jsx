@@ -17,7 +17,7 @@ import { show_alerta } from '../../assets/functions'
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Switch from '@mui/material/Switch';
-import { Modal, Form } from 'react-bootstrap';
+import { Modal, Form, Col, Row } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 
@@ -92,17 +92,28 @@ const Services = () => {
         console.log(e.target.value)
     }
 
+    let results = [];
+    if (!search) {
+        results = services;
+    } else {
+        results = services.filter((dato) => {
+            const searchTerm = search.toLowerCase();
+
+            // Buscamos por nombre, precio o tiempo
+            return (
+                dato.name.toLowerCase().includes(searchTerm) ||
+                dato.price.toString().includes(searchTerm) ||
+                dato.time.toString().includes(searchTerm)
+            );
+        });
+    }
+
     const indexEnd = currentPages * dataQt;
     const indexStart = indexEnd - dataQt;
 
-    const nPages = Math.ceil(services.length / dataQt);
+    const nPages = Math.ceil(results.length / dataQt);
 
-    let results = []
-    if (!search) {
-        results = services.slice(indexStart, indexEnd);
-    } else {
-        results = services.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
-    }
+    results = results.slice(indexStart, indexEnd);
 
     const openModal = (op, id, name, price, description, time) => {
         setId('');
@@ -412,7 +423,7 @@ const Services = () => {
                         </div>
                     </div>
                     <div className='card shadow border-0 p-3'>
-                        <div className='row'>
+                        <div className='row '>
                             <div className='col-sm-5 d-flex align-items-center'>
                                 <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
                             </div>
@@ -445,7 +456,7 @@ const Services = () => {
                                                 <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(service.price)}</td>
                                                 <td>{service.description}</td>
                                                 <td>{service.time}</td>
-                                                <td><span  className= {`serviceStatus ${service.status ===  'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
+                                                <td><span className={`serviceStatus ${service.status === 'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Switch
@@ -494,8 +505,8 @@ const Services = () => {
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
-                            <Form.Group>
-                                <Form.Label>Nombre</Form.Label>
+                            <Form.Group className='pb-3'>
+                                <Form.Label className='required'>Nombre</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="name"
@@ -509,25 +520,45 @@ const Services = () => {
                                     {errors.name}
                                 </Form.Control.Feedback>
                             </Form.Group>
-
-                            <Form.Group>
-                                <Form.Label>Precio</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    name="price"
-                                    value={price}
-                                    placeholder="Precio"
-                                    onChange={handleInputChange}
-                                    onBlur={handleBlur}
-                                    isInvalid={touched.price && !!errors.price}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.price}
-                                </Form.Control.Feedback>
+                            <Form.Group as={Row} className="mb-3">
+                                <Col sm="6">
+                                    <Form.Label className='required'>Precio</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        name="price"
+                                        value={price}
+                                        placeholder="Precio"
+                                        onChange={handleInputChange}
+                                        onBlur={handleBlur}
+                                        isInvalid={touched.price && !!errors.price}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.price}
+                                    </Form.Control.Feedback>
+                                </Col>
+                                <Col sm="6">
+                                    <Form.Label className='required'>Tiempo</Form.Label>
+                                    <Form.Control
+                                        as="select"
+                                        name="time"
+                                        value={time}
+                                        onChange={handleInputChange}
+                                        onBlur={handleBlur}
+                                        isInvalid={touched.time && !!errors.time}
+                                    >
+                                        <option hidden="">Tiempo</option>
+                                        <option value="20">20 Minutos</option>
+                                        <option value="30">30 Minutos</option>
+                                        <option value="45">45 Minutos</option>
+                                        <option value="60">60 Minutos</option>
+                                    </Form.Control>
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.time}
+                                    </Form.Control.Feedback>
+                                </Col>
                             </Form.Group>
-
-                            <Form.Group>
-                                <Form.Label>Descripción</Form.Label>
+                            <Form.Group className='pb-2'>
+                                <Form.Label className='required'>Descripción</Form.Label>
                                 <Form.Control
                                     as="textarea" rows={2}
                                     name="description"
@@ -541,34 +572,15 @@ const Services = () => {
                                     {errors.description}
                                 </Form.Control.Feedback>
                             </Form.Group>
-                            <Form.Group>
-                                <Form.Label>Tiempo</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    name="time"
-                                    value={time}
-                                    onChange={handleInputChange}
-                                    onBlur={handleBlur}
-                                    isInvalid={touched.time && !!errors.time}
-                                >
-                                    <option hidden="">Tiempo</option>
-                                    <option value="20">20 Minutos</option>
-                                    <option value="30">30 Minutos</option>
-                                    <option value="45">45 Minutos</option>
-                                    <option value="60">60 Minutos</option>
-                                </Form.Control>
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.time}
-                                </Form.Control.Feedback>
-                            </Form.Group>
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                            Cerrar                        
+                        </Button>
                         <Button variant="primary" onClick={validar} className='btn-sucess'>
                             Guardar
                         </Button>
-                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                            Cerrar                        </Button>
                     </Modal.Footer>
                 </Modal>
                 <Modal show={showDetailModal} onHide={handleCloseDetail}>

@@ -12,7 +12,8 @@ import { IoTrashSharp } from "react-icons/io5";
 import { FaPlus, FaMinus } from "react-icons/fa6";
 import { Form, Col, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
-import { show_alerta } from '../../../assets/functions'
+import { show_alerta } from '../../../assets/functions';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
@@ -30,7 +31,6 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
 }));
 
 const RegisterSales = () => {
-    const [sales, setSales] = useState([]);
     const [users, setUsers] = useState([]);
     const [products, setProducts] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
@@ -78,7 +78,7 @@ const RegisterSales = () => {
         const existingProduct = selectedProducts.find(p => p.id === product.id);
         if (existingProduct) {
             if (existingProduct.quantity + 1 > product.Stock) {
-                Swal.fire('Error', `No hay suficiente stock para ${product.Product_Name}`, 'error');
+                show_alerta(`No hay suficiente stock para ${product.Product_Name}`, 'error');
                 return;
             }
             setSelectedProducts(selectedProducts.map(p =>
@@ -125,7 +125,7 @@ const RegisterSales = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        
+
         if (!validateBillNumber(saleInfo.Billnumber)) {
             show_alerta('El número de factura debe contener exactamente 6 dígitos', 'warning');
             return;
@@ -149,12 +149,14 @@ const RegisterSales = () => {
         try {
             await axios.post('http://localhost:1056/api/sales', saleData);
             show_alerta('Venta registrada con éxito', 'success');
-            // Resetear el formulario y los productos seleccionados
             setSaleInfo({
                 Billnumber: '',
                 SaleDate: new Date().toISOString().split('T')[0],
                 id_usuario: '',
             });
+            setTimeout(() => {
+                document.getElementById('btn-red').click();
+            }, 2000);
             setSelectedProducts([]);
         } catch (error) {
             console.error('Error al registrar la venta:', error);
@@ -203,14 +205,24 @@ const RegisterSales = () => {
                                     <div className='d-flex aline-items-center justify-content-end'>
                                         <div className="product-search-results">
                                             {searchTerm && filteredProducts.map(product => (
-                                                <div key={product.id} className="product-item shadow border-0" onClick={() => addProduct(product)}>
-                                                    {product.Product_Name} - ${product.Price}
+                                                <div>
+                                                    {
+                                                        product.Stock > 0 ? (
+                                                            <div key={product.id} className="product-item shadow border-0" onClick={() => addProduct(product)}>
+                                                                {product.Product_Name} - {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}
+                                                            </div>
+                                                        ) :
+                                                            (
+                                                                <>
+                                                                </>
+                                                            )
+                                                    }
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
-                                <div className='table-responsive mt-3 w-80'>
+                                <div className='table-responsive mt-3 p-3'>
                                     <table className='table table-bordered table-hover v-align table-striped '>
                                         <thead className='table-light'>
                                             <tr>
@@ -258,17 +270,17 @@ const RegisterSales = () => {
                                         <Form className='form' onSubmit={handleSubmit}>
                                             <Form.Group as={Row} className="mb-3">
                                                 <Col sm="6">
-                                                    <Form.Label># Factura</Form.Label>
+                                                    <Form.Label className='required'># Factura</Form.Label>
                                                     <Form.Control
                                                         type="text"
                                                         name="Billnumber"
                                                         value={saleInfo.Billnumber}
                                                         onChange={handleInputChange}
-                
+
                                                     />
                                                 </Col>
                                                 <Col sm="6">
-                                                    <Form.Label>Fecha venta</Form.Label>
+                                                    <Form.Label className='required'>Fecha venta</Form.Label>
                                                     <Form.Control
                                                         placeholder='fecha venta'
                                                         type="date"
@@ -279,7 +291,7 @@ const RegisterSales = () => {
                                                 </Col>
                                             </Form.Group>
                                             <Form.Group className="mb-3">
-                                                <Form.Label>Cliente</Form.Label>
+                                                <Form.Label className='required'>Cliente</Form.Label>
                                                 <Form.Select
                                                     name="id_usuario"
                                                     value={saleInfo.id_usuario}
@@ -292,11 +304,11 @@ const RegisterSales = () => {
                                                 </Form.Select>
                                             </Form.Group>
                                             <Form.Group className='d-flex align-items-center justify-content-end'>
+                                                <Button variant="secondary" className='btn-red' id='btn-red' href="/Sales">
+                                                    Cerrar
+                                                </Button>
                                                 <Button variant="primary" type="submit" className='btn-sucess'>
                                                     Guardar
-                                                </Button>
-                                                <Button variant="secondary" className='btn-red' href="/Sales">
-                                                    Cerrar
                                                 </Button>
                                                 {/* <Button variant="warning" className='btn-clear' onClick={() => {
                                                     setSaleInfo({

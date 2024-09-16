@@ -53,8 +53,6 @@ const Categories = () => {
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
     const [showModal, setShowModal] = useState(false);
-    const [showDetailModal, setShowDetailModal] = useState(false);
-    const [detailData, setDetailData] = useState({});
     const [value, setValue] = useState([]);
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(3);
@@ -245,16 +243,6 @@ const Categories = () => {
         }
     };
 
-    const handleCloseDetail = () => {
-        setShowModal(false);
-        setShowDetailModal(false);
-    };
-
-    const handleViewDetails = (category) => {
-        setDetailData(category);
-        setShowDetailModal(true);
-    };
-
     const deleteCategory = async (id, name) => {
         const Myswal = withReactContent(Swal);
         Myswal.fire({
@@ -388,7 +376,6 @@ const Categories = () => {
                                                             checked={category.status === 'A'}
                                                             onChange={(e) => handleSwitchChange(category.id, e.target.checked)}
                                                         />
-                                                        <Button color='primary' className='primary' onClick={() => handleViewDetails(category)}><FaEye /></Button>
                                                         {
                                                             category.status === 'A' && (
                                                                 <>
@@ -471,19 +458,6 @@ const Categories = () => {
                         <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
                             Cerrar
                         </Button>
-                    </Modal.Footer>
-                </Modal>
-                <Modal show={showDetailModal} onHide={handleCloseDetail}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Detalle categoria</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <p><strong>Nombre:</strong> {detailData.name}</p>
-                        <p><strong>Descripción:</strong> {detailData.description}</p>
-                        <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
                     </Modal.Footer>
                 </Modal>
             </div>

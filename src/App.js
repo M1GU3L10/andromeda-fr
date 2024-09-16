@@ -16,11 +16,11 @@ import Shopping from './pages/shopping';
 import Suppliers from './pages/suppliers';
 import Users from './pages/users';
 import Roles from './pages/roles';
-import Login from './auth/login';
 import Absences from './pages/absences';
 import RegisterSales from './pages/sales/registerSales';
 import RegisterShopping from './pages/shopping/registerShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
+import Login from './pages/Login';
 
 
 const MyContext = createContext();
@@ -28,21 +28,22 @@ const MyContext = createContext();
 function App() {
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
   const [themeMode, setThemeMode] = useState('true');
-
   const [isLogin, setIsLogin] = useState(false);
+  const [isHideSidebarAndHeader, setIsHideSidebarAndHeader] = useState(false);
 
-  
+
+
 
 
   useEffect(() => {
     if (themeMode === true) {
-      document.body.classList.remove('dark');
-      document.body.classList.add('light');
-      localStorage.setItem('themeMode', 'light');
-    } else {
       document.body.classList.remove('light');
       document.body.classList.add('dark');
       localStorage.setItem('themeMode', 'dark');
+    } else {
+      document.body.classList.remove('dark');
+      document.body.classList.add('light');
+      localStorage.setItem('themeMode', 'light');
     }
   }, [themeMode]);
 
@@ -51,25 +52,31 @@ function App() {
     setIsToggleSidebar,
     themeMode,
     setThemeMode,
+    setIsLogin,
     isLogin,
-    setIsLogin
+    setIsHideSidebarAndHeader,
+    isHideSidebarAndHeader
   };
 
   return (
     <BrowserRouter>
       <MyContext.Provider value={values}>
-
-        
-
-        <Header />
+        {
+          isHideSidebarAndHeader !== true &&
+          <Header />
+        }
         <div className='main d-flex'>
-          <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
-            <Sidebar />
-          </div>
-          <div className={`content ${isToggleSidebar === true ? 'toggle' : ''}`}>
+          {
+            isHideSidebarAndHeader !== true &&
+            <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
+              <Sidebar />
+            </div>
+          }
+          <div className={`content ${isHideSidebarAndHeader == true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
             <Routes>
               <Route path="/" exact={true} element={<Dashboard />} />
               <Route path="/dashboard" exact={true} element={<Dashboard />} />
+              <Route path="/login" exact={true} element={<Login />} />
               <Route path="/categories" exact={true} element={<Categories />} />
               <Route path="/appointment" exact={true} element={<Appointment />} />
               <Route path="/appointmentRegister" exact={true} element={<RegisterAppointment />} />

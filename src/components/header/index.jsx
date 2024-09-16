@@ -26,9 +26,8 @@ const Header = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [openNotifications, setopenNotifications] = useState(false);
     const open = Boolean(anchorEl);
-    const openNoti = Boolean(openNotifications);
+    const [isLogin, setIsLogin] = useState(false)
 
-    const [isLogin, setIsLogin] = useState(true);
 
     const context = useContext(MyContext);
 
@@ -71,206 +70,11 @@ const Header = () => {
                                     context.isToggleSidebar === false ? <MdMenuOpen /> : <MdOutlineMenu />
                                 }
                             </Button>
-                            <SearchBox />
                         </div>
                         <div className="col-sm-7 d-flex align-items-center justify-content-end parte3">
                             <Button className='rounded-circle mr-3' onClick={() => context.setThemeMode(!context.themeMode)}>
                                 <MdOutlineLightMode />
                             </Button>
-                            <Button className='rounded-circle mr-3'>
-                                <BsCart3 />
-                            </Button>
-                            <Button className='rounded-circle mr-3'>
-                                <MdOutlineMailOutline />
-                            </Button>
-                            <div className='dropdownWrapper'>
-                                <Button className='rounded-circle mr-3' onClick={handleOpenNotifications}>
-                                    <LuBell />
-                                </Button>
-                                <Menu
-                                    anchorEl={openNotifications}
-                                    className='notifications dropdown_list'
-                                    id="notifications"
-                                    open={openNoti}
-                                    onClose={handleCloseNotifications}
-                                    onClick={handleCloseNotifications}
-                                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                                >
-                                    <div className='head pl-2'>
-                                        <h4>Notifications (2)</h4>
-                                    </div>
-                                    <Divider className='pb-2' />
-
-                                    <div className='scrollbar'>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                        <MenuItem onClick={handleClose}>
-                                            <div className='d-flex align-items-center'>
-                                                <div>
-                                                    <div className='ImgUser'>
-                                                        <span className='rounded-circle'>
-                                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className='info'>
-                                                    <h4><span><b>Miguel perez</b>Se acaba de registrar</span></h4>
-                                                </div>
-
-                                            </div>
-
-                                        </MenuItem>
-                                    </div>
-
-                                    <div className='btn-content'>
-                                        <Button className='btn-blue w-100'>Ver tabla usuarios</Button>
-                                    </div>
-                                </Menu>
-                            </div>
-
                             <div className='MyAccWrapper'>
                                 <Button className='MyAcc d-flex align-items-center' onClick={handleClick}>
                                     <div className='ImgUser'>
@@ -278,7 +82,6 @@ const Header = () => {
                                             <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
                                         </span>
                                     </div>
-
                                     <div className='userInfo'>
                                         <h5>Migue perez</h5>
                                         <p className='mb-0'>
@@ -307,14 +110,20 @@ const Header = () => {
                                         </ListItemIcon>
                                         Reset password
                                     </MenuItem>
-                                    <MenuItem onClick={handleClose}>
-                                        <ListItemIcon>
-                                            <Logout fontSize="small" />
-                                        </ListItemIcon>
-                                        <Link to="/login">
-                                        Logout
-                                    </Link>
-                                    </MenuItem>
+                                    {
+                                        isLogin !== true ?
+                                            <Link to="/login">
+                                                <MenuItem >
+                                                    <ListItemIcon>
+                                                        <Logout fontSize="small" />
+                                                    </ListItemIcon>
+                                                    <Link >
+                                                        Logout
+                                                    </Link>
+                                                </MenuItem>
+                                            </Link>
+                                            : <></>
+                                    }
                                 </Menu>
                             </div>
                         </div>

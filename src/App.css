@@ -28,6 +28,12 @@ body.dark {
   background: transparent !important;
 }
 
+.full{
+  max-width: 100% !important;
+  flex: 0 0 100% !important;
+  width: 100% !important;
+}
+
 .btn-blue {
   background: #0858f7 !important;
   font-size: 14px !important;
@@ -35,6 +41,24 @@ body.dark {
   color: #fff !important;
   text-transform: capitalize !important;
   margin: 10px !important;
+}
+
+.btn-submit {
+  background: #0858f7 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  text-transform: capitalize !important;
+  border-radius: 8px !important;
+}
+
+.btn-lg{
+  padding: 5px 25px !important;
+}
+
+.btn-big{
+  padding: 10px 25px !important;
+  font-size: 16px !important;
 }
 
 textarea.form-control{
@@ -1046,13 +1070,6 @@ a{
 
 /* login */
 
-
-.css-6hp17o-MuiList-root-MuiMenu-list{
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-}
-
 .css-6hp17o-MuiList-root-MuiMenu-list{
   padding-top: 0px !important;
   padding-bottom: 0px !important;
@@ -1098,10 +1115,6 @@ a{
 
 .form{
   width: 100%;
-}
-
-.table-responsive{
-  padding: 0px 20px;
 }
 
 .table-responsive button{
@@ -1164,4 +1177,143 @@ a{
   align-items: center;
   background: #fff !important;
   justify-content: center;
+  font-family: "Open Sans", sans-serif !important;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.required::after{
+  content: '*';
+  margin-left: 2px;
+  color: red;
+}
+
+.Pdf-Modal{
+  width: 100%;
+  padding: 10px;
+}
+
+.modal-body{
+  padding: 0 !important;
+}
+
+
+.loginSection{
+  width: 100%;
+  height: 100vh;
+  padding: 35px 25px;
+  background: #fff;
+  position: relative;
+}
+
+.loginPatern{
+  width: 100%;
+  height: 100%;
+  opacity: 0.08;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 99;
+  pointer-events: none;
+}
+
+.loginSection .loginBox{
+  width: 350px;
+  height: auto;
+  margin: auto;
+}
+
+.loginSection .loginBox .wrapper{
+  width: 100%;
+  height: auto;
+  background: #f0f0f0;
+  position: relative;
+  z-index: 100;
+  padding: 35px;
+}
+
+.loginSection .loginBox .wrapper .or span.line{
+  display: block;
+  width: 35%;
+  height: 1px;
+  background: rgba(0,0,0,0.2);
+}
+
+.loginSection .loginBox .wrapper .or span.txt{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 50%;
+  color: #5e5d72;
+}
+
+.loginSection .loginBox .wrapper .link{
+  font-size: 14px;
+  color: #5e5d72;
+  font-weight: 600;
+  text-decoration: #5e5d72;
+}
+
+.loginSection .loginBox .wrapper .link:hover{
+  color: #0858f7 !important;
+  text-decoration: none;
+}
+
+.loginSection .loginBox .wrapper .form-control{
+  background: #fff !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  height: 45px;
+  padding-left: 35px;
+}
+
+.loginSection .loginBox .wrapper .form-group.focus .icon svg{
+  color: #0858f7 !important;
+}
+
+.loginSection .loginBox .wrapper .form-control:focus{
+  border: 1px solid #0858f7 !important;
+}
+
+.loginSection .loginBox .wrapper .form-group .icon{
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  z-index: 100;
+  font-size: 20px;
+}
+
+.loginSection .loginBox .wrapper .form-group .icon svg{
+  color: rgb(95, 94, 115);
+}
+
+.toggleShowPassword{
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  cursor: pointer;
+}
+
+.toggleShowPassword svg{
+  font-size: 22px;
+  color: rgb(95, 94, 115);
+}
+
+.loginWithGoogle{
+  text-transform: capitalize !important;
+  font-weight: bold !important;
+}
+
+.loginWithGoogle svg{
+  font-size: 22px !important;
+  margin: 0px 7px;
 }
