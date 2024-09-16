@@ -16,7 +16,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
-import { Modal, Form } from 'react-bootstrap';
+import { Modal, Form, Col, Row } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { MdOutlineSave } from "react-icons/md";
@@ -193,19 +193,19 @@ const Absences = () => {
 
     const validateField = (name, value) => {
         let error = '';
-    
+
         if (operation === 3 && value === '') {
             setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
             return; // Si está en edición y el campo está vacío, no lo valida
         }
-    
+
         switch (name) {
             case 'startTime':
                 if (!value) {
                     error = 'La hora de inicio es requerida';
                 }
                 break;
-    
+
             case 'endTime':
                 if (!value) {
                     error = 'La hora de fin es requerida';
@@ -218,7 +218,7 @@ const Absences = () => {
                     }
                 }
                 break;
-    
+
             case 'date':
                 if (!value) {
                     error = 'La fecha es requerida';
@@ -226,7 +226,7 @@ const Absences = () => {
                     error = 'La fecha debe estar en formato YYYY-MM-DD';
                 }
                 break;
-    
+
             case 'description':
                 if (!value) {
                     error = 'La descripción es obligatoria';
@@ -234,23 +234,23 @@ const Absences = () => {
                     error = 'La descripción debe tener al menos 5 caracteres';
                 }
                 break;
-    
+
             case 'userId':
                 if (!value) {
                     error = 'Debe seleccionar un usuario';
                 }
                 break;
-    
+
             case 'status':
                 if (!['en proceso', 'aprobado', 'no aprobado'].includes(value)) {
                     error = 'El estado debe ser "en proceso", "aprobado" o "no aprobado"';
                 }
                 break;
-    
+
             default:
                 break;
         }
-    
+
         setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
     };
 
@@ -263,22 +263,22 @@ const Absences = () => {
 
     const validar = async () => {
         const { startTime, endTime, date, description, userId, status } = formValues;
-    
+
         const fields = { startTime, endTime, date, description, userId };
         let valid = true;
-    
+
         Object.keys(fields).forEach(field => {
             if (operation !== 3 || fields[field] || field === 'status') { // Solo valida si es un nuevo registro o si el campo fue modificado
                 validateField(field, fields[field]);
                 if (errors[field]) valid = false;
             }
         });
-    
+
         if (!valid) {
             show_alerta('Por favor corrige los errores antes de continuar', 'error');
             return;
         }
-    
+
         const data = {
             id: formValues.id,
             startTime: startTime,
@@ -288,10 +288,10 @@ const Absences = () => {
             userId: userId,
             status: status
         };
-    
+
         // Depurar valores
         console.log('Data a enviar:', data);
-    
+
         if (operation === 1) {
             await enviarSolicitud('POST', data);
         } else if (operation === 3) {
@@ -302,7 +302,7 @@ const Absences = () => {
             await enviarSolicitud('PUT', data);
         }
     };
-    
+
 
     const enviarSolicitud = async (metodo, parametros) => {
         const url = metodo === 'PUT' || metodo === 'DELETE'
@@ -416,119 +416,241 @@ const Absences = () => {
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
-                            <Form.Group className="mb-3">
-                            <Form.Label>Hora inicio</Form.Label>
-                                <Form.Control
-                                    type="time"
-                                    id="startTime"
-                                    name="startTime"
-                                    placeholder="Inicio"
-                                    value={formValues.startTime}
-                                    onChange={handleInputChange}
-                                    isInvalid={!!errors.startTime}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.startTime}
-                                </Form.Control.Feedback>
-                            </Form.Group>
+                            {operation === 1 ? (
+                                <>
+                                    <Row className="mb-3">
+                                        <Col sm="6">
+                                            <Form.Group>
+                                                <Form.Label className='required'>Hora inicio</Form.Label>
+                                                <Form.Control
+                                                    type="time"
+                                                    id="startTime"
+                                                    name="startTime"
+                                                    placeholder="Inicio"
+                                                    value={formValues.startTime}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.startTime}
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.startTime}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                        <Col sm="6">
+                                            <Form.Group>
+                                                <Form.Label className='required'>Hora fin</Form.Label>
+                                                <Form.Control
+                                                    type="time"
+                                                    id="endTime"
+                                                    name="endTime"
+                                                    placeholder="Fin"
+                                                    value={formValues.endTime}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.endTime}
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.endTime}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
 
-                            <Form.Group className="mb-3">
-                            <Form.Label>Hora fin</Form.Label>
-                                <Form.Control
-                                    type="time"
-                                    id="endTime"
-                                    name="endTime"
-                                    placeholder="Fin"
-                                    value={formValues.endTime}
-                                    onChange={handleInputChange}
-                                    isInvalid={!!errors.endTime}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.endTime}
-                                </Form.Control.Feedback>
-                            </Form.Group>
+                                    <Row className="mb-3">
+                                        <Col sm="6">
+                                            <Form.Group>
+                                                <Form.Label className='required'>Día</Form.Label>
+                                                <Form.Control
+                                                    type="date"
+                                                    id="date"
+                                                    name="date"
+                                                    placeholder="Fecha"
+                                                    value={formValues.date}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.date}
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.date}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                        <Col sm="6">
+                                            <Form.Group>
+                                                <Form.Label className='required'>Usuario</Form.Label>
+                                                <Form.Select
+                                                    id='userId'
+                                                    name="userId"
+                                                    value={formValues.userId}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.userId}
+                                                >
+                                                    <option value="">Seleccionar usuario</option>
+                                                    {FiltrarUsers().map(user => (
+                                                        <option key={user.id} value={user.id}>{user.name}</option>
+                                                    ))}
+                                                </Form.Select>
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.userId}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
 
-                            <Form.Group className="mb-3">
-                            <Form.Label>Día</Form.Label>
-                                <Form.Control
-                                    type="date"
-                                    id="date"
-                                    name="date"
-                                    placeholder="Fecha"
-                                    value={formValues.date}
-                                    onChange={handleInputChange}
-                                    isInvalid={!!errors.date}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.date}
-                                </Form.Control.Feedback>
-                            </Form.Group>
+                                    <Row className="mb-3">
+                                        <Col>
+                                            <Form.Group>
+                                                <Form.Label className='required'>Descripción</Form.Label>
+                                                <Form.Control
+                                                    as="textarea" rows={2}
+                                                    id="description"
+                                                    name="description"
+                                                    placeholder="Descripción"
+                                                    value={formValues.description}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.description}
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.description}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                </>
+                            ) : (
+                                <>
+                                    <Row className="mb-3">
+                                        <Col sm="4">
+                                            <Form.Group>
+                                                <Form.Label className='required'>Hora inicio</Form.Label>
+                                                <Form.Control
+                                                    type="time"
+                                                    id="startTime"
+                                                    name="startTime"
+                                                    placeholder="Inicio"
+                                                    value={formValues.startTime}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.startTime}
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.startTime}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                        <Col sm="4">
+                                            <Form.Group>
+                                                <Form.Label className='required'>Hora fin</Form.Label>
+                                                <Form.Control
+                                                    type="time"
+                                                    id="endTime"
+                                                    name="endTime"
+                                                    placeholder="Fin"
+                                                    value={formValues.endTime}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.endTime}
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.endTime}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                        <Col sm="4">
+                                            <Form.Group>
+                                                <Form.Label className='required'>Día</Form.Label>
+                                                <Form.Control
+                                                    type="date"
+                                                    id="date"
+                                                    name="date"
+                                                    placeholder="Fecha"
+                                                    value={formValues.date}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.date}
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.date}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
 
-                            <Form.Group className="mb-3">
-                            <Form.Label>Descripción</Form.Label>
-                                <Form.Control
-                                    as="textarea" rows={2}
-                                    id="description"
-                                    name="description"
-                                    placeholder="Descripción"
-                                    value={formValues.description}
-                                    onChange={handleInputChange}
-                                    isInvalid={!!errors.description}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.description}
-                                </Form.Control.Feedback>
-                            </Form.Group>
+                                    <Row className="mb-3">
+                                        <Col sm="6">
+                                            <Form.Group>
+                                                <Form.Label className='required'>Usuario</Form.Label>
+                                                <Form.Select
+                                                    id='userId'
+                                                    name="userId"
+                                                    value={formValues.userId}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.userId}
+                                                >
+                                                    <option value="">Seleccionar usuario</option>
+                                                    {FiltrarUsers().map(user => (
+                                                        <option key={user.id} value={user.id}>{user.name}</option>
+                                                    ))}
+                                                </Form.Select>
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.userId}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                        {operation === 3 && (
+                                            <Col sm="6">
+                                                <Form.Group>
+                                                    <Form.Label className='required'>Estado</Form.Label>
+                                                    <Form.Select
+                                                        id='status'
+                                                        name="status"
+                                                        value={formValues.status}
+                                                        onChange={handleInputChange}
+                                                        isInvalid={!!errors.status}
+                                                    >
+                                                        <option value="en proceso">En proceso</option>
+                                                        <option value="aprobado">Aprobado</option>
+                                                        <option value="no aprobado">No aprobado</option>
+                                                    </Form.Select>
+                                                    <Form.Control.Feedback type="invalid">
+                                                        {errors.status}
+                                                    </Form.Control.Feedback>
+                                                </Form.Group>
+                                            </Col>
+                                        )}
+                                    </Row>
 
-                            <Form.Group className="mb-3">
-                            <Form.Label>Usuario</Form.Label>
-                                <Form.Select
-                                    id='userId'
-                                    name="userId"
-                                    value={formValues.userId}
-                                    onChange={handleInputChange}
-                                    isInvalid={!!errors.userId}
-                                >
-                                    <option value="">Seleccionar usuario</option>
-                                    {FiltrarUsers().map(user => (
-                                        <option key={user.id} value={user.id}>{user.name}</option>
-                                    ))}
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.userId}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-
-                            {operation === 3 && (
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Estado</Form.Label>
-                                    <Form.Select
-                                        id='status'
-                                        name="status"
-                                        value={formValues.status}
-                                        onChange={handleInputChange}
-                                        isInvalid={!!errors.status}
-                                    >
-                                        <option value="en proceso">En proceso</option>
-                                        <option value="aprobado">Aprobado</option>
-                                        <option value="no aprobado">No aprobado</option>
-                                    </Form.Select>
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.status}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
+                                    <Row className="mb-3">
+                                        <Col>
+                                            <Form.Group>
+                                                <Form.Label className='required'>Descripción</Form.Label>
+                                                <Form.Control
+                                                    as="textarea" rows={2}
+                                                    id="description"
+                                                    name="description"
+                                                    placeholder="Descripción"
+                                                    value={formValues.description}
+                                                    onChange={handleInputChange}
+                                                    isInvalid={!!errors.description}
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.description}
+                                                </Form.Control.Feedback>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                </>
                             )}
                         </Form>
+
+
+
                     </Modal.Body>
                     <Modal.Footer>
+                        <Button variant="secondary" className='btn-red' onClick={handleCloseModal}>
+                            Cerrar
+                        </Button>
                         {(operation === 1 || operation === 3) && (
                             <Button variant="primary" className='btn-sucess' onClick={validar}>
                                 <MdOutlineSave /> Guardar
                             </Button>
                         )}
-                        <Button variant="secondary" className='btn-red' onClick={handleCloseModal}>
-                            Cerrar
-                        </Button>
+
                     </Modal.Footer>
                 </Modal>
 

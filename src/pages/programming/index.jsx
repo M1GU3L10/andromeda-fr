@@ -14,7 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Modal, Form } from 'react-bootstrap';
+import { Modal, Form, Col, Row } from 'react-bootstrap';
 import Button from '@mui/material/Button';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
@@ -582,71 +582,84 @@ const Programming = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Hora de inicio</Form.Label>
-                            <Form.Control
-                                type="time"
-                                id="startTime"
-                                name="startTime"
-                                placeholder="Inicio"
-                                value={startTime}
-                                onChange={handleInputChange}
-                                isInvalid={!!errors.startTime}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.startTime}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                        <Row className="mb-3">
+                            <Col sm="6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label className='required'>Hora de inicio</Form.Label>
+                                    <Form.Control
+                                        type="time"
+                                        id="startTime"
+                                        name="startTime"
+                                        placeholder="Inicio"
+                                        value={startTime}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!errors.startTime}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.startTime}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                            <Col sm="6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label className='required'>Hora de fin</Form.Label>
+                                    <Form.Control
+                                        type="time"
+                                        id="endTime"
+                                        name="endTime"
+                                        placeholder="Fin"
+                                        value={endTime}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!errors.endTime}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.endTime}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                        </Row>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Hora de fin</Form.Label>
-                            <Form.Control
-                                type="time"
-                                id="endTime"
-                                name="endTime"
-                                placeholder="Fin"
-                                value={endTime}
-                                onChange={handleInputChange}
-                                isInvalid={!!errors.endTime}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.endTime}
-                            </Form.Control.Feedback>
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Día</Form.Label>
-                            <Form.Control
-                                type="date"
-                                id="date"
-                                name="date"
-                                placeholder="Fecha"
-                                value={day}
-                                onChange={handleInputChange}
-                                isInvalid={!!errors.date}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.date}
-                            </Form.Control.Feedback>
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Usuario</Form.Label>
-                            <Form.Select
-                                id='userId'
-                                name="userId"
-                                value={userid}
-                                onChange={handleInputChange}
-                                isInvalid={!!errors.userid}
-                            >
-                                <option value="">Seleccionar usuario</option>
-                                {FiltrarUsers().map(user => (
-                                    <option key={user.id} value={user.id}>{user.name}</option>
-                                ))}
-                            </Form.Select>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.userid}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                        <Row className="mb-3">
+                            <Col sm="6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label className='required'>Día</Form.Label>
+                                    <Form.Control
+                                        type="date"
+                                        id="date"
+                                        name="date"
+                                        placeholder="Fecha"
+                                        value={day}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!errors.date}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.date}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                            <Col sm="6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label className='required'>Usuario</Form.Label>
+                                    <Form.Select
+                                        id='userId'
+                                        name="userId"
+                                        value={userid}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!errors.userid}
+                                    >
+                                        <option value="">Seleccionar usuario</option>
+                                        {FiltrarUsers().map(user => (
+                                            <option key={user.id} value={user.id}>{user.name}</option>
+                                        ))}
+                                    </Form.Select>
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.userid}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                        </Row>
                     </Form>
+
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
