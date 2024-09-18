@@ -263,48 +263,70 @@ const Categories = () => {
     }
 
     const handleSwitchChange = async (categoryId, checked) => {
-        // Encuentra el servicio que está siendo actualizado
+        // Encuentra la categoría que está siendo actualizada
         const categoryToUpdate = categories.find(category => category.id === categoryId);
         const Myswal = withReactContent(Swal);
-        Myswal.fire({
-            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} la categoria "${categoryToUpdate.name}"?`,
-            icon: 'question',
-            text: 'Esta acción puede afectar la disponibilidad del servicio.',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, confirmar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const updatedCategory = {
-                    ...categoryToUpdate,
-                    status: checked ? 'A' : 'I'
-                };
-                try {
-                    const response = await axios.put(`${url}/${categoryId}`, updatedCategory);
-                    if (response.status === 200) {
-                        setCategories(categories.map(category =>
-                            category.id === categoryId ? { ...category, status: updatedCategory.status } : category
-                        ));
-                        show_alerta('Estado de la categoria actualizado exitosamente', 'success');
-                    }
-                } catch (error) {
-                    if (error.response) {
-                        console.log('Error details:', error.response.data);
-                        show_alerta('Error al actualizar el estado de la categoria: ' + JSON.stringify(error.response.data.errors), 'error');
-                    } else {
-                        console.log('Error details:', error.message);
-                        show_alerta('Error al actualizar el estado de la categoria', 'error');
-                    }
-                }
-            } else {
-                // Si el usuario cancela, restablece el switch a su estado original
-                setCategories(categories.map(category =>
-                    category.id === categoryId ? { ...category, status: !checked ? 'A' : 'I' } : category
-                ));
-                show_alerta('Estado de la categoria no cambiado', 'info');
+    
+        try {
+            // Verificar si la categoría está asociada con algún producto
+            const associationCheck = await axios.get(`${url}/check-association/${categoryId}`);
+            
+            if (associationCheck.data.isAssociated) {
+                // Si la categoría está asociada, mostrar alerta y detener la ejecución
+                Myswal.fire({
+                    title: 'No se puede cambiar el estado',
+                    text: `La categoría "${categoryToUpdate.name}" está asociada a uno o más productos.`,
+                    icon: 'warning',
+                    confirmButtonText: 'Aceptar'
+                });
+                return; // Salir de la función si está asociada
             }
-        });
+    
+            // Si no está asociada, continuar con la confirmación de activación/desactivación
+            Myswal.fire({
+                title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} la categoría "${categoryToUpdate.name}"?`,
+                icon: 'question',
+                text: 'Esta acción puede afectar la disponibilidad del servicio.',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const updatedCategory = {
+                        ...categoryToUpdate,
+                        status: checked ? 'A' : 'I'
+                    };
+                    try {
+                        const response = await axios.put(`${url}/${categoryId}`, updatedCategory);
+                        if (response.status === 200) {
+                            setCategories(categories.map(category =>
+                                category.id === categoryId ? { ...category, status: updatedCategory.status } : category
+                            ));
+                            show_alerta('Estado de la categoría actualizado exitosamente', 'success');
+                        }
+                    } catch (error) {
+                        if (error.response) {
+                            console.log('Error details:', error.response.data);
+                            show_alerta('Error al actualizar el estado de la categoría: ' + JSON.stringify(error.response.data.errors), 'error');
+                        } else {
+                            console.log('Error details:', error.message);
+                            show_alerta('Error al actualizar el estado de la categoría', 'error');
+                        }
+                    }
+                } else {
+                    // Si el usuario cancela, restablece el switch a su estado original
+                    setCategories(categories.map(category =>
+                        category.id === categoryId ? { ...category, status: !checked ? 'A' : 'I' } : category
+                    ));
+                    show_alerta('Estado de la categoría no cambiado', 'info');
+                }
+            });
+        } catch (error) {
+            console.log('Error al verificar asociación de la categoría:', error);
+            show_alerta('Error al verificar asociación de la categoría', 'error');
+        }
     };
+    
 
     return (
         <>

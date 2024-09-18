@@ -61,6 +61,7 @@ const Suppliers = () => {
     const [Phone_Number, setPhoneNumber] = React.useState('');
     const [Email, setEmail] = React.useState('');
     const [Address, setAddress] = React.useState('');
+    const [Status, setStatus] = React.useState(true);
     const [operation, setOperation] = React.useState(1);
     const [title, setTitle] = React.useState('');
     const [search, setSearch] = React.useState('');
@@ -96,12 +97,13 @@ const Suppliers = () => {
         results = suppliers.filter((dato) => dato.Supplier_Name.toLowerCase().includes(search.toLocaleLowerCase()))
     }
 
-    const openModal = (op, id, Supplier_Name, Phone_Number, Email, Address) => {
+    const openModal = (op, id, Supplier_Name, Phone_Number, Email, Address, Status) => {
         setId('');
         setSupplierName('');
         setPhoneNumber('');
         setEmail('');
         setAddress('');
+        setStatus(true);
         setOperation(op);
 
         if (op === 1) {
@@ -113,6 +115,7 @@ const Suppliers = () => {
             setPhoneNumber(Phone_Number);
             setEmail(Email);
             setAddress(Address);
+            setStatus(Status);
         }
         window.setTimeout(function () {
             document.getElementById('Supplier_Name').focus();
@@ -136,7 +139,8 @@ const Suppliers = () => {
                 Supplier_Name: Supplier_Name.trim(),
                 Phone_Number: Phone_Number.trim(),
                 Email: Email.trim(),
-                Address: Address.trim()
+                Address: Address.trim(),
+                status: Status
             };
             const metodo = operation === 1 ? 'POST' : 'PUT';
             if (operation !== 1) {
@@ -145,7 +149,47 @@ const Suppliers = () => {
             enviarSolicitud(metodo, parametros);
         }
     }
-
+    const handleSwitchChange = async (supplierId, checked) => {
+        const supplierToUpdate = suppliers.find(supplier => supplier.id === supplierId);
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el proveedor "${supplierToUpdate.Supplier_Name}"?`,
+            icon: 'question',
+            text: 'Esta acción puede afectar la disponibilidad del proveedor.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const updatedSupplier = {
+                    ...supplierToUpdate,
+                    status: checked ? 'A' : 'I'
+                };
+                try {
+                    const response = await axios.put(`${url}/${supplierId}`, updatedSupplier);
+                    if (response.status === 200) {
+                        setSuppliers(suppliers.map(supplier =>
+                            supplier.id === supplierId ? { ...supplier, status: updatedSupplier.status } : supplier
+                        ));
+                        show_alerta('Estado del proveedor actualizado exitosamente', 'success');
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        console.log('Error details:', error.response.data);
+                        show_alerta('Error al actualizar el estado del proveedor: ' + JSON.stringify(error.response.data.errors), 'error');
+                    } else {
+                        console.log('Error details:', error.message);
+                        show_alerta('Error al actualizar el estado del proveedor', 'error');
+                    }
+                }
+            } else {
+                setSuppliers(suppliers.map(supplier =>
+                    supplier.id === supplierId ? { ...supplier, status: !checked ? 'A' : 'I' } : supplier
+                ));
+                show_alerta('Estado del proveedor no cambiado', 'info');
+            }
+        });
+    };
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
         try {
@@ -187,11 +231,23 @@ const Suppliers = () => {
                     <p><strong>Teléfono:</strong> ${supplier.Phone_Number}</p>
                     <p><strong>Email:</strong> ${supplier.Email}</p>
                     <p><strong>Dirección:</strong> ${supplier.Address}</p>
+                    <p><strong>Estado:</strong> ${supplier.Status ? 'Activo' : 'Inactivo'}</p>
                 </div>
             `,
             icon: 'info',
             confirmButtonText: 'Cerrar'
         });
+    }
+
+    const toggleStatus = async (id, currentStatus) => {
+        try {
+            await axios.put(`${url}/${id}`, { Status: !currentStatus });
+            getSuppliers();
+            show_alerta('Estado actualizado con éxito', 'success');
+        } catch (error) {
+            show_alerta('Error al actualizar el estado', 'error');
+            console.log(error);
+        }
     }
 
     return (
@@ -242,6 +298,7 @@ const Suppliers = () => {
                                         <th>Teléfono</th>
                                         <th>Email</th>
                                         <th>Dirección</th>
+                                        <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -254,10 +311,25 @@ const Suppliers = () => {
                                             <td>{supplier.Email}</td>
                                             <td>{supplier.Address}</td>
                                             <td>
+                                                <BlueSwitch
+                                                    checked={supplier.status === 'A'}
+                                                    onChange={(e) => handleSwitchChange(supplier.id, e.target.checked)}
+                                                />
+                                                <span className={`serviceStatus ${supplier.status === 'A' ? '' : 'Inactive'}`}>
+                                                    {supplier.status === 'A' ? 'Activo' : 'Inactivo'}
+                                                </span>
+                                            </td>
+                                            <td>
                                                 <div className='actions d-flex align-items-center'>
                                                     <Button color='primary' className='primary' onClick={() => handleViewDetails(supplier)}><FaEye /></Button>
-                                                    <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalSuppliers' className='secondary' onClick={() => openModal(2, supplier.id, supplier.Supplier_Name, supplier.Phone_Number, supplier.Email, supplier.Address)}><FaPencilAlt /></Button>
-                                                    <Button color='error' className='delete' onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}><IoTrashSharp /></Button>
+                                                    {
+                                                        supplier.status === 'A' && (
+                                                            <>
+                                                                <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalSuppliers' className='secondary' onClick={() => openModal(2, supplier.id, supplier.Supplier_Name, supplier.Phone_Number, supplier.Email, supplier.Address, supplier.status)}><FaPencilAlt /></Button>
+                                                                <Button color='error' className='delete' onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}><IoTrashSharp /></Button>
+                                                            </>
+                                                        )
+                                                    }
                                                 </div>
                                             </td>
                                         </tr>
@@ -299,12 +371,14 @@ const Suppliers = () => {
                                 <div className="input-group mb-3">
                                     <input type="text" id="Address" className="form-control" placeholder="Dirección" value={Address} onChange={(e) => setAddress(e.target.value)} />
                                 </div>
+                         
                                 <div className='modal-footer w-100 m-3'>
                                     <div className='d-grid col-3 Modal-buton' onClick={() => validar()}>
-                                        <Button type='button' className='btn-sucess'><MdOutlineSave/>Guardar</Button>
                                     </div>
                                     <Button type='button' id='btnCerrar' className='btn-red' data-bs-dismiss='modal'>Cerrar</Button>
-                                </div>
+                               
+                                        <Button type='button' className='btn-sucess'><MdOutlineSave />Guardar</Button>
+                                        </div>
                             </div>
                         </div>
                     </div>
