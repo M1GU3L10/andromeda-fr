@@ -193,7 +193,7 @@ const Products = () => {
         formDataToSend.append('Category_Id', parseInt(formData.Category_Id));
         formDataToSend.append('Stock', parseInt(formData.Stock));
         formDataToSend.append('status', formData.status);
-        
+
         if (formData.Image instanceof File) {
             formDataToSend.append('Image', formData.Image);
         }
@@ -231,7 +231,7 @@ const Products = () => {
         formDataToSend.append('Category_Id', parseInt(formData.Category_Id));
         formDataToSend.append('Stock', parseInt(formData.Stock));
         formDataToSend.append('status', formData.status);
-        
+
         if (formData.Image) {
             formDataToSend.append('Image', formData.Image);
         }
@@ -280,33 +280,43 @@ const Products = () => {
             }
         });
     };
-
-    const handleSwitchChange = useCallback(async (id, currentStatus) => {
-        const newStatus = currentStatus === 'A' ? 'I' : 'A';
-        try {
-            const response = await axios.put(`http://localhost:1056/api/products/${id}`, 
-                { status: newStatus },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
+    const handleSwitchChange = async (productId, checked) => {
+        const productToUpdate = productData.find(product => product.id === productId);
+        const MySwal = withReactContent(Swal);
+        MySwal.fire({
+            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el producto "${productToUpdate.Product_Name}"?`,
+            icon: 'question',
+            text: 'Esta acción puede afectar la disponibilidad del producto.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const updatedProduct = {
+                    ...productToUpdate,
+                    status: checked ? 'A' : 'I'
+                };
+                try {
+                    const response = await axios.put(`http://localhost:1056/api/products/${productId}`, updatedProduct);
+                    if (response.status === 200) {
+                        setProductData(productData.map(product =>
+                            product.id === productId ? { ...product, status: updatedProduct.status } : product
+                        ));
+                        show_alerta('Estado del producto actualizado exitosamente', 'success');
                     }
+                } catch (error) {
+                    console.error('Error:', error);
+                    show_alerta('Error al actualizar el estado del producto: ' + (error.response?.data?.message || error.message), 'error');
                 }
-            );
-            if (response.status === 200 || response.status === 204) {
-                setProductData(prevData => 
-                    prevData.map(product => 
-                        product.id === id ? { ...product, status: newStatus } : product
-                    )
-                );
-                show_alerta(`Estado del producto actualizado a ${newStatus === 'A' ? 'Activo' : 'Inactivo'}`, 'success');
             } else {
-                throw new Error('Respuesta inesperada del servidor');
+                setProductData(productData.map(product =>
+                    product.id === productId ? { ...product, status: !checked ? 'A' : 'I' } : product
+                ));
+                show_alerta('Estado del producto no cambiado', 'info');
             }
-        } catch (err) {
-            console.error('Error updating product status:', err);
-            show_alerta('Error al actualizar el estado del producto', 'error');
-        }
-    }, []);
+        });
+    };
+
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
@@ -354,14 +364,14 @@ const Products = () => {
                                     component="a"
                                     href="#"
                                     label="Productos"
-                                    icon={<GiHairStrands fontSize="small" />}
+                                    iconicon={<GiHairStrands fontSize="small" />}
                                 />
                             </Breadcrumbs>
                         </div>
                     </div>
                 </div>
                 <div className='card shadow border-0 p-3'>
-                    <div className='row'>
+                    <div className='row '>
                         <div className='col-sm-5 d-flex align-items-center'>
                             <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
                         </div>
@@ -381,63 +391,59 @@ const Products = () => {
                                     <th>Precio</th>
                                     <th>Categoría</th>
                                     <th>Stock</th>
-                                    <th>Imagen</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {currentItems.map((product, i) => (
-                                    <tr key={product.id}>
-                                        <td>{indexOfFirstItem + i + 1}</td>
-                                        <td>{product.Product_Name}</td>
-                                        <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
-                                        <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
-                                        <td>{product.Stock}</td>
-                                        <td>
-                                            {product.Image && (
-                                                <img
-                                                    src={`http://localhost:1056/api/products/image/${product.id}`}
-                                                    alt={product.Product_Name}
-                                                    style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                                                />
-                                            )}
-                                        </td>
-                                        <td>
-                                            <span className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>
-                                                {product.status === 'A' ? 'Activo' : 'Inactivo'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className='actions d-flex align-items-center'>
-                                                <BlueSwitch
-                                                    checked={product.status === 'A'}
-                                                    onChange={() => handleSwitchChange(product.id, product.status)}
-                                                />
-                                                <Button color='primary' className='primary' onClick={() => handleViewDetails(product)}><FaEye /></Button>
-                                                <Button color="secondary" className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Price, product.Category_Id, product.Image, product.Stock, product.status)}><FaPencilAlt /></Button>
-                                                <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
-                                            </div>
-                                        </td>
+                                {currentItems.length > 0 ? (
+                                    currentItems.map((product, i) => (
+                                        <tr key={product.id}>
+                                            <td>{(i + 1) + (currentPage - 1) * itemsPerPage}</td>
+                                            <td>{product.Product_Name}</td>
+                                            <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
+                                            <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</td>
+                                            <td>{product.Stock}</td>
+                                            <td><span className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>{product.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
+                                            <td>
+                                                <div className='actions d-flex align-items-center'>
+                                                    <BlueSwitch
+                                                        checked={product.status === 'A'}
+                                                        onChange={(e) => handleSwitchChange(product.id, e.target.checked)}
+                                                    />
+                                                   
+                                                    <Button color='primary' className='primary' onClick={() => handleViewDetails(product)}><FaEye /></Button>
+                                                    {product.status === 'A' && (
+                                                        <>
+                                                            <Button color="secondary" className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Price, product.Category_Id, product.Image, product.Stock, product.status)}><FaPencilAlt /></Button>
+                                                            <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={7} className='text-center'>No hay Productos disponibles</td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
-                        {filteredItems.length > 0 ? (
+                        {filteredItems.length > itemsPerPage && (
                             <div className="d-flex table-footer">
                                 <Pagination
-                                    setCurrentPages={handlePageChange}
-                                    currentPages={currentPage}
-                                    nPages={Math.ceil(filteredItems.length / itemsPerPage)}
+                                    setCurrentPage={handlePageChange}
+                                    currentPage={currentPage}
+                                    totalPages={Math.ceil(filteredItems.length / itemsPerPage)}
                                 />
                             </div>
-                        ) : (
-                            <div className="d-flex table-footer"></div>
                         )}
                     </div>
                 </div>
             </div>
 
+            {/* Modal para agregar/editar producto */}
             <Modal show={showModal} onHide={handleClose}>
                 <Modal.Header closeButton>
                     <Modal.Title>{title}</Modal.Title>
@@ -457,6 +463,7 @@ const Products = () => {
                                 {formErrors.Product_Name}
                             </Form.Control.Feedback>
                         </Form.Group>
+
                         <Form.Group className="mb-3">
                             <Form.Label>Precio</Form.Label>
                             <Form.Control
@@ -464,13 +471,13 @@ const Products = () => {
                                 name="Price"
                                 value={formData.Price}
                                 onChange={handleInputChange}
-                                step="0.01"
                                 isInvalid={!!formErrors.Price}
                             />
                             <Form.Control.Feedback type="invalid">
                                 {formErrors.Price}
                             </Form.Control.Feedback>
                         </Form.Group>
+
                         <Form.Group className="mb-3">
                             <Form.Label>Categoría</Form.Label>
                             <Form.Select
@@ -480,7 +487,7 @@ const Products = () => {
                                 isInvalid={!!formErrors.Category_Id}
                             >
                                 <option value="">Seleccione una categoría</option>
-                                {categories.map((category) => (
+                                {categories.map(category => (
                                     <option key={category.id} value={category.id}>{category.name}</option>
                                 ))}
                             </Form.Select>
@@ -488,6 +495,7 @@ const Products = () => {
                                 {formErrors.Category_Id}
                             </Form.Control.Feedback>
                         </Form.Group>
+
                         <Form.Group className="mb-3">
                             <Form.Label>Stock</Form.Label>
                             <Form.Control
@@ -501,60 +509,48 @@ const Products = () => {
                                 {formErrors.Stock}
                             </Form.Control.Feedback>
                         </Form.Group>
+
                         <Form.Group className="mb-3">
                             <Form.Label>Imagen</Form.Label>
                             <Form.Control
                                 type="file"
-                                name="Image"
                                 onChange={handleFileChange}
                             />
-                        </Form.Group>
-                        {imagePreviewUrl && (
-                            <div className="mb-3">
-                                <img src={imagePreviewUrl} alt="Vista previa" style={{ width: '100%', height: 'auto' }} />
-                            </div>
-                        )}
-                        <Form.Group className="mb-3">
-                            <Form.Label>Estado</Form.Label>
-                            <Form.Select
-                                name="status"
-                                value={formData.status}
-                                onChange={handleInputChange}
-                            >
-                                <option value="A">Activo</option>
-                                <option value="I">Inactivo</option>
-                            </Form.Select>
+                            {imagePreviewUrl && (
+                                <img src={imagePreviewUrl} alt="Preview" style={{ maxWidth: '100%', marginTop: '10px' }} />
+                            )}
                         </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate} className='btn-sucess'>
-                        Guardar
-                    </Button>
-                    <Button variant="secondary" onClick={handleClose} className='btn-red'>
+                    <Button variant="secondary" onClick={handleClose}>
                         Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate}>
+                        {operation === 1 ? 'Guardar' : 'Actualizar'}
                     </Button>
                 </Modal.Footer>
             </Modal>
 
+            {/* Modal para ver detalles del producto */}
             <Modal show={showDetailModal} onHide={handleCloseDetail}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Detalle del Producto</Modal.Title>
+                    <Modal.Title>Detalles del Producto</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <p><strong>Nombre:</strong> {viewData.Product_Name}</p>
                     <p><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</p>
-                    <p><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'No disponible'}</p>
+                    <p><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'N/A'}</p>
                     <p><strong>Stock:</strong> {viewData.Stock}</p>
                     <p><strong>Estado:</strong> {viewData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
                     {viewData.Image && (
-                        <div className="text-center mt-3">
-                            <img src={`http://localhost:1056/api/products/image/${viewData.id}`} alt={viewData.Product_Name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
-                        </div>
+                        <img src={viewData.Image} alt="Producto" style={{ maxWidth: '100%', marginTop: '10px' }} />
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseDetail}>Cerrar</Button>
+                    <Button variant="secondary" onClick={handleCloseDetail}>
+                        Cerrar
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </div>
