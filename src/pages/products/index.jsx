@@ -117,18 +117,17 @@ const Products = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         let updatedValue = value;
-
+    
         if (name === 'Price') {
             updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
-        } else if (name === 'Product_Name') {
-            updatedValue = value.trim();
         }
-
+    
         setFormData(prevData => ({
             ...prevData,
             [name]: updatedValue
         }));
     };
+    
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -156,10 +155,6 @@ const Products = () => {
             errors.Category_Id = 'Debe seleccionar una categoría válida';
         }
 
-        if (!formData.Stock || isNaN(formData.Stock) || parseInt(formData.Stock) < 0) {
-            errors.Stock = 'El stock debe ser un número no negativo';
-        }
-
         return errors;
     };
 
@@ -172,7 +167,6 @@ const Products = () => {
 
         const dataToSend = {
             Product_Name: formData.Product_Name.trim(),
-           
             Price: parseFloat(formData.Price),
             Category_Id: parseInt(formData.Category_Id),
             Product_Id: formData.id,
@@ -208,7 +202,6 @@ const Products = () => {
 
         const dataToSend = {
             Product_Name: formData.Product_Name.trim(),
-           
             Price: parseFloat(formData.Price),
             Category_Id: parseInt(formData.Category_Id),
             status: formData.status
@@ -359,7 +352,7 @@ const Products = () => {
                                     component="a"
                                     href="#"
                                     label="Productos"
-                                    icon={<GiHairStrands fontSize="small" />}/>
+                                    icon={<GiHairStrands fontSize="small" />} />
                             </Breadcrumbs>
                         </div>
                     </div>
@@ -376,6 +369,7 @@ const Products = () => {
                             </div>
                         </div>
                     </div>
+
                     <div className='table-responsive mt-3'>
                         <table className='table table-bordered table-hover v-align table-striped'>
                             <thead className='table-primary'>
@@ -451,11 +445,13 @@ const Products = () => {
                                 value={formData.Product_Name}
                                 onChange={handleInputChange}
                                 isInvalid={!!formErrors.Product_Name}
+                                pattern=".*\S.*"  // Asegura que el campo no esté vacío, pero permite espacios
                             />
                             <Form.Control.Feedback type="invalid">
                                 {formErrors.Product_Name}
                             </Form.Control.Feedback>
                         </Form.Group>
+
 
                         <Form.Group className="mb-3">
                             <Form.Label>Precio</Form.Label>
@@ -489,31 +485,9 @@ const Products = () => {
                             </Form.Control.Feedback>
                         </Form.Group>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Stock</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="Stock"
-                                value={formData.Stock}
-                                onChange={handleInputChange}
-                                isInvalid={!!formErrors.Stock}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {formErrors.Stock}
-                            </Form.Control.Feedback>
-                        </Form.Group>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Estado</Form.Label>
-                            <Form.Select
-                                name="status"
-                                value={formData.status}
-                                onChange={handleInputChange}
-                            >
-                                <option value="A">Activo</option>
-                                <option value="I">Inactivo</option>
-                            </Form.Select>
-                        </Form.Group>
+
+                   
 
                         <Form.Group className="mb-3">
                             <Form.Label>Imagen</Form.Label>
