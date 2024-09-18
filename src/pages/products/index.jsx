@@ -110,23 +110,6 @@ const Products = () => {
         });
     };
 
-    const openModal = (op, id, Product_Name, Price, Category_Id, Image, Stock, status) => {
-        setOperation(op);
-        setFormData({
-            id,
-            Product_Name: Product_Name || '',
-            Price: Price || '',
-            Category_Id: Category_Id || '',
-            Image: null,
-            Stock: Stock || '',
-            status: status || 'A',
-        });
-        setImagePreviewUrl(Image || '');
-        setFormErrors({});
-        setTitle(op === 1 ? 'Registrar Producto' : 'Editar Producto');
-        setShowModal(true);
-    };
-
     const handleClose = () => {
         setShowModal(false);
     };
@@ -181,79 +164,91 @@ const Products = () => {
     };
 
     const handleUpdate = async () => {
-        const errors = validateForm();
+        const errors = validateForm()
         if (Object.keys(errors).length > 0) {
-            setFormErrors(errors);
-            return;
+            setFormErrors(errors)
+            return
         }
 
-        const formDataToSend = new FormData();
-        formDataToSend.append('Product_Name', formData.Product_Name.trim());
-        formDataToSend.append('Price', parseFloat(formData.Price));
-        formDataToSend.append('Category_Id', parseInt(formData.Category_Id));
-        formDataToSend.append('Stock', parseInt(formData.Stock));
-        formDataToSend.append('status', formData.status);
-
-        if (formData.Image instanceof File) {
-            formDataToSend.append('Image', formData.Image);
+        const dataToSend = {
+            Product_Name: formData.Product_Name.trim(),
+           
+            Price: parseFloat(formData.Price),
+            Category_Id: parseInt(formData.Category_Id),
+            Product_Id: formData.id,
+            status: formData.status
         }
 
         try {
-            const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`, formDataToSend, {
+            const response = await axios.put(`http://localhost:1056/api/products/${dataToSend.Product_Id}`, dataToSend, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'application/json'
                 }
-            });
+            })
 
             if (response.status === 200 || response.status === 204) {
-                handleClose();
-                fetchProductData();
-                show_alerta('Producto actualizado exitosamente', 'success');
+                handleClose()
+                fetchProductData()
+                show_alerta('Producto actualizado exitosamente', 'success')
             } else {
-                show_alerta('Hubo un problema al actualizar el producto', 'error');
+                show_alerta('Hubo un problema al actualizar el producto', 'error')
             }
         } catch (error) {
-            console.error('Error:', error);
-            show_alerta('Error al actualizar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
+            console.error('Error:', error)
+            show_alerta('Error al actualizar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error')
         }
-    };
+    }
 
     const handleSubmit = async () => {
-        const errors = validateForm();
+        const errors = validateForm()
         if (Object.keys(errors).length > 0) {
-            setFormErrors(errors);
-            return;
+            setFormErrors(errors)
+            return
         }
 
-        const formDataToSend = new FormData();
-        formDataToSend.append('Product_Name', formData.Product_Name.trim());
-        formDataToSend.append('Price', parseFloat(formData.Price));
-        formDataToSend.append('Category_Id', parseInt(formData.Category_Id));
-        formDataToSend.append('Stock', parseInt(formData.Stock));
-        formDataToSend.append('status', formData.status);
-
-        if (formData.Image) {
-            formDataToSend.append('Image', formData.Image);
+        const dataToSend = {
+            Product_Name: formData.Product_Name.trim(),
+           
+            Price: parseFloat(formData.Price),
+            Category_Id: parseInt(formData.Category_Id),
+            status: formData.status
         }
 
         try {
-            const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
+            const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'application/json'
                 }
-            });
+            })
 
             if (response.status === 200 || response.status === 201) {
-                handleClose();
-                fetchProductData();
-                show_alerta('Producto agregado exitosamente', 'success');
+                handleClose()
+                fetchProductData()
+                show_alerta('Producto agregado exitosamente', 'success')
             } else {
-                show_alerta('Hubo un problema al agregar el producto', 'error');
+                show_alerta('Hubo un problema al agregar el producto', 'error')
             }
         } catch (error) {
-            console.error('Error:', error);
-            show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
+            console.error('Error:', error)
+            show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error')
         }
+    }
+
+    const openModal = (op, id, Product_Name, Price, Category_Id, Image, Stock, status) => {
+        setOperation(op);
+        setFormData({
+            id,
+            Product_Name: Product_Name || '',
+            Price: Price || '',
+            Category_Id: Category_Id || '',
+            Image: null,
+            Stock: Stock || '',
+            status: status || 'A',
+        });
+        setImagePreviewUrl(Image || '');
+        setFormErrors({});
+        setTitle(op === 1 ? 'Registrar Producto' : 'Editar Producto');
+        setShowModal(true);
     };
 
     const handleDelete = async (id, name) => {
@@ -280,6 +275,7 @@ const Products = () => {
             }
         });
     };
+
     const handleSwitchChange = async (productId, checked) => {
         const productToUpdate = productData.find(product => product.id === productId);
         const MySwal = withReactContent(Swal);
@@ -316,7 +312,6 @@ const Products = () => {
             }
         });
     };
-
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
@@ -364,8 +359,7 @@ const Products = () => {
                                     component="a"
                                     href="#"
                                     label="Productos"
-                                    iconicon={<GiHairStrands fontSize="small" />}
-                                />
+                                    icon={<GiHairStrands fontSize="small" />}/>
                             </Breadcrumbs>
                         </div>
                     </div>
@@ -411,7 +405,6 @@ const Products = () => {
                                                         checked={product.status === 'A'}
                                                         onChange={(e) => handleSwitchChange(product.id, e.target.checked)}
                                                     />
-                                                   
                                                     <Button color='primary' className='primary' onClick={() => handleViewDetails(product)}><FaEye /></Button>
                                                     {product.status === 'A' && (
                                                         <>
@@ -508,6 +501,18 @@ const Products = () => {
                             <Form.Control.Feedback type="invalid">
                                 {formErrors.Stock}
                             </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Estado</Form.Label>
+                            <Form.Select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleInputChange}
+                            >
+                                <option value="A">Activo</option>
+                                <option value="I">Inactivo</option>
+                            </Form.Select>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
