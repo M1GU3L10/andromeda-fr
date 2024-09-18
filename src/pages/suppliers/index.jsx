@@ -9,7 +9,6 @@ import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
-import { MdOutlineSave } from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { show_alerta } from '../../assets/functions';
@@ -20,6 +19,8 @@ import { blue } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { Modal, Form, Col, Row } from 'react-bootstrap';
+import { MdOutlineSave } from "react-icons/md";
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -56,21 +57,36 @@ const BlueSwitch = styled(Switch)(({ theme }) => ({
 const Suppliers = () => {
     const url = 'http://localhost:1056/api/suppliers';
     const [suppliers, setSuppliers] = React.useState([]);
-    const [id, setId] = React.useState('');
-    const [Supplier_Name, setSupplierName] = React.useState('');
-    const [Phone_Number, setPhoneNumber] = React.useState('');
-    const [Email, setEmail] = React.useState('');
-    const [Address, setAddress] = React.useState('');
-    const [Status, setStatus] = React.useState(true);
+    const [formValues, setFormValues] = React.useState({
+        id: '',
+        Supplier_Name: '',
+        Phone_Number: '',
+        Email: '',
+        Address: '',
+        status: 'A'
+    });
     const [operation, setOperation] = React.useState(1);
     const [title, setTitle] = React.useState('');
     const [search, setSearch] = React.useState('');
     const [dataQt, setDataQt] = React.useState(3);
     const [currentPages, setCurrentPages] = React.useState(1);
+    const [showModal, setShowModal] = React.useState(false);
+    const [errors, setErrors] = React.useState({
+        Supplier_Name: '',
+        Phone_Number: '',
+        Email: '',
+        Address: '',
+    });
+    const [touched, setTouched] = React.useState({
+        Supplier_Name: false,
+        Phone_Number: false,
+        Email: false,
+        Address: false,
+    });
 
     React.useEffect(() => {
         getSuppliers();
-    }, [])
+    }, []);
 
     const getSuppliers = async () => {
         try {
@@ -79,76 +95,129 @@ const Suppliers = () => {
         } catch (error) {
             show_alerta('Error al obtener proveedores', 'error');
         }
-    }
+    };
 
     const searcher = (e) => {
         setSearch(e.target.value);
-    }
+    };
 
     const indexEnd = currentPages * dataQt;
     const indexStart = indexEnd - dataQt;
 
     const nPages = Math.ceil(suppliers.length / dataQt);
 
-    let results = []
+    let results = [];
     if (!search) {
         results = suppliers.slice(indexStart, indexEnd);
     } else {
-        results = suppliers.filter((dato) => dato.Supplier_Name.toLowerCase().includes(search.toLocaleLowerCase()))
+        results = suppliers.filter((dato) => dato.Supplier_Name.toLowerCase().includes(search.toLocaleLowerCase()));
     }
 
-    const openModal = (op, id, Supplier_Name, Phone_Number, Email, Address, Status) => {
-        setId('');
-        setSupplierName('');
-        setPhoneNumber('');
-        setEmail('');
-        setAddress('');
-        setStatus(true);
+    const openModal = (op, supplier = {}) => {
         setOperation(op);
+        setTitle(op === 1 ? 'Registrar proveedor' : 'Editar proveedor');
+        setFormValues(op === 1 ? {
+            id: '',
+            Supplier_Name: '',
+            Phone_Number: '',
+            Email: '',
+            Address: '',
+            status: 'A'
+        } : {
+            id: supplier.id,
+            Supplier_Name: supplier.Supplier_Name,
+            Phone_Number: supplier.Phone_Number,
+            Email: supplier.Email,
+            Address: supplier.Address,
+            status: supplier.status
+        });
+        setShowModal(true);
+    };
 
-        if (op === 1) {
-            setTitle('Registrar proveedor');
-        } else if (op === 2) {
-            setTitle('Editar proveedor');
-            setId(id);
-            setSupplierName(Supplier_Name);
-            setPhoneNumber(Phone_Number);
-            setEmail(Email);
-            setAddress(Address);
-            setStatus(Status);
+    const handleClose = () => {
+        setShowModal(false);
+        setErrors({
+            Supplier_Name: '',
+            Phone_Number: '',
+            Email: '',
+            Address: '',
+        });
+        setTouched({
+            Supplier_Name: false,
+            Phone_Number: false,
+            Email: false,
+            Address: false,
+        });
+    };
+
+    const handleValidation = (name, value) => {
+        let error = '';
+        switch (name) {
+            case 'Supplier_Name':
+                error = value.trim() === '' ? 'El nombre del proveedor es requerido' : '';
+                break;
+            case 'Phone_Number':
+                error = !/^\d+$/.test(value) ? 'El número de teléfono debe contener solo dígitos' : '';
+                break;
+            case 'Email':
+                error = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Ingrese un correo electrónico válido' : '';
+                break;
+            case 'Address':
+                error = value.trim() === '' ? 'La dirección es requerida' : '';
+                break;
+            default:
+                break;
         }
-        window.setTimeout(function () {
-            document.getElementById('Supplier_Name').focus();
-        }, 500)
-    }
+        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormValues(prevValues => ({ ...prevValues, [name]: value }));
+        handleValidation(name, value);
+    };
+
+    const handleBlur = (e) => {
+        const { name } = e.target;
+        setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
+        handleValidation(name, e.target.value);
+    };
 
     const validar = () => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\d+$/;
-
-        if (Supplier_Name.trim() === '') {
-            show_alerta('Escriba el nombre del proveedor', 'warning')
-        } else if (Phone_Number.trim() === '' || !phoneRegex.test(Phone_Number.trim())) {
-            show_alerta('Escriba un número de teléfono válido', 'warning')
-        } else if (Email.trim() === '' || !emailRegex.test(Email.trim())) {
-            show_alerta('Escriba un correo electrónico válido', 'warning')
-        } else if (Address.trim() === '') {
-            show_alerta('Escriba la dirección', 'warning')
-        } else {
-            const parametros = {
-                Supplier_Name: Supplier_Name.trim(),
-                Phone_Number: Phone_Number.trim(),
-                Email: Email.trim(),
-                Address: Address.trim(),
-                status: Status
-            };
-            const metodo = operation === 1 ? 'POST' : 'PUT';
-            if (operation !== 1) {
-                parametros.id = id;
-            }
-            enviarSolicitud(metodo, parametros);
+        const { Supplier_Name, Phone_Number, Email, Address } = formValues;
+        if (errors.Supplier_Name || !Supplier_Name.trim()) {
+            show_alerta(errors.Supplier_Name || 'Por favor, complete el nombre del proveedor.', 'warning');
+            return;
         }
-    }
+        if (errors.Phone_Number || !Phone_Number.trim()) {
+            show_alerta(errors.Phone_Number || 'Por favor, ingrese un número de teléfono válido.', 'warning');
+            return;
+        }
+        if (errors.Email || !Email.trim()) {
+            show_alerta(errors.Email || 'Por favor, ingrese un correo electrónico válido.', 'warning');
+            return;
+        }
+        if (errors.Address || !Address.trim()) {
+            show_alerta(errors.Address || 'Por favor, ingrese la dirección.', 'warning');
+            return;
+        }
+
+        enviarSolicitud(operation === 1 ? 'POST' : 'PUT', formValues);
+    };
+
+    const enviarSolicitud = async (metodo, parametros) => {
+        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
+        try {
+            await axios({ method: metodo, url: urlWithId, data: parametros });
+            show_alerta('Operación exitosa', 'success');
+            handleClose();
+            getSuppliers();
+        } catch (error) {
+            show_alerta('Error en la solicitud', 'error');
+            console.log(error);
+        }
+    };
+
     const handleSwitchChange = async (supplierId, checked) => {
         const supplierToUpdate = suppliers.find(supplier => supplier.id === supplierId);
         const Myswal = withReactContent(Swal);
@@ -190,18 +259,6 @@ const Suppliers = () => {
             }
         });
     };
-    const enviarSolicitud = async (metodo, parametros) => {
-        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
-        try {
-            await axios({ method: metodo, url: urlWithId, data: parametros });
-            show_alerta('Operación exitosa', 'success');
-            document.getElementById('btnCerrar').click();
-            getSuppliers();
-        } catch (error) {
-            show_alerta('Error en la solicitud', 'error');
-            console.log(error);
-        }
-    }
 
     const deleteSupplier = async (id, Supplier_Name) => {
         const Myswal = withReactContent(Swal);
@@ -214,13 +271,12 @@ const Suppliers = () => {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                setId(id);
                 enviarSolicitud('DELETE', { id: id });
             } else {
                 show_alerta('El proveedor NO fue eliminado', 'info');
             }
         });
-    }
+    };
 
     const handleViewDetails = (supplier) => {
         Swal.fire({
@@ -231,24 +287,13 @@ const Suppliers = () => {
                     <p><strong>Teléfono:</strong> ${supplier.Phone_Number}</p>
                     <p><strong>Email:</strong> ${supplier.Email}</p>
                     <p><strong>Dirección:</strong> ${supplier.Address}</p>
-                    <p><strong>Estado:</strong> ${supplier.Status ? 'Activo' : 'Inactivo'}</p>
+                    <p><strong>Estado:</strong> ${supplier.status === 'A' ? 'Activo' : 'Inactivo'}</p>
                 </div>
             `,
             icon: 'info',
             confirmButtonText: 'Cerrar'
         });
-    }
-
-    const toggleStatus = async (id, currentStatus) => {
-        try {
-            await axios.put(`${url}/${id}`, { Status: !currentStatus });
-            getSuppliers();
-            show_alerta('Estado actualizado con éxito', 'success');
-        } catch (error) {
-            show_alerta('Error al actualizar el estado', 'error');
-            console.log(error);
-        }
-    }
+    };
 
     return (
         <>
@@ -280,7 +325,7 @@ const Suppliers = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained" data-bs-toggle='modal' data-bs-target='#modalSuppliers'><BsPlusSquareFill />Registrar</Button>
+                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
@@ -311,21 +356,21 @@ const Suppliers = () => {
                                             <td>{supplier.Email}</td>
                                             <td>{supplier.Address}</td>
                                             <td>
-                                                <BlueSwitch
-                                                    checked={supplier.status === 'A'}
-                                                    onChange={(e) => handleSwitchChange(supplier.id, e.target.checked)}
-                                                />
                                                 <span className={`serviceStatus ${supplier.status === 'A' ? '' : 'Inactive'}`}>
                                                     {supplier.status === 'A' ? 'Activo' : 'Inactivo'}
                                                 </span>
                                             </td>
                                             <td>
                                                 <div className='actions d-flex align-items-center'>
+                                                <BlueSwitch
+                                                    checked={supplier.status === 'A'}
+                                                    onChange={(e) => handleSwitchChange(supplier.id, e.target.checked)}
+                                                />
                                                     <Button color='primary' className='primary' onClick={() => handleViewDetails(supplier)}><FaEye /></Button>
                                                     {
                                                         supplier.status === 'A' && (
                                                             <>
-                                                                <Button color="secondary" data-bs-toggle='modal' data-bs-target='#modalSuppliers' className='secondary' onClick={() => openModal(2, supplier.id, supplier.Supplier_Name, supplier.Phone_Number, supplier.Email, supplier.Address, supplier.status)}><FaPencilAlt /></Button>
+                                                                <Button color="secondary" className='secondary' onClick={() => openModal(2, supplier)}><FaPencilAlt /></Button>
                                                                 <Button color='error' className='delete' onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}><IoTrashSharp /></Button>
                                                             </>
                                                         )
@@ -351,40 +396,99 @@ const Suppliers = () => {
                     </div>
                 </div>
 
-                <div id="modalSuppliers" className="modal fade" aria-hidden="true">
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <label className="h5">{title}</label>
-                            </div>
-                            <div className="modal-body">
-                                <input type="hidden" id="id"></input>
-                                <div className="input-group mb-3">
-                                    <input type="text" id="Supplier_Name" className="form-control" placeholder="Nombre" value={Supplier_Name} onChange={(e) => setSupplierName(e.target.value)} />
-                                </div>
-                                <div className="input-group mb-3">
-                                    <input type="text" id="Phone_Number" className="form-control" placeholder="Teléfono" value={Phone_Number} onChange={(e) => setPhoneNumber(e.target.value)} />
-                                </div>
-                                <div className="input-group mb-3">
-                                    <input type="email" id="Email" className="form-control" placeholder="Email" value={Email} onChange={(e) => setEmail(e.target.value)} />
-                                </div>
-                                <div className="input-group mb-3">
-                                    <input type="text" id="Address" className="form-control" placeholder="Dirección" value={Address} onChange={(e) => setAddress(e.target.value)} />
-                                </div>
+                <Modal show={showModal} onHide={handleClose}>
+                    <Modal.Header>
+                        <Modal.Title>{title}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Row className="mb-3">
+                                <Col sm="6">
+                                    <Form.Group>
+                                        <Form.Label className='required'>Nombre</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            name="Supplier_Name"
+                                            value={formValues.Supplier_Name}
+                                            placeholder="Nombre del proveedor"
+                                            onChange={handleInputChange}
+                                            onBlur={handleBlur}
+                                            isInvalid={touched.Supplier_Name && !!errors.Supplier_Name}
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.Supplier_Name}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                </Col>
+                                <Col sm="6">
+                                    <Form.Group>
+                                        <Form.Label className='required'>Teléfono</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            name="Phone_Number"
+                                            value={formValues.Phone_Number}
+                                            placeholder="Número de teléfono"
+                                            onChange={handleInputChange}
+                                            onBlur={handleBlur}
+                                            isInvalid={touched.Phone_Number && !!errors.Phone_Number}
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.Phone_Number}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
 
-                                <div className='modal-footer w-100 m-3'>
-                                    <div className='d-grid col-3 Modal-buton' onClick={() => validar()}>
-                                        <Button type='button' className='btn-sucess'><MdOutlineSave />Guardar</Button>
-                                    </div>
-                                    <Button type='button' id='btnCerrar' className='btn-red' data-bs-dismiss='modal'>Cerrar</Button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            <Row className="mb-3">
+                                <Col sm="6">
+                                    <Form.Group>
+                                        <Form.Label className='required'>Email</Form.Label>
+                                        <Form.Control
+                                            type="email"
+                                            name="Email"
+                                            value={formValues.Email}
+                                            placeholder="Correo electrónico"
+                                            onChange={handleInputChange}
+                                            onBlur={handleBlur}
+                                            isInvalid={touched.Email && !!errors.Email}
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.Email}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                </Col>
+                                <Col sm="6">
+                                    <Form.Group>
+                                        <Form.Label className='required'>Dirección</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            name="Address"
+                                            value={formValues.Address}
+                                            placeholder="Dirección"
+                                            onChange={handleInputChange}
+                                            onBlur={handleBlur}
+                                            isInvalid={touched.Address && !!errors.Address}
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.Address}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" className='btn-red' onClick={handleClose}>
+                            Cerrar
+                        </Button>
+                        <Button variant="primary" className='btn-sucess' onClick={validar}>
+                            <MdOutlineSave /> Guardar
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         </>
-    )
-}
+    );
+};
 
 export default Suppliers;

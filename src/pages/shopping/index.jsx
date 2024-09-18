@@ -21,6 +21,11 @@ import { useNavigate } from 'react-router-dom';
 import DocumentPdf from './viewShopping';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import Modal from 'react-bootstrap/Modal'; // Importación del modal de React-Bootstrap
+import { Switch } from '@mui/material';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
+
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -99,14 +104,57 @@ const Shopping = () => {
         setCurrentPages(1); // Resetear la paginación al hacer una búsqueda
     };
 
-    const handleOpenModal = (shoppingItem) => {
-        setSelectedShopping(shoppingItem);
+    const handleOpenModal = (shopping) => {
+        setSelectedShopping(shopping);
         setShowDetailModal(true);
     };
 
     const handleCloseModal = () => {
         setShowDetailModal(false);
         setSelectedShopping(null);
+    };
+
+    const handleSwitchChange = async (shoppingId, currentStatus) => {
+        if (currentStatus === 'anulada') {
+            Swal.fire('No permitido', 'No se puede cambiar el estado de una compra anulada.', 'warning');
+            return;
+        }
+    
+        const newStatus = currentStatus === 'completada' ? 'anulada' : 'completada';
+        const MySwal = withReactContent(Swal);
+    
+        MySwal.fire({
+            title: `¿Estás seguro que deseas ${newStatus === 'completada' ? 'completar' : 'anular'} la compra?`,
+            icon: 'question',
+            text: `Esta acción cambiará el estado de la compra a "${newStatus}".`,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    let response;
+                    if (newStatus === 'anulada') {
+                        // Si se anula la compra, se llama a la ruta específica para cancelar
+                        response = await axios.patch(`http://localhost:1056/api/shopping/${shoppingId}/cancel`, { status: 'anulada' });
+                    } else {
+                        // Si se completa la compra, simplemente se actualiza el estado
+                        response = await axios.put(`http://localhost:1056/api/shopping/${shoppingId}`, { status: 'completada' });
+                    }
+    
+                    if (response.status === 200) {
+                        // Actualización exitosa del estado de la compra
+                        setShopping(prevShopping => prevShopping.map(item =>
+                            item.id === shoppingId ? { ...item, status: newStatus } : item
+                        ));
+                        Swal.fire('Estado actualizado', `El estado de la compra se ha actualizado a ${newStatus}.`, 'success');
+                    }
+                } catch (error) {
+                    console.error('Error al actualizar el estado de la compra:', error);
+                    Swal.fire('Error', 'Hubo un problema al actualizar el estado de la compra.', 'error');
+                }
+            }
+        });
     };
 
     return (
@@ -190,6 +238,10 @@ const Shopping = () => {
                                                 <td>{shopping.status}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
+                                                        <Switch
+                                                            checked={shopping.status.toLowerCase() === 'completada'}
+                                                            onChange={(e) => handleSwitchChange(shopping.id, shopping.status.toLowerCase())}
+                                                        />
                                                         <Button color='primary' className='primary' onClick={() => handleOpenModal(shopping)}>
                                                             <FaEye />
                                                         </Button>
@@ -198,6 +250,8 @@ const Shopping = () => {
                                                         </PDFDownloadLink>
                                                     </div>
                                                 </td>
+
+
                                             </tr>
                                         ))
                                     }
