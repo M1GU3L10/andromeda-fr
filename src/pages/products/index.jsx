@@ -117,17 +117,17 @@ const Products = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         let updatedValue = value;
-    
+
         if (name === 'Price') {
             updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
         }
-    
+
         setFormData(prevData => ({
             ...prevData,
             [name]: updatedValue
         }));
     };
-    
+
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -379,6 +379,7 @@ const Products = () => {
                                     <th>Precio</th>
                                     <th>Categoría</th>
                                     <th>Stock</th>
+                                    <th>Imagen</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -392,6 +393,7 @@ const Products = () => {
                                             <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
                                             <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</td>
                                             <td>{product.Stock}</td>
+                                            <td>{product.Image}</td>
                                             <td><span className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>{product.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                             <td>
                                                 <div className='actions d-flex align-items-center'>
@@ -431,8 +433,8 @@ const Products = () => {
             </div>
 
             {/* Modal para agregar/editar producto */}
-            <Modal show={showModal} onHide={handleClose}>
-                <Modal.Header closeButton>
+            <Modal show={showModal}>
+                <Modal.Header >
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -487,7 +489,7 @@ const Products = () => {
 
 
 
-                   
+
 
                         <Form.Group className="mb-3">
                             <Form.Label>Imagen</Form.Label>
@@ -502,11 +504,11 @@ const Products = () => {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Cerrar
+                    <Button variant="primary" onClick={handleSubmit} className='btn-sucess'>
+                        Guardar
                     </Button>
-                    <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate}>
-                        {operation === 1 ? 'Guardar' : 'Actualizar'}
+                    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                        Cerrar
                     </Button>
                 </Modal.Footer>
             </Modal>
