@@ -22,6 +22,8 @@ import RegisterShopping from './pages/shopping/registerShopping';
 import ViewShopping from './pages/shopping/viewShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
 import Login from './pages/Login';
+import Register from './pages/Register';
+import ProtectedRoute from './components/protected';
 
 
 const MyContext = createContext();
@@ -75,25 +77,29 @@ function App() {
           }
           <div className={`content ${isHideSidebarAndHeader == true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
             <Routes>
-              <Route path="/" exact={true} element={<Dashboard />} />
-              <Route path="/dashboard" exact={true} element={<Dashboard />} />
+             
               <Route path="/login" exact={true} element={<Login />} />
-              <Route path="/categories" exact={true} element={<Categories />} />
-              <Route path="/appointment" exact={true} element={<Appointment />} />
-              <Route path="/appointmentRegister" exact={true} element={<RegisterAppointment />} />
-              <Route path="/orders" exact={true} element={<Orders />} />
-              <Route path="/products" exact={true} element={<Products />} />
-              <Route path="/programming" exact={true} element={<Programming />} />
-              <Route path="/sales" exact={true} element={<Sales />} />
-              <Route path="/salesRegister" exact={true} element={<RegisterSales />} />
-              <Route path="/services" exact={true} element={<Services />} />
-              <Route path="/shopping" exact={true} element={<Shopping />} />
-              <Route path="/shoppingRegister" exact={true} element={<RegisterShopping />} />
-              <Route path="/ViewShopping/:shoppingId" element={<ViewShopping />} />
-              <Route path="/suppliers" exact={true} element={<Suppliers />} />
-              <Route path="/users" exact={true} element={<Users />} />
-              <Route path="/roles" exact={true} element={<Roles />} />
-              <Route path="/absences" exact={true} element={<Absences />} />
+              <Route path="/register" exact={true} element={<Register />} />
+
+              <Route path="/" exact={true} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/dashboard" exact={true} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/categories" exact={true} element={<ProtectedRoute><Categories /></ProtectedRoute>} />
+              <Route path="/appointment" exact={true} element={<ProtectedRoute><Appointment /></ProtectedRoute>} />
+              <Route path="/appointmentRegister" exact={true} element={<ProtectedRoute><RegisterAppointment /></ProtectedRoute>} />
+              <Route path="/orders" exact={true} element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+              <Route path="/products" exact={true} element={<ProtectedRoute><Products /></ProtectedRoute>} />
+              <Route path="/programming" exact={true} element={<ProtectedRoute><Programming /></ProtectedRoute>} />
+              <Route path="/sales" exact={true} element={<ProtectedRoute><Sales /></ProtectedRoute>} />
+              <Route path="/salesRegister" exact={true} element={<ProtectedRoute><RegisterSales /></ProtectedRoute>} />
+              <Route path="/services" exact={true} element={<ProtectedRoute><Services /></ProtectedRoute>} />
+              <Route path="/shopping" exact={true} element={<ProtectedRoute><Shopping /></ProtectedRoute>} />
+              <Route path="/shoppingRegister" exact={true} element={<ProtectedRoute><RegisterShopping /></ProtectedRoute>} />
+              <Route path="/ViewShopping/:shoppingId" element={<ProtectedRoute><ViewShopping /></ProtectedRoute>} />
+              <Route path="/suppliers" exact={true} element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
+              <Route path="/users" exact={true} element={<ProtectedRoute><Users /></ProtectedRoute>} />
+              <Route path="/roles" exact={true} element={<ProtectedRoute><Roles /></ProtectedRoute>} />
+              <Route path="/absences" exact={true} element={<ProtectedRoute><Absences /></ProtectedRoute>} />
+
             </Routes>
           </div>
         </div>
