@@ -374,10 +374,11 @@ const Suppliers = () => {
                          
                                 <div className='modal-footer w-100 m-3'>
                                     <div className='d-grid col-3 Modal-buton' onClick={() => validar()}>
-                                        <Button type='button' className='btn-sucess'><MdOutlineSave />Guardar</Button>
                                     </div>
                                     <Button type='button' id='btnCerrar' className='btn-red' data-bs-dismiss='modal'>Cerrar</Button>
-                                </div>
+                               
+                                        <Button type='button' className='btn-sucess'><MdOutlineSave />Guardar</Button>
+                                        </div>
                             </div>
                         </div>
                     </div>
