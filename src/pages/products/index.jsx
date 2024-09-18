@@ -1,26 +1,24 @@
-'use client'
-
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { emphasize, styled } from '@mui/material/styles'
-import Breadcrumbs from '@mui/material/Breadcrumbs'
-import Chip from '@mui/material/Chip'
-import HomeIcon from '@mui/icons-material/Home'
-import { GiHairStrands } from "react-icons/gi"
-import Button from '@mui/material/Button'
-import { BsPlusSquareFill } from "react-icons/bs"
-import { FaEye, FaPencilAlt } from "react-icons/fa"
-import { IoTrashSharp, IoSearch } from "react-icons/io5"
-import { show_alerta } from '../../assets/functions'
-import withReactContent from 'sweetalert2-react-content'
-import Swal from 'sweetalert2'
-import { alpha } from '@mui/material/styles'
-import { blue } from '@mui/material/colors'
-import Switch from '@mui/material/Switch'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
-import { Modal, Form } from 'react-bootstrap'
-import Pagination from '../../components/pagination/index'
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { emphasize, styled } from '@mui/material/styles';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Chip from '@mui/material/Chip';
+import HomeIcon from '@mui/icons-material/Home';
+import { GiHairStrands } from "react-icons/gi";
+import Button from '@mui/material/Button';
+import { BsPlusSquareFill } from "react-icons/bs";
+import { FaEye, FaPencilAlt } from "react-icons/fa";
+import { IoTrashSharp, IoSearch } from "react-icons/io5";
+import { show_alerta } from '../../assets/functions';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
+import { alpha } from '@mui/material/styles';
+import { blue } from '@mui/material/colors';
+import Switch from '@mui/material/Switch';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { Modal, Form } from 'react-bootstrap';
+import Pagination from '../../components/pagination/index';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -34,7 +32,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
         boxShadow: theme.shadows[1],
         backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.12),
     },
-}))
+}));
 
 const BlueSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
@@ -46,215 +44,220 @@ const BlueSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
         backgroundColor: blue[600],
     },
-}))
+}));
 
 const Products = () => {
-    const [columnsPerPage, setColumnsPerPage] = useState('')
-    const [operation, setOperation] = useState(1)
-    const [title, setTitle] = useState('')
-    const [viewData, setViewData] = useState({})
+    const [operation, setOperation] = useState(1);
+    const [title, setTitle] = useState('');
+    const [viewData, setViewData] = useState({});
     const [formData, setFormData] = useState({
         id: '',
         Product_Name: '',
-        
         Price: '',
         Category_Id: '',
         Image: '',
+        Stock: '',
         status: 'A',
-    })
-    const [imagePreviewUrl, setImagePreviewUrl] = useState('')
-    const [productData, setProductData] = useState([])
-    const [categories, setCategories] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    const [formErrors, setFormErrors] = useState({})
-    const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage] = useState(10)
-    const [searchTerm, setSearchTerm] = useState('')
-    const [showModal, setShowModal] = useState(false)
-    const [showDetailModal, setShowDetailModal] = useState(false)
+    });
+    const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+    const [productData, setProductData] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [formErrors, setFormErrors] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
 
     useEffect(() => {
-        fetchCategories()
-        fetchProductData()
-    }, [])
+        fetchCategories();
+        fetchProductData();
+    }, []);
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get('http://localhost:1056/api/categories')
-            setCategories(response.data)
+            const response = await axios.get('http://localhost:1056/api/categories');
+            setCategories(response.data);
         } catch (err) {
-            console.error('Error fetching categories:', err)
-            show_alerta('Error al cargar las categorías', 'error')
+            console.error('Error fetching categories:', err);
+            show_alerta('Error al cargar las categorías', 'error');
         }
-    }
+    };
 
     const fetchProductData = async () => {
         try {
-            setLoading(true)
-            const response = await axios.get('http://localhost:1056/api/products')
+            setLoading(true);
+            const response = await axios.get('http://localhost:1056/api/products');
             const productsWithParsedImage = response.data.map(product => ({
                 ...product,
                 Image: product.Image ? `data:image/jpeg;base64,${product.Image}` : null
-            }))
-            setProductData(productsWithParsedImage)
-            setLoading(false)
+            }));
+            setProductData(productsWithParsedImage);
+            setLoading(false);
         } catch (err) {
-            setError('Error al cargar los productos')
-            setLoading(false)
-            show_alerta('Error al cargar los productos', 'error')
+            setError('Error al cargar los productos');
+            setLoading(false);
+            show_alerta('Error al cargar los productos', 'error');
         }
-    }
+    };
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
-        })
-    }
+        });
+    };
 
-    const openModal = (op, id, Product_Name, Price, Category_Id, Image, status) => {
-        setOperation(op)
+    const openModal = (op, id, Product_Name, Price, Category_Id, Image, Stock, status) => {
+        setOperation(op);
         setFormData({
             id,
             Product_Name: Product_Name || '',
-            
             Price: Price || '',
             Category_Id: Category_Id || '',
             Image: null,
+            Stock: Stock || '',
             status: status || 'A',
-        })
-        setImagePreviewUrl(Image || '')
-        setFormErrors({})
-        setTitle(op === 1 ? 'Registrar Producto' : 'Editar Producto')
-        setShowModal(true)
-    }
+        });
+        setImagePreviewUrl(Image || '');
+        setFormErrors({});
+        setTitle(op === 1 ? 'Registrar Producto' : 'Editar Producto');
+        setShowModal(true);
+    };
 
     const handleClose = () => {
-        setShowModal(false)
-    }
+        setShowModal(false);
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         let updatedValue = value;
-    
+
         if (name === 'Price') {
             updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
         } else if (name === 'Product_Name') {
             updatedValue = value.trim();
         }
-    
+
         setFormData(prevData => ({
             ...prevData,
             [name]: updatedValue
         }));
-    }
-    
+    };
 
     const handleFileChange = (e) => {
-        const file = e.target.files[0]
-        setFormData({ ...formData, Image: file })
+        const file = e.target.files[0];
+        setFormData({ ...formData, Image: file });
 
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.onloadend = () => {
-            setImagePreviewUrl(reader.result)
-        }
-        reader.readAsDataURL(file)
-    }
+            setImagePreviewUrl(reader.result);
+        };
+        reader.readAsDataURL(file);
+    };
 
     const validateForm = () => {
-        const errors = {}
+        const errors = {};
 
         if (!formData.Product_Name || formData.Product_Name.trim() === '') {
-            errors.Product_Name = 'El nombre del producto es obligatorio'
+            errors.Product_Name = 'El nombre del producto es obligatorio';
         }
 
-   
-
         if (!formData.Price || isNaN(formData.Price) || parseFloat(formData.Price) <= 0) {
-            errors.Price = 'El precio debe ser un número mayor a cero'
+            errors.Price = 'El precio debe ser un número mayor a cero';
         }
 
         if (!formData.Category_Id || isNaN(formData.Category_Id)) {
-            errors.Category_Id = 'Debe seleccionar una categoría válida'
+            errors.Category_Id = 'Debe seleccionar una categoría válida';
         }
 
-        return errors
-    }
+        if (!formData.Stock || isNaN(formData.Stock) || parseInt(formData.Stock) < 0) {
+            errors.Stock = 'El stock debe ser un número no negativo';
+        }
+
+        return errors;
+    };
 
     const handleUpdate = async () => {
-        const errors = validateForm()
+        const errors = validateForm();
         if (Object.keys(errors).length > 0) {
-            setFormErrors(errors)
-            return
+            setFormErrors(errors);
+            return;
         }
 
-        const dataToSend = {
-            Product_Name: formData.Product_Name.trim(),
-           
-            Price: parseFloat(formData.Price),
-            Category_Id: parseInt(formData.Category_Id),
-            Product_Id: formData.id,
-            status: formData.status
+        const formDataToSend = new FormData();
+        formDataToSend.append('Product_Name', formData.Product_Name.trim());
+        formDataToSend.append('Price', parseFloat(formData.Price));
+        formDataToSend.append('Category_Id', parseInt(formData.Category_Id));
+        formDataToSend.append('Stock', parseInt(formData.Stock));
+        formDataToSend.append('status', formData.status);
+        
+        if (formData.Image instanceof File) {
+            formDataToSend.append('Image', formData.Image);
         }
 
         try {
-            const response = await axios.put(`http://localhost:1056/api/products/${dataToSend.Product_Id}`, dataToSend, {
+            const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`, formDataToSend, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'multipart/form-data'
                 }
-            })
+            });
 
             if (response.status === 200 || response.status === 204) {
-                handleClose()
-                fetchProductData()
-                show_alerta('Producto actualizado exitosamente', 'success')
+                handleClose();
+                fetchProductData();
+                show_alerta('Producto actualizado exitosamente', 'success');
             } else {
-                show_alerta('Hubo un problema al actualizar el producto', 'error')
+                show_alerta('Hubo un problema al actualizar el producto', 'error');
             }
         } catch (error) {
-            console.error('Error:', error)
-            show_alerta('Error al actualizar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error')
+            console.error('Error:', error);
+            show_alerta('Error al actualizar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
         }
-    }
+    };
 
     const handleSubmit = async () => {
-        const errors = validateForm()
+        const errors = validateForm();
         if (Object.keys(errors).length > 0) {
-            setFormErrors(errors)
-            return
+            setFormErrors(errors);
+            return;
         }
 
-        const dataToSend = {
-            Product_Name: formData.Product_Name.trim(),
-           
-            Price: parseFloat(formData.Price),
-            Category_Id: parseInt(formData.Category_Id),
-            status: formData.status
+        const formDataToSend = new FormData();
+        formDataToSend.append('Product_Name', formData.Product_Name.trim());
+        formDataToSend.append('Price', parseFloat(formData.Price));
+        formDataToSend.append('Category_Id', parseInt(formData.Category_Id));
+        formDataToSend.append('Stock', parseInt(formData.Stock));
+        formDataToSend.append('status', formData.status);
+        
+        if (formData.Image) {
+            formDataToSend.append('Image', formData.Image);
         }
 
         try {
-            const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
+            const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'multipart/form-data'
                 }
-            })
+            });
 
             if (response.status === 200 || response.status === 201) {
-                handleClose()
-                fetchProductData()
-                show_alerta('Producto agregado exitosamente', 'success')
+                handleClose();
+                fetchProductData();
+                show_alerta('Producto agregado exitosamente', 'success');
             } else {
-                show_alerta('Hubo un problema al agregar el producto', 'error')
+                show_alerta('Hubo un problema al agregar el producto', 'error');
             }
         } catch (error) {
-            console.error('Error:', error)
-            show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error')
+            console.error('Error:', error);
+            show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error');
         }
-    }
+    };
 
     const handleDelete = async (id, name) => {
-        const MySwal = withReactContent(Swal)
+        const MySwal = withReactContent(Swal);
         MySwal.fire({
             title: `¿Estás seguro que deseas eliminar el producto ${name}?`,
             icon: 'question',
@@ -265,56 +268,71 @@ const Products = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axios.delete(`http://localhost:1056/api/products/${id}`)
-                    fetchProductData()
-                    show_alerta('Producto eliminado exitosamente', 'success')
+                    await axios.delete(`http://localhost:1056/api/products/${id}`);
+                    fetchProductData();
+                    show_alerta('Producto eliminado exitosamente', 'success');
                 } catch (err) {
-                    console.error('Error deleting product:', err)
-                    show_alerta('Error al eliminar el producto', 'error')
+                    console.error('Error deleting product:', err);
+                    show_alerta('Error al eliminar el producto', 'error');
                 }
             } else {
-                show_alerta('El producto NO fue eliminado', 'info')
+                show_alerta('El producto NO fue eliminado', 'info');
             }
-        })
-    }
+        });
+    };
 
-    const handleSwitchChange = (id) => async (event) => {
-        const newStatus = event.target.checked ? 'A' : 'I'
+    const handleSwitchChange = useCallback(async (id, currentStatus) => {
+        const newStatus = currentStatus === 'A' ? 'I' : 'A';
         try {
-            await axios.put(`http://localhost:1056/api/products/${id}`, { status: newStatus })
-            fetchProductData()
-            show_alerta(`Estado del producto actualizado a ${newStatus === 'A' ? 'Activo' : 'Inactivo'}`, 'success')
+            const response = await axios.put(`http://localhost:1056/api/products/${id}`, 
+                { status: newStatus },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            if (response.status === 200 || response.status === 204) {
+                setProductData(prevData => 
+                    prevData.map(product => 
+                        product.id === id ? { ...product, status: newStatus } : product
+                    )
+                );
+                show_alerta(`Estado del producto actualizado a ${newStatus === 'A' ? 'Activo' : 'Inactivo'}`, 'success');
+            } else {
+                throw new Error('Respuesta inesperada del servidor');
+            }
         } catch (err) {
-            console.error('Error updating product status:', err)
-            show_alerta('Error al actualizar el estado del producto', 'error')
+            console.error('Error updating product status:', err);
+            show_alerta('Error al actualizar el estado del producto', 'error');
         }
-    }
+    }, []);
 
     const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber)
-    }
+        setCurrentPage(pageNumber);
+    };
 
     const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value)
-        setCurrentPage(1)
-    }
+        setSearchTerm(event.target.value);
+        setCurrentPage(1);
+    };
 
     const filteredItems = productData.filter((product) =>
         product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    );
 
-    const indexOfLastItem = currentPage * itemsPerPage
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem)
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
     const handleViewDetails = (product) => {
-        setViewData(product)
-        setShowDetailModal(true)
-    }
+        setViewData(product);
+        setShowDetailModal(true);
+    };
 
     const handleCloseDetail = () => {
-        setShowDetailModal(false)
-    }
+        setShowDetailModal(false);
+    };
 
     return (
         <div className="right-content w-100">
@@ -360,9 +378,9 @@ const Products = () => {
                                 <tr>
                                     <th>#</th>
                                     <th>Nombre</th>
-                                    
                                     <th>Precio</th>
                                     <th>Categoría</th>
+                                    <th>Stock</th>
                                     <th>Imagen</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
@@ -373,9 +391,9 @@ const Products = () => {
                                     <tr key={product.id}>
                                         <td>{indexOfFirstItem + i + 1}</td>
                                         <td>{product.Product_Name}</td>
-                                        
                                         <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
                                         <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'No disponible'}</td>
+                                        <td>{product.Stock}</td>
                                         <td>
                                             {product.Image && (
                                                 <img
@@ -394,10 +412,10 @@ const Products = () => {
                                             <div className='actions d-flex align-items-center'>
                                                 <BlueSwitch
                                                     checked={product.status === 'A'}
-                                                    onChange={handleSwitchChange(product.id)}
+                                                    onChange={() => handleSwitchChange(product.id, product.status)}
                                                 />
                                                 <Button color='primary' className='primary' onClick={() => handleViewDetails(product)}><FaEye /></Button>
-                                                <Button color="secondary" className='secondary' onClick={() => openModal(2, product.id, product.Product_Name,  product.Price, product.Category_Id, product.Image, product.status)}><FaPencilAlt /></Button>
+                                                <Button color="secondary" className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Price, product.Category_Id, product.Image, product.Stock, product.status)}><FaPencilAlt /></Button>
                                                 <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
                                             </div>
                                         </td>
@@ -439,7 +457,6 @@ const Products = () => {
                                 {formErrors.Product_Name}
                             </Form.Control.Feedback>
                         </Form.Group>
-                   
                         <Form.Group className="mb-3">
                             <Form.Label>Precio</Form.Label>
                             <Form.Control
@@ -469,6 +486,19 @@ const Products = () => {
                             </Form.Select>
                             <Form.Control.Feedback type="invalid">
                                 {formErrors.Category_Id}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Stock</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="Stock"
+                                value={formData.Stock}
+                                onChange={handleInputChange}
+                                isInvalid={!!formErrors.Stock}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {formErrors.Stock}
                             </Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -513,9 +543,9 @@ const Products = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <p><strong>Nombre:</strong> {viewData.Product_Name}</p>
-                    
                     <p><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</p>
                     <p><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'No disponible'}</p>
+                    <p><strong>Stock:</strong> {viewData.Stock}</p>
                     <p><strong>Estado:</strong> {viewData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
                     {viewData.Image && (
                         <div className="text-center mt-3">
@@ -528,7 +558,7 @@ const Products = () => {
                 </Modal.Footer>
             </Modal>
         </div>
-    )
-}
+    );
+};
 
-export default Products
+export default Products;
