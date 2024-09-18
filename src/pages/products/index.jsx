@@ -540,3 +540,150 @@ const Products = () => {
 };
 
 export default Products;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{/* <style>
+{`
+.modal-header-custom {
+    color: #000;
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+}
+
+.modal-body-custom {
+    padding: 15px;
+}
+
+.modal-footer-custom {
+    border-top: none;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-radius: 15px;
+}
+
+.input-custom {
+    border: 1px solid #ced4da;
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.img-preview {
+    max-width: 100%;
+    margin-top: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+`}
+</style> */}
+
+{/* <Modal show={showModal} onHide={handleClose} centered className="modal-custom">
+    <Modal.Header closeButton className="modal-header-custom">
+        <Modal.Title>{title}</Modal.Title>
+    </Modal.Header>
+    <Modal.Body className="modal-body-custom">
+        <Form>
+            <Form.Group className="mb-3">
+                <Form.Label>Nombre del Producto</Form.Label>
+                <Form.Control
+                    type="text"
+                    name="Product_Name"
+                    value={formData.Product_Name}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.Product_Name}
+                    className="input-custom"
+                    placeholder="Ingrese el nombre del producto"
+                />
+                <Form.Control.Feedback type="invalid">
+                    {formErrors.Product_Name}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <Form.Label>Precio</Form.Label>
+                <Form.Control
+                    type="number"
+                    name="Price"
+                    value={formData.Price}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.Price}
+                    className="input-custom"
+                    placeholder="Ingrese el precio"
+                />
+                <Form.Control.Feedback type="invalid">
+                    {formErrors.Price}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <Form.Label>Categoría</Form.Label>
+                <Form.Select
+                    name="Category_Id"
+                    value={formData.Category_Id}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.Category_Id}
+                    className="input-custom"
+                >
+                    <option value="">Seleccione una categoría</option>
+                    {categories.map(category => (
+                        <option key={category.id} value={category.id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                    {formErrors.Category_Id}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <Form.Label>Imagen</Form.Label>
+                <Form.Control
+                    type="file"
+                    onChange={handleFileChange}
+                />
+                {imagePreviewUrl && (
+                    <img src={imagePreviewUrl} alt="Preview" className="img-preview" />
+                )}
+            </Form.Group>
+        </Form>
+    </Modal.Body>
+    <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+            Cerrar
+        </Button>
+        <Button variant="primary" onClick={handleSubmit} className='btn-sucess'>
+            Guardar
+        </Button>
+    </Modal.Footer>
+</Modal> */}
