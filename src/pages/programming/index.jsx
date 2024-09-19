@@ -18,7 +18,8 @@ import { Modal, Form, Col, Row } from 'react-bootstrap';
 import Button from '@mui/material/Button';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
-import { show_alerta } from '../../assets/functions'
+import { show_alerta } from '../../assets/functions';
+import timeGridPlugin from '@fullcalendar/timegrid';
 
 
 
@@ -141,8 +142,28 @@ const Programming = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
+    const [selectedView, setSelectedView] = useState('dayGridMonth');
+    const [selectedEmployee, setSelectedEmployee] = useState('');
 
+    const getUserName = (users, userId) => {
+        const user = users.find(user => user.id === userId);
+        return user ? user.name : 'Desconocido';
+    };
 
+    const handleViewChange = (newView) => {
+        setSelectedView(newView);
+        if (calendarRef.current) {
+            calendarRef.current.getApi().changeView(newView);
+        }
+    };
+
+    const handleEmployeeChange = (event) => {
+        setSelectedEmployee(event.target.value);
+    };
+
+    const filteredEvents = selectedEmployee
+        ? events.filter(event => event.title === getUserName(users, parseInt(selectedEmployee)))
+        : events;
 
     const handleCloseDetailModal = () => setShowDetailModal(false);
 
@@ -222,14 +243,11 @@ const Programming = () => {
         }
     };
 
-    const getUserName = (users, userId) => {
-        const user = users.find(user => user.id === userId);
-        return user ? user.name : 'Desconocido';
-    };
+
 
     const FiltrarUsers = () => {
         return users.filter(user => user.roleId === 2);
-    }
+    };
 
     const EventComponent = ({ info }) => {
         const [isHovered, setIsHovered] = useState(false);
@@ -327,7 +345,6 @@ const Programming = () => {
     const handleEdit = (event) => {
         // Extraer los valores del evento
         const { id, extendedProps, start, end } = event;
-
 
         const startDate = start ? new Date(start) : new Date();
         //si viene vacio enddate se asignara un valor mayor por una hora a start si quiere se puede quitar
@@ -564,13 +581,41 @@ const Programming = () => {
                     </div>
                 </div>
                 <div className='card shadow border-0 p-3'>
+                    <div className='d-flex justify-content-between align-items-center mb-3'>
+                        <div>
+                            <Form.Select
+                                value={selectedView}
+                                onChange={(e) => handleViewChange(e.target.value)}
+                                style={{ width: 'auto', display: 'inline-block', marginRight: '10px' }}
+                            >
+                                <option value="dayGridMonth">Mes</option>
+                                <option value="timeGridWeek">Semana</option>
+                                <option value="timeGridDay">Día</option>
+                            </Form.Select>
+                            <Form.Select
+                                value={selectedEmployee}
+                                onChange={handleEmployeeChange}
+                                style={{ width: 'auto', display: 'inline-block' }}
+                            >
+                                <option value="">Todos los empleados</option>
+                                {FiltrarUsers().map(user => (
+                                    <option key={user.id} value={user.id}>{user.name}</option>
+                                ))}
+                            </Form.Select>
+                        </div>
+                    </div>
                     <div className='table-responsive mt-3'>
                         <FullCalendar
                             ref={calendarRef}
-                            initialView="dayGridMonth"
-                            events={events}
+                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                            initialView={selectedView}
+                            events={filteredEvents}
                             eventContent={(info) => <EventComponent info={info} />}
-                            plugins={[dayGridPlugin, interactionPlugin]}
+                            headerToolbar={{
+                                left: 'prev,next today',
+                                center: 'title',
+                                right: ''
+                            }}
                             dateClick={(info) => openModal(1, info.date)}
                         />
                     </div>
@@ -659,7 +704,6 @@ const Programming = () => {
                             </Col>
                         </Row>
                     </Form>
-
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
@@ -668,7 +712,6 @@ const Programming = () => {
                         onClick={() => validar()}>
                         Guardar
                     </Button>
-
                     <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
                         Cerrar
                     </Button>
