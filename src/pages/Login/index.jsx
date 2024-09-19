@@ -84,7 +84,11 @@ const Login = () => {
         // Aquí puedes agregar la lógica para autenticar con Google o simplemente redirigir
         navigate('/register');  // Cambia '/ruta-de-google' por la ruta que quieras
     };
-
+    const handleReestablish = () => {
+        // Aquí puedes agregar la lógica para autenticar con Google o simplemente redirigir
+        navigate('/forgotPassword');  // Cambia '/ruta-de-google' por la ruta que quieras
+    };
+    
     return (
         <>
             <img src={patern} className='loginPatern' />
@@ -134,9 +138,10 @@ const Login = () => {
                                 </Button>
                             </div>
                             <div className='form-group text-center p-4'>
-                                <Link to={'/forgot-password'} className='link'>
+                                <Link onClick={handleReestablish} className='link'>
                                     ¿Olvidaste la contraseña?
                                 </Link>
+                                
                                 <div className='d-flex align-items-center justify-content-center or mt-3 mb-3 '>
                                     <span className='line'></span>
                                     <span className='txt'>or</span>

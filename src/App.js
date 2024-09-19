@@ -23,6 +23,8 @@ import ViewShopping from './pages/shopping/viewShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/protected';
 
 
@@ -77,9 +79,11 @@ function App() {
           }
           <div className={`content ${isHideSidebarAndHeader == true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
             <Routes>
-             
+          
               <Route path="/login" exact={true} element={<Login />} />
               <Route path="/register" exact={true} element={<Register />} />
+              <Route path="/forgotPassword" exact={true} element={< ForgotPassword />} />
+              <Route path="/resetPassword" exact={true} element={<ResetPassword />} />
 
               <Route path="/" exact={true} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard" exact={true} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

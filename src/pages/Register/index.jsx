@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Logo from '../../assets/images/logo.png';
 import { MyContext } from '../../App';
@@ -130,6 +131,11 @@ const Register = () => {
         }
     };
 
+    const handleVolverLogin = () => {
+        // Aquí puedes agregar la lógica para autenticar con Google o simplemente redirigir
+        navigate('/login');  // Cambia '/ruta-de-google' por la ruta que quieras
+    };
+
     return (
         <>
             <img src={patern} className='loginPatern' />
@@ -226,6 +232,9 @@ const Register = () => {
                                     <FcGoogle />
                                     Registrar con Google
                                 </Button>
+                                <Link onClick={handleVolverLogin} className='link'>
+                                    Volver al login
+                                </Link>
                             </div>
                         </form>
                     </div>
