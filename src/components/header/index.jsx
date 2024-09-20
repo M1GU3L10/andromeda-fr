@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import logo from '../../assets/images/logo.png';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // useNavigate agregado para redirigir
 import Button from '@mui/material/Button';
 import { MdMenuOpen } from 'react-icons/md';
 import { MdOutlineMenu } from "react-icons/md";
@@ -20,16 +20,11 @@ import Logout from '@mui/icons-material/Logout';
 import Divider from '@mui/material/Divider';
 import { MyContext } from '../../App';
 
-
-
 const Header = () => {
     const [anchorEl, setAnchorEl] = useState(null);
-    const [openNotifications, setopenNotifications] = useState(false);
     const open = Boolean(anchorEl);
-    const [isLogin, setIsLogin] = useState(false)
-
-
     const context = useContext(MyContext);
+    const navigate = useNavigate();  // Hook para redirigir
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -38,11 +33,16 @@ const Header = () => {
         setAnchorEl(null);
     };
 
-    const handleOpenNotifications = () => {
-        setopenNotifications(true)
-    };
-    const handleCloseNotifications = () => {
-        setopenNotifications(false)
+    // Función para cerrar sesión
+    const handleLogout = () => {
+        // Elimina el token del almacenamiento local
+        localStorage.removeItem('jwtToken');
+        
+        // Actualiza el estado de login en el contexto
+        context.setIsLogin(false);
+
+        // Redirige al login
+        navigate('/login');
     };
 
     return (
@@ -54,9 +54,8 @@ const Header = () => {
                         <div className="col-sm-2 parte1">
                             <Link to={'/'} className='d-flex align-items-center logo'>
                                 <img src={logo}></img>
-                                <span className='ml-2'>Barberia orion</span>
+                                <span className='ml-2'>Barberia Orion</span>
                             </Link>
-
                         </div>
                         <div className="col-sm-3 d-flex align-items-center parte2">
                             <Button className='rounded-circle mr-3' onClick={() => {
@@ -83,7 +82,7 @@ const Header = () => {
                                         </span>
                                     </div>
                                     <div className='userInfo'>
-                                        <h5>Migue perez</h5>
+                                        <h5>Migue Perez</h5>
                                         <p className='mb-0'>
                                             Administrador
                                         </p>
@@ -110,20 +109,12 @@ const Header = () => {
                                         </ListItemIcon>
                                         Reset password
                                     </MenuItem>
-                                    {
-                                        isLogin !== true ?
-                                            <Link to="/login">
-                                                <MenuItem >
-                                                    <ListItemIcon>
-                                                        <Logout fontSize="small" />
-                                                    </ListItemIcon>
-                                                    <Link >
-                                                        Logout
-                                                    </Link>
-                                                </MenuItem>
-                                            </Link>
-                                            : <></>
-                                    }
+                                    <MenuItem onClick={handleLogout}>
+                                        <ListItemIcon>
+                                            <Logout fontSize="small" />
+                                        </ListItemIcon>
+                                        Logout
+                                    </MenuItem>
                                 </Menu>
                             </div>
                         </div>
