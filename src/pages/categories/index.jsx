@@ -441,8 +441,8 @@ const Categories = () => {
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
-                            <Form.Group>
-                                <Form.Label>Nombre</Form.Label>
+                            <Form.Group className='pb-2'>
+                                <Form.Label className='required'>Nombre</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="name"
@@ -456,8 +456,8 @@ const Categories = () => {
                                     {errors.name}
                                 </Form.Control.Feedback>
                             </Form.Group>
-                            <Form.Group>
-                                <Form.Label>Descripción</Form.Label>
+                            <Form.Group className='pb-2'>
+                                <Form.Label className='required'>Descripción</Form.Label>
                                 <Form.Control
                                     as="textarea" rows={2}
                                     name="description"

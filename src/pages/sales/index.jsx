@@ -215,8 +215,8 @@ const Sales = () => {
                         </div>
                     </div>
                 </div>
-                <Modal show={showDetailModal} >
-                    <Modal.Body>
+                <Modal show={showDetailModal}>
+                    <Modal.Body className='p-zero Modal-height'>
                         <PDFViewer className='Pdf-Modal'>
                             <DocumentPdf sale={detailData} />
                         </PDFViewer>

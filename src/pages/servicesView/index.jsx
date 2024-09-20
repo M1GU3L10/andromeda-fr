@@ -66,6 +66,7 @@ const Services = () => {
     const [errors, setErrors] = useState({
         name: '',
         price: '',
+        priceFormat: '',
         description: '',
         time: '',
     });
@@ -73,6 +74,7 @@ const Services = () => {
     const [touched, setTouched] = useState({
         name: false,
         price: false,
+        priceFormat: false,
         description: false,
         time: false,
     });
@@ -148,12 +150,14 @@ const Services = () => {
         setErrors({
             name: '',
             price: '',
+            priceFormat: '',
             description: '',
             time: '',
         });
         setTouched({
             name: false,
             price: false,
+            priceFormat: false,
             description: false,
             time: false,
         });
@@ -530,10 +534,10 @@ const Services = () => {
                                         placeholder="Precio"
                                         onChange={handleInputChange}
                                         onBlur={handleBlur}
-                                        isInvalid={touched.price && !!errors.price}
+                                        isInvalid={touched.price && !!errors.price && touched.priceFormat && !!errors.priceFormat}
                                     />
                                     <Form.Control.Feedback type="invalid">
-                                        {errors.price}
+                                        {errors.price || errors.priceFormat}
                                     </Form.Control.Feedback>
                                 </Col>
                                 <Col sm="6">
@@ -576,7 +580,7 @@ const Services = () => {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                            Cerrar                        
+                            Cerrar
                         </Button>
                         <Button variant="primary" onClick={validar} className='btn-sucess'>
                             Guardar
