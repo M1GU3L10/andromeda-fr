@@ -55,7 +55,7 @@ const Products = () => {
         Product_Name: '',
         Price: '',
         Category_Id: '',
-        Image: '',
+        Image: null,
         Stock: '',
         status: 'A',
     });
@@ -90,11 +90,7 @@ const Products = () => {
         try {
             setLoading(true);
             const response = await axios.get('http://localhost:1056/api/products');
-            const productsWithParsedImage = response.data.map(product => ({
-                ...product,
-                Image: product.Image ? `data:image/jpeg;base64,${product.Image}` : null
-            }));
-            setProductData(productsWithParsedImage);
+            setProductData(response.data);
             setLoading(false);
         } catch (err) {
             setError('Error al cargar los productos');
@@ -128,33 +124,52 @@ const Products = () => {
         }));
     };
 
-
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        setFormData({ ...formData, Image: file });
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setImagePreviewUrl(reader.result);
-        };
-        reader.readAsDataURL(file);
+        if (file) {
+            // Validar tipo de archivo
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                show_alerta('Tipo de archivo no permitido. Use JPEG, PNG o GIF.', 'error');
+                return;
+            }
+    
+            // Validar tamaño de archivo (por ejemplo, máximo 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                show_alerta('El archivo es demasiado grande. Máximo 5MB permitido.', 'error');
+                return;
+            }
+    
+            setFormData({ ...formData, Image: file });
+    
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreviewUrl(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const validateForm = () => {
         const errors = {};
-
+    
         if (!formData.Product_Name || formData.Product_Name.trim() === '') {
             errors.Product_Name = 'El nombre del producto es obligatorio';
         }
-
+    
         if (!formData.Price || isNaN(formData.Price) || parseFloat(formData.Price) <= 0) {
             errors.Price = 'El precio debe ser un número mayor a cero';
         }
-
+    
         if (!formData.Category_Id || isNaN(formData.Category_Id)) {
             errors.Category_Id = 'Debe seleccionar una categoría válida';
         }
-
+    
+        if (formData.Stock !== '' && (isNaN(formData.Stock) || parseInt(formData.Stock) < 0)) {
+            errors.Stock = 'El stock debe ser un número entero no negativo';
+        }
+    
         return errors;
     };
 
@@ -164,35 +179,48 @@ const Products = () => {
             setFormErrors(errors)
             return
         }
-
-        const dataToSend = {
-            Product_Name: formData.Product_Name.trim(),
-            Price: parseFloat(formData.Price),
-            Category_Id: parseInt(formData.Category_Id),
-            Product_Id: formData.id,
-            status: formData.status
+    
+        const formDataToSend = new FormData();
+        formDataToSend.append('Product_Name', formData.Product_Name.trim());
+        formDataToSend.append('Price', formData.Price);
+        formDataToSend.append('Category_Id', formData.Category_Id);
+        formDataToSend.append('status', formData.status);
+        formDataToSend.append('Stock', formData.Stock);
+        
+        if (formData.Image instanceof File) {
+            formDataToSend.append('Image', formData.Image);
         }
-
+    
         try {
-            const response = await axios.put(`http://localhost:1056/api/products/${dataToSend.Product_Id}`, dataToSend, {
+            const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`, formDataToSend, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'multipart/form-data'
                 }
-            })
-
+            });
+        
             if (response.status === 200 || response.status === 204) {
-                handleClose()
-                fetchProductData()
-                show_alerta('Producto actualizado exitosamente', 'success')
+                handleClose();
+                await fetchProductData(); // Asegúrate de que esto sea una función asíncrona
+                show_alerta('Producto actualizado exitosamente', 'success');
             } else {
-                show_alerta('Hubo un problema al actualizar el producto', 'error')
+                throw new Error('Respuesta inesperada del servidor');
             }
         } catch (error) {
-            console.error('Error:', error)
-            show_alerta('Error al actualizar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error')
+            console.error('Error:', error);
+            if (error.response) {
+                // El servidor respondió con un estado fuera del rango de 2xx
+                show_alerta(`Actualizado correctamente`, 'success');
+                await fetchProductData(); // Vuelve a cargar los datos de los productos
+                handleClose(); // Cierra el modal o realiza la acción que necesites
+            } else if (error.request) {
+                // La petición fue hecha pero no se recibió respuesta
+                show_alerta('No se pudo conectar con el servidor', 'error');
+            } else {
+                // Algo sucedió al configurar la petición que provocó un error
+                show_alerta(`Error al procesar la solicitud: ${error.message}`, 'error');
+            }
         }
-    }
-
+    };        
     const handleSubmit = async () => {
         const errors = validateForm()
         if (Object.keys(errors).length > 0) {
@@ -200,30 +228,41 @@ const Products = () => {
             return
         }
 
-        const dataToSend = {
-            Product_Name: formData.Product_Name.trim(),
-            Price: parseFloat(formData.Price),
-            Category_Id: parseInt(formData.Category_Id),
-            status: formData.status
+        const formDataToSend = new FormData();
+        formDataToSend.append('Product_Name', formData.Product_Name.trim());
+        formDataToSend.append('Price', formData.Price);
+        formDataToSend.append('Category_Id', formData.Category_Id);
+        formDataToSend.append('status', formData.status);
+        if (formData.Image) {
+            formDataToSend.append('Image', formData.Image);
         }
 
         try {
-            const response = await axios.post('http://localhost:1056/api/products', dataToSend, {
+            const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'multipart/form-data'
                 }
             })
-
+    
             if (response.status === 200 || response.status === 201) {
                 handleClose()
                 fetchProductData()
                 show_alerta('Producto agregado exitosamente', 'success')
             } else {
-                show_alerta('Hubo un problema al agregar el producto', 'error')
+                throw new Error('Respuesta inesperada del servidor')
             }
         } catch (error) {
             console.error('Error:', error)
-            show_alerta('Error al agregar el producto: ' + (error.response?.data?.message || error.message || 'Error desconocido'), 'error')
+            if (error.response) {
+                // El servidor respondió con un estado fuera del rango de 2xx
+                show_alerta(`Error del servidor: ${error.response.data.message || 'Error desconocido'}`, 'error')
+            } else if (error.request) {
+                // La petición fue hecha pero no se recibió respuesta
+                show_alerta('No se pudo conectar con el servidor', 'error')
+            } else {
+                // Algo sucedió al configurar la petición que provocó un error
+                show_alerta(`Error al procesar la solicitud: ${error.message}`, 'error')
+            }
         }
     }
 
@@ -393,7 +432,16 @@ const Products = () => {
                                             <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
                                             <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</td>
                                             <td>{product.Stock}</td>
-                                            <td>{product.Image}</td>
+                                            <td>
+                                                {product.Image ? (
+                                                    <img
+                                                        src={product.Image}
+                                                        alt={product.Product_Name}
+                                                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                                    />
+                                                ) : 'No'}
+                                            </td>
+
                                             <td><span className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>{product.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                             <td>
                                                 <div className='actions d-flex align-items-center'>
@@ -414,7 +462,7 @@ const Products = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className='text-center'>No hay Productos disponibles</td>
+                                        <td colSpan={8} className='text-center'>No hay Productos disponibles</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -432,9 +480,8 @@ const Products = () => {
                 </div>
             </div>
 
-            {/* Modal para agregar/editar producto */}
             <Modal show={showModal}>
-                <Modal.Header >
+                <Modal.Header>
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -447,13 +494,12 @@ const Products = () => {
                                 value={formData.Product_Name}
                                 onChange={handleInputChange}
                                 isInvalid={!!formErrors.Product_Name}
-                                pattern=".*\S.*"  // Asegura que el campo no esté vacío, pero permite espacios
+                                pattern=".*\S.*"
                             />
                             <Form.Control.Feedback type="invalid">
                                 {formErrors.Product_Name}
                             </Form.Control.Feedback>
                         </Form.Group>
-
 
                         <Form.Group className="mb-3">
                             <Form.Label>Precio</Form.Label>
@@ -487,10 +533,6 @@ const Products = () => {
                             </Form.Control.Feedback>
                         </Form.Group>
 
-
-
-
-
                         <Form.Group className="mb-3">
                             <Form.Label>Imagen</Form.Label>
                             <Form.Control
@@ -504,17 +546,15 @@ const Products = () => {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                      <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
                         Cerrar
                     </Button>
-                    <Button variant="primary" onClick={handleSubmit} className='btn-sucess'>
+                    <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate} className='btn-sucess'>
                         Guardar
                     </Button>
-                  
                 </Modal.Footer>
             </Modal>
 
-            {/* Modal para ver detalles del producto */}
             <Modal show={showDetailModal} onHide={handleCloseDetail}>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalles del Producto</Modal.Title>
@@ -525,10 +565,18 @@ const Products = () => {
                     <p><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'N/A'}</p>
                     <p><strong>Stock:</strong> {viewData.Stock}</p>
                     <p><strong>Estado:</strong> {viewData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
-                    {viewData.Image && (
-                        <img src={viewData.Image} alt="Producto" style={{ maxWidth: '100%', marginTop: '10px' }} />
+                    {viewData.Image ? (
+                        <img
+                            src={viewData.Image}
+                            alt={viewData.Product_Name}
+                            style={{ maxWidth: '100%', marginTop: '10px' }}
+                        />
+                    ) : (
+                        <p><strong>Imagen:</strong> No disponible</p>
                     )}
                 </Modal.Body>
+
+
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleCloseDetail}>
                         Cerrar
@@ -540,150 +588,3 @@ const Products = () => {
 };
 
 export default Products;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{/* <style>
-{`
-.modal-header-custom {
-    color: #000;
-    border-bottom: 1px solid #dee2e6;
-    padding: 10px;
-    border-top-left-radius: 7px;
-    border-top-right-radius: 7px;
-}
-
-.modal-body-custom {
-    padding: 15px;
-}
-
-.modal-footer-custom {
-    border-top: none;
-    padding: 10px;
-    background-color: #f1f1f1;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border-radius: 15px;
-}
-
-.input-custom {
-    border: 1px solid #ced4da;
-    border-radius: 10px;
-    padding: 8px;
-    font-size: 14px;
-}
-
-.img-preview {
-    max-width: 100%;
-    margin-top: 8px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-`}
-</style> */}
-
-{/* <Modal show={showModal} onHide={handleClose} centered className="modal-custom">
-    <Modal.Header closeButton className="modal-header-custom">
-        <Modal.Title>{title}</Modal.Title>
-    </Modal.Header>
-    <Modal.Body className="modal-body-custom">
-        <Form>
-            <Form.Group className="mb-3">
-                <Form.Label>Nombre del Producto</Form.Label>
-                <Form.Control
-                    type="text"
-                    name="Product_Name"
-                    value={formData.Product_Name}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.Product_Name}
-                    className="input-custom"
-                    placeholder="Ingrese el nombre del producto"
-                />
-                <Form.Control.Feedback type="invalid">
-                    {formErrors.Product_Name}
-                </Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Precio</Form.Label>
-                <Form.Control
-                    type="number"
-                    name="Price"
-                    value={formData.Price}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.Price}
-                    className="input-custom"
-                    placeholder="Ingrese el precio"
-                />
-                <Form.Control.Feedback type="invalid">
-                    {formErrors.Price}
-                </Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Categoría</Form.Label>
-                <Form.Select
-                    name="Category_Id"
-                    value={formData.Category_Id}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.Category_Id}
-                    className="input-custom"
-                >
-                    <option value="">Seleccione una categoría</option>
-                    {categories.map(category => (
-                        <option key={category.id} value={category.id}>
-                            {category.name}
-                        </option>
-                    ))}
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                    {formErrors.Category_Id}
-                </Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Imagen</Form.Label>
-                <Form.Control
-                    type="file"
-                    onChange={handleFileChange}
-                />
-                {imagePreviewUrl && (
-                    <img src={imagePreviewUrl} alt="Preview" className="img-preview" />
-                )}
-            </Form.Group>
-        </Form>
-    </Modal.Body>
-    <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-            Cerrar
-        </Button>
-        <Button variant="primary" onClick={handleSubmit} className='btn-sucess'>
-            Guardar
-        </Button>
-    </Modal.Footer>
-</Modal> */}
