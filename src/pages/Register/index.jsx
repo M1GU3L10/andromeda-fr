@@ -139,104 +139,103 @@ const Register = () => {
     return (
         <>
             <img src={patern} className='loginPatern' />
-            <section className="loginSection">
-                <div className="loginBox text-center">
-                    <div className='logo'>
-                        <img src={Logo} width="60px" alt="logo" />
-                        <h5 className='fw-bolder'>Registrar en Barberia Orion</h5>
+            <section className="loginSection SignUpSection p-0">
+                <div className="row w-100">
+                    <div className="col-md-8 d-flex align-items-center justify-content-center flex-column part1">
+                        <h1>Registrate con BARBERIA ORION y disfruta de nuestros servicios.</h1>
+                        <p>Estamos dedicados a ofrecer una amplia variedad de servicios de barbería y cuidado personal. Además, contamos con una selección de productos de alta calidad para atender las necesidades de nuestros clientes. Con un enfoque en la satisfacción y el bienestar de quienes nos visitan, nos destacamos por nuestro profesionalismo y compromiso con la excelencia en cada uno de sus servicios y productos ofrecidos.</p>
                     </div>
-                    <div className='wrapper mt-3 card border p-4'>
-                        <form onSubmit={handleRegister}>
-                            {/* Input para el nombre con ícono de usuario y validación */}
-                            <div className={`form-group mb-3 position-relative ${inputIndex === 0 && 'focus'}`}>
-                                <span className='icon'><FaUser /></span>
-                                <input
-                                    type="text"
-                                    className={`form-control ${nameError ? 'is-invalid' : ''}`}
-                                    placeholder='Enter your name'
-                                    value={name}
-                                    onChange={handleNameChange}
-                                    onFocus={() => focusInput(0)}
-                                    onBlur={() => setInputIndex(null)}
-                                    required
-                                />
-                                {nameError && <div className="invalid-feedback">{nameError}</div>}
+                    <div className="col-md-4 p-right p-0">
+                        <div className="loginBox text-center">
+                            <div className='logo'>
+                                <img src={Logo} width="60px" alt="logo" />
+                                <h5 className='fw-bolder'>Registrate en Barberia Orion</h5>
                             </div>
+                            <div className='wrapper mt-3 card border p-4'>
+                                <form onSubmit={handleRegister}>
+                                    {/* Input para el nombre con ícono de usuario y validación */}
+                                    <div className={`form-group mb-3 position-relative ${inputIndex === 0 && 'focus'}`}>
+                                        <span className='icon'><FaUser /></span>
+                                        <input
+                                            type="text"
+                                            className={`form-control ${nameError ? 'is-invalid' : ''}`}
+                                            placeholder='Enter your name'
+                                            value={name}
+                                            onChange={handleNameChange}
+                                            onFocus={() => focusInput(0)}
+                                            onBlur={() => setInputIndex(null)}
+                                            required
+                                        />
+                                        {nameError && <div className="invalid-feedback">{nameError}</div>}
+                                    </div>
 
-                            {/* Input para el correo con validación */}
-                            <div className={`form-group mb-3 position-relative ${inputIndex === 1 && 'focus'}`}>
-                                <span className='icon'><MdEmail /></span>
-                                <input
-                                    type="email"
-                                    className={`form-control ${emailError ? 'is-invalid' : ''}`}
-                                    placeholder='Enter your email'
-                                    value={email}
-                                    onChange={handleEmailChange}
-                                    onFocus={() => focusInput(1)}
-                                    onBlur={() => setInputIndex(null)}
-                                    required
-                                />
-                                {emailError && <div className="invalid-feedback">{emailError}</div>}
+                                    {/* Input para el correo con validación */}
+                                    <div className={`form-group mb-3 position-relative ${inputIndex === 1 && 'focus'}`}>
+                                        <span className='icon'><MdEmail /></span>
+                                        <input
+                                            type="email"
+                                            className={`form-control ${emailError ? 'is-invalid' : ''}`}
+                                            placeholder='Enter your email'
+                                            value={email}
+                                            onChange={handleEmailChange}
+                                            onFocus={() => focusInput(1)}
+                                            onBlur={() => setInputIndex(null)}
+                                            required
+                                        />
+                                        {emailError && <div className="invalid-feedback">{emailError}</div>}
+                                    </div>
+
+                                    {/* Input para el teléfono con ícono de teléfono y validación */}
+                                    <div className={`form-group mb-3 position-relative ${inputIndex === 2 && 'focus'}`}>
+                                        <span className='icon'><FaPhone /></span>
+                                        <input
+                                            type="text"
+                                            className={`form-control ${phoneError ? 'is-invalid' : ''}`}
+                                            placeholder='Enter your phone number'
+                                            value={phone}
+                                            onChange={handlePhoneChange}
+                                            onFocus={() => focusInput(2)}
+                                            onBlur={() => setInputIndex(null)}
+                                            required
+                                        />
+                                        {phoneError && <div className="invalid-feedback">{phoneError}</div>}
+                                    </div>
+
+                                    {/* Input para la contraseña */}
+                                    <div className={`form-group mb-3 position-relative ${inputIndex === 3 && 'focus'}`}>
+                                        <span className='icon'><RiLockPasswordFill /></span>
+                                        <input
+                                            type={isShowPassword ? 'text' : 'password'}
+                                            className={`form-control ${passwordError ? 'is-invalid' : ''}`}
+                                            placeholder='Enter your password'
+                                            value={password}
+                                            onChange={handlePasswordChange}
+                                            onFocus={() => focusInput(3)}
+                                            onBlur={() => setInputIndex(null)}
+                                            required
+                                        />
+                                        <span className='toggleShowPassword' onClick={() => setIsShowPassword(!isShowPassword)}>
+                                            {isShowPassword ? <IoMdEyeOff /> : <IoMdEye />}
+                                        </span>
+                                        {passwordError && <div className="invalid-feedback">{passwordError}</div>}
+                                    </div>
+
+                                    {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+
+                                    <div className='form-group'>
+                                        <Button type="submit" className='btn-submit btn-big btn-lg w-100'>
+                                            Registrar
+                                        </Button>
+                                    </div>
+                                    <span className='text-center d-block mt-4 mb-5'>
+                                        ¿Ya tienes cuenta?
+                                        <Link className='link color' onClick={handleRegister}>
+                                            Loguearme
+                                        </Link>
+                                    </span>
+                                </form>
                             </div>
-
-                            {/* Input para el teléfono con ícono de teléfono y validación */}
-                            <div className={`form-group mb-3 position-relative ${inputIndex === 2 && 'focus'}`}>
-                                <span className='icon'><FaPhone /></span>
-                                <input
-                                    type="text"
-                                    className={`form-control ${phoneError ? 'is-invalid' : ''}`}
-                                    placeholder='Enter your phone number'
-                                    value={phone}
-                                    onChange={handlePhoneChange}
-                                    onFocus={() => focusInput(2)}
-                                    onBlur={() => setInputIndex(null)}
-                                    required
-                                />
-                                {phoneError && <div className="invalid-feedback">{phoneError}</div>}
-                            </div>
-
-                            {/* Input para la contraseña */}
-                            <div className={`form-group mb-3 position-relative ${inputIndex === 3 && 'focus'}`}>
-                                <span className='icon'><RiLockPasswordFill /></span>
-                                <input
-                                    type={isShowPassword ? 'text' : 'password'}
-                                    className={`form-control ${passwordError ? 'is-invalid' : ''}`}
-                                    placeholder='Enter your password'
-                                    value={password}
-                                    onChange={handlePasswordChange}
-                                    onFocus={() => focusInput(3)}
-                                    onBlur={() => setInputIndex(null)}
-                                    required
-                                />
-                                <span className='toggleShowPassword' onClick={() => setIsShowPassword(!isShowPassword)}>
-                                    {isShowPassword ? <IoMdEyeOff /> : <IoMdEye />}
-                                </span>
-                                {passwordError && <div className="invalid-feedback">{passwordError}</div>}
-                            </div>
-
-                            {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-
-                            <div className='form-group'>
-                                <Button type="submit" className='btn-submit btn-big btn-lg w-100'>
-                                    Registrar
-                                </Button>
-                            </div>
-
-                            <div className='form-group text-center p-4'>
-                                <div className='d-flex align-items-center justify-content-center or mt-3 mb-3 '>
-                                    <span className='line'></span>
-                                    <span className='txt'>or</span>
-                                    <span className='line'></span>
-                                </div>
-                                <Button variant='outlined' className='w-100 btn-lg btn-big loginWithGoogle'>
-                                    <FcGoogle />
-                                    Registrar con Google
-                                </Button>
-                                <Link onClick={handleVolverLogin} className='link'>
-                                    Volver al login
-                                </Link>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </section>

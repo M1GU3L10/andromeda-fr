@@ -10,6 +10,8 @@ import { IoMdEye } from "react-icons/io";
 import { IoMdEyeOff } from "react-icons/io";
 import { Button, Link } from '@mui/material';
 import { FcGoogle } from "react-icons/fc";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
 
@@ -33,12 +35,10 @@ const Login = () => {
 
     const validateEmail = (value) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(value) ? '' : 'El correo electrónico no es válido';
     };
 
     const validatePassword = (value) => {
         const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-        return regex.test(value) ? '' : 'La contraseña debe tener al menos 8 caracteres, incluyendo letras y números';
     };
 
     const handleEmailChange = (e) => {
@@ -55,13 +55,6 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-
-        // Verifica los errores antes de enviar el formulario
-        if (emailError || passwordError) {
-            setErrorMessage('Corrija los errores antes de enviar.');
-            return;
-        }
-
         try {
             const response = await axios.post('http://localhost:1056/api/users/login', {
                 email,
@@ -74,13 +67,21 @@ const Login = () => {
             if (token) {
                 localStorage.setItem('jwtToken', token);  // Guarda el token en localStorage
                 navigate('/dashboard');  // Redirige al usuario a la raíz del proyecto
+                context.setIsHideSidebarAndHeader(false);
             }
         } catch (error) {
-            setErrorMessage('Correo o contraseña incorrectos.');  // Muestra un mensaje de error
+            toast.error('Correo o contraseña incorrectos.', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            }); 
         }
     };
-
-    const handleGoogleLogin = () => {
+    const handleRegister = () => {
         // Aquí puedes agregar la lógica para autenticar con Google o simplemente redirigir
         navigate('/register');  // Cambia '/ruta-de-google' por la ruta que quieras
     };
@@ -88,7 +89,7 @@ const Login = () => {
         // Aquí puedes agregar la lógica para autenticar con Google o simplemente redirigir
         navigate('/forgotPassword');  // Cambia '/ruta-de-google' por la ruta que quieras
     };
-    
+
     return (
         <>
             <img src={patern} className='loginPatern' />
@@ -110,9 +111,8 @@ const Login = () => {
                                     onChange={handleEmailChange}
                                     onFocus={() => focusInput(0)}
                                     onBlur={() => setInputIndex(null)}
-                                    required
                                 />
-                                {emailError && <div className="invalid-feedback">{emailError}</div>}
+                                {/* {emailError && <div className="invalid-feedback">{emailError}</div>} */}
                             </div>
                             <div className={`form-group mb-3 position-relative ${inputIndex === 1 && 'focus'}`}>
                                 <span className='icon'><RiLockPasswordFill /></span>
@@ -124,38 +124,31 @@ const Login = () => {
                                     onChange={handlePasswordChange}
                                     onFocus={() => focusInput(1)}
                                     onBlur={() => setInputIndex(null)}
-                                    required
                                 />
                                 <span className='toggleShowPassword' onClick={() => setIsShowPassword(!isShowPassword)}>
                                     {isShowPassword ? <IoMdEyeOff /> : <IoMdEye />}
                                 </span>
-                                {passwordError && <div className="invalid-feedback">{passwordError}</div>}
+                                {/* {passwordError && <div className="invalid-feedback">{passwordError}</div>} */}
                             </div>
-                            {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
                             <div className='form-group'>
                                 <Button type="submit" className='btn-submit btn-big btn-lg w-100'>
                                     Ingresar
                                 </Button>
                             </div>
-                            <div className='form-group text-center p-4'>
+                            <div className='form-group text-center mt-3 p-10'>
                                 <Link onClick={handleReestablish} className='link'>
                                     ¿Olvidaste la contraseña?
                                 </Link>
-                                
-                                <div className='d-flex align-items-center justify-content-center or mt-3 mb-3 '>
-                                    <span className='line'></span>
-                                    <span className='txt'>or</span>
-                                    <span className='line'></span>
-                                </div>
-                                <Button variant='outlined' className='w-100 btn-lg btn-big loginWithGoogle'>
-                                    <FcGoogle />
-                                    Ingresa con Google
-                                </Button>
-                                <Link onClick={handleGoogleLogin} className='link'>
-                                    Ir a registrarme
-                                </Link>
                             </div>
                         </form>
+                    </div>
+                    <div className='wrapper mt-3 card border footer p-3'>
+                        <span className='text-center'>
+                            ¿No estas registrado?
+                            <Link className='link color' onClick={handleRegister}>
+                                Registrarme
+                            </Link>
+                        </span>
                     </div>
                 </div>
             </section>

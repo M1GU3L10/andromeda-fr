@@ -41,6 +41,20 @@ const RegisterSales = () => {
         id_usuario: '',
     });
 
+    const [errors, setErrors] = useState({
+        Billnumber: '',
+        id_usuario: '',
+        description: '',
+        time: '',
+    });
+
+    const [touched, setTouched] = useState({
+        name: false,
+        price: false,
+        description: false,
+        time: false,
+    });
+
     useEffect(() => {
         getUsers();
         getProducts();
@@ -121,6 +135,18 @@ const RegisterSales = () => {
     const validateBillNumber = (billNumber) => {
         const regex = /^\d{6}$/;
         return regex.test(billNumber);
+    };
+
+    const handleValidation = (name, value) => {
+        let error = '';
+        switch (name) {
+            case 'BillNumber':
+                error = validateBillNumber(value);
+                break;
+            default:
+                break;
+        }
+        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
     };
 
     const handleSubmit = async (event) => {

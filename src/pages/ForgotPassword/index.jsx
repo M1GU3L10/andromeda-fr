@@ -8,6 +8,8 @@ import patern from '../../assets/images/pattern.webp';
 import { MdEmail } from "react-icons/md";
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const MySwal = withReactContent(Swal);
 
@@ -34,17 +36,26 @@ const ForgotPassword = () => {
             const response = await axios.post('http://localhost:1056/api/users/forgot-password', { email });
             setMessage(response.data.message);
             setError('');
-            MySwal.fire({
-                title: 'Correo enviado',
-                text: 'Revisa tu bandeja de entrada para restablecer tu contraseña.',
-                icon: 'success',
-                confirmButtonText: 'Ok'
-            }).then(() => {
-                navigate('/resetPassword');
+            toast.success('Revisa tu bandeja de entrada para restablecer tu contraseña.', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                onClose: () => navigate('/resetPassword')  // Navega a /resetPassword al cerrar la alerta
             });
         } catch (err) {
-            setError(err.response?.data?.message || 'Error al enviar el correo');
-            setMessage('');
+            toast.error('Error al enviar el correo.', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            }); 
         }
     };
 
@@ -74,8 +85,6 @@ const ForgotPassword = () => {
                                             onBlur={() => setInputIndex(null)}
                                             
                                         />
-                                        {message && <Alert severity="success">{message}</Alert>}
-                                        {error && <Alert severity="error">{error}</Alert>}
                                     </div>
                                     <div className='form-group'>
                                             <Button type="submit" variant="contained" className='btn-submit btn-big btn-lg w-100' >

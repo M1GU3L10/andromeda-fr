@@ -26,6 +26,9 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/protected';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 
 const MyContext = createContext();
@@ -35,10 +38,6 @@ function App() {
   const [themeMode, setThemeMode] = useState('true');
   const [isLogin, setIsLogin] = useState(false);
   const [isHideSidebarAndHeader, setIsHideSidebarAndHeader] = useState(false);
-
-
-
-
 
   useEffect(() => {
     if (themeMode === true) {
@@ -84,7 +83,6 @@ function App() {
               <Route path="/register" exact={true} element={<Register />} />
               <Route path="/forgotPassword" exact={true} element={< ForgotPassword />} />
               <Route path="/resetPassword" exact={true} element={<ResetPassword />} />
-
               <Route path="/" exact={true} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard" exact={true} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/categories" exact={true} element={<ProtectedRoute><Categories /></ProtectedRoute>} />
@@ -107,7 +105,7 @@ function App() {
             </Routes>
           </div>
         </div>
-
+        <ToastContainer />
       </MyContext.Provider>
     </BrowserRouter>
   );
