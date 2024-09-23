@@ -311,38 +311,77 @@ const Products = () => {
     const handleSwitchChange = async (productId, checked) => {
         const productToUpdate = productData.find(product => product.id === productId);
         const MySwal = withReactContent(Swal);
-        MySwal.fire({
+    
+        const result = await MySwal.fire({
             title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el producto "${productToUpdate.Product_Name}"?`,
             icon: 'question',
             text: 'Esta acción puede afectar la disponibilidad del producto.',
             showCancelButton: true,
             confirmButtonText: 'Sí, confirmar',
             cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const updatedProduct = {
-                    ...productToUpdate,
-                    status: checked ? 'A' : 'I'
-                };
-                try {
-                    const response = await axios.put(`http://localhost:1056/api/products/${productId}`, updatedProduct);
-                    if (response.status === 200) {
-                        setProductData(productData.map(product =>
-                            product.id === productId ? { ...product, status: updatedProduct.status } : product
-                        ));
-                        show_alerta('Estado del producto actualizado exitosamente', 'success');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    show_alerta('Error al actualizar el estado del producto: ' + (error.response?.data?.message || error.message), 'error');
-                }
-            } else {
-                setProductData(productData.map(product =>
-                    product.id === productId ? { ...product, status: !checked ? 'A' : 'I' } : product
-                ));
-                show_alerta('Estado del producto no cambiado', 'info');
-            }
         });
+    
+        if (result.isConfirmed) {
+            const newStatus = checked ? 'A' : 'I';
+            try {
+                MySwal.fire({
+                    title: 'Actualizando...',
+                    text: 'Por favor espere mientras se actualiza el estado del producto.',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        MySwal.showLoading();
+                    },
+                });
+    
+                console.log(`Intentando actualizar producto ${productId} a estado ${newStatus}`);
+                const response = await axios.put(`http://localhost:1056/api/products/${productId}/status`, { status: newStatus });
+                console.log('Respuesta del servidor:', response);
+    
+                if (response.status === 200) {
+                    setProductData(prevData =>
+                        prevData.map(product =>
+                            product.id === productId ? { ...product, status: newStatus } : product
+                        )
+                    );
+                    MySwal.fire({
+                        title: 'Éxito',
+                        text: 'Estado del producto actualizado exitosamente',
+                        icon: 'success',
+                    });
+                } else {
+                    throw new Error('Respuesta inesperada del servidor');
+                }
+            } catch (error) {
+                console.error('Error completo:', error);
+                if (error.response) {
+                    console.error('Detalles de la respuesta:', error.response);
+                    MySwal.fire({
+                        title: 'Error',
+                        text: `Error al actualizar el estado del producto: ${error.response.data.message || 'Error desconocido'}`,
+                        icon: 'error',
+                    });
+                } else if (error.request) {
+                    MySwal.fire({
+                        title: 'Error de conexión',
+                        text: 'No se pudo conectar con el servidor. Por favor, verifica tu conexión a internet e inténtalo de nuevo.',
+                        icon: 'error',
+                    });
+                } else {
+                    MySwal.fire({
+                        title: 'Error',
+                        text: `Error al procesar la solicitud: ${error.message}`,
+                        icon: 'error',
+                    });
+                }
+            }
+        } else {
+            MySwal.fire({
+                title: 'Cancelado',
+                text: 'Estado del producto no cambiado',
+                icon: 'info',
+            });
+        }
     };
 
     const handlePageChange = (pageNumber) => {
