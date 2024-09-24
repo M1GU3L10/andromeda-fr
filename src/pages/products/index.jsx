@@ -626,35 +626,4 @@ const Products = () => {
     );
 };
 
-<<<<<<< HEAD
 export default Products;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
-export default Products;
->>>>>>> dcfd651efda636d29137b9f42797d59d0040bc07

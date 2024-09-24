@@ -3,8 +3,6 @@ import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
-import { FaMoneyBillWave } from "react-icons/fa";
-import { BsCalendar2DateFill } from "react-icons/bs";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import axios from 'axios';
@@ -14,17 +12,15 @@ import MenuItem from '@mui/material/MenuItem';
 import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Modal, Form } from 'react-bootstrap';
+import { Modal, Form, Col, Row } from 'react-bootstrap';
 import Button from '@mui/material/Button';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
-import { show_alerta } from '../../assets/functions'
-import Col from 'react-bootstrap/Col';
-import Row from 'react-bootstrap/Row';
+import { show_alerta } from '../../assets/functions';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import { FaMoneyBillWave } from 'react-icons/fa';
+import { BsCalendar2DateFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
-
-
-
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800];
@@ -43,7 +39,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 });
 
-const EventComponent = ({ info }) => {
+const EventComponent = ({ info, setAppointmentId }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,8 +54,8 @@ const EventComponent = ({ info }) => {
         setIsMenuOpen(false); // Cerrar el menú
     };
 
-    const handleEdit = () => {
-        console.log("Editar evento:", info.event);
+    const handleEditClick = () => {
+        setAppointmentId(info.event.id);
         handleClose();
     };
 
@@ -72,8 +68,6 @@ const EventComponent = ({ info }) => {
         console.log("Eliminar evento:", info.event);
         handleClose();
     };
-
-    
 
     return (
         <div
@@ -91,7 +85,7 @@ const EventComponent = ({ info }) => {
             {!isHovered ? (
                 <span className='span-programming'>{info.event.title}</span>
             ) : (
-                <span className='span-programming'>{info.event.extendedProps.startTime}-{info.event.extendedProps.endTime}</span>
+                <span className='span-programming'>{info.event.extendedProps.Init_Time}-{info.event.extendedProps.Finish_Time}</span>
             )}
 
             {/* Menu component */}
@@ -109,11 +103,12 @@ const EventComponent = ({ info }) => {
                 }}
             >
 
-                <MenuItem className='Menu-programming-item' onClick={handleEdit}>
-                    <Button color='primary' className='primary'>
-                        <FaEye />
+                <MenuItem className='Menu-programming-item' onClick={handleEditClick}>
+                    <Button color="secondary" className='secondary'>
+                        <FaPencilAlt />
                     </Button>
                 </MenuItem>
+
                 <MenuItem className='Menu-programming-item' onClick={handleView}>
                     <Button color="secondary" className='secondary'>
                         <FaPencilAlt />
@@ -129,49 +124,66 @@ const EventComponent = ({ info }) => {
     );
 };
 
-const Programming = () => {
+const Appointment = () => {
     const urlUsers = 'http://localhost:1056/api/users';
-    const urlProgramming = 'http://localhost:1056/api/appointment';
+    const urlAppointment = 'http://localhost:1056/api/appointment';
+    const navigate = useNavigate();
     const calendarRef = useRef(null);
     const { isToggleSidebar } = useContext(MyContext);
+    const [appointmentId, setAppointmentId] = useState(null);
     const [events, setEvents] = useState([]);
     const [users, setUsers] = useState([]);
     const [programming, setProgramming] = useState([]);
     const [id, setId] = useState('');
-    const [startTime, setStartTime] = useState('');
-    const [endTime, setEndTime] = useState('');
-    const [day, setDay] = useState('');
-    const [total, setTotal] = useState('');
-    const [clienteId, setClienteId] = useState('');
-    const [userId, setUserId] = useState('');
+    const [Init_Time, setInit_Time] = useState('');
+    const [Finish_Time, setFinish_Time] = useState('');
+    const [Date, setDate] = useState('');
+    const [clienteid, setClienteid] = useState('');
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
-    const navigate = useNavigate();
+    const [selectedView, setSelectedView] = useState('dayGridMonth');
+    const [selectedEmployee, setSelectedEmployee] = useState('');
+    
 
+    const getUserName = (users, clienteId) => {
+        const user = users.find(user => user.id === clienteId);
+        return user ? user.name : 'Desconocido';
+    };
 
+    const handleViewChange = (newView) => {
+        setSelectedView(newView);
+        if (calendarRef.current) {
+            calendarRef.current.getApi().changeView(newView);
+        }
+    };
+
+    const handleEmployeeChange = (event) => {
+        setSelectedEmployee(event.target.value);
+    };
+
+    const filteredEvents = selectedEmployee
+        ? events.filter(event => event.title === getUserName(users, parseInt(selectedEmployee)))
+        : events;
 
     const handleCloseDetailModal = () => setShowDetailModal(false);
 
     const [errors, setErrors] = useState({
-        startTime: '',
-        endTime: '',
-        day: '',
-        total: '',
+        Init_Time: '',
+        Finish_Time: '',
+        Date: '',
         clienteId: '',
-        userId: '',
-
+        appointmentDetails: []
     });
 
     const [touched, setTouched] = useState({
-        startTime: false,
-        endTime: false,
-        day: false,
-        total: false,
+        Init_Time: false,
+        Finish_Time: false,
+        Date: false,
         clienteId: false,
-        userId: false,
+        appointmentDetails: false
     });
 
 
@@ -180,26 +192,32 @@ const Programming = () => {
             try {
                 const [userResponse, programmingResponse] = await Promise.all([
                     axios.get(urlUsers),
-                    axios.get(urlProgramming),
+                    axios.get(urlAppointment),
                 ]);
 
                 const usersData = userResponse.data;
                 const programmingData = programmingResponse.data;
 
                 setUsers(usersData);
-
+                
+            
                 const transformedEvents = programmingData.map(event => ({
                     id: event.id.toString(),
-                    title: `${getUserName(usersData, event.userId)}`,
-                    start: `${event.day}T${event.startTime}`,
-                    end: `${event.day}T${event.endTime}`,
+                    title: event.clienteId.toString(),
+                    start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
+                    end: `${event.Date.split('T')[0]}T${event.Finish_Time}`,
                     extendedProps: {
-                        total: event.total, // Corregido para minúsculas
                         status: event.status,
-                        startTime: event.startTime,
-                        endTime: event.endTime,
+                        Total: event.Total,
+                        Init_Time: event.Init_Time,
+                        Finish_Time: event.Finish_Time,
+                        Date: event.Date,
+                        tiempo_de_la_cita: event.tiempo_de_la_cita,
+                        DetailAppointments: event.DetailAppointments,
                     }
                 }));
+            
+                
 
                 setEvents(transformedEvents);
             } catch (error) {
@@ -218,47 +236,47 @@ const Programming = () => {
 
     const getProgramming = async () => {
         try {
-            const response = await axios.get(urlProgramming);
+            const response = await axios.get(urlAppointment);
             const programmingData = response.data;
+            if (!users.length) {
+                console.error('No users data available');
+                return;
+            }
+            
             const transformedEvents = programmingData.map(event => ({
                 id: event.id.toString(),
-                title: `${getUserName(users, event.userId)}`,
-                start: `${event.day}T${event.startTime}`,
-                end: `${event.day}T${event.endTime}`,
+                title: event.clienteId.toString(),
+                start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
+                end: `${event.Date.split('T')[0]}T${event.Finish_Time}`,
                 extendedProps: {
-                    total: event.total,
                     status: event.status,
-                    startTime: event.startTime,
-                    endTime: event.endTime,
+                    Total: event.Total,
+                    Init_Time: event.Init_Time,
+                    Finish_Time: event.Finish_Time,
+                    tiempo_de_la_cita: event.tiempo_de_la_cita,
+                    Date: event.Date,
+                    DetailAppointments: event.DetailAppointments,
                 }
             }));
+                     
             setEvents(transformedEvents);
         } catch (error) {
             console.error('Error fetching programming:', error);
         }
     };
+    
 
-  
-        const handleDateClick = (arg) => {
-            navigate('/appointmentRegister', { state: { date: arg.dateStr } });
-        };
-
-    const getUserName = (users, userId) => {
-        const user = users.find(user => user.id === userId);
-        return user ? user.name : 'Desconocido';
+    const handleDateClick = (arg) => {
+        navigate('/appointmentRegister', { state: { date: arg.dateStr } });
     };
 
 
 
-    const FiltrarClientes = () => {
-        return users.filter(user => user.roleId === 3);
-    }
-
     const FiltrarUsers = () => {
-        return users.filter(user => user.roleId === 2);
-    }
+        return users.filter(user => user.roleId === 3);
+    };
 
-    const EventComponent = ({ info }) => {
+    const EventComponent = ({ info, setAppointmentId }) => {
         const [isHovered, setIsHovered] = useState(false);
         const [anchorEl, setAnchorEl] = useState(null);
         const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -274,26 +292,64 @@ const Programming = () => {
         };
 
         const handleEditClick = () => {
-            handleEdit(info.event);
-            handleClose();
+            if (appointmentId !== null) {
+                navigate(`/appointmentUpdate/${appointmentId}`);
+            } else {
+                console.error('No appointment selected');
+            }
         };
+        
+        
+        //buscar el nmbre del id
 
-        const handleViewClick = () => {
+        const getServiceById = async (id) => {
+            // Suponiendo que tienes una API que devuelve un servicio por ID
+            const response = await axios.get(`http://localhost:1056/api/services/${id}`);
+            return response.data.name; 
+        };
+        
+        const getEmployeeById = async (id) => {
+            // Suponiendo que tienes una API que devuelve un empleado por ID
+            const response = await axios.get(`http://localhost:1056/api/users/${id}`);
+            return response.data.name;  // Devuelve el nombre del empleado
+        };
+        
+        
+        
+
+        //
+
+        const handleViewClick = async () => {
+            setAppointmentId(info.event.id);
+            const detailAppointment = info.event.extendedProps.DetailAppointments[0]; 
+            
+            const serviceName = await getServiceById(detailAppointment.serviceId);
+            const employeeName = await getEmployeeById(detailAppointment.empleadoId);
+            const userName = await getUserName(users, parseInt(info.event.title));
+
+            
+
             setDetailData({
-                title: info.event.title,
-                start: info.event.start,
-                end: info.event.end,
-                startTime: info.event.extendedProps.startTime,
-                endTime: info.event.extendedProps.endTime,
+                title: userName || 'Cliente Desconocido',
+                start: info.event.Init_Time,  // Usar la combinación de fecha y hora
+                end: info.event.Finish_Time,
+                Date:info.event.extendedProps.Date,
+                status:info.event.extendedProps.status,
+                Init_Time: info.event.extendedProps.Init_Time,
+                Finish_Time: info.event.extendedProps.Finish_Time,
+                tiempo_de_la_cita:info.event.extendedProps.tiempo_de_la_cita,
+                Total:info.event.extendedProps.Total,
+                serviceName: serviceName || 'N/A',  // Almacena el nombre del servicio
+                employeeName: employeeName || 'N/A' 
             });
             setShowDetailModal(true);
             handleClose();
         };
 
-        const handleDeleteClick = () => {
-            deleteProgramming(info.event.id, info.event.title);
-            handleClose();
-        };
+        // const handleDeleteClick = () => {
+        //     deleteProgramming(info.event.id, info.event.title);
+        //     handleClose();
+        // };
 
         return (
             <div
@@ -309,11 +365,9 @@ const Programming = () => {
                 onClick={handleClick}
             >
                 {!isHovered ? (
-                    <span className='span-programming'>{info.event.title}</span>
+                     <span className='span-programming'>{getUserName(users, parseInt(info.event.title))}</span>
                 ) : (
-                    <span className='span-programming'>
-                        {info.event.extendedProps.startTime.slice(0, 5)} - {info.event.extendedProps.endTime.slice(0, 5)}
-                    </span>
+                    <span className='span-programming'>{info.event.extendedProps.Init_Time}-{info.event.extendedProps.Finish_Time}</span>
 
                 )}
 
@@ -335,54 +389,65 @@ const Programming = () => {
                             <FaEye />
                         </Button>
                     </MenuItem>
-                    <MenuItem className='Menu-programming-item' onClick={handleEditClick}>
+                    <MenuItem className='Menu-programming-item' onClick={() => handleEditClick(appointmentId)}>
                         <Button color="secondary" className='secondary'>
                             <FaPencilAlt />
                         </Button>
                     </MenuItem>
-                    <MenuItem className='Menu-programming-item' onClick={handleDeleteClick}>
+
+
+                    {/* <MenuItem className='Menu-programming-item' onClick={handleDeleteClick}>
                         <Button color='error' className='delete'>
                             <IoTrashSharp />
                         </Button>
-                    </MenuItem>
+                    </MenuItem> */}
                 </Menu>
             </div>
         );
     };
 
 
-    const handleEdit = (event) => {
-        // Extraer los valores del evento
-        const { id, extendedProps, start, end } = event;
+    // const handleEdit = (event) => {
+    //     // Extraer los valores del evento
+    //     const { id, extendedProps, start, end } = event;
+
+    //     const startDate = start ? new Date(start) : new Date();
+    //     //si viene vacio enddate se asignara un valor mayor por una hora a start si quiere se puede quitar
+    //     const endDate = end ? new Date(end) : new Date(startDate.getTime() + 3600000);
+
+    //     const formatTime = (date) => {
+    //         return date.toTimeString().slice(0, 5);
+    //     };
+
+    //     const formatDate = (date) => {
+    //         return date.toISOString().split('T')[0];
+    //     };
+
+       
+    //     setId(id || '');
+    //     setInit_Time(formatTime(startDate));
+    //     setFinish_Time(formatTime(endDate));
+    //     setDate(formatDate(startDate));
+    //     setClienteid(clienteid);
 
 
-        const startDate = start ? new Date(start) : new Date();
-        //si viene vacio enddate se asignara un valor mayor por una hora a start si quiere se puede quitar
-        const endDate = end ? new Date(end) : new Date(startDate.getTime() + 3600000);
+    //     setTitle('Editar Programación');
+    //     setOperation(2);  // Indicar que es una operación de edición
 
-        const formatTime = (date) => {
-            return date.toTimeString().slice(0, 5);
-        };
+    //     setShowModal(true);
+    // };
 
-        const formatDate = (date) => {
-            return date.toISOString().split('T')[0];
-        };
+    // const openModal = (op, date = null, id = '', start = '', end = '', userid = '') => {
+    //     setId(id);
+    //     setInit_Time(start ? start.slice(0, 5) : '');
+    //     setFinish_Time(end ? end.slice(0, 5) : '');
+    //     setDate(date ? date.toISOString().split('T')[0] : '');
+    //     setClienteid(userid ? userid.toString() : '');
+    //     setOperation(op);
 
-        // Asigna los valores a los estados del formulario
-        setId(id || '');
-        setStartTime(formatTime(startDate));
-        setEndTime(formatTime(endDate));
-        setDay(formatDate(startDate));
-        setUserId(userId);
-
-
-        setTitle('Editar Programación');
-        setOperation(2);  // Indicar que es una operación de edición
-
-        setShowModal(true);
-    };
-
-    
+    //     setTitle(op === 1 ? 'Registrar Programación' : 'Editar Programación');
+    //     setShowModal(true);
+    // }
 
     const handleClose = () => setShowModal(false);
 
@@ -417,20 +482,6 @@ const Programming = () => {
         return '';
     };
 
-    const validateTotal = (value) => {
-        if (!value) {
-            return 'El total es requerido';
-        }
-        return '';
-    };
-
-    const validateClienteId = (value) => {
-        if (!value) {
-            return 'Debe seleccionar un cliente';
-        }
-        return '';
-    };
-
     const handleValidation = (name, value) => {
         let error = '';
         switch (name) {
@@ -438,16 +489,10 @@ const Programming = () => {
                 error = validateStartTime(value);
                 break;
             case 'endTime':
-                error = validateEndTime(value, startTime);
+                error = validateEndTime(value);
                 break;
             case 'day':
                 error = validateDate(value);
-                break;
-            case 'total':
-                error = validateTotal(value);
-                break;
-            case 'clienteId':
-                error = validateClienteId(value);
                 break;
             case 'userId':
                 error = validateUserId(value);
@@ -458,34 +503,27 @@ const Programming = () => {
         setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        handleValidation(name, value);
+    // const handleInputChange = (e) => {
+    //     const { name, value } = e.target;
+    //     handleValidation(name, value);
 
-        switch (name) {
-            case 'startTime':
-                setStartTime(value);
-                break;
-            case 'endTime':
-                setEndTime(value);
-                break;
-            case 'day':
-                setDay(value);
-                break;
-            case 'total':
-                setTotal(value);
-                break;
-            case 'clienteId':
-                setClienteId(value);
-                break;
-            case 'userid':
-                setUserId(value);
-                break;
-            default:
-                break;
-        }
-    };
-
+    //     switch (name) {
+    //         case 'startTime':
+    //             setStartTime(value);
+    //             break;
+    //         case 'endTime':
+    //             setEndTime(value);
+    //             break;
+    //         case 'date':
+    //             setDay(value);
+    //             break;
+    //         case 'userId':
+    //             setUserid(value)
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // };
 
     const handleBlur = (e) => {
         const { name } = e.target;
@@ -493,100 +531,87 @@ const Programming = () => {
         handleValidation(name, e.target.value);
     };
 
-    const validar = async () => {
+    // const validar = async () => {
 
-        if (errors.startTime || !startTime.trim()) {
-            show_alerta(errors.startTime || 'Por favor, Seleccione una hora de inicio.', 'warning');
-            return;
-        }
+    //     if (errors.startTime || !startTime.trim()) {
+    //         show_alerta(errors.startTime || 'Por favor, Seleccione una hora de inicio.', 'warning');
+    //         return;
+    //     }
 
-        if (errors.endTime || !endTime.trim()) {
-            show_alerta(errors.endTime || 'Por favor, Seleccione una hora de fin.', 'warning');
-            return;
-        }
+    //     if (errors.endTime || !endTime.trim()) {
+    //         show_alerta(errors.endTime || 'Por favor, Seleccione una hora de fin.', 'warning');
+    //         return;
+    //     }
 
-        if (errors.day || !day.trim()) {
-            show_alerta(errors.day || 'Por favor, Seleccione un dia.', 'warning');
-            return;
-        }
+    //     if (errors.day || !day.trim()) {
+    //         show_alerta(errors.day || 'Por favor, Seleccione un dia.', 'warning');
+    //         return;
+    //     }
 
-        if (errors.clienteId || !clienteId.trim()) {
-            show_alerta(errors.clienteId || 'Por favor, Seleccione un cliente.', 'warning');
-            return;
-        }
+    //     if (errors.userid || !userid.trim()) {
+    //         show_alerta(errors.userid || 'Por favor, Seleccione un usuario.', 'warning');
+    //         return;
+    //     }
 
-        if (errors.userId || !userId.trim()) {
-            show_alerta(errors.userId || 'Por favor, Seleccione un empleado.', 'warning');
-            return;
-        }
+    //     const isValidStartTime = !validateEndTime(startTime);
+    //     const isValidEndTime = !validateEndTime(endTime);
+    //     const isValidDate = !validateDate(day);
+    //     const isValidUser = !validateUserId(userid);
 
-        const isValidStartTime = !validateEndTime(startTime);
-        const isValidEndTime = !validateEndTime(endTime);
-        const isValidDate = !validateDate(day);
-        const isValidTotal = !validateTotal(total);
-        const isValidCliente = !validateClienteId(clienteId);
-        const isValidUser = !validateUserId(userId);
+    //     if (!isValidStartTime) show_alerta(errors.startTime, 'warning');
+    //     else if (!isValidEndTime) show_alerta(errors.endTime, 'warning');
+    //     else if (!isValidDate) show_alerta(errors.day, 'warning');
+    //     else if (!isValidUser) show_alerta(errors.userid, 'warning');
+    //     else {
+    //         const parametros = {
+    //             id: id,
+    //             startTime: `${startTime}:00`,
+    //             endTime: `${endTime}:00`,
+    //             day: day,
+    //             userId: userid,
+    //         };
 
-        if (!isValidStartTime) show_alerta(errors.startTime, 'warning');
-        else if (!isValidEndTime) show_alerta(errors.endTime, 'warning');
-        else if (!isValidDate) show_alerta(errors.day, 'warning');
-        else if (!isValidTotal) show_alerta(errors.total, 'warning');
-        else if (!isValidCliente) show_alerta(errors.clienteId, 'warning');
-        else if (!isValidUser) show_alerta(errors.userId, 'warning');
+    //         const isUpdate = operation === 2;
+    //         const metodo = isUpdate ? 'PUT' : 'POST';
+    //         enviarSolicitud(metodo, parametros);
+    //     }
+    // };
 
-        else {
-            const parametros = {
-                id: id,
-                Init_Time: `${startTime}:00`,    // Cambiado a Init_Time
-                Finish_Time: `${endTime}:00`,    // Cambiado a Finish_Time
-                Date: day,                       // Cambiado a Date
-                total: total,                    // Conservado igual
-                clienteId: clienteId,            // Conservado igual
-                userId: userId,          // Cambiado a empleadoId
-            };
+    // const enviarSolicitud = async (metodo, parametros) => {
+    //     const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${urlAppointment}/${parametros.id}` : urlAppointment;
+    //     try {
+    //         await axios({ method: metodo, url: urlWithId, data: parametros });
+    //         show_alerta('Operación exitosa', 'success');
+    //         if (metodo === 'PUT' || metodo === 'POST') {
+    //             document.getElementById('btnCerrar').click();
+    //         }
+    //         getProgramming();
+    //         console.log(parametros);
+    //     } catch (error) {
+    //         show_alerta('Error en la solicitud', 'error');
+    //         console.log(error);
+    //         console.log(parametros);
+    //     }
+    // };
 
-
-            const isUpdate = operation === 2;
-            const metodo = isUpdate ? 'PUT' : 'POST';
-            enviarSolicitud(metodo, parametros);
-        }
-    };
-
-    const enviarSolicitud = async (metodo, parametros) => {
-        const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${urlProgramming}/${parametros.id}` : urlProgramming;
-        try {
-            await axios({ method: metodo, url: urlWithId, data: parametros });
-            show_alerta('Operación exitosa', 'success');
-            if (metodo === 'PUT' || metodo === 'POST') {
-                document.getElementById('btnCerrar').click();
-            }
-            getProgramming();
-            console.log(parametros);
-        } catch (error) {
-            show_alerta('Error en la solicitud', 'error');
-            console.log(error);
-            console.log(parametros);
-        }
-    };
-
-    const deleteProgramming = async (id, userid) => {
-        const Myswal = withReactContent(Swal);
-        Myswal.fire({
-            title: 'Estas seguro que desea eliminar la programacion del empleado ' + userid + '?',
-            icon: 'question',
-            text: 'No se podrá dar marcha atras',
-            showCancelButton: true,
-            confirmButtonText: 'Si, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setId(id);
-                enviarSolicitud('DELETE', { id: id })
-            } else {
-                show_alerta('La programacion no fue eliminado', 'info')
-            }
-        })
-    }
+    // const deleteProgramming = async (id, userid) => {
+    //     const Myswal = withReactContent(Swal);
+    //     Myswal.fire({
+    //         title: 'Estas seguro que desea eliminar la programacion del empleado ' + userid + '?',
+    //         icon: 'question',
+    //         text: 'No se podrá dar marcha atras',
+    //         showCancelButton: true,
+    //         confirmButtonText: 'Si, eliminar',
+    //         cancelButtonText: 'Cancelar'
+    //     }).then((result) => {
+    //         if (result.isConfirmed) {
+    //             setId(id);
+    //             enviarSolicitud('DELETE', { id: id })
+    //         } else {
+    //             show_alerta('La programacion no fue eliminado', 'info')
+    //         }
+    //     })
+    // }
 
     return (
         <div className="right-content w-100">
@@ -597,7 +622,7 @@ const Programming = () => {
                     </div>
                     <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
                         <div role="presentation">
-                            <Breadcrumbs aria-label="breadcrumb">
+                        <Breadcrumbs aria-label="breadcrumb">
                                 <StyledBreadcrumb
                                     component="a"
                                     href="#"
@@ -621,30 +646,156 @@ const Programming = () => {
                     </div>
                 </div>
                 <div className='card shadow border-0 p-3'>
+                    <div className='d-flex justify-content-between align-items-center mb-3'>
+                        <div>
+                            <Form.Select
+                                value={selectedView}
+                                onChange={(e) => handleViewChange(e.target.value)}
+                                style={{ width: 'auto', display: 'inline-block', marginRight: '10px' }}
+                            >
+                                <option value="dayGridMonth">Mes</option>
+                                <option value="timeGridWeek">Semana</option>
+                                <option value="timeGridDay">Día</option>
+                            </Form.Select>
+                            <Form.Select
+                                value={selectedEmployee}
+                                onChange={handleEmployeeChange}
+                                style={{ width: 'auto', display: 'inline-block' }}
+                            >
+                                <option value="">Todos los clientes</option>
+                                {FiltrarUsers().map(user => (
+                                    <option key={user.id} value={user.id}>{user.name}</option>
+                                ))}
+                            </Form.Select>
+                        </div>
+                    </div>
                     <div className='table-responsive mt-3'>
-                    <FullCalendar
-                        initialView="dayGridMonth"
-                        events={events}
-                        eventContent={(info) => <EventComponent info={info} />}
-                        plugins={[dayGridPlugin, interactionPlugin]}
-                        dateClick={handleDateClick}  // Asigna el manejador de evento
-                    />
+                        <FullCalendar
+                            ref={calendarRef}
+                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                            initialView={selectedView}
+                            events={filteredEvents}
+                            eventContent={(info) => <EventComponent info={info} setAppointmentId={setAppointmentId} />}
+                            headerToolbar={{
+                                left: 'prev,next today',
+                                center: 'title',
+                                right: ''
+                            }}
+                            dateClick={handleDateClick}
+                        />
                     </div>
                 </div>
             </div>
-            
-            <Modal show={showDetailModal} onHide={handleCloseDetailModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Detalles de la Programación</Modal.Title>
+            {/* <Modal show={showModal} onHide={handleClose}>
+                <Modal.Header>
+                    <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <p><strong>Empleado:</strong> {detailData.userId ? `Empleado ID: ${detailData.empleadoId}` : 'N/A'}</p>
-                    <p><strong>Cliente:</strong> {detailData.clienteId ? `Cliente ID: ${detailData.clienteId}` : 'N/A'}</p>
-                    <p><strong>Fecha:</strong> {detailData.Date ? new Date(detailData.Date).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>Hora de inicio:</strong> {detailData.Init_Time ? detailData.Init_Time : 'N/A'}</p>
-                    <p><strong>Hora de fin:</strong> {detailData.Finish_Time ? detailData.Finish_Time : 'N/A'}</p>
-                    <p><strong>Total:</strong> {detailData.Total ? detailData.Total : 'N/A'}</p>
-                    <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+                    <Form>
+                        <Row className="mb-3">
+                            <Col sm="6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label className='required'>Hora de inicio</Form.Label>
+                                    <Form.Control
+                                        type="time"
+                                        id="startTime"
+                                        name="startTime"
+                                        placeholder="Inicio"
+                                        value={startTime}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!errors.startTime}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.startTime}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                            <Col sm="6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label className='required'>Hora de fin</Form.Label>
+                                    <Form.Control
+                                        type="time"
+                                        id="endTime"
+                                        name="endTime"
+                                        placeholder="Fin"
+                                        value={endTime}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!errors.endTime}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.endTime}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        <Row className="mb-3">
+                            <Col sm="6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label className='required'>Día</Form.Label>
+                                    <Form.Control
+                                        type="date"
+                                        id="date"
+                                        name="date"
+                                        placeholder="Fecha"
+                                        value={day}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!errors.date}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.date}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                            <Col sm="6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label className='required'>Usuario</Form.Label>
+                                    <Form.Select
+                                        id='userId'
+                                        name="userId"
+                                        value={userid}
+                                        onChange={handleInputChange}
+                                        isInvalid={!!errors.userid}
+                                    >
+                                        <option value="">Seleccionar usuario</option>
+                                        {FiltrarUsers().map(user => (
+                                            <option key={user.id} value={user.id}>{user.name}</option>
+                                        ))}
+                                    </Form.Select>
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.userid}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        variant="primary"
+                        className='btn-sucess'
+                        onClick={() => validar()}>
+                        Guardar
+                    </Button>
+                    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>  */}
+            <Modal show={showDetailModal} onHide={handleCloseDetailModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Detalles de la cita</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p><strong>Cliente:</strong> {detailData.title}</p>
+                    <p><strong>Fecha:</strong> {detailData.Date}</p>
+                    <p><strong>Hora de inicio:</strong> {detailData.Init_Time}</p>
+                    <p><strong>Hora de fin:</strong> {detailData.Finish_Time}</p>
+                    <p><strong>Servicio:</strong> {detailData.serviceName}</p> 
+                    <p><strong>Empleado:</strong> {detailData.employeeName}</p> 
+                    <p><strong>Tiempo de la cita:</strong> {detailData.tiempo_de_la_cita}</p>
+                    <p><strong>Total:</strong> {detailData.Total}</p>
+                    <p><strong>Estado:</strong> {detailData.status}</p>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetailModal}>Cerrar</Button>
@@ -654,4 +805,4 @@ const Programming = () => {
     );
 };
 
-export default Programming;
+export default Appointment;

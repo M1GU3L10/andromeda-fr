@@ -21,6 +21,7 @@ import RegisterSales from './pages/sales/registerSales';
 import RegisterShopping from './pages/shopping/registerShopping';
 import ViewShopping from './pages/shopping/viewShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
+import UpdateAppointment from './pages/appointment/updateAppointment';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -88,6 +89,7 @@ function App() {
               <Route path="/categories" exact={true} element={<ProtectedRoute><Categories /></ProtectedRoute>} />
               <Route path="/appointment" exact={true} element={<ProtectedRoute><Appointment /></ProtectedRoute>} />
               <Route path="/appointmentRegister" exact={true} element={<ProtectedRoute><RegisterAppointment /></ProtectedRoute>} />
+              <Route path="/appointmentUpdate" exact={true} element={<ProtectedRoute><UpdateAppointment /></ProtectedRoute>} />
               <Route path="/orders" exact={true} element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/products" exact={true} element={<ProtectedRoute><Products /></ProtectedRoute>} />
               <Route path="/programming" exact={true} element={<ProtectedRoute><Programming /></ProtectedRoute>} />
