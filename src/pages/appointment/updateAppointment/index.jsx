@@ -253,7 +253,25 @@ const UpdateAppointment = () => {
                                             ))}
                                         </tbody>
                                     </table>
-                                    <Button onClick={handleServiceAdd} className='primary'><FaPlus /> Agregar Servicio</Button>
+                                    <div className="d-flex justify-content-start mt-4 mb-3 px-3">
+                                        <Button 
+                                            onClick={handleServiceAdd}
+                                            style={{
+                                                backgroundColor: '#198754', // Color de fondo verde
+                                                color: 'white',           // Color del texto (icono) blanco
+                                                margin: '5px',           // Márgenes alrededor del botón
+                                                border: '2px solid #198754', // Borde negro de 2px
+                                                borderRadius: '5px',     // Bordes redondeados
+                                                padding: '10px',          // Relleno interno
+                                                display: 'flex',          // Para alinear el icono centrado
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <FaPlus />
+                                        </Button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -348,8 +366,18 @@ const UpdateAppointment = () => {
                                                     </Form.Select>
                                                 </Col>
                                             </Form.Group>
-                                            <div className="btn-save">
-                                                <Button type='submit'>{appointmentId ? 'Actualizar Cita' : 'Registrar Cita'}</Button>
+                                            <div className="btn-save d-flex justify-content-end">
+                                                <Button type='submit' style={{
+                                            backgroundColor: '#198754', // Color de fondo verde
+                                            color: 'white',           // Color del texto (icono) blanco
+                                            margin: '5px',           // Márgenes alrededor del botón
+                                            border: '2px solid #198754', // Borde negro de 2px
+                                            borderRadius: '5px',     // Bordes redondeados
+                                            padding: '5px',          // Relleno interno
+                                            display: 'flex',          // Para alinear el icono centrado
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>{appointmentId ? 'Actualizar' : 'Registrar Cita'}</Button>
                                             </div>
                                         </Form>
                                     </div>

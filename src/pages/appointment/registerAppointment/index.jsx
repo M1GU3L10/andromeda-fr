@@ -12,7 +12,7 @@ import { Form } from 'react-bootstrap';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import { IoTrashSharp } from "react-icons/io5";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus } from 'react-icons/fa';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light'
@@ -101,8 +101,8 @@ const RegisterAppointment = () => {
         e.preventDefault();
         try {
             const appointmentData = {
-                Init_Time: formData.Init_Time + ':00', // Ensure seconds are included
-                Finish_Time: formData.Finish_Time + ':00', // Ensure seconds are included
+                Init_Time: formData.Init_Time + ':00',
+                Finish_Time: formData.Finish_Time + ':00',
                 Date: formData.Date,
                 status: 'pendiente',
                 clienteId: parseInt(formData.clienteId, 10),
@@ -112,7 +112,6 @@ const RegisterAppointment = () => {
                 }))
             };
 
-            // Log the data being sent
             console.log('Data being sent:', JSON.stringify(appointmentData, null, 2));
 
             const response = await axios.post(urlAppointments, appointmentData);
@@ -128,23 +127,20 @@ const RegisterAppointment = () => {
         } catch (error) {
             console.error("Error registering appointment:", error);
             if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
                 console.error("Error data:", error.response.data);
                 console.error("Error status:", error.response.status);
                 console.error("Error headers:", error.response.headers);
                 alert(`Error al registrar la cita. ${error.response.data.message || 'Por favor, inténtalo de nuevo.'}`);
             } else if (error.request) {
-                // The request was made but no response was received
                 console.error("Error request:", error.request);
                 alert("No se recibió respuesta del servidor. Por favor, inténtalo de nuevo más tarde.");
             } else {
-                // Something happened in setting up the request that triggered an Error
                 console.error('Error message:', error.message);
                 alert("Error al procesar la solicitud. Por favor, inténtalo de nuevo.");
             }
         }
     };
+
     return (
         <div className="right-content w-100">
             <div className="row d-flex align-items-center w-100">
@@ -175,7 +171,8 @@ const RegisterAppointment = () => {
                         </div>
                     </div>
                 </div>
-                <div className='card border-0 p-3 d-flex colorTransparent'>
+
+                <div className='card border-0 p-3 d-flex colorTransparent mt-3'>
                     <div className='row'>
                         <div className='col-sm-7'>
                             <div className='card-detail shadow border-0'>
@@ -192,8 +189,9 @@ const RegisterAppointment = () => {
                                         </div>
                                     </div>
                                 </div>
+
                                 <div className='table-responsive mt-3 w-80'>
-                                    <table className='table table-bordered table-hover v-align table-striped '>
+                                    <table className='table table-bordered table-hover v-align table-striped'>
                                         <thead className='table-light'>
                                             <tr>
                                                 <th>Servicio</th>
@@ -235,13 +233,33 @@ const RegisterAppointment = () => {
                                             ))}
                                         </tbody>
                                     </table>
-                                    <Button onClick={handleServiceAdd} className='primary'><FaPlus /> Agregar Servicio</Button>
+
+                                    <div className="d-flex justify-content-start mt-4 mb-3 px-3">
+                                    <Button 
+                                        onClick={handleServiceAdd}
+                                        style={{
+                                            backgroundColor: '#198754', // Color de fondo verde
+                                            color: 'white',           // Color del texto (icono) blanco
+                                            margin: '5px',           // Márgenes alrededor del botón
+                                            border: '2px solid #198754', // Borde negro de 2px
+                                            borderRadius: '5px',     // Bordes redondeados
+                                            padding: '10px',          // Relleno interno
+                                            display: 'flex',          // Para alinear el icono centrado
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
+                                        <FaPlus />
+                                    </Button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                         <div className='col-sm-5'>
                             <div className='card-detail shadow border-0'>
-                                <div className="cont-title w-100">
+                                <div className="cont-title w-100 p-3">
                                     <span className='Title'>Info de cita</span>
                                 </div>
                                 <div className='d-flex align-items-center'>
@@ -267,6 +285,7 @@ const RegisterAppointment = () => {
                                                     />
                                                 </Col>
                                             </Form.Group>
+
                                             <Form.Group as={Row} className="mb-3">
                                                 <Form.Label>Fecha</Form.Label>
                                                 <Col sm="12">
@@ -278,6 +297,7 @@ const RegisterAppointment = () => {
                                                     />
                                                 </Col>
                                             </Form.Group>
+
                                             <Form.Group as={Row} className="mb-3">
                                                 <Form.Label>Cliente</Form.Label>
                                                 <Col sm="12">
@@ -293,8 +313,19 @@ const RegisterAppointment = () => {
                                                     </Form.Select>
                                                 </Col>
                                             </Form.Group>
-                                            <div className="btn-save">
-                                                <Button type='submit'>Registrar Cita</Button>
+
+                                            <div className="btn-save d-flex justify-content-end">
+                                                <Button type='submit' className='btn btn-success' style={{
+                                            backgroundColor: '#198754', // Color de fondo verde
+                                            color: 'white',           // Color del texto (icono) blanco
+                                            margin: '5px',           // Márgenes alrededor del botón
+                                            border: '2px solid #198754', // Borde negro de 2px
+                                            borderRadius: '5px',     // Bordes redondeados
+                                            padding: '5px',          // Relleno interno
+                                            display: 'flex',          // Para alinear el icono centrado
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>Registrar</Button>
                                             </div>
                                         </Form>
                                     </div>
