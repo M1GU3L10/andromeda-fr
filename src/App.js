@@ -89,7 +89,7 @@ function App() {
               <Route path="/categories" exact={true} element={<ProtectedRoute><Categories /></ProtectedRoute>} />
               <Route path="/appointment" exact={true} element={<ProtectedRoute><Appointment /></ProtectedRoute>} />
               <Route path="/appointmentRegister" exact={true} element={<ProtectedRoute><RegisterAppointment /></ProtectedRoute>} />
-              <Route path="/appointmentUpdate" exact={true} element={<ProtectedRoute><UpdateAppointment /></ProtectedRoute>} />
+              <Route path="/appointmentUpdate/:appointmentId" element={<ProtectedRoute><UpdateAppointment /></ProtectedRoute>} />
               <Route path="/orders" exact={true} element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/products" exact={true} element={<ProtectedRoute><Products /></ProtectedRoute>} />
               <Route path="/programming" exact={true} element={<ProtectedRoute><Programming /></ProtectedRoute>} />

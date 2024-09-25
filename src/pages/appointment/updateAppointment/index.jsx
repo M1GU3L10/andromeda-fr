@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
@@ -34,6 +35,8 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const UpdateAppointment = () => {
+    const { appointmentId } = useParams();
+    const navigate = useNavigate();
     const urlAppointments = 'http://localhost:1056/api/appointment';
     const urlUsers = 'http://localhost:1056/api/users';
     const urlServices = 'http://localhost:1056/api/services';
@@ -44,6 +47,9 @@ const UpdateAppointment = () => {
         Init_Time: '',
         Finish_Time: '',
         Date: '',
+        Total: '',
+        tiempo_de_la_cita: '',
+        status: '',
         clienteId: '',
         appointmentDetails: []
     });
@@ -51,7 +57,33 @@ const UpdateAppointment = () => {
     useEffect(() => {
         getUsers();
         getServices();
-    }, []);
+        if (appointmentId) {
+            getAppointmentData();
+        }
+    }, [appointmentId]);
+
+    const getAppointmentData = async () => {
+        try {
+            const response = await axios.get(`${urlAppointments}/${appointmentId}`);
+            const appointment = response.data;
+            setFormData({
+                Init_Time: appointment.Init_Time.slice(0, 5),
+                Finish_Time: appointment.Finish_Time.slice(0, 5),
+                Date: appointment.Date,
+                Total: appointment.Total,
+                tiempo_de_la_cita: appointment.tiempo_de_la_cita,
+                status: appointment.status,
+                clienteId: appointment.clienteId.toString(),
+                appointmentDetails: appointment.DetailAppointments.map(detail => ({
+                    serviceId: detail.serviceId.toString(),
+                    empleadoId: detail.empleadoId.toString()
+                }))
+            });
+        } catch (error) {
+            console.error("Error fetching appointment data:", error);
+            alert("Error al cargar los datos de la cita.");
+        }
+    };
 
     const getUsers = async () => {
         try {
@@ -93,7 +125,7 @@ const UpdateAppointment = () => {
 
     const handleDetailChange = (index, field, value) => {
         const newDetails = [...formData.appointmentDetails];
-        newDetails[index][field] = parseInt(value, 10);
+        newDetails[index][field] = value;
         setFormData({ ...formData, appointmentDetails: newDetails });
     };
 
@@ -101,10 +133,12 @@ const UpdateAppointment = () => {
         e.preventDefault();
         try {
             const appointmentData = {
-                Init_Time: formData.Init_Time + ':00', // Ensure seconds are included
-                Finish_Time: formData.Finish_Time + ':00', // Ensure seconds are included
+                Init_Time: formData.Init_Time + ':00',
+                Finish_Time: formData.Finish_Time + ':00',
                 Date: formData.Date,
-                status: 'pendiente',
+                Total: formData.Total,
+                tiempo_de_la_cita: formData.tiempo_de_la_cita,
+                status: formData.status,
                 clienteId: parseInt(formData.clienteId, 10),
                 appointmentDetails: formData.appointmentDetails.map(detail => ({
                     serviceId: parseInt(detail.serviceId, 10),
@@ -112,45 +146,29 @@ const UpdateAppointment = () => {
                 }))
             };
 
-            // Log the data being sent
-            console.log('Data being sent:', JSON.stringify(appointmentData, null, 2));
-
-            const response = await axios.post(urlAppointments, appointmentData);
-            console.log("Appointment registered:", response.data);
-            alert("Cita registrada exitosamente.");
-            setFormData({
-                Init_Time: '',
-                Finish_Time: '',
-                Date: '',
-                clienteId: '',
-                appointmentDetails: []
-            });
-        } catch (error) {
-            console.error("Error registering appointment:", error);
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                console.error("Error data:", error.response.data);
-                console.error("Error status:", error.response.status);
-                console.error("Error headers:", error.response.headers);
-                alert(`Error al registrar la cita. ${error.response.data.message || 'Por favor, inténtalo de nuevo.'}`);
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.error("Error request:", error.request);
-                alert("No se recibió respuesta del servidor. Por favor, inténtalo de nuevo más tarde.");
+            let response;
+            if (appointmentId) {
+                response = await axios.put(`${urlAppointments}/${appointmentId}`, appointmentData);
+                alert("Cita actualizada exitosamente.");
             } else {
-                // Something happened in setting up the request that triggered an Error
-                console.error('Error message:', error.message);
-                alert("Error al procesar la solicitud. Por favor, inténtalo de nuevo.");
+                response = await axios.post(urlAppointments, appointmentData);
+                alert("Cita registrada exitosamente.");
             }
+
+            console.log("Appointment response:", response.data);
+            navigate('/appointments'); // Asumiendo que tienes una ruta para ver todas las citas
+        } catch (error) {
+            console.error("Error processing appointment:", error);
+            alert(`Error al procesar la cita. ${error.response?.data?.message || 'Por favor, inténtalo de nuevo.'}`);
         }
     };
+
     return (
         <div className="right-content w-100">
             <div className="row d-flex align-items-center w-100">
                 <div className="spacing d-flex align-items-center">
                     <div className='col-sm-5'>
-                        <span className='Title'>Modificar Cita</span>
+                        <span className='Title'>{appointmentId ? 'Modificar Cita' : 'Crear Cita'}</span>
                     </div>
                     <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
                         <div role="presentation">
@@ -293,8 +311,45 @@ const UpdateAppointment = () => {
                                                     </Form.Select>
                                                 </Col>
                                             </Form.Group>
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Form.Label>Total</Form.Label>
+                                                <Col sm="12">
+                                                    <Form.Control
+                                                        type="number"
+                                                        name="Total"
+                                                        value={formData.Total}
+                                                        onChange={handleInputChange}
+                                                    />
+                                                </Col>
+                                            </Form.Group>
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Form.Label>Tiempo de la cita</Form.Label>
+                                                <Col sm="12">
+                                                    <Form.Control
+                                                        type="time"
+                                                        name="tiempo_de_la_cita"
+                                                        value={formData.tiempo_de_la_cita}
+                                                        onChange={handleInputChange}
+                                                    />
+                                                </Col>
+                                            </Form.Group>
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Form.Label>Estado</Form.Label>
+                                                <Col sm="12">
+                                                    <Form.Select
+                                                        name="status"
+                                                        value={formData.status}
+                                                        onChange={handleInputChange}
+                                                    >
+                                                        <option value="">Seleccionar estado</option>
+                                                        <option value="pendiente">Pendiente</option>
+                                                        <option value="completada">Completada</option>
+                                                        <option value="cancelada">Cancelada</option>
+                                                    </Form.Select>
+                                                </Col>
+                                            </Form.Group>
                                             <div className="btn-save">
-                                                <Button type='submit'>Registrar Cita</Button>
+                                                <Button type='submit'>{appointmentId ? 'Actualizar Cita' : 'Registrar Cita'}</Button>
                                             </div>
                                         </Form>
                                     </div>

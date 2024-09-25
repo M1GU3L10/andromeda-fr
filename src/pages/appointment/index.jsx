@@ -39,10 +39,12 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 });
 
-const EventComponent = ({ info, setAppointmentId }) => {
+const EventComponent = ({ info, setAppointmentId,props }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate(); // Define navigate con useNavigate
+    const appointmentId = props.appointmentId || null;
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -55,7 +57,7 @@ const EventComponent = ({ info, setAppointmentId }) => {
     };
 
     const handleEditClick = () => {
-        setAppointmentId(info.event.id);
+        handleEditClick(info.event);
         handleClose();
     };
 
@@ -165,7 +167,7 @@ const Appointment = () => {
     };
 
     const filteredEvents = selectedEmployee
-        ? events.filter(event => event.title === getUserName(users, parseInt(selectedEmployee)))
+        ? events.filter(event => event.title === selectedEmployee)
         : events;
 
     const handleCloseDetailModal = () => setShowDetailModal(false);
@@ -291,8 +293,8 @@ const Appointment = () => {
             setIsMenuOpen(false);
         };
 
-        const handleEditClick = () => {
-            if (appointmentId !== null) {
+        const handleEditClick = (appointmentId) => {
+            if (appointmentId) {
                 navigate(`/appointmentUpdate/${appointmentId}`);
             } else {
                 console.error('No appointment selected');
@@ -389,7 +391,7 @@ const Appointment = () => {
                             <FaEye />
                         </Button>
                     </MenuItem>
-                    <MenuItem className='Menu-programming-item' onClick={() => handleEditClick(appointmentId)}>
+                    <MenuItem className='Menu-programming-item' onClick={() => handleEditClick(info.event.id)}>
                         <Button color="secondary" className='secondary'>
                             <FaPencilAlt />
                         </Button>
@@ -658,15 +660,15 @@ const Appointment = () => {
                                 <option value="timeGridDay">Día</option>
                             </Form.Select>
                             <Form.Select
-                                value={selectedEmployee}
-                                onChange={handleEmployeeChange}
-                                style={{ width: 'auto', display: 'inline-block' }}
-                            >
-                                <option value="">Todos los clientes</option>
-                                {FiltrarUsers().map(user => (
-                                    <option key={user.id} value={user.id}>{user.name}</option>
-                                ))}
-                            </Form.Select>
+                            value={selectedEmployee}
+                            onChange={handleEmployeeChange}
+                            style={{ width: 'auto', display: 'inline-block' }}
+                        >
+                            <option value="">Todos los clientes</option>
+                            {FiltrarUsers().map(user => (
+                                <option key={user.id} value={user.id.toString()}>{user.name}</option>
+                            ))}
+                        </Form.Select>
                         </div>
                     </div>
                     <div className='table-responsive mt-3'>
