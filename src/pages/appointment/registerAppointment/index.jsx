@@ -13,6 +13,10 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import { IoTrashSharp } from "react-icons/io5";
 import { FaPlus } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import { useNavigate } from 'react-router-dom';
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light'
@@ -37,6 +41,9 @@ const RegisterAppointment = () => {
     const urlAppointments = 'http://localhost:1056/api/appointment';
     const urlUsers = 'http://localhost:1056/api/users';
     const urlServices = 'http://localhost:1056/api/services';
+
+    const MySwal = withReactContent(Swal);
+    const navigate = useNavigate(); 
 
     const [users, setUsers] = useState([]);
     const [services, setServices] = useState([]);
@@ -111,12 +118,24 @@ const RegisterAppointment = () => {
                     empleadoId: parseInt(detail.empleadoId, 10)
                 }))
             };
-
+    
             console.log('Data being sent:', JSON.stringify(appointmentData, null, 2));
-
+    
             const response = await axios.post(urlAppointments, appointmentData);
             console.log("Appointment registered:", response.data);
-            alert("Cita registrada exitosamente.");
+    
+            // SweetAlert2 success alert
+            MySwal.fire({
+                icon: 'success',
+                title: 'Cita registrada exitosamente',
+                text: 'La cita ha sido creada correctamente.',
+                showConfirmButton: false,
+                timer: 2000 // La alerta se cerrará después de 2 segundos
+            }).then(() => {
+                // Redirigir a la ruta /appointment
+                navigate('/appointment');
+            });
+    
             setFormData({
                 Init_Time: '',
                 Finish_Time: '',
@@ -126,18 +145,27 @@ const RegisterAppointment = () => {
             });
         } catch (error) {
             console.error("Error registering appointment:", error);
+            let errorMessage = 'Por favor, inténtalo de nuevo.';
+    
             if (error.response) {
                 console.error("Error data:", error.response.data);
                 console.error("Error status:", error.response.status);
                 console.error("Error headers:", error.response.headers);
-                alert(`Error al registrar la cita. ${error.response.data.message || 'Por favor, inténtalo de nuevo.'}`);
+                errorMessage = error.response.data.message || errorMessage;
             } else if (error.request) {
                 console.error("Error request:", error.request);
-                alert("No se recibió respuesta del servidor. Por favor, inténtalo de nuevo más tarde.");
+                errorMessage = 'No se recibió respuesta del servidor. Por favor, inténtalo de nuevo más tarde.';
             } else {
                 console.error('Error message:', error.message);
-                alert("Error al procesar la solicitud. Por favor, inténtalo de nuevo.");
             }
+    
+            // SweetAlert2 error alert
+            MySwal.fire({
+                icon: 'error',
+                title: 'Error al registrar la cita',
+                text: errorMessage,
+                showConfirmButton: true
+            });
         }
     };
 

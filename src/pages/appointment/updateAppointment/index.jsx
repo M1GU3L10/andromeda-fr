@@ -14,6 +14,8 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import { IoTrashSharp } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light'
@@ -40,6 +42,8 @@ const UpdateAppointment = () => {
     const urlAppointments = 'http://localhost:1056/api/appointment';
     const urlUsers = 'http://localhost:1056/api/users';
     const urlServices = 'http://localhost:1056/api/services';
+
+    const MySwal = withReactContent(Swal);
 
     const [users, setUsers] = useState([]);
     const [services, setServices] = useState([]);
@@ -131,6 +135,8 @@ const UpdateAppointment = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+    
         try {
             const appointmentData = {
                 Init_Time: formData.Init_Time + ':00',
@@ -145,21 +151,56 @@ const UpdateAppointment = () => {
                     empleadoId: parseInt(detail.empleadoId, 10)
                 }))
             };
-
+    
             let response;
             if (appointmentId) {
+                // Actualización de cita
                 response = await axios.put(`${urlAppointments}/${appointmentId}`, appointmentData);
-                alert("Cita actualizada exitosamente.");
+                console.log("Appointment updated:", response.data);
+    
+                // SweetAlert2 success alert y redirección
+                MySwal.fire({
+                    icon: 'success',
+                    title: 'Cita actualizada exitosamente',
+                    text: 'La cita ha sido actualizada correctamente.',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    navigate('/appointment'); // Redirige a la lista de citas
+                });
             } else {
+                // Registro de nueva cita
                 response = await axios.post(urlAppointments, appointmentData);
-                alert("Cita registrada exitosamente.");
+                console.log("Appointment registered:", response.data);
+    
+                // SweetAlert2 success alert y redirección
+                MySwal.fire({
+                    icon: 'success',
+                    title: 'Cita registrada exitosamente',
+                    text: 'La cita ha sido creada correctamente.',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    navigate('/appointments'); // Redirige a la lista de citas
+                });
             }
-
-            console.log("Appointment response:", response.data);
-            navigate('/appointments'); // Asumiendo que tienes una ruta para ver todas las citas
         } catch (error) {
             console.error("Error processing appointment:", error);
-            alert(`Error al procesar la cita. ${error.response?.data?.message || 'Por favor, inténtalo de nuevo.'}`);
+    
+            let errorMessage = 'Por favor, inténtalo de nuevo.';
+            if (error.response) {
+                errorMessage = error.response.data.message || errorMessage;
+            } else if (error.request) {
+                errorMessage = 'No se recibió respuesta del servidor. Por favor, inténtalo de nuevo más tarde.';
+            }
+    
+            // SweetAlert2 error alert
+            MySwal.fire({
+                icon: 'error',
+                title: 'Error al procesar la cita',
+                text: errorMessage,
+                showConfirmButton: true
+            });
         }
     };
 
