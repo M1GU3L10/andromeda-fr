@@ -9,6 +9,8 @@ import { RiLockPasswordFill } from "react-icons/ri";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const MySwal = withReactContent(Swal);
 
@@ -88,13 +90,15 @@ const ResetPassword = () => {
             }
 
             // Mostrar alerta de éxito con SweetAlert y redirigir al login
-            MySwal.fire({
-                title: '¡Contraseña restablecida!',
-                text: 'Tu contraseña ha sido restablecida exitosamente.',
-                icon: 'success',
-                confirmButtonText: 'OK',
-            }).then(() => {
-                navigate('/login'); // Redirigir al login
+            toast.success('Se ha restablecido su contraseña correctamente', {
+                position: "top-right",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                onClose: () => navigate('/login')  // Navega a /resetPassword al cerrar la alerta
             });
         } catch (error) {
             console.error('Error:', error);
