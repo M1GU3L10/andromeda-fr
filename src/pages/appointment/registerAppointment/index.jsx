@@ -44,6 +44,16 @@ const RegisterAppointment = () => {
 
     const MySwal = withReactContent(Swal);
     const navigate = useNavigate(); 
+    const [errors, setErrors] = useState({
+        Init_Time: false,
+        Finish_Time: false,
+        Date: false,
+        clienteId: false,
+        status: false,
+        appointmentDetails: [] // Inicializa como un array para manejar múltiples detalles
+    });
+    
+    const newErrors = {};
 
     const [users, setUsers] = useState([]);
     const [services, setServices] = useState([]);
@@ -80,7 +90,23 @@ const RegisterAppointment = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+    
+        // Actualizar el estado del formulario
+        setFormData({
+            ...formData,
+            [name]: value
+        });
+    
+        // Validar en tiempo real
+        const newErrors = { ...errors };
+        if (!value.trim()) {
+            newErrors[name] = true; // Si el campo está vacío, marca error
+        } else {
+            delete newErrors[name]; // Si el campo tiene valor, quita el error
+        }
+    
+        // Actualiza el estado de los errores
+        setErrors(newErrors);
     };
 
     const handleServiceAdd = () => {
@@ -100,12 +126,79 @@ const RegisterAppointment = () => {
 
     const handleDetailChange = (index, field, value) => {
         const newDetails = [...formData.appointmentDetails];
-        newDetails[index][field] = parseInt(value, 10);
+        newDetails[index][field] = value;
         setFormData({ ...formData, appointmentDetails: newDetails });
+    
+        // Validar en tiempo real
+        const newErrors = { ...errors };
+        if (field === 'serviceId' && !value) {
+            newErrors.appointmentDetails[index] = { ...newErrors.appointmentDetails[index], serviceId: true };
+        } else if (field === 'empleadoId' && !value) {
+            newErrors.appointmentDetails[index] = { ...newErrors.appointmentDetails[index], empleadoId: true };
+        } else {
+            delete newErrors.appointmentDetails[index][field]; // Si el campo tiene valor, quita el error
+        }
+    
+        setErrors(newErrors);
+    };
+
+    const validateDetails = () => {
+        const newErrors = { ...errors, appointmentDetails: [] }; // Resetea los errores de appointmentDetails
+        let isValid = true; // Variable para controlar la validez de los detalles
+    
+        formData.appointmentDetails.forEach((detail, index) => {
+            const detailErrors = {};
+            if (!detail.serviceId) {
+                detailErrors.serviceId = true;
+                isValid = false; // Marca como inválido si hay un error
+            }
+            if (!detail.empleadoId) {
+                detailErrors.empleadoId = true;
+                isValid = false; // Marca como inválido si hay un error
+            }
+    
+            newErrors.appointmentDetails[index] = detailErrors;
+        });
+    
+        setErrors(newErrors);
+    
+        return isValid; // Retorna si todos los detalles son válidos
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const errors = {};
+       // Revisa cada clave en formData
+        Object.keys(formData).forEach((key) => {
+            const value = formData[key];
+
+            // Solo llama a trim si el valor es una cadena
+            if (typeof value === 'string') {
+                if (value.trim() === '') {
+                    errors[key] = 'Este campo es obligatorio'; // Mensaje de error
+                }
+            } else if (Array.isArray(value)) {
+                // Validación adicional si es un array
+                if (value.length === 0) {
+                    errors[key] = 'Debe haber al menos un servicio'; // Mensaje de error
+                } else {
+                    // Validación de los elementos dentro del array
+                    value.forEach((detail, index) => {
+                        if (!detail.serviceId) {
+                            errors[`appointmentDetails[${index}].serviceId`] = 'Servicio requerido';
+                        }
+                        if (!detail.empleadoId) {
+                            errors[`appointmentDetails[${index}].empleadoId`] = 'Empleado requerido';
+                        }
+                    });
+                }
+            }
+        });
+
+        if (Object.keys(errors).length > 0) {
+            setErrors(errors); // Actualiza el estado con errores
+            return; // Detiene el envío si hay errores
+        }
         try {
             const appointmentData = {
                 Init_Time: formData.Init_Time + ':00',
@@ -234,23 +327,33 @@ const RegisterAppointment = () => {
                                                         <Form.Select
                                                             value={detail.serviceId}
                                                             onChange={(e) => handleDetailChange(index, 'serviceId', e.target.value)}
+                                                            isInvalid={errors.appointmentDetails[index]?.serviceId}
+
                                                         >
                                                             <option value="">Seleccionar servicio</option>
                                                             {services.map(service => (
                                                                 <option key={service.id} value={service.id}>{service.name}</option>
                                                             ))}
                                                         </Form.Select>
+                                                        <Form.Control.Feedback type="invalid">
+                                                            Este campo es obligatorio.
+                                                        </Form.Control.Feedback>
                                                     </td>
                                                     <td>
                                                         <Form.Select
                                                             value={detail.empleadoId}
                                                             onChange={(e) => handleDetailChange(index, 'empleadoId', e.target.value)}
+                                                            isInvalid={errors.appointmentDetails[index]?.empleadoId}
+
                                                         >
                                                             <option value="">Seleccionar empleado</option>
                                                             {users.filter(user => user.roleId === 2).map(employee => (
                                                                 <option key={employee.id} value={employee.id}>{employee.name}</option>
                                                             ))}
                                                         </Form.Select>
+                                                        <Form.Control.Feedback type="invalid">
+                                                            Este campo es obligatorio.
+                                                        </Form.Control.Feedback>
                                                     </td>
                                                     <td>
                                                         <div className='d-flex align-items-center'>
@@ -301,7 +404,11 @@ const RegisterAppointment = () => {
                                                         name="Init_Time"
                                                         value={formData.Init_Time}
                                                         onChange={handleInputChange}
+                                                        isInvalid={errors.Init_Time}
                                                     />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        Este campo es obligatorio.
+                                                    </Form.Control.Feedback>
                                                 </Col>
                                                 <Col sm="6">
                                                     <Form.Label>Hora de finalización</Form.Label>
@@ -310,7 +417,11 @@ const RegisterAppointment = () => {
                                                         name="Finish_Time"
                                                         value={formData.Finish_Time}
                                                         onChange={handleInputChange}
+                                                        isInvalid={errors.Finish_Time}
                                                     />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        Este campo es obligatorio.
+                                                    </Form.Control.Feedback>
                                                 </Col>
                                             </Form.Group>
 
@@ -322,7 +433,11 @@ const RegisterAppointment = () => {
                                                         name="Date"
                                                         value={formData.Date}
                                                         onChange={handleInputChange}
+                                                        isInvalid={errors.Date}
                                                     />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        Este campo es obligatorio.
+                                                    </Form.Control.Feedback>
                                                 </Col>
                                             </Form.Group>
 
@@ -333,12 +448,16 @@ const RegisterAppointment = () => {
                                                         name="clienteId"
                                                         value={formData.clienteId}
                                                         onChange={handleInputChange}
+                                                        isInvalid={errors.clienteId}
                                                     >
                                                         <option value="">Seleccionar cliente</option>
                                                         {users.filter(user => user.roleId === 3).map(cliente => (
                                                             <option key={cliente.id} value={cliente.id}>{cliente.name}</option>
                                                         ))}
                                                     </Form.Select>
+                                                    <Form.Control.Feedback type="invalid">
+                                                        Este campo es obligatorio.
+                                                    </Form.Control.Feedback>
                                                 </Col>
                                             </Form.Group>
 
