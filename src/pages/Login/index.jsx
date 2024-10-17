@@ -1,33 +1,29 @@
-import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // Para redirigir al usuario
-import axios from 'axios';  // Para hacer las solicitudes a la API
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Logo from '../../assets/images/logo.png'
 import { MyContext } from '../../App';
 import patern from '../../assets/images/pattern.webp';
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
-import { IoMdEye } from "react-icons/io";
-import { IoMdEyeOff } from "react-icons/io";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { Button, Link } from '@mui/material';
-import { FcGoogle } from "react-icons/fc";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
-
     const context = useContext(MyContext);
-    const navigate = useNavigate();  // Hook para redirigir
-    const [inputIndex, setInputIndex] = useState(null)
-    const [isShowPassword, setIsShowPassword] = useState(false)
+    const navigate = useNavigate();
+    const [inputIndex, setInputIndex] = useState(null);
+    const [isShowPassword, setIsShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
-    }, []);
+    }, [context]);
 
     const focusInput = (index) => {
         setInputIndex(index);
@@ -35,10 +31,12 @@ const Login = () => {
 
     const validateEmail = (value) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(value) ? '' : 'Correo electrónico inválido';
     };
 
     const validatePassword = (value) => {
         const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        return regex.test(value) ? '' : 'La contraseña debe tener al menos 8 caracteres, una letra y un número';
     };
 
     const handleEmailChange = (e) => {
@@ -61,15 +59,19 @@ const Login = () => {
                 password
             });
 
-            // Si la autenticación es exitosa, guarda el token y redirige
-            const { token } = response.data;
+            const { user, token } = response.data;
 
-            if (token) {
-                localStorage.setItem('jwtToken', token);  // Guarda el token en localStorage
-                navigate('/dashboard');  // Redirige al usuario a la raíz del proyecto
+            if (token && user.roleId) {
+                localStorage.setItem('jwtToken', token);
+                localStorage.setItem('roleId', user.roleId.toString());
+                console.log('Token and roleId stored:', { token, roleId: user.roleId });
+                navigate('/dashboard');
                 context.setIsHideSidebarAndHeader(false);
+            } else {
+                throw new Error('Token o roleId no recibidos');
             }
         } catch (error) {
+            console.error('Error durante el login:', error);
             toast.error('Correo o contraseña incorrectos.', {
                 position: "top-right",
                 autoClose: 5000,
@@ -81,18 +83,18 @@ const Login = () => {
             }); 
         }
     };
+
     const handleRegister = () => {
-        // Aquí puedes agregar la lógica para autenticar con Google o simplemente redirigir
-        navigate('/register');  // Cambia '/ruta-de-google' por la ruta que quieras
+        navigate('/register');
     };
+
     const handleReestablish = () => {
-        // Aquí puedes agregar la lógica para autenticar con Google o simplemente redirigir
-        navigate('/forgotPassword');  // Cambia '/ruta-de-google' por la ruta que quieras
+        navigate('/forgotPassword');
     };
 
     return (
         <>
-            <img src={patern} className='loginPatern' />
+            <img src={patern} className='loginPatern' alt="Login Pattern" />
             <section className="loginSection">
                 <div className="loginBox text-center">
                     <div className='logo'>
@@ -112,7 +114,7 @@ const Login = () => {
                                     onFocus={() => focusInput(0)}
                                     onBlur={() => setInputIndex(null)}
                                 />
-                                {/* {emailError && <div className="invalid-feedback">{emailError}</div>} */}
+                                {emailError && <div className="invalid-feedback">{emailError}</div>}
                             </div>
                             <div className={`form-group mb-3 position-relative ${inputIndex === 1 && 'focus'}`}>
                                 <span className='icon'><RiLockPasswordFill /></span>
@@ -128,32 +130,32 @@ const Login = () => {
                                 <span className='toggleShowPassword' onClick={() => setIsShowPassword(!isShowPassword)}>
                                     {isShowPassword ? <IoMdEyeOff /> : <IoMdEye />}
                                 </span>
-                                {/* {passwordError && <div className="invalid-feedback">{passwordError}</div>} */}
-                            </div>
-                            <div className='form-group'>
-                                <Button type="submit" className='btn-submit btn-big btn-lg w-100'>
-                                    Ingresar
-                                </Button>
-                            </div>
-                            <div className='form-group text-center mt-3 p-10'>
-                                <Link onClick={handleReestablish} className='link'>
-                                    ¿Olvidaste la contraseña?
-                                </Link>
-                            </div>
-                        </form>
-                    </div>
-                    <div className='wrapper mt-3 card border footer p-3'>
-                        <span className='text-center'>
-                            ¿No estas registrado?
-                            <Link className='link color' onClick={handleRegister}>
-                                Registrarme
-                            </Link>
-                        </span>
-                    </div>
-                </div>
-            </section>
-        </>
-    );
+                                {passwordError && <div className="invalid-feedback">{passwordError}</div>}
+            </div>
+            <div className='form-group'>
+                <Button type="submit" className='btn-submit btn-big btn-lg w-100'>
+                    Ingresar
+                </Button>
+            </div>
+            <div className='form-group text-center mt-3 p-10'>
+                <Link onClick={handleReestablish} className='link'>
+                    ¿Olvidaste la contraseña?
+                </Link>
+            </div>
+        </form>
+    </div>
+    <div className='wrapper mt-3 card border footer p-3'>
+        <span className='text-center'>
+            ¿No estas registrado?
+            <Link className='link color' onClick={handleRegister}>
+                Registrarme
+            </Link>
+        </span>
+    </div>
+</div>
+</section>
+</>
+);
 }
 
 export default Login;
