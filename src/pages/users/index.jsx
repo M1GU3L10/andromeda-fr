@@ -8,7 +8,7 @@ import { BsPlusSquareFill } from "react-icons/bs";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
-import { GiHairStrands } from 'react-icons/gi';
+import { BsPeopleFill } from "react-icons/bs";
 import SearchBox from '../../components/SearchBox';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -413,7 +413,7 @@ const Users = () => {
                                         component="a"
                                         href="#"
                                         label="Usuarios"
-                                        icon={<GiHairStrands fontSize="small" />}
+                                        icon={<BsPeopleFill fontSize="small" />}
                                     />
                                 </Breadcrumbs>
                             </div>
