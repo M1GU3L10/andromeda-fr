@@ -79,7 +79,6 @@ const Users = () => {
         phone: '',
         roleId: ''
     });
-
     const [touched, setTouched] = useState({
         name: false,
         email: false,
@@ -183,7 +182,6 @@ const Users = () => {
 
         setShowModal(false);
     };
-
     const validateName = (value) => {
         const regex = /^[A-Za-z\s]+$/;
         return regex.test(value) ? '' : 'El nombre solo debe contener letras';
@@ -194,14 +192,19 @@ const Users = () => {
         return regex.test(value) ? '' : 'El correo no es válido';
     };
 
+
     const validatePassword = (value) => {
-        return value.length >= 8 ? '' : 'La contraseña debe tener al menos 8 caracteres';
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        return regex.test(value) ? '' : 'La contraseña debe tener al menos 8 caracteres, incluyendo letras y números';
     };
+
 
     const validatePhone = (value) => {
         const regex = /^\d{10}$/;
         return regex.test(value) ? '' : 'El teléfono debe contener 10 números';
     };
+
+
 
     const validateRoleId = (value) => {
         return value ? '' : 'Debe seleccionar un rol';
@@ -262,6 +265,7 @@ const Users = () => {
         handleValidation(name, e.target.value);
     };
 
+
     const validar = () => {
         const isValidEmail = !validateEmail(email);
         const isValidName = !validateName(name);
@@ -290,6 +294,7 @@ const Users = () => {
             enviarSolicitud(metodo, parametros, handleClose);
         }
     };
+
 
     const enviarSolicitud = async (metodo, parametros, closeModal) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
@@ -495,128 +500,109 @@ const Users = () => {
                     </div>
                 </div>
 
-                {/* Modal para Agregar/Editar Usuario */}
-                <Modal show={showModal}
-                >
-                    <Modal.Header>
-                        <Modal.Title>{title}</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group as={Row} className="mb-3">
-                                <Col sm="6">
-                                    <Form.Label className='required'>Nombre</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="name"
-                                        value={name}
-                                        placeholder="Nombre"
-                                        onChange={handleInputChange}
-                                        onBlur={handleBlur}
-                                        isInvalid={touched.name && !!errors.name}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.name}
-                                    </Form.Control.Feedback>
-                                </Col>
-                                <Col sm="6">
-                                    <Form.Label className='required'>Rol</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        name="roleId"
-                                        value={roleId}
-                                        onChange={handleInputChange}
-                                        onBlur={handleBlur}
-                                        isInvalid={touched.roleId && !!errors.roleId}
-                                    >
-                                        <option value="">Seleccionar rol</option>
-                                        {roles.map(role => ( // Mapeo directo de los roles
-                                            <option key={role.id} value={role.id}>{role.name}</option>
-                                        ))}
-                                    </Form.Control>
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.roleId}
-                                    </Form.Control.Feedback>
-                                </Col>
-                            </Form.Group>
-
-                            <Form.Group className='pb-3'>
-                                <Form.Label className='required'>Correo</Form.Label>
+                <Modal show={showModal}>
+                <Modal.Header>
+                    <Modal.Title>{title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group as={Row} className="mb-3">
+                            <Col sm="6">
+                                <Form.Label className='required'>Nombre</Form.Label>
                                 <Form.Control
-                                    type="email"
-                                    name="email"
-                                    value={email}
-                                    placeholder="Correo"
+                                    type="text"
+                                    name="name"
+                                    value={name}
+                                    placeholder="Nombre"
                                     onChange={handleInputChange}
                                     onBlur={handleBlur}
-                                    isInvalid={touched.email && !!errors.email}
+                                    isInvalid={touched.name && !!errors.name}
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                    {errors.email}
+                                    {errors.name}
                                 </Form.Control.Feedback>
-                            </Form.Group>
+                            </Col>
+                            <Col sm="6">
+                                <Form.Label className='required'>Rol</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    name="roleId"
+                                    value={roleId}
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.roleId && !!errors.roleId}
+                                >
+                                    <option value="">Seleccionar rol</option>
+                                    {roles.map(role => (
+                                        <option key={role.id} value={role.id}>{role.name}</option>
+                                    ))}
+                                </Form.Control>
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.roleId}
+                                </Form.Control.Feedback>
+                            </Col>
+                        </Form.Group>
 
-                            <Form.Group as={Row} className='pb-3'>
-                                <Col sm="6">
-                                    <Form.Label className='required'>Contraseña</Form.Label>
-                                    <Form.Control
-                                        type="password"
-                                        name="password"
-                                        value={password}
-                                        placeholder="Contraseña"
-                                        onChange={handleInputChange}
-                                        onBlur={handleBlur}
-                                        isInvalid={touched.password && !!errors.password}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.password}
-                                    </Form.Control.Feedback>
-                                </Col>
-                                <Col sm="6">
-                                    <Form.Label className='required'>Teléfono</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="phone"
-                                        value={phone}
-                                        placeholder="Telefono"
-                                        onChange={handleInputChange}
-                                        onBlur={handleBlur}
-                                        isInvalid={touched.phone && !!errors.phone}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.phone}
-                                    </Form.Control.Feedback>
-                                </Col>
-                            </Form.Group>
-                        </Form>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="primary" onClick={validar} className='btn-sucess'>
-                            Guardar
-                        </Button>
-                        <Button variant="secondary" onClick={handleClose} className='btn-red'>
-                            Cerrar
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
+                        <Form.Group className='pb-3'>
+                            <Form.Label className='required'>Correo</Form.Label>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                value={email}
+                                placeholder="Correo"
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                isInvalid={touched.email && !!errors.email}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.email}
+                            </Form.Control.Feedback>
+                        </Form.Group>
 
-                {/* modal detalle */}
-                <Modal show={showDetailModal} onHide={handleCloseDetail}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Detalle usuario</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <p><strong>ID:</strong> {detailData.id}</p>
-                        <p><strong>Nombre:</strong> {detailData.name}</p>
-                        <p><strong>Email:</strong> {detailData.email}</p>
-                        <p><strong>Teléfono:</strong> {detailData.phone}</p>
-                        <p><strong>Rol:</strong> {detailData.roleId === 1 ? 'Administrador' : detailData.roleId === 2 ? 'Empleado' : detailData.roleId === 3 ? 'Cliente' : 'Desconocido'}</p>
-                        <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
-                    </Modal.Footer>
-                </Modal>
+                        <Form.Group as={Row} className='pb-3'>
+                            <Col sm="6">
+                                <Form.Label className='required'>Contraseña</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    name="password"
+                                    value={password}
+                                    placeholder="Contraseña"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.password && !!errors.password}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.password}
+                                </Form.Control.Feedback>
+                            </Col>
+                            <Col sm="6">
+                                <Form.Label className='required'>Teléfono</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="phone"
+                                    value={phone}
+                                    placeholder="Telefono"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.phone && !!errors.phone}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.phone}
+                                </Form.Control.Feedback>
+                            </Col>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="contained" onClick={validar} className='btn-success'>
+                        Guardar
+                    </Button>
+                    <Button variant="outlined" onClick={handleClose} className='btn-secondary'>
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
             </div>
         </>
     );

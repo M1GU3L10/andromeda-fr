@@ -1,17 +1,17 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import React, { createContext, useEffect, useState } from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
 import './App.css';
 import Dashboard from './pages/Dashboard';
 import Header from './components/header';
 import Sidebar from './components/sidebar';
-import { createContext, useEffect, useState } from 'react';
 import Categories from './pages/categories';
 import Appointment from './pages/appointment';
 import Orders from './pages/orders';
 import Products from './pages/products';
 import Programming from './pages/programming';
 import Sales from './pages/sales';
-import Services from './pages/servicesView';
+import ServicesView from './pages/servicesView';
 import Shopping from './pages/shopping';
 import Suppliers from './pages/suppliers';
 import Users from './pages/users';
@@ -26,13 +26,13 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import ProtectedRoute from './components/protected';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
 
 
+export const MyContext = createContext();
 
-const MyContext = createContext();
 
 function App() {
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
@@ -40,17 +40,19 @@ function App() {
   const [isLogin, setIsLogin] = useState(false);
   const [isHideSidebarAndHeader, setIsHideSidebarAndHeader] = useState(false);
 
+
   useEffect(() => {
     if (themeMode === true) {
-      document.body.classList.remove('light');
-      document.body.classList.add('dark');
-      localStorage.setItem('themeMode', 'dark');
+      document.body.classList.remove('claro');
+      document.body.classList.add('oscuro');
+      localStorage.setItem('themeMode', 'oscuro');
     } else {
-      document.body.classList.remove('dark');
-      document.body.classList.add('light');
-      localStorage.setItem('themeMode', 'light');
+      document.body.classList.remove('oscuro');
+      document.body.classList.add('claro');
+      localStorage.setItem('themeMode', 'claro');
     }
   }, [themeMode]);
+
 
   const values = {
     isToggleSidebar,
@@ -63,49 +65,120 @@ function App() {
     isHideSidebarAndHeader
   };
 
+
   return (
     <BrowserRouter>
       <MyContext.Provider value={values}>
-        {
-          isHideSidebarAndHeader !== true &&
-          <Header />
-        }
-        <div className='main d-flex'>
-          {
-            isHideSidebarAndHeader !== true &&
-            <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
-              <Sidebar />
+        <PermissionProvider>
+          {isHideSidebarAndHeader !== true && <Header />}
+          <div className='main d-flex'>
+            {isHideSidebarAndHeader !== true && (
+              <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
+                <Sidebar />
+              </div>
+            )}
+            <div className={`content ${isHideSidebarAndHeader === true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgotPassword" element={<ForgotPassword />} />
+                <Route path="/resetPassword" element={<ResetPassword />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={
+                  <PermissionCheck requiredPermission="Dashboard">
+                    <Dashboard />
+                  </PermissionCheck>
+                } />
+                <Route path="/categories" element={
+                  <PermissionCheck requiredPermission="Categorias">
+                    <Categories />
+                  </PermissionCheck>
+                } />
+                <Route path="/appointment" element={
+                  <PermissionCheck requiredPermission="Citas">
+                    <Appointment />
+                  </PermissionCheck>
+                } />
+                <Route path="/registerAppointment" element={
+                  <PermissionCheck requiredPermission="Citas">
+                    <RegisterAppointment />
+                  </PermissionCheck>
+                } />
+                <Route path="/updateAppointment/:appointmentId" element={
+                  <PermissionCheck requiredPermission="Citas">
+                    <UpdateAppointment />
+                  </PermissionCheck>
+                } />
+                <Route path="/orders" element={
+                  <PermissionCheck requiredPermission="Pedidos">
+                    <Orders />
+                  </PermissionCheck>
+                } />
+                <Route path="/products" element={
+                  <PermissionCheck requiredPermission="Productos">
+                    <Products />
+                  </PermissionCheck>
+                } />
+                <Route path="/programming" element={
+                  <PermissionCheck requiredPermission="Programacion de empleado">
+                    <Programming />
+                  </PermissionCheck>
+                } />
+                <Route path="/sales" element={
+                  <PermissionCheck requiredPermission="Ventas">
+                    <Sales />
+                  </PermissionCheck>
+                } />
+                <Route path="/registerSales" element={
+                  <PermissionCheck requiredPermission="Ventas">
+                    <RegisterSales />
+                  </PermissionCheck>
+                } />
+                <Route path="/services" element={
+                  <PermissionCheck requiredPermission="Servicios">
+                    <ServicesView />
+                  </PermissionCheck>
+                } />
+                <Route path="/shopping" element={
+                  <PermissionCheck requiredPermission="Compras">
+                    <Shopping />
+                  </PermissionCheck>
+                } />
+                <Route path="/registerShopping" element={
+                  <PermissionCheck requiredPermission="Compras">
+                    <RegisterShopping />
+                  </PermissionCheck>
+                } />
+                <Route path="/viewShopping/:shoppingId" element={
+                  <PermissionCheck requiredPermission="Compras">
+                    <ViewShopping />
+                  </PermissionCheck>
+                } />
+                <Route path="/suppliers" element={
+                  <PermissionCheck requiredPermission="Proveedores">
+                    <Suppliers />
+                  </PermissionCheck>
+                } />
+                <Route path="/users" element={
+                  <PermissionCheck requiredPermission="Usuarios">
+                    <Users />
+                  </PermissionCheck>
+                } />
+                <Route path="/roles" element={
+                  <PermissionCheck requiredPermission="Roles">
+                    <Roles />
+                  </PermissionCheck>
+                } />
+                <Route path="/absences" element={
+                  <PermissionCheck requiredPermission="Ausencias">
+                    <Absences />
+                  </PermissionCheck>
+                } />
+              </Routes>
             </div>
-          }
-          <div className={`content ${isHideSidebarAndHeader == true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
-            <Routes>
-              <Route path="/login" exact={true} element={<Login />} />
-              <Route path="/register" exact={true} element={<Register />} />
-              <Route path="/forgotPassword" exact={true} element={< ForgotPassword />} />
-              <Route path="/resetPassword" exact={true} element={<ResetPassword />} />
-              <Route path="/" exact={true} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/dashboard" exact={true} element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/categories" exact={true} element={<ProtectedRoute><Categories /></ProtectedRoute>} />
-              <Route path="/appointment" exact={true} element={<ProtectedRoute><Appointment /></ProtectedRoute>} />
-              <Route path="/appointmentRegister" exact={true} element={<ProtectedRoute><RegisterAppointment /></ProtectedRoute>} />
-              <Route path="/appointmentUpdate/:appointmentId" element={<ProtectedRoute><UpdateAppointment /></ProtectedRoute>} />
-              <Route path="/orders" exact={true} element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-              <Route path="/products" exact={true} element={<ProtectedRoute><Products /></ProtectedRoute>} />
-              <Route path="/programming" exact={true} element={<ProtectedRoute><Programming /></ProtectedRoute>} />
-              <Route path="/sales" exact={true} element={<ProtectedRoute><Sales /></ProtectedRoute>} />
-              <Route path="/salesRegister" exact={true} element={<ProtectedRoute><RegisterSales /></ProtectedRoute>} />
-              <Route path="/services" exact={true} element={<ProtectedRoute><Services /></ProtectedRoute>} />
-              <Route path="/shopping" exact={true} element={<ProtectedRoute><Shopping /></ProtectedRoute>} />
-              <Route path="/shoppingRegister" exact={true} element={<ProtectedRoute><RegisterShopping /></ProtectedRoute>} />
-              <Route path="/ViewShopping/:shoppingId" element={<ProtectedRoute><ViewShopping /></ProtectedRoute>} />
-              <Route path="/suppliers" exact={true} element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
-              <Route path="/users" exact={true} element={<ProtectedRoute><Users /></ProtectedRoute>} />
-              <Route path="/roles" exact={true} element={<ProtectedRoute><Roles /></ProtectedRoute>} />
-              <Route path="/absences" exact={true} element={<ProtectedRoute><Absences /></ProtectedRoute>} />
-            </Routes>
           </div>
-        </div>
-        <ToastContainer />
+          <ToastContainer />
+        </PermissionProvider>
       </MyContext.Provider>
     </BrowserRouter>
   );
@@ -113,4 +186,3 @@ function App() {
 
 
 export default App;
-export { MyContext };

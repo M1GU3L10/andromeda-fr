@@ -28,7 +28,7 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [roleId, setRoleId] = useState(1);
+    const [roleId, setRoleId] = useState(3);
     const [errorMessage, setErrorMessage] = useState('');
 
     // Validación de errores en tiempo real
