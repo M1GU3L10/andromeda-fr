@@ -106,7 +106,7 @@ const Login = () => {
                                 <input
                                     type="email"
                                     className={`form-control ${emailError ? 'is-invalid' : ''}`}
-                                    placeholder='Enter your email'
+                                    placeholder='Ingrese su correo'
                                     value={email}
                                     onChange={handleEmailChange}
                                     onFocus={() => focusInput(0)}
@@ -119,7 +119,7 @@ const Login = () => {
                                 <input
                                     type={isShowPassword ? 'text' : 'password'}
                                     className={`form-control ${passwordError ? 'is-invalid' : ''}`}
-                                    placeholder='Enter your password'
+                                    placeholder='Ingrese su contraseña'
                                     value={password}
                                     onChange={handlePasswordChange}
                                     onFocus={() => focusInput(1)}

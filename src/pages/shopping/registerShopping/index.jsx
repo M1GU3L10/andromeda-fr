@@ -233,6 +233,7 @@ const RegisterShopping = () => {
                                                 <th>Cantidad</th>
                                                 <th>Precio unt</th>
                                                 <th>Subtotal</th>
+                                                <th>Imagen</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
@@ -243,6 +244,7 @@ const RegisterShopping = () => {
                                                     <td>{item.quantity}</td>
                                                     <td>{item.unitPrice}</td>
                                                     <td>{item.total_price}</td>
+                                                    
                                                     <td>
                                                         <div className='d-flex align-items-center'>
                                                             <Button color='error' className='delete' onClick={() => removeProduct(item.product_id)}><IoTrashSharp /></Button>
