@@ -8,10 +8,8 @@ import { BsPlusSquareFill } from "react-icons/bs";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
-import { GiHairStrands } from 'react-icons/gi';
-
+import { BsPeopleFill } from "react-icons/bs";
 import SearchBox from '../../components/SearchBox';
-
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -23,7 +21,7 @@ import Swal from 'sweetalert2';
 import { alpha } from '@mui/material/styles';
 import { blue } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
-import { Modal, Form } from 'react-bootstrap';
+import { Modal, Form, Col, Row } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 
@@ -52,20 +50,6 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 })
 
-const BlueSwitch = styled(Switch)(({ theme }) => ({
-    '& .MuiSwitch-switchBase.Mui-checked': {
-        color: blue[600],
-        '&:hover': {
-            backgroundColor: alpha(blue[600], theme.palette.action.hoverOpacity),
-        },
-    },
-    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-        backgroundColor: blue[600],
-    },
-}));
-// Rest of your code...
-
-
 const Users = () => {
     const url = 'http://localhost:1056/api/users';
     const urlRoles = 'http://localhost:1056/api/roles';
@@ -85,7 +69,7 @@ const Users = () => {
     const [detailData, setDetailData] = useState({});
     const [value, setValue] = useState([]);
     const [search, setSearch] = useState('');
-    const [dataQt, setDataQt] = useState(3);
+    const [dataQt, setDataQt] = useState(5);
     const [currentPages, setCurrentPages] = useState(1);
 
     const [errors, setErrors] = useState({
@@ -95,7 +79,6 @@ const Users = () => {
         phone: '',
         roleId: ''
     });
-
     const [touched, setTouched] = useState({
         name: false,
         email: false,
@@ -108,8 +91,6 @@ const Users = () => {
         getUsers();
         getRoles();
     }, []);
-
-    ////////
     const getRoles = async () => {
         try {
             const response = await axios.get(urlRoles);
@@ -127,23 +108,13 @@ const Users = () => {
             show_alerta('Error al obtener los nombres de los roles', 'error');
         }
     }
-    
-
-    
-
-
-    ///////////
-   
-    //////////
-
 
     const getUsers = async () => {
         const response = await axios.get(url);
         setUsers(response.data);
     };
 
-     ///////////
-     const searcher = (e) => {
+    const searcher = (e) => {
         setSearch(e.target.value);
         console.log(e.target.value)
     }
@@ -155,12 +126,10 @@ const Users = () => {
 
     let results = []
     if (!search) {
-        results = users.slice(indexStart,indexEnd);
-    } else{
+        results = users.slice(indexStart, indexEnd);
+    } else {
         results = users.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
     }
-
-    //////////
 
     const openModal = (op, user = {}) => {
         setOperation(op);
@@ -194,9 +163,9 @@ const Users = () => {
         setEmail('');
         setPassword('');
         setPhone('');
-        setStatus('A');  // Por defecto, nuevo usuario está activo
+        setStatus('A');
         setRoleId('');
-        
+
 
         setErrors({
             name: '',
@@ -213,7 +182,6 @@ const Users = () => {
 
         setShowModal(false);
     };
-
     const validateName = (value) => {
         const regex = /^[A-Za-z\s]+$/;
         return regex.test(value) ? '' : 'El nombre solo debe contener letras';
@@ -224,14 +192,19 @@ const Users = () => {
         return regex.test(value) ? '' : 'El correo no es válido';
     };
 
+
     const validatePassword = (value) => {
-        return value.length >= 8 ? '' : 'La contraseña debe tener al menos 8 caracteres';
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        return regex.test(value) ? '' : 'La contraseña debe tener al menos 8 caracteres, incluyendo letras y números';
     };
+
 
     const validatePhone = (value) => {
         const regex = /^\d{10}$/;
         return regex.test(value) ? '' : 'El teléfono debe contener 10 números';
     };
+
+
 
     const validateRoleId = (value) => {
         return value ? '' : 'Debe seleccionar un rol';
@@ -292,6 +265,7 @@ const Users = () => {
         handleValidation(name, e.target.value);
     };
 
+
     const validar = () => {
         const isValidEmail = !validateEmail(email);
         const isValidName = !validateName(name);
@@ -317,63 +291,40 @@ const Users = () => {
 
             const isUpdate = operation === 2;
             const metodo = isUpdate ? 'PUT' : 'POST';
-            enviarSolicitud(metodo, parametros);
+            enviarSolicitud(metodo, parametros, handleClose);
         }
     };
 
-    const handleSwitchChange = (id) => (event) => {
-        const newStatus = event.target.checked ? 'A' : 'I';
-        const updatedUser = { id, status: newStatus };
 
-        setUsers(users.map(user =>
-            user.id === id ? { ...user, status: newStatus } : user
-        ));
-
-        enviarSolicitud('PUT', updatedUser);
-    };
-
-    const enviarSolicitud = async (metodo, parametros) => {
+    const enviarSolicitud = async (metodo, parametros, closeModal) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
-    
         try {
-            let title, text, successMessage;
-            
-            if (metodo === 'PUT' && parametros.hasOwnProperty('status')) {
-                title = `¿Estás seguro que deseas ${parametros.status === 'A' ? 'activar' : 'desactivar'} el usuario?`;
-                text = 'Esta acción puede afectar la disponibilidad del servicio.';
-                successMessage = 'Usuario actualizado exitosamente';
-            } else if (metodo === 'DELETE') {
-                title = `¿Estás seguro que deseas eliminar el usuario?`;
-                text = 'No se podrá deshacer esta acción.';
-                successMessage = 'Usuario eliminado exitosamente';
-            } else {
-                title = `¿Estás seguro que deseas ${metodo === 'POST' ? 'registrar' : 'actualizar'} el usuario?`;
-                text = 'Confirma para proceder.';
-                successMessage = `Usuario ${metodo === 'POST' ? 'registrado' : 'actualizado'} exitosamente`;
-            }
-    
-            const confirmation = await Swal.fire({
-                title: title,
-                icon: 'question',
-                text: text,
-                showCancelButton: true,
-                confirmButtonText: 'Sí, confirmar',
-                cancelButtonText: 'Cancelar'
-            });
-    
-            if (confirmation.isConfirmed) {
-                await axios({ method: metodo, url: urlWithId, data: parametros });
-                show_alerta(successMessage, 'success');
+            const response = await axios({ method: metodo, url: urlWithId, data: parametros });
+
+            if (response.status >= 200 && response.status < 300) {
+                show_alerta('Operación exitosa', 'success');
+                if (metodo === 'PUT' || metodo === 'POST') {
+                    closeModal();
+                }
                 getUsers();
             } else {
-                show_alerta('Acción cancelada', 'info');
+                throw new Error('Respuesta no exitosa del servidor');
             }
         } catch (error) {
-            show_alerta('Error en la solicitud', 'error');
-            console.error(error);
+            console.error('Error en la solicitud:', error);
+            if (error.response) {
+                // El servidor respondió con un estado fuera del rango de 2xx
+                show_alerta(`Error: ${error.response.data.message || 'Error en la solicitud'}`, 'error');
+            } else if (error.request) {
+                // La petición fue hecha pero no se recibió respuesta
+                show_alerta('No se recibió respuesta del servidor', 'error');
+            } else {
+                // Algo sucedió al configurar la petición que disparó un error
+                show_alerta('Error al procesar la solicitud', 'error');
+            }
         }
     };
-    
+
     const deleteUser = async (id, name) => {
         const Myswal = withReactContent(Swal);
         Myswal.fire({
@@ -389,7 +340,7 @@ const Users = () => {
             }
         });
     };
-    
+
 
     const handleCloseDetail = () => {
         setShowModal(false);
@@ -401,9 +352,51 @@ const Users = () => {
         setShowDetailModal(true);
     };
 
- 
+    const handleSwitchChange = async (userId, checked) => {
+        // Encuentra el servicio que está siendo actualizado
+        const userToUpdate = users.find(user => user.id === userId);
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el Usuario "${userToUpdate.name}"?`,
+            icon: 'question',
+            text: 'Esta acción puede afectar la disponibilidad del usuario.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const updatedUser = {
+                    ...userToUpdate,
+                    status: checked ? 'A' : 'I'
+                };
+                try {
+                    const response = await axios.put(`${url}/${userId}`, updatedUser);
+                    if (response.status === 200) {
+                        setUsers(users.map(user =>
+                            user.id === userId ? { ...user, status: updatedUser.status } : user
+                        ));
+                        show_alerta('Estado del usuario actualizado exitosamente', 'success');
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        console.log('Error details:', error.response.data);
+                        show_alerta('Error al actualizar el estado del usuario: ' + JSON.stringify(error.response.data.errors), 'error');
+                    } else {
+                        console.log('Error details:', error.message);
+                        show_alerta('Error al actualizar el estado del usuario', 'error');
+                    }
+                }
+            } else {
+                // Si el usuario cancela, restablece el switch a su estado original
+                setUsers(users.map(user =>
+                    user.id === userId ? { ...user, status: !checked ? 'A' : 'I' } : user
+                ));
+                show_alerta('Estado del servicio no cambiado', 'info');
+            }
+        });
+    };
 
- 
+
     return (
         <>
             <div className="right-content w-100">
@@ -425,7 +418,7 @@ const Users = () => {
                                         component="a"
                                         href="#"
                                         label="Usuarios"
-                                        icon={<GiHairStrands fontSize="small" />}
+                                        icon={<BsPeopleFill fontSize="small" />}
                                     />
                                 </Breadcrumbs>
                             </div>
@@ -460,9 +453,9 @@ const Users = () => {
                                 </thead>
                                 <tbody>
                                     {
-                                        results.map((user,i) => (
+                                        results.map((user, i) => (
                                             <tr key={user.id}>
-                                                <td>{i+1}</td>
+                                                <td>{i + 1}</td>
                                                 <td>{user.name}</td>
                                                 <td>{user.email}</td>
                                                 <td>{user.phone}</td>
@@ -475,11 +468,9 @@ const Users = () => {
 
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-
-                                                        <blueSwitch
+                                                        <Switch
                                                             checked={user.status === 'A'}
-                                                            onChange={handleSwitchChange(user.id)}
-                                                            color="success"
+                                                            onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
                                                         />
                                                         <Button color='primary' className='primary' onClick={() => handleViewDetails(user)}><FaEye /></Button>
                                                         {user.status === 'A' && (
@@ -501,24 +492,23 @@ const Users = () => {
                             </table>
                         </div>
                         <div className="d-flex table-footer">
-                        <Pagination 
-                                setCurrentPages = {setCurrentPages} 
+                            <Pagination
+                                setCurrentPages={setCurrentPages}
                                 currentPages={currentPages}
-                                nPages = {nPages}/>
-                                 </div>
+                                nPages={nPages} />
+                        </div>
                     </div>
                 </div>
 
-                {/* Modal para Agregar/Editar Usuario */}
-                <Modal show={showModal} 
-                >
-                    <Modal.Header>
-                        <Modal.Title>{title}</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group>
-                            <Form.Label>Nombre</Form.Label>
+                <Modal show={showModal}>
+                <Modal.Header>
+                    <Modal.Title>{title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group as={Row} className="mb-3">
+                            <Col sm="6">
+                                <Form.Label className='required'>Nombre</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="name"
@@ -531,26 +521,47 @@ const Users = () => {
                                 <Form.Control.Feedback type="invalid">
                                     {errors.name}
                                 </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group>
-                            <Form.Label>Correo</Form.Label>
+                            </Col>
+                            <Col sm="6">
+                                <Form.Label className='required'>Rol</Form.Label>
                                 <Form.Control
-                                    type="email"
-                                    name="email"
-                                    value={email}
-                                    placeholder="Correo"
+                                    as="select"
+                                    name="roleId"
+                                    value={roleId}
                                     onChange={handleInputChange}
                                     onBlur={handleBlur}
-                                    isInvalid={touched.email && !!errors.email}
-                                />
+                                    isInvalid={touched.roleId && !!errors.roleId}
+                                >
+                                    <option value="">Seleccionar rol</option>
+                                    {roles.map(role => (
+                                        <option key={role.id} value={role.id}>{role.name}</option>
+                                    ))}
+                                </Form.Control>
                                 <Form.Control.Feedback type="invalid">
-                                    {errors.email}
+                                    {errors.roleId}
                                 </Form.Control.Feedback>
-                            </Form.Group>
+                            </Col>
+                        </Form.Group>
 
-                            <Form.Group>
-                                <Form.Label>Contraseña</Form.Label>
+                        <Form.Group className='pb-3'>
+                            <Form.Label className='required'>Correo</Form.Label>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                value={email}
+                                placeholder="Correo"
+                                onChange={handleInputChange}
+                                onBlur={handleBlur}
+                                isInvalid={touched.email && !!errors.email}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.email}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group as={Row} className='pb-3'>
+                            <Col sm="6">
+                                <Form.Label className='required'>Contraseña</Form.Label>
                                 <Form.Control
                                     type="password"
                                     name="password"
@@ -563,10 +574,9 @@ const Users = () => {
                                 <Form.Control.Feedback type="invalid">
                                     {errors.password}
                                 </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group>
-                                <Form.Label>Teléfono</Form.Label>
+                            </Col>
+                            <Col sm="6">
+                                <Form.Label className='required'>Teléfono</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="phone"
@@ -579,56 +589,20 @@ const Users = () => {
                                 <Form.Control.Feedback type="invalid">
                                     {errors.phone}
                                 </Form.Control.Feedback>
-                            </Form.Group>
+                            </Col>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="contained" onClick={validar} className='btn-success'>
+                        Guardar
+                    </Button>
+                    <Button variant="outlined" onClick={handleClose} className='btn-secondary'>
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
-                            <Form.Group>
-                                <Form.Label>Rol</Form.Label>
-                                <Form.Control
-                                     as="select"
-                                     name="roleId"
-                                     value={roleId}
-                                     onChange={handleInputChange}
-                                     onBlur={handleBlur}
-                                     isInvalid={touched.roleId && !!errors.roleId}
-                                 >
-                                      <option value="">Seleccionar rol</option>
-                                {roles.map(role => ( // Mapeo directo de los roles
-                                    <option key={role.id} value={role.id}>{role.name}</option>
-                                ))}
-                                </Form.Control>
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.roleId}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Form>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="primary" onClick={validar} className='btn-sucess'>
-                            Guardar
-                        </Button>
-                        <Button variant="secondary" onClick={handleClose} className='btn-red'>
-                            Cerrar
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-
-                {/* modal detalle */}
-                <Modal show={showDetailModal} onHide={handleCloseDetail}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Detalle usuario</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <p><strong>ID:</strong> {detailData.id}</p>
-                        <p><strong>Nombre:</strong> {detailData.name}</p>
-                        <p><strong>Email:</strong> {detailData.email}</p>
-                        <p><strong>Teléfono:</strong> {detailData.phone}</p>
-                        <p><strong>Rol:</strong> {detailData.roleId === 1 ? 'Administrador' : detailData.roleId === 2 ? 'Empleado' : detailData.roleId === 3 ? 'Cliente' : 'Desconocido'}</p>
-                        <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
-                    </Modal.Footer>
-                </Modal>
             </div>
         </>
     );

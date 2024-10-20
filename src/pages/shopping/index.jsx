@@ -226,7 +226,7 @@ const Shopping = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {
+                                    {paginatedResults.length > 0 ? (
                                         paginatedResults.map((shopping, i) => (
                                             <tr key={shopping.id}>
                                                 <td>{(indexStart + i + 1)}</td>
@@ -254,21 +254,15 @@ const Shopping = () => {
 
                                             </tr>
                                         ))
+                                    ) : 
+                                    (
+                                        <tr>
+                                            <td colSpan={7} className='text-center'>No hay compras disponibles</td>
+                                        </tr>
+                                    )
                                     }
                                 </tbody>
                             </table>
-                            {
-                                filteredResults.length > 0 ? (
-                                    <div className="d-flex table-footer">
-                                        <Pagination
-                                            setCurrentPages={setCurrentPages}
-                                            currentPages={currentPages}
-                                            nPages={nPages} />
-                                    </div>
-                                ) : (<div className="d-flex table-footer">
-                                    No se encontraron resultados.
-                                </div>)
-                            }
                         </div>
                     </div>
                 </div>

@@ -11,7 +11,8 @@ import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { FaUser, FaPhone } from "react-icons/fa";
 import { Button } from '@mui/material';
 import { FcGoogle } from "react-icons/fc";
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
@@ -27,7 +28,7 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [roleId, setRoleId] = useState(1);
+    const [roleId, setRoleId] = useState(3);
     const [errorMessage, setErrorMessage] = useState('');
 
     // Validación de errores en tiempo real
@@ -111,13 +112,15 @@ const Register = () => {
             });
 
             if (response.status === 200 || response.status === 201) {
-                MySwal.fire({
-                    title: '¡Registro exitoso!',
-                    text: 'Ahora serás redirigido al login.',
-                    icon: 'success',
-                    confirmButtonText: 'Ok'
-                }).then(() => {
-                    navigate('/login');
+                toast.success('Usuario registrado correctamente', {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    onClose: () => navigate('/login')  // Navega a /resetPassword al cerrar la alerta
                 });
             }
         } catch (error) {

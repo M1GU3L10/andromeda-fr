@@ -40,19 +40,9 @@ const RegisterSales = () => {
         SaleDate: new Date().toISOString().split('T')[0],
         id_usuario: '',
     });
-
     const [errors, setErrors] = useState({
         Billnumber: '',
-        id_usuario: '',
-        description: '',
-        time: '',
-    });
-
-    const [touched, setTouched] = useState({
-        name: false,
-        price: false,
-        description: false,
-        time: false,
+        id_usuario: ''
     });
 
     useEffect(() => {
@@ -85,7 +75,8 @@ const RegisterSales = () => {
     };
 
     const filteredProducts = products.filter(product =>
-        product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase())
+        product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !selectedProducts.some(sp => sp.id === product.id)
     );
 
     const addProduct = (product) => {
@@ -124,41 +115,52 @@ const RegisterSales = () => {
     };
 
     const calculateTotal = () => {
-        return selectedProducts.reduce((total, product) => total + (product.Price * product.quantity), 0);
+        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(selectedProducts.reduce((total, product) => total + (product.Price * product.quantity), 0))
     };
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setSaleInfo({ ...saleInfo, [name]: value });
+        validateField(name, value);
     };
 
-    const validateBillNumber = (billNumber) => {
-        const regex = /^\d{6}$/;
-        return regex.test(billNumber);
-    };
+    const validateField = (fieldName, value) => {
+        let newErrors = { ...errors };
 
-    const handleValidation = (name, value) => {
-        let error = '';
-        switch (name) {
-            case 'BillNumber':
-                error = validateBillNumber(value);
+        switch (fieldName) {
+            case 'Billnumber':
+                if (value.length === 0) {
+                    newErrors.Billnumber = 'El número de factura es requerido';
+                } else if (value.length !== 3) {
+                    newErrors.Billnumber = 'El número de factura debe tener exactamente 3 dígitos';
+                } else if (!/^\d+$/.test(value)) {
+                    newErrors.Billnumber = 'El número de factura debe contener solo dígitos';
+                } else {
+                    newErrors.Billnumber = '';
+                }
+                break;
+            case 'id_usuario':
+                if (!value) {
+                    newErrors.id_usuario = 'Debe seleccionar un cliente';
+                } else {
+                    newErrors.id_usuario = '';
+                }
                 break;
             default:
                 break;
         }
-        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+
+        setErrors(newErrors);
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        if (!validateBillNumber(saleInfo.Billnumber)) {
-            show_alerta('El número de factura debe contener exactamente 6 dígitos', 'warning');
-            return;
-        }
+        validateField('Billnumber', saleInfo.Billnumber);
+        validateField('id_usuario', saleInfo.id_usuario);
 
-        if (!saleInfo.id_usuario) {
-            show_alerta('Debe seleccionar un cliente', 'warning');
+        if (errors.Billnumber || errors.id_usuario) {
+            show_alerta('Por favor, corrija los errores antes de enviar', 'warning');
             return;
         }
 
@@ -240,6 +242,7 @@ const RegisterSales = () => {
                                                         ) :
                                                             (
                                                                 <>
+
                                                                 </>
                                                             )
                                                     }
@@ -265,8 +268,8 @@ const RegisterSales = () => {
                                                 <tr key={product.id}>
                                                     <td>{product.Product_Name}</td>
                                                     <td>{product.quantity}</td>
-                                                    <td>{product.Price}</td>
-                                                    <td>{product.Price * product.quantity}</td>
+                                                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
+                                                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
                                                     <td>
                                                         {product.Image ? (
                                                             <img
@@ -294,7 +297,7 @@ const RegisterSales = () => {
                                 </div>
                                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
                                     <span className='Monto'>Total:</span>
-                                    <span className='valor'>${calculateTotal()}</span>
+                                    <span className='valor'>{calculateTotal()}</span>
                                 </div>
                             </div>
                         </div>
@@ -314,8 +317,11 @@ const RegisterSales = () => {
                                                         name="Billnumber"
                                                         value={saleInfo.Billnumber}
                                                         onChange={handleInputChange}
-
+                                                        isInvalid={!!errors.Billnumber}
                                                     />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        {errors.Billnumber}
+                                                    </Form.Control.Feedback>
                                                 </Col>
                                                 <Col sm="6">
                                                     <Form.Label className='required'>Fecha venta</Form.Label>
@@ -334,12 +340,16 @@ const RegisterSales = () => {
                                                     name="id_usuario"
                                                     value={saleInfo.id_usuario}
                                                     onChange={handleInputChange}
+                                                    isInvalid={!!errors.id_usuario}
                                                 >
                                                     <option value="">Seleccionar cliente</option>
                                                     {users.map(user => (
                                                         <option key={user.id} value={user.id}>{user.name}</option>
                                                     ))}
                                                 </Form.Select>
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.id_usuario}
+                                                </Form.Control.Feedback>
                                             </Form.Group>
                                             <Form.Group className='d-flex align-items-center justify-content-end'>
                                                 <Button variant="secondary" className='btn-red' id='btn-red' href="/Sales">
