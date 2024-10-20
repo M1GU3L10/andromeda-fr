@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
 import './App.css';
+import './index.css';
 import Dashboard from './pages/Dashboard';
 import Header from './components/header';
 import Sidebar from './components/sidebar';
@@ -29,6 +30,7 @@ import ResetPassword from './pages/ResetPassword';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
+import Index from './pages/index';
 
 
 export const MyContext = createContext();
@@ -80,10 +82,11 @@ function App() {
             <div className={`content ${isHideSidebarAndHeader === true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/index" element={<Index />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgotPassword" element={<ForgotPassword />} />
                 <Route path="/resetPassword" element={<ResetPassword />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/" element={<Navigate to="/index" replace />} />
                 <Route path="/dashboard" element={
                   <PermissionCheck requiredPermission="Dashboard">
                     <Dashboard />

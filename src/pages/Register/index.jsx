@@ -135,8 +135,7 @@ const Register = () => {
     };
 
     const handleVolverLogin = () => {
-        // Aquí puedes agregar la lógica para autenticar con Google o simplemente redirigir
-        navigate('/login');  // Cambia '/ruta-de-google' por la ruta que quieras
+        navigate('/login');  
     };
 
     return (
@@ -232,7 +231,7 @@ const Register = () => {
                                     </div>
                                     <span className='text-center d-block mt-4 mb-5'>
                                         ¿Ya tienes cuenta?
-                                        <Link className='link color' onClick={handleRegister}>
+                                        <Link className='link color' to="/login">
                                             Loguearme
                                         </Link>
                                     </span>
