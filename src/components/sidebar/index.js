@@ -162,6 +162,7 @@ const Sidebar = () => {
                   {hasPermission('Citas') && (
                     <li>
                       <Link to="/appointment">Citas</Link>
+                      <Link to="/appointmentUpdate">Citas</Link>
                     </li>
                   )}
                   {hasPermission('Pedidos') && (
