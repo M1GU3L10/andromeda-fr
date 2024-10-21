@@ -45,13 +45,13 @@ function App() {
 
   useEffect(() => {
     if (themeMode === true) {
-      document.body.classList.remove('claro');
-      document.body.classList.add('oscuro');
-      localStorage.setItem('themeMode', 'oscuro');
+      document.body.classList.remove('light');
+      document.body.classList.add('dark');
+      localStorage.setItem('themeMode', 'dark');
     } else {
-      document.body.classList.remove('oscuro');
-      document.body.classList.add('claro');
-      localStorage.setItem('themeMode', 'claro');
+      document.body.classList.remove('dark');
+      document.body.classList.add('light');
+      localStorage.setItem('themeMode', 'light');
     }
   }, [themeMode]);
 
