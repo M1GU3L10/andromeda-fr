@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
-import headerBg from '../../assets/images/h1_hero.png'; // Asegúrate de tener una imagen similar
+
 
 const Index = () => {
     const context = useContext(MyContext);
@@ -16,7 +16,7 @@ const Index = () => {
         <>
             <header className="header-index">
                 <div className="header-content">
-                    <Link to={'/'} className='d-flex align-items-center logo'>
+                    <Link to={'/'} className='d-flex align-items-center logo-index'>
                         <img src={logo}></img>
                         <span className='ml-2'>Barberia Orion</span>
                     </Link>
