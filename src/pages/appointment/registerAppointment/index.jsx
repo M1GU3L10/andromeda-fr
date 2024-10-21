@@ -250,7 +250,7 @@ export default function RegisterAppointment() {
                   </div>
                 </div>
 
-                <div className='table-responsive mt-3 w-80'>
+                <div className='table-responsive mt-3 w-80 P-3'>
                   <table className='table table-bordered table-hover v-align table-striped'>
                     <thead className='table-light'>
                       <tr>

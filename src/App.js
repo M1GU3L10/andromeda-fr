@@ -32,9 +32,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
 import Index from './pages/index';
 
-
 export const MyContext = createContext();
-
 
 function App() {
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
@@ -42,6 +40,16 @@ function App() {
   const [isLogin, setIsLogin] = useState(false);
   const [isHideSidebarAndHeader, setIsHideSidebarAndHeader] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      setIsLogin(true);
+      setIsHideSidebarAndHeader(false);
+    } else {
+      setIsLogin(false);
+      setIsHideSidebarAndHeader(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (themeMode === true) {
@@ -55,7 +63,6 @@ function App() {
     }
   }, [themeMode]);
 
-
   const values = {
     isToggleSidebar,
     setIsToggleSidebar,
@@ -67,25 +74,24 @@ function App() {
     isHideSidebarAndHeader
   };
 
-
   return (
     <BrowserRouter>
       <MyContext.Provider value={values}>
         <PermissionProvider>
-          {isHideSidebarAndHeader !== true && <Header />}
+          {!isHideSidebarAndHeader && <Header />}
           <div className='main d-flex'>
-            {isHideSidebarAndHeader !== true && (
-              <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
+            {!isHideSidebarAndHeader && (
+              <div className={`sidebarWrapper ${isToggleSidebar ? 'toggle' : ''}`}>
                 <Sidebar />
               </div>
             )}
             <div className={`content ${isHideSidebarAndHeader === true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
               <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/index" element={<Index />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgotPassword" element={<ForgotPassword />} />
-                <Route path="/resetPassword" element={<ResetPassword />} />
+                <Route path="/login" element={<PermissionCheck requiredPermission="public"><Login /></PermissionCheck>} />
+                <Route path="/index" element={<PermissionCheck requiredPermission="public"><Index /></PermissionCheck>} />
+                <Route path="/register" element={<PermissionCheck requiredPermission="public"><Register /></PermissionCheck>} />
+                <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
+                <Route path="/resetPassword" element={<PermissionCheck requiredPermission="public"><ResetPassword /></PermissionCheck>} />
                 <Route path="/" element={<Navigate to="/index" replace />} />
                 <Route path="/dashboard" element={
                   <PermissionCheck requiredPermission="Dashboard">
@@ -186,6 +192,5 @@ function App() {
     </BrowserRouter>
   );
 }
-
 
 export default App;
