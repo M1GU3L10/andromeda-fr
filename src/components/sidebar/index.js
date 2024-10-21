@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { FaAngleRight } from "react-icons/fa6";
@@ -19,6 +19,7 @@ const Sidebar = () => {
   const [isToggleSubmenu, setisToggleSubmenu] = useState(false);
   const context = useContext(MyContext);
   const permissions = usePermissions();
+  const navigate = useNavigate();
 
   const isOpensubMenu = (index) => {
     setActiveTab(index);
@@ -32,9 +33,11 @@ const Sidebar = () => {
   const handleLogout = () => {
     localStorage.removeItem('jwtToken');
     localStorage.removeItem('roleId');
-    window.location.href = '/login';
+    context.setIsLogin(false);
+    context.setIsHideSidebarAndHeader(true);
+    navigate('/login');
   };
-
+  
   return (
     <>
       <div className="sidebar">
@@ -162,8 +165,9 @@ const Sidebar = () => {
                   {hasPermission('Citas') && (
                     <li>
                       <Link to="/appointment">Citas</Link>
-                      <Link to="/appointmentUpdate">Citas</Link>
+                      
                     </li>
+
                   )}
                   {hasPermission('Pedidos') && (
                     <li>
