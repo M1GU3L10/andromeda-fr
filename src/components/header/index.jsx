@@ -45,6 +45,11 @@ const Header = () => {
         navigate('/login');
     };
 
+    // Función para redirigir al inicio
+    const handleGoToHome = () => {
+        navigate('/index');
+    };
+
     return (
         <>
             <header className="d-flex align-items-center">
@@ -53,7 +58,7 @@ const Header = () => {
                         {/* Logo wropper */}
                         <div className="col-sm-2 parte1">
                             <Link to={'/'} className='d-flex align-items-center logo'>
-                                <img src={logo}></img>
+                                <img src={logo} alt="Barberia Orion Logo" />
                                 <span className='ml-2'>Barberia Orion</span>
                             </Link>
                         </div>
@@ -78,7 +83,7 @@ const Header = () => {
                                 <Button className='MyAcc d-flex align-items-center' onClick={handleClick}>
                                     <div className='ImgUser'>
                                         <span className='rounded-circle'>
-                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
+                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' alt="User Avatar" />
                                         </span>
                                     </div>
                                     <div className='userInfo'>
@@ -103,11 +108,11 @@ const Header = () => {
                                         </ListItemIcon>
                                         Mi cuenta
                                     </MenuItem>
-                                    <MenuItem onClick={handleClose}>
+                                    <MenuItem onClick={handleGoToHome}> {/* Usar handleGoToHome para redirigir */}
                                         <ListItemIcon>
                                             <BsShieldFillExclamation />
                                         </ListItemIcon>
-                                        Reset password
+                                        Volver al inicio
                                     </MenuItem>
                                     <MenuItem onClick={handleLogout}>
                                         <ListItemIcon>

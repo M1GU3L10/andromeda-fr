@@ -58,14 +58,17 @@ const Login = () => {
                 email,
                 password
             });
-
+    
             const { user, token } = response.data;
-
+    
             if (token && user.roleId) {
                 localStorage.setItem('jwtToken', token);
                 localStorage.setItem('roleId', user.roleId.toString());
+                localStorage.setItem('userName', user.name); // Guardar el nombre del usuario
                 console.log('Token and roleId stored:', { token, roleId: user.roleId });
-                navigate('/dashboard');
+                context.setIsLogin(true);
+                context.setUserName(user.name); // Establecer el nombre del usuario en el contexto
+                navigate('/index');
                 context.setIsHideSidebarAndHeader(false);
             } else {
                 throw new Error('Token o roleId no recibidos');
@@ -83,6 +86,7 @@ const Login = () => {
             }); 
         }
     };
+    
 
     const handleRegister = () => {
         navigate('/register');
