@@ -18,19 +18,22 @@ import Switch from '@mui/material/Switch';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Modal, Form } from 'react-bootstrap';
-import Pagination from '../../components/pagination/index';
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
+    backgroundColor: theme.palette.mode === 'light' ?
+        theme.palette.grey[100] : theme.palette.grey[800],
     height: theme.spacing(3),
     color: theme.palette.text.primary,
     fontWeight: theme.typography.fontWeightRegular,
     '&:hover, &:focus': {
-        backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.06),
+        backgroundColor: emphasize(theme.palette.mode === 'light' ?
+            theme.palette.grey[100] : theme.palette.grey[800], 0.06),
     },
     '&:active': {
         boxShadow: theme.shadows[1],
-        backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.12),
+        backgroundColor: emphasize(theme.palette.mode === 'light' ?
+            theme.palette.grey[100] : theme.palette.grey[800], 0.12),
     },
 }));
 
@@ -38,7 +41,8 @@ const BlueSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
         color: blue[600],
         '&:hover': {
-            backgroundColor: alpha(blue[600], theme.palette.action.hoverOpacity),
+            backgroundColor: alpha(blue[600],
+                theme.palette.action.hoverOpacity),
         },
     },
     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
@@ -61,15 +65,17 @@ const Products = () => {
     });
     const [imagePreviewUrl, setImagePreviewUrl] = useState('');
     const [productData, setProductData] = useState([]);
+
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [formErrors, setFormErrors] = useState({});
+    const [formErrors, setFormErrors] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage] = useState(1000);
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
+
 
     useEffect(() => {
         fetchCategories();
@@ -78,7 +84,8 @@ const Products = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get('http://localhost:1056/api/categories');
+            const response = await
+                axios.get('http://localhost:1056/api/categories');
             setCategories(response.data);
         } catch (err) {
             console.error('Error fetching categories:', err);
@@ -89,7 +96,8 @@ const Products = () => {
     const fetchProductData = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:1056/api/products');
+            const response = await
+                axios.get('http://localhost:1056/api/products');
             setProductData(response.data);
             setLoading(false);
         } catch (err) {
@@ -115,7 +123,8 @@ const Products = () => {
         let updatedValue = value;
 
         if (name === 'Price') {
-            updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
+            updatedValue = value === '' ? '' : Math.max(0,
+                parseFloat(value) || 0);
         }
 
         setFormData(prevData => ({
@@ -133,16 +142,16 @@ const Products = () => {
                 show_alerta('Tipo de archivo no permitido. Use JPEG, PNG o GIF.', 'error');
                 return;
             }
-    
+
             // Validar tamaño de archivo (por ejemplo, máximo 5MB)
             const maxSize = 5 * 1024 * 1024; // 5MB
             if (file.size > maxSize) {
                 show_alerta('El archivo es demasiado grande. Máximo 5MB permitido.', 'error');
                 return;
             }
-    
+
             setFormData({ ...formData, Image: file });
-    
+
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreviewUrl(reader.result);
@@ -153,23 +162,25 @@ const Products = () => {
 
     const validateForm = () => {
         const errors = {};
-    
+
         if (!formData.Product_Name || formData.Product_Name.trim() === '') {
             errors.Product_Name = 'El nombre del producto es obligatorio';
         }
-    
-        if (!formData.Price || isNaN(formData.Price) || parseFloat(formData.Price) <= 0) {
+
+        if (!formData.Price || isNaN(formData.Price) ||
+            parseFloat(formData.Price) <= 0) {
             errors.Price = 'El precio debe ser un número mayor a cero';
         }
-    
+
         if (!formData.Category_Id || isNaN(formData.Category_Id)) {
             errors.Category_Id = 'Debe seleccionar una categoría válida';
         }
-    
-        if (formData.Stock !== '' && (isNaN(formData.Stock) || parseInt(formData.Stock) < 0)) {
+
+        if (formData.Stock !== '' && (isNaN(formData.Stock) ||
+            parseInt(formData.Stock) < 0)) {
             errors.Stock = 'El stock debe ser un número entero no negativo';
         }
-    
+
         return errors;
     };
 
@@ -179,28 +190,30 @@ const Products = () => {
             setFormErrors(errors)
             return
         }
-    
+
         const formDataToSend = new FormData();
         formDataToSend.append('Product_Name', formData.Product_Name.trim());
         formDataToSend.append('Price', formData.Price);
         formDataToSend.append('Category_Id', formData.Category_Id);
         formDataToSend.append('status', formData.status);
         formDataToSend.append('Stock', formData.Stock);
-        
+
         if (formData.Image instanceof File) {
             formDataToSend.append('Image', formData.Image);
         }
-    
+
         try {
-            const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`, formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-        
+            const response = await
+                axios.put(`http://localhost:1056/api/products/${formData.id}`,
+                    formDataToSend, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
             if (response.status === 200 || response.status === 204) {
                 handleClose();
-                await fetchProductData(); // Asegúrate de que esto sea una función asíncrona
+                await fetchProductData();
                 show_alerta('Producto actualizado exitosamente', 'success');
             } else {
                 throw new Error('Respuesta inesperada del servidor');
@@ -208,19 +221,18 @@ const Products = () => {
         } catch (error) {
             console.error('Error:', error);
             if (error.response) {
-                // El servidor respondió con un estado fuera del rango de 2xx
                 show_alerta(`Actualizado correctamente`, 'success');
-                await fetchProductData(); // Vuelve a cargar los datos de los productos
-                handleClose(); // Cierra el modal o realiza la acción que necesites
+                await fetchProductData();
+                handleClose();
             } else if (error.request) {
-                // La petición fue hecha pero no se recibió respuesta
                 show_alerta('No se pudo conectar con el servidor', 'error');
             } else {
-                // Algo sucedió al configurar la petición que provocó un error
-                show_alerta(`Error al procesar la solicitud: ${error.message}`, 'error');
+                show_alerta(`Error al procesar la solicitud:
+${error.message}`, 'error');
             }
         }
-    };        
+    };
+
     const handleSubmit = async () => {
         const errors = validateForm()
         if (Object.keys(errors).length > 0) {
@@ -238,12 +250,13 @@ const Products = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-    
+            const response = await
+                axios.post('http://localhost:1056/api/products', formDataToSend, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+
             if (response.status === 200 || response.status === 201) {
                 handleClose()
                 fetchProductData()
@@ -254,19 +267,19 @@ const Products = () => {
         } catch (error) {
             console.error('Error:', error)
             if (error.response) {
-                // El servidor respondió con un estado fuera del rango de 2xx
-                show_alerta(`Error del servidor: ${error.response.data.message || 'Error desconocido'}`, 'error')
+                show_alerta(`Error del servidor:
+${error.response.data.message || 'Error desconocido'}`, 'error')
             } else if (error.request) {
-                // La petición fue hecha pero no se recibió respuesta
                 show_alerta('No se pudo conectar con el servidor', 'error')
             } else {
-                // Algo sucedió al configurar la petición que provocó un error
-                show_alerta(`Error al procesar la solicitud: ${error.message}`, 'error')
+                show_alerta(`Error al procesar la solicitud:
+${error.message}`, 'error')
             }
         }
     }
 
-    const openModal = (op, id, Product_Name, Price, Category_Id, Image, Stock, status) => {
+    const openModal = (op, id, Product_Name, Price, Category_Id,
+        Image, Stock, status) => {
         setOperation(op);
         setFormData({
             id,
@@ -295,7 +308,8 @@ const Products = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axios.delete(`http://localhost:1056/api/products/${id}`);
+                    await
+                        axios.delete(`http://localhost:1056/api/products/${id}`);
                     fetchProductData();
                     show_alerta('Producto eliminado exitosamente', 'success');
                 } catch (err) {
@@ -309,18 +323,20 @@ const Products = () => {
     };
 
     const handleSwitchChange = async (productId, checked) => {
-        const productToUpdate = productData.find(product => product.id === productId);
+        const productToUpdate = productData.find(product => product.id
+            === productId);
         const MySwal = withReactContent(Swal);
-    
+
         const result = await MySwal.fire({
-            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el producto "${productToUpdate.Product_Name}"?`,
+            title: `¿Estás seguro que deseas ${checked ? 'activar' :
+                'desactivar'} el producto "${productToUpdate.Product_Name}"?`,
             icon: 'question',
             text: 'Esta acción puede afectar la disponibilidad del producto.',
             showCancelButton: true,
             confirmButtonText: 'Sí, confirmar',
             cancelButtonText: 'Cancelar'
         });
-    
+
         if (result.isConfirmed) {
             const newStatus = checked ? 'A' : 'I';
             try {
@@ -333,15 +349,22 @@ const Products = () => {
                         MySwal.showLoading();
                     },
                 });
-    
-                console.log(`Intentando actualizar producto ${productId} a estado ${newStatus}`);
-                const response = await axios.put(`http://localhost:1056/api/products/${productId}/status`, { status: newStatus });
+
+                console.log(`Intentando actualizar producto
+${productId} a estado ${newStatus}`);
+                const response = await
+                    axios.put(`http://localhost:1056/api/products/${productId}/status`, {
+                        status: newStatus
+                    });
                 console.log('Respuesta del servidor:', response);
-    
+
                 if (response.status === 200) {
                     setProductData(prevData =>
                         prevData.map(product =>
-                            product.id === productId ? { ...product, status: newStatus } : product
+                            product.id === productId ? {
+                                ...product,
+                                status: newStatus
+                            } : product
                         )
                     );
                     MySwal.fire({
@@ -364,13 +387,7 @@ const Products = () => {
                 } else if (error.request) {
                     MySwal.fire({
                         title: 'Error de conexión',
-                        text: 'No se pudo conectar con el servidor. Por favor, verifica tu conexión a internet e inténtalo de nuevo.',
-                        icon: 'error',
-                    });
-                } else {
-                    MySwal.fire({
-                        title: 'Error',
-                        text: `Error al procesar la solicitud: ${error.message}`,
+                        text: 'No se pudo conectar con el servidor.Por favor, verifica tu conexión a internet e inténtalo de nuevo.',
                         icon: 'error',
                     });
                 }
@@ -384,19 +401,21 @@ const Products = () => {
         }
     };
 
-    const handlePageChange = (pageNumber) => {
+    const handlePageChange = useCallback((pageNumber) => {
         setCurrentPage(pageNumber);
-    };
+    }, []);
 
-    const handleSearchChange = (event) => {
+    const handleSearchChange = useCallback((event) => {
         setSearchTerm(event.target.value);
         setCurrentPage(1);
-    };
+    }, []);
+
 
     const filteredItems = productData.filter((product) =>
         product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
@@ -438,12 +457,16 @@ const Products = () => {
                 <div className='card shadow border-0 p-3'>
                     <div className='row '>
                         <div className='col-sm-5 d-flex align-items-center'>
-                            <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
+                            <Button className='btn-register'
+                                onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill
+                                />Registrar</Button>
                         </div>
                         <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                             <div className="searchBox position-relative d-flex align-items-center">
                                 <IoSearch className="mr-2" />
-                                <input value={searchTerm} onChange={handleSearchChange} type="text" placeholder='Buscar...' className='form-control' />
+                                <input value={searchTerm}
+                                    onChange={handleSearchChange} type="text" placeholder='Buscar...'
+                                    className='form-control' />
                             </div>
                         </div>
                     </div>
@@ -462,37 +485,58 @@ const Products = () => {
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 {currentItems.length > 0 ? (
                                     currentItems.map((product, i) => (
                                         <tr key={product.id}>
-                                            <td>{(i + 1) + (currentPage - 1) * itemsPerPage}</td>
+                                            <td>{(i + 1) +
+                                                (currentPage - 1) * itemsPerPage}</td>
                                             <td>{product.Product_Name}</td>
-                                            <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
+                                            <td>{new
+                                                Intl.NumberFormat('es-CO', {
+                                                    style: 'currency', currency: 'COP'
+                                                }).format(product.Price)}</td>
                                             <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</td>
                                             <td>{product.Stock}</td>
                                             <td>
                                                 {product.Image ? (
                                                     <img
                                                         src={product.Image}
+
                                                         alt={product.Product_Name}
-                                                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                                        style={{
+                                                            width: '50px', height: '50px', objectFit: 'cover'
+                                                        }}
                                                     />
                                                 ) : 'No'}
                                             </td>
-
-                                            <td><span className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>{product.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
+                                            <td><span
+                                                className={`productStatus ${product.status === 'A' ? '' :
+                                                    'Inactive'}`}>{product.status === 'A' ? 'Activo' :
+                                                        'Inactivo'}</span></td>
                                             <td>
-                                                <div className='actions d-flex align-items-center'>
+                                                <div
+                                                    className='actions d-flex align-items-center'>
                                                     <BlueSwitch
+
                                                         checked={product.status === 'A'}
                                                         onChange={(e) => handleSwitchChange(product.id, e.target.checked)}
                                                     />
-                                                    <Button color='primary' className='primary' onClick={() => handleViewDetails(product)}><FaEye /></Button>
+                                                    <Button
+                                                        color='primary' className='primary' onClick={() =>
+                                                            handleViewDetails(product)}><FaEye /></Button>
                                                     {product.status === 'A' && (
                                                         <>
-                                                            <Button color="secondary" className='secondary' onClick={() => openModal(2, product.id, product.Product_Name, product.Price, product.Category_Id, product.Image, product.Stock, product.status)}><FaPencilAlt /></Button>
-                                                            <Button color='error' className='delete' onClick={() => handleDelete(product.id, product.Product_Name)}><IoTrashSharp /></Button>
+                                                            <Button
+                                                                color="secondary" className='secondary' onClick={() => openModal(2,
+                                                                    product.id, product.Product_Name, product.Price, product.Category_Id,
+                                                                    product.Image, product.Stock, product.status)}><FaPencilAlt
+                                                                /></Button>
+                                                            <Button
+                                                                color='error' className='delete' onClick={() =>
+                                                                    handleDelete(product.id, product.Product_Name)}><IoTrashSharp
+                                                                /></Button>
                                                         </>
                                                     )}
                                                 </div>
@@ -501,26 +545,20 @@ const Products = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={8} className='text-center'>No hay Productos disponibles</td>
+                                        <td colSpan={8}
+                                            className='text-center'>No hay Productos disponibles</td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
-                        {filteredItems.length > itemsPerPage && (
-                            <div className="d-flex table-footer">
-                                <Pagination
-                                    setCurrentPage={handlePageChange}
-                                    currentPage={currentPage}
-                                    totalPages={Math.ceil(filteredItems.length / itemsPerPage)}
-                                />
-                            </div>
-                        )}
+
+
                     </div>
                 </div>
             </div>
 
-            <Modal show={showModal}>
-                <Modal.Header>
+            <Modal show={showModal} onHide={handleClose}>
+                <Modal.Header closeButton>
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -562,9 +600,11 @@ const Products = () => {
                                 onChange={handleInputChange}
                                 isInvalid={!!formErrors.Category_Id}
                             >
-                                <option value="">Seleccione una categoría</option>
+                                <option value="">Seleccione una
+                                    categoría</option>
                                 {categories.map(category => (
-                                    <option key={category.id} value={category.id}>{category.name}</option>
+                                    <option key={category.id}
+                                        value={category.id}>{category.name}</option>
                                 ))}
                             </Form.Select>
                             <Form.Control.Feedback type="invalid">
@@ -579,16 +619,19 @@ const Products = () => {
                                 onChange={handleFileChange}
                             />
                             {imagePreviewUrl && (
-                                <img src={imagePreviewUrl} alt="Preview" style={{ maxWidth: '100%', marginTop: '10px' }} />
+                                <img src={imagePreviewUrl}
+                                    alt="Preview" style={{ maxWidth: '100%', marginTop: '10px' }} />
                             )}
                         </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                    <Button variant="secondary" onClick={handleClose}
+                        id='btnCerrar' className='btn-red'>
                         Cerrar
                     </Button>
-                    <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate} className='btn-sucess'>
+                    <Button variant="primary" onClick={operation === 1
+                        ? handleSubmit : handleUpdate} className='btn-sucess'>
                         Guardar
                     </Button>
                 </Modal.Footer>
@@ -600,10 +643,16 @@ const Products = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <p><strong>Nombre:</strong> {viewData.Product_Name}</p>
-                    <p><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(viewData.Price)}</p>
-                    <p><strong>Categoría:</strong> {categories.find(cat => cat.id === viewData.Category_Id)?.name || 'N/A'}</p>
+                    <p><strong>Precio:</strong> {new
+                        Intl.NumberFormat('es-CO', {
+                            style: 'currency', currency: 'COP'
+                        }).format(viewData.Price)}</p>
+                    <p><strong>Categoría:</strong>
+                        {categories.find(cat => cat.id === viewData.Category_Id)?.name ||
+                            'N/A'}</p>
                     <p><strong>Stock:</strong> {viewData.Stock}</p>
-                    <p><strong>Estado:</strong> {viewData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+                    <p><strong>Estado:</strong> {viewData.status ===
+                        'A' ? 'Activo' : 'Inactivo'}</p>
                     {viewData.Image ? (
                         <img
                             src={viewData.Image}
@@ -614,8 +663,6 @@ const Products = () => {
                         <p><strong>Imagen:</strong> No disponible</p>
                     )}
                 </Modal.Body>
-
-
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleCloseDetail}>
                         Cerrar

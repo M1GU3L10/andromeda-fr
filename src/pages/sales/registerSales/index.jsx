@@ -259,6 +259,7 @@ const RegisterSales = () => {
                                                 <th>Cantidad</th>
                                                 <th>Precio unt</th>
                                                 <th>Subtotal</th>
+                                                <th>Imagen</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
@@ -269,6 +270,17 @@ const RegisterSales = () => {
                                                     <td>{product.quantity}</td>
                                                     <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
                                                     <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
+                                                    <td>
+                                                        {product.Image ? (
+                                                            <img
+                                                                src={product.Image}
+                                                                alt={product.Product_Name}
+                                                                style={{
+                                                                    width: '50px', height: '50px', objectFit: 'cover'
+                                                                }}
+                                                            />
+                                                        ) : 'No'}
+                                                    </td>
                                                     <td>
                                                         <div className='d-flex align-items-center position-static'>
                                                             <Button color='error' className='delete' onClick={() => removeProduct(product.id)}><IoTrashSharp /></Button>

@@ -27,29 +27,32 @@ const Index = () => {
                         <span className='ml-2'>Barberia Orion</span>
                     </Link>
                     <nav className='navBar-index'>
-                        <Link to='/'>HOME</Link>
-                        <Link to='/about'>ABOUT</Link>
-                        <Link to='/services'>SERVICES</Link>
-                        <Link to='/blog'>BLOG</Link>
-                        <Link to='/shop'>SHOP</Link>
-                        <Link to='/contact'>CONTACTS</Link>
+                        <Link to='/index'>INICIO</Link>
+                        <Link to='/services'>SERVICIOS</Link>
+                        <Link to='/blog'>CITAS</Link>
+                        <Link to='/Shop'>PRODUCTOS</Link>
+                        <Link to='/contact'>CONTACTO</Link>
                     </nav>
                     <Button
                         variant="contained"
                         className="book-now-btn"
                         onClick={handleLogin}
                     >
-                        LOGIN
+                        INICIAR SESION
                     </Button>
                 </div>
                 <div className="hero-content">
-                    <h1>Only Top Barbers</h1>
-                    <p>Barbershop is the place where you can get a high-quality haircut from certified barbers, who are not just professionals but also talented masters.</p>
+                    <h1>
+                        Sólo los mejores barberos
+                    </h1>
+                    <p>
+                        La barbería es el lugar donde puedes conseguir un corte de pelo de alta calidad de barberos certificados, que no sólo son profesionales, sino también maestros con talento.
+                    </p>
                     <Button
                         variant="outlined"
                         className="read-more-btn"
                     >
-                        READ MORE
+                        VER MAS
                     </Button>
                 </div>
             </header>

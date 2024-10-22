@@ -24,6 +24,7 @@ import ViewShopping from './pages/shopping/viewShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
 import UpdateAppointment from './pages/appointment/updateAppointment';
 import Login from './pages/Login';
+import Shop from './pages/shop';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -163,6 +164,12 @@ function App() {
                     <ViewShopping />
                   </PermissionCheck>
                 } />
+                <Route path="/shop" element={
+                  <PermissionCheck requiredPermission="Productos">
+                    <Shop />
+                  </PermissionCheck>
+                } />
+
                 <Route path="/suppliers" element={
                   <PermissionCheck requiredPermission="Proveedores">
                     <Suppliers />

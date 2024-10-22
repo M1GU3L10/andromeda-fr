@@ -101,7 +101,7 @@ const Header = () => {
                                         <ListItemIcon>
                                             <PersonAdd fontSize="small" />
                                         </ListItemIcon>
-                                        My account
+                                        Mi cuenta
                                     </MenuItem>
                                     <MenuItem onClick={handleClose}>
                                         <ListItemIcon>
@@ -113,7 +113,7 @@ const Header = () => {
                                         <ListItemIcon>
                                             <Logout fontSize="small" />
                                         </ListItemIcon>
-                                        Logout
+                                        Cerrar sesion
                                     </MenuItem>
                                 </Menu>
                             </div>
