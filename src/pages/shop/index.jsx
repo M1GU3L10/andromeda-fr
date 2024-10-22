@@ -135,18 +135,18 @@ const Shop = () => {
                     </Link>
                     <nav className='navBar-index1'>
                         <Link to='/index'>INICIO</Link>
-                        <Link to='/about'>ABOUT</Link>
+                        
                         <Link to='/services'>SERVICIOS</Link>
-                        <Link to='/blog'>BLOG</Link>
+                        <Link to='/appointment'>CITAS</Link>
                         <Link to='/shop'>PRODUCTOS</Link>
-                        <Link to='/contact'>CONTACTO</Link>
+                        <Link to='/index'>CONTACTO</Link>
                     </nav>
                     <div className="d-flex align-items-center">
                         <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
                             INICIAR SESIÓN
                         </Button>
                         <IconButton color="inherit" onClick={() => setDrawerOpen(true)}>
-                            <Badge badgeContent={getTotalItems()} color="secondary">
+                            <Badge badgeContent={getTotalItems()} color="primary">
                                 <ShoppingCart />
                             </Badge>
                         </IconButton>
@@ -213,6 +213,7 @@ const Shop = () => {
                                 </div>
                             ))
                         ) : (
+                                
                             <div className="text-center py-12">
                                 <Typography variant="h6" gutterBottom>
                                     No se encontraron productos
