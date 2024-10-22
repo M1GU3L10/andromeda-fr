@@ -172,12 +172,14 @@ const Users = () => {
             email: '',
             password: '',
             phone: '',
+            roleId: ''
         });
         setTouched({
             name: false,
             email: false,
             password: false,
             phone: false,
+            roleId: false
         });
 
         setShowModal(false);

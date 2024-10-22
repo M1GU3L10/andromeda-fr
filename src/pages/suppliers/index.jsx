@@ -58,7 +58,7 @@ const Suppliers = () => {
     const url = 'http://localhost:1056/api/suppliers';
     const [suppliers, setSuppliers] = React.useState([]);
     const [formValues, setFormValues] = React.useState({
-        id: '',
+        id: '', 
         Supplier_Name: '',
         Phone_Number: '',
         Email: '',

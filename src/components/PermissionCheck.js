@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const PermissionContext = createContext([]);
@@ -9,16 +9,26 @@ export const usePermissions = () => useContext(PermissionContext);
 export const PermissionProvider = ({ children }) => {
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchPermissions = async () => {
       const roleId = localStorage.getItem('roleId');
       console.log('roleId from localStorage:', roleId);
-      if (!roleId) {
+
+      // Lista de rutas públicas
+      const publicRoutes = ['/login', '/register', '/forgotPassword', '/resetPassword','/index'];
+
+      if (!roleId && !publicRoutes.includes(location.pathname)) {
         console.error('No roleId found in localStorage');
         setLoading(false);
-        navigate('/login');
+        setPermissions([]);
+        return;
+      }
+
+      if (publicRoutes.includes(location.pathname)) {
+        setLoading(false);
+        setPermissions(['public']);
         return;
       }
 
@@ -41,7 +51,7 @@ export const PermissionProvider = ({ children }) => {
     };
 
     fetchPermissions();
-  }, [navigate]);
+  }, [location]);
 
   if (loading) {
     return <div>Cargando permisos...</div>;
@@ -58,7 +68,7 @@ export const PermissionCheck = ({ requiredPermission, children }) => {
   const permissions = usePermissions();
   console.log(`PermissionCheck - Required: ${requiredPermission} Available:`, permissions);
 
-  if (permissions.includes(requiredPermission)) {
+  if (permissions.includes(requiredPermission) || permissions.includes('public')) {
     return <>{children}</>;
   }
 

@@ -18,7 +18,7 @@ import Switch from '@mui/material/Switch';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Modal, Form } from 'react-bootstrap';
-import Pagination from '../../components/pagination/index';
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ?
@@ -69,7 +69,7 @@ const Products = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [formErrors, setFormErrors] = useState([  ]);
+    const [formErrors, setFormErrors] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(1000);
     const [searchTerm, setSearchTerm] = useState('');
@@ -551,7 +551,7 @@ ${productId} a estado ${newStatus}`);
                                 )}
                             </tbody>
                         </table>
-                 
+
 
                     </div>
                 </div>

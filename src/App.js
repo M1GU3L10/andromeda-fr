@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
 import './App.css';
+import './index.css';
 import Dashboard from './pages/Dashboard';
 import Header from './components/header';
 import Sidebar from './components/sidebar';
@@ -23,16 +24,16 @@ import ViewShopping from './pages/shopping/viewShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
 import UpdateAppointment from './pages/appointment/updateAppointment';
 import Login from './pages/Login';
+import Shop from './pages/shop';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
-
+import Index from './pages/index';
 
 export const MyContext = createContext();
-
 
 function App() {
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
@@ -40,19 +41,28 @@ function App() {
   const [isLogin, setIsLogin] = useState(false);
   const [isHideSidebarAndHeader, setIsHideSidebarAndHeader] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      setIsLogin(true);
+      setIsHideSidebarAndHeader(false);
+    } else {
+      setIsLogin(false);
+      setIsHideSidebarAndHeader(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (themeMode === true) {
-      document.body.classList.remove('claro');
-      document.body.classList.add('oscuro');
-      localStorage.setItem('themeMode', 'oscuro');
+      document.body.classList.remove('light');
+      document.body.classList.add('dark');
+      localStorage.setItem('themeMode', 'dark');
     } else {
-      document.body.classList.remove('oscuro');
-      document.body.classList.add('claro');
-      localStorage.setItem('themeMode', 'claro');
+      document.body.classList.remove('dark');
+      document.body.classList.add('light');
+      localStorage.setItem('themeMode', 'light');
     }
   }, [themeMode]);
-
 
   const values = {
     isToggleSidebar,
@@ -65,25 +75,25 @@ function App() {
     isHideSidebarAndHeader
   };
 
-
   return (
     <BrowserRouter>
       <MyContext.Provider value={values}>
         <PermissionProvider>
-          {isHideSidebarAndHeader !== true && <Header />}
+          {!isHideSidebarAndHeader && <Header />}
           <div className='main d-flex'>
-            {isHideSidebarAndHeader !== true && (
-              <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
+            {!isHideSidebarAndHeader && (
+              <div className={`sidebarWrapper ${isToggleSidebar ? 'toggle' : ''}`}>
                 <Sidebar />
               </div>
             )}
             <div className={`content ${isHideSidebarAndHeader === true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
               <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgotPassword" element={<ForgotPassword />} />
-                <Route path="/resetPassword" element={<ResetPassword />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/login" element={<PermissionCheck requiredPermission="public"><Login /></PermissionCheck>} />
+                <Route path="/index" element={<PermissionCheck requiredPermission="public"><Index /></PermissionCheck>} />
+                <Route path="/register" element={<PermissionCheck requiredPermission="public"><Register /></PermissionCheck>} />
+                <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
+                <Route path="/resetPassword" element={<PermissionCheck requiredPermission="public"><ResetPassword /></PermissionCheck>} />
+                <Route path="/" element={<Navigate to="/index" replace />} />
                 <Route path="/dashboard" element={
                   <PermissionCheck requiredPermission="Dashboard">
                     <Dashboard />
@@ -99,12 +109,12 @@ function App() {
                     <Appointment />
                   </PermissionCheck>
                 } />
-                <Route path="/registerAppointment" element={
+                <Route path="/appointmentRegister" element={
                   <PermissionCheck requiredPermission="Citas">
                     <RegisterAppointment />
                   </PermissionCheck>
                 } />
-                <Route path="/updateAppointment/:appointmentId" element={
+                <Route path="/appointmentUpdate/:appointmentId" element={
                   <PermissionCheck requiredPermission="Citas">
                     <UpdateAppointment />
                   </PermissionCheck>
@@ -154,6 +164,12 @@ function App() {
                     <ViewShopping />
                   </PermissionCheck>
                 } />
+                <Route path="/shop" element={
+                  <PermissionCheck requiredPermission="Productos">
+                    <Shop />
+                  </PermissionCheck>
+                } />
+
                 <Route path="/suppliers" element={
                   <PermissionCheck requiredPermission="Proveedores">
                     <Suppliers />
@@ -183,6 +199,5 @@ function App() {
     </BrowserRouter>
   );
 }
-
 
 export default App;

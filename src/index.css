@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif !important;
+}
+
+.header-index {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                url('assets/images/h1_hero.png') center/cover no-repeat;
+    color: #fff;
+}
+
+.header-content {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    background: transparent;
+}
+
+.logo-index {
+    text-decoration: none;
+    font-size: 32px;
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+}
+
+.logo-index img {
+    width: 50px;
+    margin-right: 5px;
+}
+
+.logo-index span {
+    color: #fff;
+    font-size: 22px;
+    text-decoration: none;
+}
+
+header .logo-index span{
+color: #fff;
+}
+
+.navBar-index {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.navBar-index a {
+    font-size: 14px;
+    text-decoration: none;
+    color: #fff;
+    font-weight: 500;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+.navBar-index a::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #fff;
+    left: 0;
+    bottom: -5px;
+    border-radius: 10px;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.navBar-index a:hover::before {
+    transform: scaleX(1);
+}
+
+.book-now-btn {
+    background-color: #006D77 !important;
+    border-radius: 0 !important;
+    padding: 8px 24px !important;
+    font-size: 14px !important;
+    letter-spacing: 1px !important;
+}
+
+.hero-content {
+    position: absolute;
+    top: 50%;
+    left: 5%;
+    transform: translateY(-50%);
+    max-width: 600px;
+}
+
+.hero-content h1 {
+    font-size: 64px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.read-more-btn {
+    color: #fff !important;
+    border-color: #fff !important;
+    border-radius: 0 !important;
+    padding: 10px 30px !important;
+    font-size: 14px !important;
+    letter-spacing: 1px !important;
+}
+
+.read-more-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
