@@ -21,7 +21,7 @@ import {
     Alert
 } from '@mui/material';
 import { ShoppingCart, Search } from '@mui/icons-material';
-import Swal from 'sweetalert2'; // Importar SweetAlert2
+import Swal from 'sweetalert2'; 
 import './shop.css';
 
 const Shop = () => {
