@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
 
+/* Estilos globales */
 * {
     margin: 0;
     padding: 0;
@@ -7,10 +8,16 @@
     font-family: "Poppins", sans-serif !important;
 }
 
+
+   
+
+/* Estilo del encabezado */
 .header-index1 {
     position: relative;
-    background-color: black;
+    background-color: #000000;  
+
 }
+
 
 .header-content {
     position: fixed;
@@ -25,6 +32,7 @@
     background: transparent;
 }
 
+/* Estilo del logo */
 .logo-index {
     text-decoration: none;
     font-size: 32px;
@@ -44,6 +52,7 @@
     font-size: 22px;
 }
 
+/* Estilo de la barra de navegación */
 .navBar-index1 {
     display: flex;
     align-items: center;
@@ -72,15 +81,17 @@
 }
 
 .navBar-index1 a:hover::before {
-    background-color: white;
+    background-color: white; /* Subrayado al pasar el ratón */
 }
 
+/* Contenedor principal de la tienda */
 .shop-container {
     padding-top: 100px; /* Espacio para el encabezado fijo */
     max-width: 1200px;
     margin: 0 auto;
 }
 
+/* Estilo del título de la tienda */
 .shop-title {
     text-align: center;
     font-size: 36px;
@@ -88,6 +99,7 @@
     color: #333;
 }
 
+/* Estilo de la barra de búsqueda */
 .search-bar {
     display: flex;
     justify-content: center;
@@ -95,9 +107,10 @@
 }
 
 .search-bar .MuiTextField-root {
-    border-radius: 30px;
+    border-radius: 30px; /* Esquinas redondeadas para el campo de búsqueda */
 }
 
+/* Estilo de la cuadrícula de productos */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -105,31 +118,34 @@
     padding: 20px;
 }
 
+/* Estilo de las tarjetas de productos */
 .product-card {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 16px;
     text-align: center;
     margin: 10px;
-    transition: transform 0.2s, border-color 0.2s; /* Añadir transición */
+    transition: transform 0.2s, border-color 0.2s; /* Transición para el hover */
     height: 320px; /* Altura fija para las tarjetas */
     display: flex;
-    flex-direction: column; /* Asegura que el contenido se alinee verticalmente */
+    flex-direction: column; /* Alineación vertical del contenido */
 }
 
 .product-card:hover {
-    transform: scale(1.05);
-    border-color: #007bff;
+    transform: scale(1.05); /* Efecto de aumento al pasar el ratón */
+    border-color: #007bff; /* Cambio de color del borde al pasar el ratón */
 }
 
+/* Estilo de la imagen del producto */
 .product-image {
-    width: 100%; /* Ancho del 100% del contenedor de la tarjeta */
+    width: 100%; /* Ancho completo */
     height: 200px; /* Altura fija para todas las imágenes */
-    object-fit: cover; /* Mantiene la proporción de la imagen y recorta si es necesario */
+    object-fit: cover; /* Mantiene la proporción de la imagen */
     border-radius: 4px;
     margin-bottom: 10px;
 }
 
+/* Estilo del título y descripción del producto */
 .product-title {
     font-size: 18px;
     margin-bottom: 10px;
@@ -140,15 +156,26 @@
     color: #666;
 }
 
+/* Estilo del botón de agregar al carrito */
 .add-to-cart-btn {
     margin-top: auto; /* Empuja el botón hacia el fondo de la tarjeta */
 }
 
+/* Estilo del contenido del cajón de compras */
 .drawer-content {
     width: 300px;
     padding: 20px;
 }
 
 .drawer-content .MuiTypography-h6 {
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* Espacio debajo del título en el cajón */
+}
+.price-typography {
+    margin-top: 28px; /* Ajusta el valor según sea necesario */
+}
+
+.price-container {
+    display: flex;
+    justify-content: space-between; /* Para alinear ambos elementos */
+    align-items: center; /* Alinear verticalmente */
 }

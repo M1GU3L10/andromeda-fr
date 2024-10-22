@@ -21,6 +21,7 @@ import {
     Alert
 } from '@mui/material';
 import { ShoppingCart, Search } from '@mui/icons-material';
+import Swal from 'sweetalert2'; // Importar SweetAlert2
 import './shop.css';
 
 const Shop = () => {
@@ -43,7 +44,6 @@ const Shop = () => {
         try {
             setLoading(true);
             const response = await axios.get('http://localhost:1056/api/products');
-            // Filtrar solo los productos que están activos (status: 'A')
             const activeProducts = response.data.filter(product => product.status === 'A');
             setProducts(activeProducts);
         } catch (err) {
@@ -53,7 +53,7 @@ const Shop = () => {
             setLoading(false);
         }
     };
-    
+
     const handleLogin = () => {
         navigate('/login');
     };
@@ -96,15 +96,22 @@ const Shop = () => {
         setAlertMessage('Carrito vacío');
     };
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         if (Object.keys(cart).length === 0) {
             setAlertMessage('Tu carrito está vacío. Agrega productos antes de realizar un pedido.');
             return;
         }
-        // Aquí puedes agregar la lógica para procesar el pedido
+
         console.log('Realizando pedido con los siguientes productos:', cart);
-        clearCart(); // Opcional, limpiar el carrito después de realizar el pedido
-        setAlertMessage('¡Pedido realizado con éxito!'); // Mensaje de éxito
+        clearCart();
+
+        // Mostrar la alerta de SweetAlert
+        await Swal.fire({
+            title: '¡Pedido realizado con éxito!',
+            text: 'Tu pedido ha sido procesado.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar'
+        });
     };
 
     const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
@@ -238,36 +245,45 @@ const Shop = () => {
                             {Object.entries(cart).map(([productId, quantity]) => {
                                 const product = products.find((p) => p.id === parseInt(productId));
                                 return (
-                                    <ListItem key={productId}>
+                                    <ListItem key={productId} className="cart-item">
                                         {product && (
                                             <ListItemAvatar>
                                                 <Avatar src={product.Image} alt={product.Product_Name} />
                                             </ListItemAvatar>
                                         )}
                                         <ListItemText
-                                            primary={product ? product.Product_Name : "Producto no disponible"}
-                                            secondary={`Cantidad: ${quantity}`}
+                                            primary={product ? product.Product_Name : "Producto no disponible o agotado"}
+                                            secondary={`Cantidad: ${cart[productId] || 0} | Precio: ${product ? (product.Price * (cart[productId] || 0)).toFixed(2) : "N/A"}`}
                                         />
-                                        <Typography variant="body2">
-                                            ${product ? (product.Price * quantity).toFixed(2) : "N/A"}
-                                        </Typography>
                                         <IconButton onClick={() => removeFromCart(parseInt(productId))}>
                                             -
                                         </IconButton>
                                         <IconButton onClick={() => addToCart(product)}>
-                                            <AddIcon />
+                                            +
                                         </IconButton>
                                     </ListItem>
                                 );
                             })}
                         </List>
                     )}
-                    <Button variant="contained" color="error" onClick={clearCart}>
-                        Vaciar carrito
-                    </Button>
-                    <Button variant="contained" color="primary" onClick={handleCheckout} className="mt-4">
-                        Realizar Pedido
-                    </Button>
+                    <div className="drawer-footer">
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={clearCart}
+                            className="mt-2"
+                        >
+                            Vaciar Carrito
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleCheckout}
+                            className="mt-2"
+                        >
+                            Realizar Pedido
+                        </Button>
+                    </div>
                 </div>
             </Drawer>
         </>
