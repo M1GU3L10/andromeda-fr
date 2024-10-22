@@ -253,8 +253,15 @@ const Shop = () => {
                                         )}
                                         <ListItemText
                                             primary={product ? product.Product_Name : "Producto no disponible o agotado"}
-                                            secondary={`Cantidad: ${cart[productId] || 0} | Precio: ${product ? (product.Price * (cart[productId] || 0)).toFixed(2) : "N/A"}`}
+                                            secondary={
+                                                <span>
+                                                    <span style={{ color: 'blue' }}>
+                                                        Cantidad: {cart[productId] || 0}
+                                                    </span> | Precio: {product ? (product.Price * (cart[productId] || 0)).toFixed(2) : "N/A"}
+                                                </span>
+                                            }
                                         />
+
                                         <IconButton onClick={() => removeFromCart(parseInt(productId))}>
                                             -
                                         </IconButton>
@@ -267,27 +274,46 @@ const Shop = () => {
                         </List>
                     )}
                     <div className="drawer-footer">
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={clearCart}
-                            className="mt-2"
-                        >
-                            Vaciar Carrito
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleCheckout}
-                            className="mt-2"
-                        >
+                        <Button variant="contained" color="primary" onClick={handleCheckout} disabled={Object.keys(cart).length === 0}>
                             Realizar Pedido
                         </Button>
+                        <Button variant="outlined" color='error' onClick={clearCart}>
+                            Vaciar Carrito
+                        </Button>
+
+                        {Object.keys(cart).length > 0 && (
+                            <Typography variant="h6" className="total-price">
+                                Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(
+                                    Object.entries(cart).reduce((total, [productId, quantity]) => {
+                                        const product = products.find(p => p.id === parseInt(productId));
+                                        return total + (product ? product.Price * quantity : 0);
+                                    }, 0)
+                                )}
+                            </Typography>
+                        )}
                     </div>
                 </div>
             </Drawer>
+
         </>
     );
 };
 
 export default Shop;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
