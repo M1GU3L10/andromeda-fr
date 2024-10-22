@@ -367,7 +367,7 @@ export default function UpdateAppointment() {
                                     <div className="d-flex align-items-center w-100 p-4">
                                         <Form className='form' onSubmit={handleSubmit}>
                                             <Form.Group as={Row} className="mb-3">
-                                                <Col sm="6">
+                                                <Col sm="12">
                                                     <Form.Label>Hora de inicio</Form.Label>
                                                     <Form.Control
                                                         type="time"
@@ -383,7 +383,7 @@ export default function UpdateAppointment() {
                                             </Form.Group>
                                             <Form.Group as={Row} className="mb-3">
                                                 <Form.Label>Fecha</Form.Label>
-                                                <Col sm="6">
+                                                <Col sm="12">
                                                     <Form.Control
                                                         type="date"
                                                         name="Date"
@@ -395,7 +395,10 @@ export default function UpdateAppointment() {
                                                         {errors.Date}
                                                     </Form.Control.Feedback>
                                                 </Col>
-                                                <Col sm="6">
+                                            </Form.Group>
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Col sm="12">
+                                                    <Form.Label>Cliente</Form.Label>
                                                     <Form.Select
                                                         name="clienteId"
                                                         value={formData.clienteId}

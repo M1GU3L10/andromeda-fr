@@ -331,7 +331,7 @@ export default function RegisterAppointment() {
                   <div className="d-flex align-items-center w-100 p-4">
                     <Form className='form' onSubmit={handleSubmit}>
                       <Form.Group as={Row} className="mb-3">
-                        <Col sm="6">
+                        <Col sm="12">
                           <Form.Label>Hora de inicio</Form.Label>
                           <Form.Control
                             type="time"
