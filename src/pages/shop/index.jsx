@@ -5,6 +5,12 @@ import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import RemoveIcon from '@mui/icons-material/Remove';
+import CloseIcon from '@mui/icons-material/Close';
+
 import axios from 'axios';
 import {
     TextField,
@@ -21,7 +27,7 @@ import {
     Alert
 } from '@mui/material';
 import { ShoppingCart, Search } from '@mui/icons-material';
-import Swal from 'sweetalert2'; 
+import Swal from 'sweetalert2';
 import './shop.css';
 
 const Shop = () => {
@@ -31,14 +37,30 @@ const Shop = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [cart, setCart] = useState({});
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
+    const [cart, setCart] = useState({});
+    const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+        calculateTotal();
+    }, [cart, products]);
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
         fetchProducts();
     }, [context]);
+
+    const calculateTotal = () => {
+        let sum = 0;
+        Object.entries(cart).forEach(([productId, quantity]) => {
+            const product = products.find(p => p.id === parseInt(productId));
+            if (product) {
+                sum += product.Price * quantity;
+            }
+        });
+        setTotal(sum);
+    };
 
     const fetchProducts = async () => {
         try {
@@ -58,36 +80,60 @@ const Shop = () => {
         navigate('/login');
     };
 
+    const handleAdministrar = () => {
+        context.setIsHideSidebarAndHeader(false);
+        navigate('/sales');
+    };
+
     const addToCart = (product) => {
         if (product.Stock <= 0) {
             setAlertMessage('Producto agotado');
             return;
         }
 
-        const currentQuantity = cart[product.id] || 0;
-
-        if (currentQuantity + 1 > product.Stock) {
-            setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
-            return;
-        }
-
-        setCart((prevCart) => ({
-            ...prevCart,
-            [product.id]: (prevCart[product.id] || 0) + 1,
-        }));
-
+        setCart(prevCart => {
+            const currentQuantity = prevCart[product.id] || 0;
+            if (currentQuantity + 1 > product.Stock) {
+                setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
+                return prevCart;
+            }
+            return {
+                ...prevCart,
+                [product.id]: currentQuantity + 1
+            };
+        });
         setAlertMessage('');
     };
 
-    const removeFromCart = (productId) => {
-        setCart((prevCart) => {
-            const newCart = { ...prevCart };
-            if (newCart[productId] > 1) {
-                newCart[productId]--;
-            } else {
-                delete newCart[productId];
+    const increaseQuantity = (productId) => {
+        const product = products.find(p => p.id === parseInt(productId));
+        if (!product) return;
+
+        setCart(prevCart => {
+            const currentQuantity = prevCart[productId] || 0;
+            if (currentQuantity + 1 > product.Stock) {
+                setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
+                return prevCart;
             }
-            return newCart;
+            return {
+                ...prevCart,
+                [productId]: currentQuantity + 1
+            };
+        });
+    };
+
+    const decreaseQuantity = (productId) => {
+        setCart(prevCart => {
+            const currentQuantity = prevCart[productId];
+            if (currentQuantity <= 1) {
+                const newCart = { ...prevCart };
+                delete newCart[productId];
+                return newCart;
+            }
+            return {
+                ...prevCart,
+                [productId]: currentQuantity - 1
+            };
         });
     };
 
@@ -105,7 +151,6 @@ const Shop = () => {
         console.log('Realizando pedido con los siguientes productos:', cart);
         clearCart();
 
-        // Mostrar la alerta de SweetAlert
         await Swal.fire({
             title: '¡Pedido realizado con éxito!',
             text: 'Tu pedido ha sido procesado.',
@@ -130,43 +175,47 @@ const Shop = () => {
             <header className="header-index1">
                 <div className="header-content">
                     <Link to={'/'} className='d-flex align-items-center logo-index'>
-                        <img src={logo} alt="Logo" />
+                        <img src={logo} alt="Barberia Orion Logo" />
                         <span className='ml-2'>Barberia Orion</span>
                     </Link>
-                    <nav className='navBar-index1'>
+                    <nav className='navBar-index'>
                         <Link to='/index'>INICIO</Link>
-                        
                         <Link to='/services'>SERVICIOS</Link>
                         <Link to='/appointment'>CITAS</Link>
                         <Link to='/shop'>PRODUCTOS</Link>
                         <Link to='/index'>CONTACTO</Link>
-                    </nav>
-                    <div className="d-flex align-items-center">
-                        <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
-                            INICIAR SESIÓN
+                        <Button
+                            variant="text"
+                            className="administrar-btn"
+                            onClick={handleAdministrar}
+                        >
+                            ADMINISTRAR
                         </Button>
-                        <IconButton color="inherit" onClick={() => setDrawerOpen(true)}>
-                            <Badge badgeContent={getTotalItems()} color="primary">
+                        <IconButton onClick={() => setDrawerOpen(true)}>
+                            <Badge badgeContent={getTotalItems()} color="secondary">
                                 <ShoppingCart />
                             </Badge>
                         </IconButton>
-                    </div>
+                    </nav>
+                    {context.isLogin ? (
+                        <span style={{ color: 'white' }}>{context.userName}</span>
+                    ) : (
+                        <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
+                            INICIAR SESIÓN
+                        </Button>
+                    )}
                 </div>
             </header>
 
             <main className="container mx-auto mt-8 shop-container">
                 <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
 
-                <div className="search-bar mb-4">
-                    <TextField
-                        fullWidth
-                        variant="outlined"
+                <div className="search-bar">
+                    <input
+                        type="text"
                         placeholder="Buscar productos"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        InputProps={{
-                            startAdornment: <Search className="text-gray-400 mr-2" />,
-                        }}
                     />
                 </div>
 
@@ -203,18 +252,17 @@ const Shop = () => {
 
                                     <Button
                                         variant="contained"
-                                        color="primary"
-                                        fullWidth
                                         onClick={() => addToCart(product)}
-                                        className="add-to-cart-btn mt-2"
+                                        className="barber-add-cart-btn"
+                                        startIcon={<AddShoppingCartIcon />}
+                                        fullWidth
                                     >
-                                        Agregar al carrito
+                                        AGREGAR
                                     </Button>
                                 </div>
                             ))
                         ) : (
-                                
-                            <div className="text-center py-12">
+                            <div className="no-products-container text-center py-12">
                                 <Typography variant="h6" gutterBottom>
                                     No se encontraron productos
                                 </Typography>
@@ -235,86 +283,112 @@ const Shop = () => {
                 )}
             </main>
 
-            <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+            <Drawer
+                anchor="right"
+                open={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                variant="persistent"
+                className="cart-drawer"
+                ModalProps={{
+                    keepMounted: true,
+                }}
+            >
                 <div className="drawer-content">
-                    <Typography variant="h6" gutterBottom>Carrito de Compras</Typography>
+                    <div className="drawer-header">
+                        <Typography variant="h6">Carrito de Compras</Typography>
+                        <IconButton
+    onClick={() => setDrawerOpen(false)}
+    className="close-drawer-btn"
+>
+    <CloseIcon />
+</IconButton>
+                    </div>
+
                     {alertMessage && <Alert severity="warning">{alertMessage}</Alert>}
+
                     {Object.keys(cart).length === 0 ? (
-                        <Typography>Tu carrito está vacío</Typography>
+                        <Typography className="empty-cart-message">Tu carrito está vacío</Typography>
                     ) : (
                         <List>
                             {Object.entries(cart).map(([productId, quantity]) => {
                                 const product = products.find((p) => p.id === parseInt(productId));
+                                if (!product) return null;
+
                                 return (
                                     <ListItem key={productId} className="cart-item">
-                                        {product && (
-                                            <ListItemAvatar>
-                                                <Avatar src={product.Image} alt={product.Product_Name} />
-                                            </ListItemAvatar>
-                                        )}
+                                        <ListItemAvatar>
+                                            <Avatar src={product.Image} alt={product.Product_Name} />
+                                        </ListItemAvatar>
                                         <ListItemText
-                                            primary={product ? product.Product_Name : "Producto no disponible o agotado"}
+                                            primary={product.Product_Name}
                                             secondary={
                                                 <span>
-                                                    <span style={{ color: 'blue' }}>
-                                                        Cantidad: {cart[productId] || 0}
-                                                    </span> | Precio: {product ? (product.Price * (cart[productId] || 0)).toFixed(2) : "N/A"}
+                                                    <span className="price-text">
+                                                        {new Intl.NumberFormat('es-CO', {
+                                                            style: 'currency',
+                                                            currency: 'COP'
+                                                        }).format(product.Price * quantity)}
+                                                    </span>
                                                 </span>
                                             }
                                         />
-
-                                        <IconButton onClick={() => removeFromCart(parseInt(productId))}>
-                                            -
-                                        </IconButton>
-                                        <IconButton onClick={() => addToCart(product)}>
-                                            +
-                                        </IconButton>
+                                        <div className="quantity-controls">
+                                            <IconButton
+                                                onClick={() => decreaseQuantity(productId)}
+                                                className="quantity-button"
+                                                size="small"
+                                            >
+                                                <RemoveIcon />
+                                            </IconButton>
+                                            <span className="quantity-display">{quantity}</span>
+                                            <IconButton
+                                                onClick={() => increaseQuantity(productId)}
+                                                className="quantity-button"
+                                                size="small"
+                                            >
+                                                <AddIcon />
+                                            </IconButton>
+                                        </div>
                                     </ListItem>
                                 );
                             })}
                         </List>
                     )}
                     <div className="drawer-footer">
-                        <Button variant="contained" color="primary" onClick={handleCheckout} disabled={Object.keys(cart).length === 0}>
-                            Realizar Pedido
-                        </Button>
-                        <Button variant="outlined" color='error' onClick={clearCart}>
+                        <div className="total-amount">
+
+                            <Typography variant="h6">Total:</Typography>
+                            <Typography variant="h6">
+                                {new Intl.NumberFormat('es-CO', {
+                                    style: 'currency',
+                                    currency: 'COP'
+                                }).format(total)}
+                            </Typography>
+                        </div>
+
+                    </div>
+                    <div className="cart-buttons">
+                        <Button
+                            variant="outlined"
+                            onClick={clearCart}
+                            className="barber-button barber-button-clear"
+                            startIcon={<DeleteOutlineIcon />}
+                        >
                             Vaciar Carrito
                         </Button>
-
-                        {Object.keys(cart).length > 0 && (
-                            <Typography variant="h6" className="total-price">
-                                Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(
-                                    Object.entries(cart).reduce((total, [productId, quantity]) => {
-                                        const product = products.find(p => p.id === parseInt(productId));
-                                        return total + (product ? product.Price * quantity : 0);
-                                    }, 0)
-                                )}
-                            </Typography>
-                        )}
+                        <Button
+                            variant="contained"
+                            onClick={handleCheckout}
+                            className="barber-button barber-button-checkout"
+                            startIcon={<ShoppingBagIcon />}
+                        >
+                            Realizar pedido
+                        </Button>
                     </div>
                 </div>
             </Drawer>
-
         </>
     );
 };
 
 export default Shop;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
