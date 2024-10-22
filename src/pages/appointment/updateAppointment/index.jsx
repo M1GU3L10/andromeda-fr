@@ -49,10 +49,7 @@ export default function UpdateAppointment() {
     const [services, setServices] = useState([]);
     const [formData, setFormData] = useState({
         Init_Time: '',
-        Finish_Time: '',
         Date: '',
-        Total: '',
-        tiempo_de_la_cita: '',
         status: '',
         clienteId: '',
         appointmentDetails: []
@@ -72,10 +69,7 @@ export default function UpdateAppointment() {
             const appointment = response.data;
             setFormData({
                 Init_Time: appointment.Init_Time.slice(0, 5),
-                Finish_Time: appointment.Finish_Time.slice(0, 5),
                 Date: appointment.Date,
-                Total: appointment.Total,
-                tiempo_de_la_cita: appointment.tiempo_de_la_cita,
                 status: appointment.status,
                 clienteId: appointment.clienteId.toString(),
                 appointmentDetails: appointment.DetailAppointments.map(detail => ({
@@ -207,10 +201,7 @@ export default function UpdateAppointment() {
         try {
             const appointmentData = {
                 Init_Time: formData.Init_Time + ':00',
-                Finish_Time: formData.Finish_Time + ':00',
                 Date: formData.Date,
-                Total: formData.Total,
-                tiempo_de_la_cita: formData.tiempo_de_la_cita,
                 status: formData.status,
                 clienteId: parseInt(formData.clienteId, 10),
                 appointmentDetails: formData.appointmentDetails.map(detail => ({
@@ -389,19 +380,6 @@ export default function UpdateAppointment() {
                                                         {errors.Init_Time}
                                                     </Form.Control.Feedback>
                                                 </Col>
-                                                <Col sm="6">
-                                                    <Form.Label>Hora de finalización</Form.Label>
-                                                    <Form.Control
-                                                        type="time"
-                                                        name="Finish_Time"
-                                                        value={formData.Finish_Time}
-                                                        onChange={handleInputChange}
-                                                        isInvalid={!!errors.Finish_Time}
-                                                    />
-                                                    <Form.Control.Feedback type="invalid">
-                                                        {errors.Finish_Time}
-                                                    </Form.Control.Feedback>
-                                                </Col>
                                             </Form.Group>
                                             <Form.Group as={Row} className="mb-3">
                                                 <Form.Label>Fecha</Form.Label>
@@ -431,33 +409,6 @@ export default function UpdateAppointment() {
                                                     </Form.Select>
                                                     <Form.Control.Feedback type="invalid">
                                                         {errors.clienteId}
-                                                    </Form.Control.Feedback>
-                                                </Col>
-                                            </Form.Group>
-                                            <Form.Group as={Row} className="mb-3">
-                                                <Form.Label>Total</Form.Label>
-                                                <Col sm="6">
-                                                    <Form.Control
-                                                        type="number"
-                                                        name="Total"
-                                                        value={formData.Total}
-                                                        onChange={handleInputChange}
-                                                        isInvalid={!!errors.Total}
-                                                    />
-                                                    <Form.Control.Feedback type="invalid">
-                                                        {errors.Total}
-                                                    </Form.Control.Feedback>
-                                                </Col>
-                                                <Col sm="6">
-                                                    <Form.Control
-                                                        type="time"
-                                                        name="tiempo_de_la_cita"
-                                                        value={formData.tiempo_de_la_cita}
-                                                        onChange={handleInputChange}
-                                                        isInvalid={!!errors.tiempo_de_la_cita}
-                                                    />
-                                                    <Form.Control.Feedback type="invalid">
-                                                        {errors.tiempo_de_la_cita}
                                                     </Form.Control.Feedback>
                                                 </Col>
                                             </Form.Group>

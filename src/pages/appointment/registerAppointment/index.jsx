@@ -48,7 +48,6 @@ export default function RegisterAppointment() {
   const [services, setServices] = useState([]);
   const [formData, setFormData] = useState({
     Init_Time: '',
-    Finish_Time: '',
     Date: '',
     clienteId: '',
     appointmentDetails: []
@@ -160,7 +159,6 @@ export default function RegisterAppointment() {
     try {
       const appointmentData = {
         Init_Time: formData.Init_Time + ':00',
-        Finish_Time: formData.Finish_Time + ':00',
         Date: formData.Date,
         status: 'pendiente',
         clienteId: parseInt(formData.clienteId, 10),
@@ -346,19 +344,7 @@ export default function RegisterAppointment() {
                             {errors.Init_Time}
                           </Form.Control.Feedback>
                         </Col>
-                        <Col sm="6">
-                          <Form.Label>Hora de finalización</Form.Label>
-                          <Form.Control
-                            type="time"
-                            name="Finish_Time"
-                            value={formData.Finish_Time}
-                            onChange={handleInputChange}
-                            isInvalid={!!errors.Finish_Time}
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {errors.Finish_Time}
-                          </Form.Control.Feedback>
-                        </Col>
+
                       </Form.Group>
 
                       <Form.Group as={Row} className="mb-3">

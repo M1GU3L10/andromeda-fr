@@ -3,14 +3,20 @@ import { Link } from 'react-router-dom';
 import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
+import { useNavigate } from 'react-router-dom';
 
 
 const Index = () => {
     const context = useContext(MyContext);
+    const navigate = useNavigate();
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
     }, [context]);
+
+    const handleLogin = () => {
+        navigate('/login');
+    };
 
     return (
         <>
@@ -31,6 +37,7 @@ const Index = () => {
                     <Button
                         variant="contained"
                         className="book-now-btn"
+                        onClick={handleLogin}
                     >
                         LOGIN
                     </Button>

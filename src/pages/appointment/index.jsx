@@ -214,7 +214,7 @@ const Appointment = () => {
                         Init_Time: event.Init_Time,
                         Finish_Time: event.Finish_Time,
                         Date: event.Date,
-                        tiempo_de_la_cita: event.tiempo_de_la_cita,
+                        time_appointment: event.time_appointment,
                         DetailAppointments: event.DetailAppointments,
                     }
                 }));
@@ -255,7 +255,7 @@ const Appointment = () => {
                     Total: event.Total,
                     Init_Time: event.Init_Time,
                     Finish_Time: event.Finish_Time,
-                    tiempo_de_la_cita: event.tiempo_de_la_cita,
+                    time_appointment: event.time_appointment,
                     Date: event.Date,
                     DetailAppointments: event.DetailAppointments,
                 }
@@ -339,7 +339,7 @@ const Appointment = () => {
                 status:info.event.extendedProps.status,
                 Init_Time: info.event.extendedProps.Init_Time,
                 Finish_Time: info.event.extendedProps.Finish_Time,
-                tiempo_de_la_cita:info.event.extendedProps.tiempo_de_la_cita,
+                time_appointment:info.event.extendedProps.time_appointment,
                 Total:info.event.extendedProps.Total,
                 serviceName: serviceName || 'N/A',  // Almacena el nombre del servicio
                 employeeName: employeeName || 'N/A' 
@@ -795,7 +795,7 @@ const Appointment = () => {
                     <p><strong>Hora de fin:</strong> {detailData.Finish_Time}</p>
                     <p><strong>Servicio:</strong> {detailData.serviceName}</p> 
                     <p><strong>Empleado:</strong> {detailData.employeeName}</p> 
-                    <p><strong>Tiempo de la cita:</strong> {detailData.tiempo_de_la_cita}</p>
+                    <p><strong>Tiempo de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
                     <p><strong>Total:</strong> {detailData.Total}</p>
                     <p><strong>Estado:</strong> {detailData.status}</p>
                 </Modal.Body>
