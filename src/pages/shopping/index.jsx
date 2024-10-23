@@ -111,48 +111,62 @@ const Shopping = () => {
         setSelectedShopping(null);
     };
 
-    const handleSwitchChange = async (shoppingId, currentStatus) => {
-        if (currentStatus === 'anulada') {
-            Swal.fire('No permitido', 'No se puede cambiar el estado de una compra anulada.', 'warning');
-            return;
-        }
-    
-        const newStatus = currentStatus === 'completada' ? 'anulada' : 'completada';
-        const MySwal = withReactContent(Swal);
-    
-        MySwal.fire({
-            title: `¿Estás seguro que deseas ${newStatus === 'completada' ? 'completar' : 'anular'} la compra?`,
-            icon: 'question',
-            text: `Esta acción cambiará el estado de la compra a "${newStatus}".`,
-            showCancelButton: true,
-            confirmButtonText: 'Sí, confirmar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    let response;
-                    if (newStatus === 'anulada') {
-                        // Si se anula la compra, se llama a la ruta específica para cancelar
-                        response = await axios.patch(`http://localhost:1056/api/shopping/${shoppingId}/cancel`, { status: 'anulada' });
-                    } else {
-                        // Si se completa la compra, simplemente se actualiza el estado
-                        response = await axios.put(`http://localhost:1056/api/shopping/${shoppingId}`, { status: 'completada' });
-                    }
-    
-                    if (response.status === 200) {
-                        // Actualización exitosa del estado de la compra
-                        setShopping(prevShopping => prevShopping.map(item =>
-                            item.id === shoppingId ? { ...item, status: newStatus } : item
-                        ));
-                        Swal.fire('Estado actualizado', `El estado de la compra se ha actualizado a ${newStatus}.`, 'success');
-                    }
-                } catch (error) {
-                    console.error('Error al actualizar el estado de la compra:', error);
-                    Swal.fire('Error', 'Hubo un problema al actualizar el estado de la compra.', 'error');
+   // Cambiar el valor del Switch para que compare con el formato correcto
+<Switch
+    checked={shopping.status?.toLowerCase() === 'completada'}
+    onChange={(e) => handleSwitchChange(shopping.id, shopping.status?.toLowerCase())}
+/>
+
+// Modificar la función handleSwitchChange para que maneje correctamente el estado
+const handleSwitchChange = async (shoppingId, currentStatus) => {
+    if (!currentStatus) {
+        Swal.fire('Error', 'El estado de la compra no es válido.', 'error');
+        return;
+    }
+
+    if (currentStatus === 'anulada') {
+        Swal.fire('No permitido', 'No se puede cambiar el estado de una compra anulada.', 'warning');
+        return;
+    }
+
+    const newStatus = currentStatus === 'completada' ? 'anulada' : 'completada';
+    const MySwal = withReactContent(Swal);
+
+    MySwal.fire({
+        title: `¿Estás seguro que deseas ${newStatus === 'completada' ? 'completar' : 'anular'} la compra?`,
+        icon: 'question',
+        text: `Esta acción cambiará el estado de la compra a "${newStatus}".`,
+        showCancelButton: true,
+        confirmButtonText: 'Sí, confirmar',
+        cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                let response;
+                if (newStatus === 'anulada') {
+                    // Si se anula la compra, se llama a la ruta específica para cancelar
+                    response = await axios.patch(`http://localhost:1056/api/shopping/${shoppingId}/cancel`, { status: 'anulada' });
+                } else {
+                    // Si se completa la compra, simplemente se actualiza el estado
+                    response = await axios.put(`http://localhost:1056/api/shopping/${shoppingId}`, { status: 'completada' });
                 }
+
+                if (response.status === 200) {
+                    // Actualización exitosa del estado de la compra
+                    setShopping(prevShopping => prevShopping.map(item =>
+                        item.id === shoppingId ? { ...item, status: newStatus } : item
+                    ));
+                    Swal.fire('Estado actualizado', `El estado de la compra se ha actualizado a ${newStatus}.`, 'success');
+                }
+            } catch (error) {
+                console.error('Error al actualizar el estado de la compra:', error);
+                Swal.fire('Error', 'Hubo un problema al actualizar el estado de la compra.', 'error');
             }
-        });
-    };
+        }
+    });
+};
+
+    
     return (
         <>
             <div className="right-content w-100">

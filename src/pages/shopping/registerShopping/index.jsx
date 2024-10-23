@@ -16,6 +16,7 @@ import { IoTrashSharp } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -41,6 +42,7 @@ const RegisterShopping = () => {
     const urlShopping = 'http://localhost:1056/api/shopping';
     const urlSuppliers = 'http://localhost:1056/api/suppliers';
     const urlProducts = 'http://localhost:1056/api/products';
+    const navigate = useNavigate(); // Inicializa el hook de navegación
 
     const [suppliers, setSuppliers] = useState([]);
     const [products, setProducts] = useState([]);
@@ -147,8 +149,10 @@ const RegisterShopping = () => {
                 icon: 'success',
                 title: 'Éxito',
                 text: 'Compra registrada con éxito',
+            }).then(() => {
+                navigate('/Shopping'); // Redirige a la tabla de compras
             });
-            // Reset form and shopping details
+            
             setFormData({ code: '', purchaseDate: '', supplierId: '' });
             setShoppingDetails([]);
         } catch (error) {
