@@ -35,6 +35,31 @@ import Index from './pages/index';
 
 export const MyContext = createContext();
 
+export const MyContextProvider = ({ children }) => {
+    const [isLogin, setIsLogin] = useState(false);
+    const [userId, setUserId] = useState(null);
+    const [userName, setUserName] = useState('');
+    const [isHideSidebarAndHeader, setIsHideSidebarAndHeader] = useState(false);
+
+    return (
+        <MyContext.Provider value={{
+            isLogin,
+            setIsLogin,
+            userId,
+            setUserId,
+            userName,
+            setUserName,
+            isHideSidebarAndHeader,
+            setIsHideSidebarAndHeader
+        }}>
+            {children}
+        </MyContext.Provider>
+    );
+};
+
+
+
+
 function App() {
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
   const [themeMode, setThemeMode] = useState('true');

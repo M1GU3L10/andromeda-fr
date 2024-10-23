@@ -56,36 +56,36 @@ const Shop = () => {
     const open = Boolean(anchorEl);
     const [userId, setUserId] = useState(null); // Agregando estado para userId
     const [isLogin, setIsLogin] = useState(false);
-    
 
 
-  
 
-  const handleLogin = async () => {
-    // Navega a la página de inicio de sesión
-    navigate('/login');
 
-    try {
-        // Realiza la solicitud POST para iniciar sesión
-        const response = await axios.post('http://localhost:1056/api/login', { email, password });
 
-        // Asegúrate de que la respuesta contenga el ID del usuario
-        const { id } = response.data; // Desestructura el ID de la respuesta
+    const handleLogin = async () => {
+        // Navega a la página de inicio de sesión
+        navigate('/login');
 
-        // Establece el userId en el contexto
-        setUserId(id); 
-        setIsLogin(true); // Marca al usuario como conectado
+        try {
+            // Realiza la solicitud POST para iniciar sesión
+            const response = await axios.post('http://localhost:1056/api/login', { email, password });
 
-        // Aquí podrías redirigir al usuario a otra página después de iniciar sesión
-        // navigate('/home'); // Descomenta y ajusta la ruta según sea necesario
-    } catch (error) {
-        // Maneja cualquier error durante el inicio de sesión
-        console.error("Error al iniciar sesión:", error);
-        Swal.fire('Error', 'Credenciales incorrectas o hubo un problema al iniciar sesión.', 'error');
-    }
-};
+            // Asegúrate de que la respuesta contenga el ID del usuario
+            const { id } = response.data; // Desestructura el ID de la respuesta
 
-    
+            // Establece el userId en el contexto
+            setUserId(id);
+            setIsLogin(true); // Marca al usuario como conectado
+
+            // Aquí podrías redirigir al usuario a otra página después de iniciar sesión
+            // navigate('/home'); // Descomenta y ajusta la ruta según sea necesario
+        } catch (error) {
+            // Maneja cualquier error durante el inicio de sesión
+            console.error("Error al iniciar sesión:", error);
+            Swal.fire('Error', 'Credenciales incorrectas o hubo un problema al iniciar sesión.', 'error');
+        }
+    };
+
+
     const handleAdministrar = () => {
         context.setIsHideSidebarAndHeader(false);
         navigate('/sales');
@@ -173,19 +173,19 @@ const Shop = () => {
         if (context.isLogin) {
             console.log("Contexto:", context); // Para ver qué hay en el contexto
             const userId = context.userId;
-    
+
             if (userId !== null) { // Cambiado a !== null para comprobar explícitamente
                 try {
                     const response = await axios.get('http://localhost:1056/api/orders');
                     const orders = response.data;
-    
+
                     const userOrders = orders.filter(order => order.userId === userId);
-    
+
                     if (userOrders.length > 0) {
-                        const ordersList = userOrders.map(order => 
+                        const ordersList = userOrders.map(order =>
                             `Pedido ID: ${order.id}, Total: ${order.Total_Amount}, Estado: ${order.Status}`
                         ).join('\n');
-    
+
                         Swal.fire({
                             title: 'Tus Pedidos',
                             text: ordersList,
@@ -206,7 +206,7 @@ const Shop = () => {
             Swal.fire('Error', 'Debes iniciar sesión para ver tus pedidos.', 'warning');
         }
     };
-    
+
 
 
 
@@ -248,6 +248,19 @@ const Shop = () => {
     };
 
     const handleCheckout = async () => {
+        // Lógica para manejar el checkout
+        if (!context.isLogin) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Debes iniciar sesión para realizar un pedido.',
+                icon: 'error'
+            }).then(() => {
+                // Redirigir al usuario a la página de inicio de sesión
+                window.location.href = '/login';
+            });
+            return;
+        }
+
         try {
             const now = new Date();
             const orderData = {
@@ -290,6 +303,7 @@ const Shop = () => {
             console.error('Error creating order:', error);
         }
     };
+
 
 
     const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
@@ -549,10 +563,11 @@ const Shop = () => {
                             onClick={handleCheckout}
                             className="barber-button barber-button-checkout"
                             startIcon={<ShoppingBagIcon />}
-                            disabled={Object.keys(cart).length === 0}
                         >
                             Realizar pedido
                         </Button>
+
+
 
                     </div>
 
