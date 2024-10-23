@@ -35,46 +35,20 @@ import Index from './pages/index';
 
 export const MyContext = createContext();
 
-export const MyContextProvider = ({ children }) => {
-    const [isLogin, setIsLogin] = useState(false);
-    const [userId, setUserId] = useState(null);
-    const [userName, setUserName] = useState('');
-    const [isHideSidebarAndHeader, setIsHideSidebarAndHeader] = useState(false);
-
-    return (
-        <MyContext.Provider value={{
-            isLogin,
-            setIsLogin,
-            userId,
-            setUserId,
-            userName,
-            setUserName,
-            isHideSidebarAndHeader,
-            setIsHideSidebarAndHeader
-        }}>
-            {children}
-        </MyContext.Provider>
-    );
-};
-
-
-
-
 function App() {
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
   const [themeMode, setThemeMode] = useState('true');
   const [isLogin, setIsLogin] = useState(false);
   const [isHideSidebarAndHeader, setIsHideSidebarAndHeader] = useState(false);
-  const [userName, setUserName] = useState(localStorage.getItem('userName') || '');
 
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
     if (token) {
       setIsLogin(true);
-      setIsHideSidebarAndHeader(false); // Mostramos el header y sidebar
+      setIsHideSidebarAndHeader(false);
     } else {
       setIsLogin(false);
-      setIsHideSidebarAndHeader(true); // Ocultamos el header y sidebar para usuarios no autenticados
+      setIsHideSidebarAndHeader(true);
     }
   }, []);
 
@@ -91,17 +65,16 @@ function App() {
   }, [themeMode]);
 
   const values = {
-      isToggleSidebar,
-      setIsToggleSidebar,
-      themeMode,
-      setThemeMode,
-      setIsLogin,
-      isLogin,
-      setIsHideSidebarAndHeader,
-      isHideSidebarAndHeader,
-      userName, // Añadir el nombre de usuario al contexto
-      setUserName
+    isToggleSidebar,
+    setIsToggleSidebar,
+    themeMode,
+    setThemeMode,
+    setIsLogin,
+    isLogin,
+    setIsHideSidebarAndHeader,
+    isHideSidebarAndHeader
   };
+
   return (
     <BrowserRouter>
       <MyContext.Provider value={values}>
@@ -117,7 +90,6 @@ function App() {
               <Routes>
                 <Route path="/login" element={<PermissionCheck requiredPermission="public"><Login /></PermissionCheck>} />
                 <Route path="/index" element={<PermissionCheck requiredPermission="public"><Index /></PermissionCheck>} />
-                <Route path="/shop" element={<PermissionCheck requiredPermission="public"><Shop /></PermissionCheck>} />
                 <Route path="/register" element={<PermissionCheck requiredPermission="public"><Register /></PermissionCheck>} />
                 <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
                 <Route path="/resetPassword" element={<PermissionCheck requiredPermission="public"><ResetPassword /></PermissionCheck>} />
@@ -192,7 +164,11 @@ function App() {
                     <ViewShopping />
                   </PermissionCheck>
                 } />
-
+                <Route path="/shop" element={
+                  <PermissionCheck requiredPermission="Productos">
+                    <Shop />
+                  </PermissionCheck>
+                } />
 
                 <Route path="/suppliers" element={
                   <PermissionCheck requiredPermission="Proveedores">
