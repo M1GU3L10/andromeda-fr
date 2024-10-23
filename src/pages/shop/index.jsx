@@ -5,6 +5,22 @@ import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import RemoveIcon from '@mui/icons-material/Remove';
+import CloseIcon from '@mui/icons-material/Close';
+
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Logout from '@mui/icons-material/Logout';
+import IconButton from '@mui/material/IconButton';
+
+
+
+
+
 import axios from 'axios';
 import {
     TextField,
@@ -14,31 +30,101 @@ import {
     ListItemText,
     Typography,
     CircularProgress,
-    IconButton,
     Badge,
     ListItemAvatar,
     Avatar,
     Alert
 } from '@mui/material';
 import { ShoppingCart, Search } from '@mui/icons-material';
-import Swal from 'sweetalert2'; // Importar SweetAlert2
+import Swal from 'sweetalert2';
 import './shop.css';
 
 const Shop = () => {
-    const context = useContext(MyContext);
-    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [cart, setCart] = useState({});
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
+    const [cart, setCart] = useState({});
+    const [total, setTotal] = useState(0);
+    const [email, setEmail] = useState(''); // Agregando estado para email
+    const [password, setPassword] = useState(''); // Agregando estado para password
+    const context = useContext(MyContext);
+    const navigate = useNavigate();
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+    const [userId, setUserId] = useState(null); // Agregando estado para userId
+    const [isLogin, setIsLogin] = useState(false);
+
+
+
+
+
+    const handleLogin = async () => {
+        // Navega a la página de inicio de sesión
+        navigate('/login');
+
+        try {
+            // Realiza la solicitud POST para iniciar sesión
+            const response = await axios.post('http://localhost:1056/api/login', { email, password });
+
+            // Asegúrate de que la respuesta contenga el ID del usuario
+            const { id } = response.data; // Desestructura el ID de la respuesta
+
+            // Establece el userId en el contexto
+            setUserId(id);
+            setIsLogin(true); // Marca al usuario como conectado
+
+            // Aquí podrías redirigir al usuario a otra página después de iniciar sesión
+            // navigate('/home'); // Descomenta y ajusta la ruta según sea necesario
+        } catch (error) {
+            // Maneja cualquier error durante el inicio de sesión
+            console.error("Error al iniciar sesión:", error);
+            Swal.fire('Error', 'Credenciales incorrectas o hubo un problema al iniciar sesión.', 'error');
+        }
+    };
+
+
+    const handleAdministrar = () => {
+        context.setIsHideSidebarAndHeader(false);
+        navigate('/sales');
+    };
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('jwtToken');
+        context.setIsLogin(false);
+        navigate('/login');
+    };
+
+
+    useEffect(() => {
+        calculateTotal();
+    }, [cart, products]);
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
         fetchProducts();
     }, [context]);
+
+    const calculateTotal = () => {
+        let sum = 0;
+        Object.entries(cart).forEach(([productId, quantity]) => {
+            const product = products.find(p => p.id === parseInt(productId));
+            if (product) {
+                sum += product.Price * quantity;
+            }
+        });
+        setTotal(sum);
+    };
 
     const fetchProducts = async () => {
         try {
@@ -54,40 +140,105 @@ const Shop = () => {
         }
     };
 
-    const handleLogin = () => {
-        navigate('/login');
-    };
-
     const addToCart = (product) => {
         if (product.Stock <= 0) {
             setAlertMessage('Producto agotado');
             return;
         }
 
-        const currentQuantity = cart[product.id] || 0;
-
-        if (currentQuantity + 1 > product.Stock) {
-            setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
-            return;
-        }
-
-        setCart((prevCart) => ({
-            ...prevCart,
-            [product.id]: (prevCart[product.id] || 0) + 1,
-        }));
-
+        setCart(prevCart => {
+            const currentQuantity = prevCart[product.id] || 0;
+            if (currentQuantity + 1 > product.Stock) {
+                setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
+                return prevCart;
+            }
+            return {
+                ...prevCart,
+                [product.id]: currentQuantity + 1
+            };
+        });
         setAlertMessage('');
     };
 
-    const removeFromCart = (productId) => {
-        setCart((prevCart) => {
-            const newCart = { ...prevCart };
-            if (newCart[productId] > 1) {
-                newCart[productId]--;
+    const getOrdersByUserId = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:1056/api/orders/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener los pedidos:", error.response ? error.response.data : error.message);
+            throw error;
+        }
+    };
+    const handleShowOrders = async () => {
+        if (context.isLogin) {
+            console.log("Contexto:", context); // Para ver qué hay en el contexto
+            const userId = context.userId;
+
+            if (userId !== null) { // Cambiado a !== null para comprobar explícitamente
+                try {
+                    const response = await axios.get('http://localhost:1056/api/orders');
+                    const orders = response.data;
+
+                    const userOrders = orders.filter(order => order.userId === userId);
+
+                    if (userOrders.length > 0) {
+                        const ordersList = userOrders.map(order =>
+                            `Pedido ID: ${order.id}, Total: ${order.Total_Amount}, Estado: ${order.Status}`
+                        ).join('\n');
+
+                        Swal.fire({
+                            title: 'Tus Pedidos',
+                            text: ordersList,
+                            icon: 'info'
+                        });
+                    } else {
+                        Swal.fire('No tienes pedidos realizados.');
+                    }
+                } catch (error) {
+                    console.error("Error al mostrar los pedidos:", error);
+                    Swal.fire('Error', 'Hubo un problema al obtener tus pedidos.', 'error');
+                }
             } else {
-                delete newCart[productId];
+                console.error("Error: userId está indefinido");
+                Swal.fire('Error', 'No se pudo encontrar el ID del usuario.', 'error');
             }
-            return newCart;
+        } else {
+            Swal.fire('Error', 'Debes iniciar sesión para ver tus pedidos.', 'warning');
+        }
+    };
+
+
+
+
+    const increaseQuantity = (productId) => {
+        const product = products.find(p => p.id === parseInt(productId));
+        if (!product) return;
+
+        setCart(prevCart => {
+            const currentQuantity = prevCart[productId] || 0;
+            if (currentQuantity + 1 > product.Stock) {
+                setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
+                return prevCart;
+            }
+            return {
+                ...prevCart,
+                [productId]: currentQuantity + 1
+            };
+        });
+    };
+
+    const decreaseQuantity = (productId) => {
+        setCart(prevCart => {
+            const currentQuantity = prevCart[productId];
+            if (currentQuantity <= 1) {
+                const newCart = { ...prevCart };
+                delete newCart[productId];
+                return newCart;
+            }
+            return {
+                ...prevCart,
+                [productId]: currentQuantity - 1
+            };
         });
     };
 
@@ -97,22 +248,63 @@ const Shop = () => {
     };
 
     const handleCheckout = async () => {
-        if (Object.keys(cart).length === 0) {
-            setAlertMessage('Tu carrito está vacío. Agrega productos antes de realizar un pedido.');
+        // Lógica para manejar el checkout
+        if (!context.isLogin) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Debes iniciar sesión para realizar un pedido.',
+                icon: 'error'
+            }).then(() => {
+                // Redirigir al usuario a la página de inicio de sesión
+                window.location.href = '/login';
+            });
             return;
         }
 
-        console.log('Realizando pedido con los siguientes productos:', cart);
-        clearCart();
+        try {
+            const now = new Date();
+            const orderData = {
+                Order_Date: now.toISOString().split('T')[0],
+                Order_Time: now.toTimeString().split(' ')[0],
+                Total_Amount: parseFloat(total).toFixed(2),
+                Status: 'En proceso',
+                User_Id: context.userId || 1, // Asume que el ID del usuario está en el contexto
+                Token_Expiration: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+                createdAt: now.toISOString(),
+                updatedAt: now.toISOString()
+            };
 
-        // Mostrar la alerta de SweetAlert
-        await Swal.fire({
-            title: '¡Pedido realizado con éxito!',
-            text: 'Tu pedido ha sido procesado.',
-            icon: 'success',
-            confirmButtonText: 'Aceptar'
-        });
+            const response = await axios.post('http://localhost:1056/api/orders', orderData);
+
+            // Actualiza el stock de los productos en el backend
+            for (const [productId, quantity] of Object.entries(cart)) {
+                const product = products.find(p => p.id === parseInt(productId));
+                if (product) {
+                    await axios.put(`http://localhost:1056/api/products/${productId}`, {
+                        ...product,
+                        Stock: product.Stock - quantity
+                    });
+                }
+            }
+
+            Swal.fire({
+                title: '¡Pedido creado!',
+                html: `
+                    <p>Tu pedido ha sido registrado correctamente.</p>
+                    <p>El pedido tiene un tiempo para ser entregado y vence: ${new Date(response.data.Token_Expiration).toLocaleDateString()} a las ${new Date(response.data.Token_Expiration).toLocaleTimeString()}</p>
+                `,
+                icon: 'success'
+            });
+
+            clearCart();
+            setDrawerOpen(false);
+        } catch (error) {
+            Swal.fire('Error', 'Hubo un problema al crear el pedido. Intente de nuevo.', 'error');
+            console.error('Error creating order:', error);
+        }
     };
+
+
 
     const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
@@ -126,47 +318,83 @@ const Shop = () => {
     });
 
     return (
-        <>
-            <header className="header-index1">
-                <div className="header-content">
-                    <Link to={'/'} className='d-flex align-items-center logo-index'>
-                        <img src={logo} alt="Logo" />
-                        <span className='ml-2'>Barberia Orion</span>
-                    </Link>
-                    <nav className='navBar-index1'>
-                        <Link to='/index'>INICIO</Link>
-                        <Link to='/about'>ABOUT</Link>
-                        <Link to='/services'>SERVICIOS</Link>
-                        <Link to='/blog'>BLOG</Link>
-                        <Link to='/shop'>PRODUCTOS</Link>
-                        <Link to='/contact'>CONTACTO</Link>
-                    </nav>
-                    <div className="d-flex align-items-center">
+        <><header className="header-index1">
+            <div className="header-content d-flex align-items-center justify-content-between">
+                <Link to={'/'} className='d-flex align-items-center logo-index'>
+                    <img src={logo} alt="Barberia Orion Logo" />
+                    <span className='ml-2'>Barberia Orion</span>
+                </Link>
+                <nav className='navBar-index'>
+                    <Link to='/index'>INICIO</Link>
+                    <Link to='/services'>SERVICIOS</Link>
+                    <Link to='/appointment'>CITAS</Link>
+                    <Link to='/shop'>PRODUCTOS</Link>
+                    <Link to='/index'>CONTACTO</Link>
+                    {context.isLogin && ( // El botón solo se mostrará si el usuario está logueado
+                        <Button
+                            variant="text"
+                            className="administrar-btn"
+                            onClick={handleAdministrar}
+                        >
+                            ADMINISTRAR
+                        </Button>
+                    )}
+                    <IconButton onClick={() => setDrawerOpen(true)}>
+                        <Badge badgeContent={getTotalItems()} color="secondary">
+                            <ShoppingCart />
+                        </Badge>
+                    </IconButton>
+                </nav>
+                <div className='MyAccWrapper d-flex align-items-center'>
+                    {context.isLogin ? (
+                        <div className='d-flex align-items-center'>
+                            <Button className='MyAcc' onClick={handleClick}>
+                                <Avatar
+                                    alt="User Avatar"
+                                    src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
+                                />
+                            </Button>
+                            <div className='userInfo' style={{ marginLeft: '8px' }}>
+                                <span style={{ color: 'white' }}>{context.userName}</span>
+                            </div>
+                        </div>
+                    ) : (
                         <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
                             INICIAR SESIÓN
                         </Button>
-                        <IconButton color="inherit" onClick={() => setDrawerOpen(true)}>
-                            <Badge badgeContent={getTotalItems()} color="secondary">
-                                <ShoppingCart />
-                            </Badge>
-                        </IconButton>
-                    </div>
+                    )}
+                    <Menu
+                        anchorEl={anchorEl}
+                        id="account-menu"
+                        open={open}
+                        onClose={handleClose}
+                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                        {context.isLogin && (
+                            <MenuItem onClick={handleLogout}>
+                                <ListItemIcon>
+                                    <Logout fontSize="small" />
+                                </ListItemIcon>
+                                Cerrar sesión
+                            </MenuItem>
+                        )}
+                    </Menu>
                 </div>
-            </header>
+            </div>
+        </header>
+
+
 
             <main className="container mx-auto mt-8 shop-container">
                 <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
 
-                <div className="search-bar mb-4">
-                    <TextField
-                        fullWidth
-                        variant="outlined"
+                <div className="search-bar">
+                    <input
+                        type="text"
                         placeholder="Buscar productos"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        InputProps={{
-                            startAdornment: <Search className="text-gray-400 mr-2" />,
-                        }}
                     />
                 </div>
 
@@ -203,17 +431,17 @@ const Shop = () => {
 
                                     <Button
                                         variant="contained"
-                                        color="primary"
-                                        fullWidth
                                         onClick={() => addToCart(product)}
-                                        className="add-to-cart-btn mt-2"
+                                        className="barber-add-cart-btn"
+                                        startIcon={<AddShoppingCartIcon />}
+                                        fullWidth
                                     >
-                                        Agregar al carrito
+                                        AGREGAR
                                     </Button>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-12">
+                            <div className="no-products-container text-center py-12">
                                 <Typography variant="h6" gutterBottom>
                                     No se encontraron productos
                                 </Typography>
@@ -234,86 +462,121 @@ const Shop = () => {
                 )}
             </main>
 
-            <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+            <Drawer
+                anchor="right"
+                open={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                variant="persistent"
+                className="cart-drawer"
+                ModalProps={{
+                    keepMounted: true,
+                }}
+            >
                 <div className="drawer-content">
-                    <Typography variant="h6" gutterBottom>Carrito de Compras</Typography>
+                    <div className="drawer-header">
+                        <Typography variant="h6">Carrito de Compras</Typography>
+                        <IconButton
+                            onClick={() => setDrawerOpen(false)}
+                            className="close-drawer-btn"
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </div>
+
                     {alertMessage && <Alert severity="warning">{alertMessage}</Alert>}
+
                     {Object.keys(cart).length === 0 ? (
-                        <Typography>Tu carrito está vacío</Typography>
+                        <Typography className="empty-cart-message">Tu carrito está vacío</Typography>
                     ) : (
                         <List>
                             {Object.entries(cart).map(([productId, quantity]) => {
                                 const product = products.find((p) => p.id === parseInt(productId));
+                                if (!product) return null;
+
                                 return (
                                     <ListItem key={productId} className="cart-item">
-                                        {product && (
-                                            <ListItemAvatar>
-                                                <Avatar src={product.Image} alt={product.Product_Name} />
-                                            </ListItemAvatar>
-                                        )}
+                                        <ListItemAvatar>
+                                            <Avatar src={product.Image} alt={product.Product_Name} />
+                                        </ListItemAvatar>
                                         <ListItemText
-                                            primary={product ? product.Product_Name : "Producto no disponible o agotado"}
+                                            primary={product.Product_Name}
                                             secondary={
                                                 <span>
-                                                    <span style={{ color: 'blue' }}>
-                                                        Cantidad: {cart[productId] || 0}
-                                                    </span> | Precio: {product ? (product.Price * (cart[productId] || 0)).toFixed(2) : "N/A"}
+                                                    <span className="price-text">
+                                                        {new Intl.NumberFormat('es-CO', {
+                                                            style: 'currency',
+                                                            currency: 'COP'
+                                                        }).format(product.Price * quantity)}
+                                                    </span>
                                                 </span>
                                             }
                                         />
-
-                                        <IconButton onClick={() => removeFromCart(parseInt(productId))}>
-                                            -
-                                        </IconButton>
-                                        <IconButton onClick={() => addToCart(product)}>
-                                            +
-                                        </IconButton>
+                                        <div className="quantity-controls">
+                                            <IconButton
+                                                onClick={() => decreaseQuantity(productId)}
+                                                className="quantity-button"
+                                                size="small"
+                                            >
+                                                <RemoveIcon />
+                                            </IconButton>
+                                            <span className="quantity-display">{quantity}</span>
+                                            <IconButton
+                                                onClick={() => increaseQuantity(productId)}
+                                                className="quantity-button"
+                                                size="small"
+                                            >
+                                                <AddIcon />
+                                            </IconButton>
+                                        </div>
                                     </ListItem>
                                 );
                             })}
                         </List>
                     )}
                     <div className="drawer-footer">
-                        <Button variant="contained" color="primary" onClick={handleCheckout} disabled={Object.keys(cart).length === 0}>
-                            Realizar Pedido
+                        <div className="total-amount">
+                            <Typography variant="h6">Total:</Typography>
+                            <Typography variant="h6">
+                                {new Intl.NumberFormat('es-CO', {
+                                    style: 'currency',
+                                    currency: 'COP'
+                                }).format(total)}
+                            </Typography>
+                        </div>
+                    </div>
+                    {context.isLogin && (
+                        <Button variant="contained" onClick={handleShowOrders}>
+                            Ver Mis Pedidos
                         </Button>
-                        <Button variant="outlined" color='error' onClick={clearCart}>
+                    )}
+                    <div className="cart-buttons1">
+                        <Button
+                            variant="outlined"
+                            onClick={clearCart}
+                            className="barber-button barber-button-clear"
+                            startIcon={<DeleteOutlineIcon />}
+                        >
                             Vaciar Carrito
                         </Button>
+                        <Button
+                            variant="contained"
+                            onClick={handleCheckout}
+                            className="barber-button barber-button-checkout"
+                            startIcon={<ShoppingBagIcon />}
+                        >
+                            Realizar pedido
+                        </Button>
 
-                        {Object.keys(cart).length > 0 && (
-                            <Typography variant="h6" className="total-price">
-                                Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(
-                                    Object.entries(cart).reduce((total, [productId, quantity]) => {
-                                        const product = products.find(p => p.id === parseInt(productId));
-                                        return total + (product ? product.Price * quantity : 0);
-                                    }, 0)
-                                )}
-                            </Typography>
-                        )}
+
+
                     </div>
+
+
+
                 </div>
             </Drawer>
-
         </>
     );
 };
 
 export default Shop;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

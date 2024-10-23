@@ -8,21 +8,21 @@
     font-family: "Poppins", sans-serif !important;
 }
 
-
-   
-
 /* Estilo del encabezado */
 .header-index1 {
     position: relative;
     background-color: #000000;  
-
 }
+
 .cantidad-azul {
-    color: blue; /* o el color que prefieras */
+    color: rgb(0, 0, 0); /* Color para cantidades */
 }
 
+.white-text {
+    color: white;
+}
 
-.header-content {
+.header-content1 {
     position: fixed;
     top: 0;
     left: 0;
@@ -106,52 +106,103 @@
 .search-bar {
     display: flex;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 40px;
+    padding: 0 20px;
 }
 
-.search-bar .MuiTextField-root {
-    border-radius: 30px; /* Esquinas redondeadas para el campo de búsqueda */
+.search-bar input {
+    width: 100%;
+    max-width: 600px;
+    border: none; /* Eliminar borde */
+    border-radius: 30px;
+    padding: 12px 20px;
+    font-size: 16px;
+    transition: box-shadow 0.3s;
+    background: #f8f8f8;
+    outline: none;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1); /* Añadir sombra */
 }
 
-/* Estilo de la cuadrícula de productos */
+.search-bar input::placeholder {
+    color: #aaa;
+}
+
+.search-bar input:focus {
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+    background: #fff;
+}
+
+/* Botón de limpiar búsqueda */
+.clear-search-btn {
+    margin-left: 10px;
+    padding: 8px 16px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.clear-search-btn:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 20px;
     padding: 20px;
+    align-items: center;
+    justify-content: center;
 }
-
 /* Estilo de las tarjetas de productos */
 .product-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: none; /* Eliminamos el borde por defecto */
+    border-radius: 10px; /* Aumentamos el radio de borde para esquinas redondeadas */
     padding: 16px;
     text-align: center;
     margin: 10px;
-    transition: transform 0.2s, border-color 0.2s; /* Transición para el hover */
-    height: 320px; /* Altura fija para las tarjetas */
+    transition: transform 0.3s, box-shadow 0.3s; /* Añadimos sombra y escala en hover */
+    height: 360px; /* Ajustamos la altura */
     display: flex;
-    flex-direction: column; /* Alineación vertical del contenido */
+    flex-direction: column;
+    background: linear-gradient(145deg, #1a1a1a, #333333); /* Fondo degradado */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Sombra de tarjeta */
 }
 
+.close-drawer-btn {
+    padding: 8px;
+}
+
+.close-drawer-btn:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
 .product-card:hover {
-    transform: scale(1.05); /* Efecto de aumento al pasar el ratón */
-    border-color: #007bff; /* Cambio de color del borde al pasar el ratón */
+    transform: translateY(-5px); /* Levanta la tarjeta al pasar el mouse */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); /* Aumenta la sombra en hover */
 }
 
 /* Estilo de la imagen del producto */
 .product-image {
-    width: 100%; /* Ancho completo */
-    height: 200px; /* Altura fija para todas las imágenes */
-    object-fit: cover; /* Mantiene la proporción de la imagen */
-    border-radius: 4px;
-    margin-bottom: 10px;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px; /* Esquinas redondeadas */
+    margin-bottom: 15px; /* Espacio adicional abajo */
 }
 
+.product-price{
+    color:#fff;
+}
 /* Estilo del título y descripción del producto */
 .product-title {
-    font-size: 18px;
+    font-size: 15px; /* Aumentamos el tamaño del título */
     margin-bottom: 10px;
+    font-weight: 60; /* Peso de fuente más fuerte */
+    color: #fff; /* Color blanco para mejor contraste */
 }
 
 .product-description {
@@ -161,7 +212,20 @@
 
 /* Estilo del botón de agregar al carrito */
 .add-to-cart-btn {
-    margin-top: auto; /* Empuja el botón hacia el fondo de la tarjeta */
+    margin-top: auto;
+    padding: 12px 20px; /* Ajustamos el padding para un botón más grande */
+    background: linear-gradient(45deg, #c59d5f, #dfbd83); /* Degradado en el botón */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    font-weight: bold; /* Hacemos que el texto del botón sea más destacado */
+    font-size: 16px; /* Aumentamos el tamaño de fuente del botón */
+}
+.add-to-cart-btn:hover {
+    background: linear-gradient(45deg, #dfbd83, #c59d5f); /* Cambia el degradado en hover */
+    transform: translateY(-2px); /* Efecto de levantar el botón */
 }
 
 /* Estilo del contenido del cajón de compras */
@@ -171,14 +235,313 @@
 }
 
 .drawer-content .MuiTypography-h6 {
-    margin-bottom: 20px; /* Espacio debajo del título en el cajón */
+    margin-bottom: 20px;
 }
+
 .price-typography {
-    margin-top: 28px; /* Ajusta el valor según sea necesario */
+    margin-top: 28px;
 }
 
 .price-container {
     display: flex;
-    justify-content: space-between; /* Para alinear ambos elementos */
-    align-items: center; /* Alinear verticalmente */
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-drawer {
+    width: 350px; /* Ancho del cajón de compras */
+}
+
+.cart-drawer .MuiDrawer-paper {
+    width: 350px; /* Ancho del papel del cajón de compras */
+    position: fixed;
+    transition: transform 0.3s ease-out;
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.close-drawer-btn {
+    color: #666;
+    transition: color 0.3s;
+}
+
+.close-drawer-btn:hover {
+    color: #000;
+}
+
+.drawer-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+}
+
+.cart-item {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+}
+
+.cantidad-azul {
+    color: #080808;
+    margin-right: 12px;
+}
+
+.price-text {
+    display: block;
+    color: #666;
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+
+.empty-cart-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.drawer-footer {
+    margin-top: auto;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
+}
+
+.total-amount {
+    padding: 15px;
+    font-size: 1.2em;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+/* Ajustar el contenido principal cuando el carrito está abierto */
+.shop-container {
+    transition: margin-right 0.3s ease-out;
+}
+
+.shop-container.drawer-open {
+    margin-right: 350px; /* Ajustar margen cuando el cajón de compras está abierto */
+}
+
+
+
+
+
+
+.cart-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.barber-button {
+    flex: 1;
+    padding: 12px 24px !important;
+    font-family: 'Oswald', sans-serif !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    border-radius: 0 !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.barber-button::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, #c59d5f, #dfbd83);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.barber-button:hover::after {
+    transform: scaleX(1);
+}
+
+.barber-button-clear {
+    color: #8B0000 !important;
+    border: 2px solid #8B0000 !important;
+    background: transparent !important;
+}
+
+.barber-button-clear:hover {
+    background: rgba(139, 0, 0, 0.05) !important;
+    box-shadow: 0 4px 8px rgba(139, 0, 0, 0.1) !important;
+}
+
+.barber-button-checkout {
+    color: #ffffff !important;
+    background: linear-gradient(45deg, #1a1a1a, #333333) !important;
+    border: 2px solid #1a1a1a !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.barber-button-checkout:hover {
+    background: linear-gradient(45deg, #333333, #1a1a1a) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+/* Efectos adicionales para los íconos */
+.barber-button .MuiSvgIcon-root {
+    font-size: 1.2rem !important;
+    margin-right: 8px !important;
+    transition: transform 0.3s ease;
+}
+
+.barber-button:hover .MuiSvgIcon-root {
+    transform: scale(1.1);
+}
+
+/* Efecto de ripple personalizado */
+.barber-button .MuiTouchRipple-root {
+    color: #c59d5f;
+}
+
+
+
+.barber-add-cart-btn {
+    margin-top: 16px !important;
+    padding: 16px 32px !important; /* Aumenta el padding */
+    background: linear-gradient(45deg, #1a1a1a, #333333) !important;
+    color: #fff !important;
+    font-family: 'Oswald', sans-serif !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    font-weight: 600 !important; /* Aumenta el peso de la fuente */
+    border: 2px solid #c59d5f !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    font-size: 1.25rem !important; /* Aumenta el tamaño de la fuente */
+}
+
+.barber-add-cart-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(197, 157, 95, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.barber-add-cart-btn:hover {
+    background: linear-gradient(45deg, #2a2a2a, #404040) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+    border-color: #dfbd83 !important;
+}
+
+.barber-add-cart-btn:hover::before {
+    left: 100%;
+}
+
+.barber-add-cart-btn .MuiSvgIcon-root {
+    font-size: 1.5rem !important; /* Aumenta el tamaño del ícono */
+    transition: transform 0.3s ease;
+}
+
+.barber-add-cart-btn:hover .MuiSvgIcon-root {
+    transform: scale(1.2);
+}
+
+/* Efecto de pulso suave */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(197, 157, 95, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(197, 157, 95, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(197, 157, 95, 0);
+    }
+}
+
+.barber-add-cart-btn:active {
+    animation: pulse 0.8s;
+    transform: translateY(0);
+}
+
+/* Efecto de ripple personalizado */
+.barber-add-cart-btn .MuiTouchRipple-root {
+    color: #c59d5f;
+}
+
+/* Responsivo para pantallas pequeñas */
+@media (max-width: 900px) {
+    .barber-add-cart-btn {
+        padding: 24px 20px !important; /* Aumenta el padding en pantallas pequeñas */
+        font-size: 1rem !important; /* Aumenta el tamaño de la fuente en pantallas pequeñas */
+    }
+}
+
+
+.cart-buttons1 {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Espacio entre botones */
+    margin-top: 20px; /* Margen superior */
+}
+
+.barber-button {
+    border-radius: 20px; /* Bordes redondeados */
+    padding: 8px 15px; /* Espaciado interno reducido */
+    font-weight: 500; /* Peso de fuente moderado */
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transición suave */
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); /* Sombra más sutil */
+}
+
+.barber-button-clear {
+    background-color: #ffebee; /* Color de fondo suave */
+    color: #c62828; /* Color del texto */
+    border: 2px solid #c62828; /* Borde */
+}
+
+.barber-button-clear:hover {
+    background-color: #ffcdd2; /* Color de fondo en hover */
+    transform: translateY(-1px); /* Efecto de elevación leve */
+}
+
+.barber-button-checkout {
+    background-color: #66bb6a; /* Color de fondo */
+    color: white; /* Color del texto */
+}
+
+.barber-button-checkout:hover {
+    background-color: #57a053; /* Color de fondo en hover */
+    transform: translateY(-1px); /* Efecto de elevación leve */
+}
+
+/* Estilo para deshabilitar el botón */
+.barber-button:disabled {
+    background-color: #e0e0e0; /* Color de fondo deshabilitado */
+    color: #999999; /* Color del texto deshabilitado */
+    box-shadow: none; /* Sin sombra para deshabilitado */
+    cursor: not-allowed; /* Cursor de no permitido */
 }

@@ -37,12 +37,17 @@ const Header = () => {
     const handleLogout = () => {
         // Elimina el token del almacenamiento local
         localStorage.removeItem('jwtToken');
-        
+
         // Actualiza el estado de login en el contexto
         context.setIsLogin(false);
 
         // Redirige al login
         navigate('/login');
+    };
+
+    // Función para redirigir al inicio
+    const handleGoToHome = () => {
+        navigate('/index');
     };
 
     return (
@@ -53,7 +58,7 @@ const Header = () => {
                         {/* Logo wropper */}
                         <div className="col-sm-2 parte1">
                             <Link to={'/'} className='d-flex align-items-center logo'>
-                                <img src={logo}></img>
+                                <img src={logo} alt="Barberia Orion Logo" />
                                 <span className='ml-2'>Barberia Orion</span>
                             </Link>
                         </div>
@@ -78,15 +83,20 @@ const Header = () => {
                                 <Button className='MyAcc d-flex align-items-center' onClick={handleClick}>
                                     <div className='ImgUser'>
                                         <span className='rounded-circle'>
-                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'></img>
+                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' alt="User Avatar" />
                                         </span>
                                     </div>
                                     <div className='userInfo'>
-                                        <h5>Migue Perez</h5>
-                                        <p className='mb-0'>
-                                            Administrador
-                                        </p>
+                                        {context.isLogin ? (
+                                            <>
+                                                <h5>{context.userName}</h5>
+                                                <p className='mb-0'>Administrador</p>
+                                            </>
+                                        ) : (
+                                            <p className='mb-0'>No está logueado</p> // Mensaje alternativo si no está logueado
+                                        )}
                                     </div>
+
                                 </Button>
                                 <Menu
                                     anchorEl={anchorEl}
@@ -103,11 +113,11 @@ const Header = () => {
                                         </ListItemIcon>
                                         Mi cuenta
                                     </MenuItem>
-                                    <MenuItem onClick={handleClose}>
+                                    <MenuItem onClick={handleGoToHome}> {/* Usar handleGoToHome para redirigir */}
                                         <ListItemIcon>
                                             <BsShieldFillExclamation />
                                         </ListItemIcon>
-                                        Reset password
+                                        Volver al inicio
                                     </MenuItem>
                                     <MenuItem onClick={handleLogout}>
                                         <ListItemIcon>

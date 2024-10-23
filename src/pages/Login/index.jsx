@@ -21,9 +21,6 @@ const Login = () => {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
-    useEffect(() => {
-        context.setIsHideSidebarAndHeader(true);
-    }, [context]);
 
     const focusInput = (index) => {
         setInputIndex(index);
@@ -58,15 +55,18 @@ const Login = () => {
                 email,
                 password
             });
-
+    
             const { user, token } = response.data;
-
+    
             if (token && user.roleId) {
                 localStorage.setItem('jwtToken', token);
                 localStorage.setItem('roleId', user.roleId.toString());
+                localStorage.setItem('userName', user.name); // Guardar el nombre del usuario
                 console.log('Token and roleId stored:', { token, roleId: user.roleId });
-                navigate('/dashboard');
-                context.setIsHideSidebarAndHeader(false);
+                context.setIsLogin(true);
+                context.setUserName(user.name); // Establecer el nombre del usuario en el contexto
+                navigate('/index');
+                
             } else {
                 throw new Error('Token o roleId no recibidos');
             }
@@ -83,6 +83,7 @@ const Login = () => {
             }); 
         }
     };
+    
 
     const handleRegister = () => {
         navigate('/register');

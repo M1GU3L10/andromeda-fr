@@ -19,7 +19,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Modal, Form } from 'react-bootstrap';
 
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ?
         theme.palette.grey[100] : theme.palette.grey[800],
@@ -76,7 +75,6 @@ const Products = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
 
-
     useEffect(() => {
         fetchCategories();
         fetchProductData();
@@ -84,8 +82,7 @@ const Products = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await
-                axios.get('http://localhost:1056/api/categories');
+            const response = await axios.get('http://localhost:1056/api/categories');
             setCategories(response.data);
         } catch (err) {
             console.error('Error fetching categories:', err);
@@ -96,8 +93,7 @@ const Products = () => {
     const fetchProductData = async () => {
         try {
             setLoading(true);
-            const response = await
-                axios.get('http://localhost:1056/api/products');
+            const response = await axios.get('http://localhost:1056/api/products');
             setProductData(response.data);
             setLoading(false);
         } catch (err) {
@@ -123,8 +119,7 @@ const Products = () => {
         let updatedValue = value;
 
         if (name === 'Price') {
-            updatedValue = value === '' ? '' : Math.max(0,
-                parseFloat(value) || 0);
+            updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
         }
 
         setFormData(prevData => ({
@@ -136,14 +131,12 @@ const Products = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validar tipo de archivo
             const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
             if (!allowedTypes.includes(file.type)) {
                 show_alerta('Tipo de archivo no permitido. Use JPEG, PNG o GIF.', 'error');
                 return;
             }
 
-            // Validar tamaño de archivo (por ejemplo, máximo 5MB)
             const maxSize = 5 * 1024 * 1024; // 5MB
             if (file.size > maxSize) {
                 show_alerta('El archivo es demasiado grande. Máximo 5MB permitido.', 'error');
@@ -167,8 +160,7 @@ const Products = () => {
             errors.Product_Name = 'El nombre del producto es obligatorio';
         }
 
-        if (!formData.Price || isNaN(formData.Price) ||
-            parseFloat(formData.Price) <= 0) {
+        if (!formData.Price || isNaN(formData.Price) || parseFloat(formData.Price) <= 0) {
             errors.Price = 'El precio debe ser un número mayor a cero';
         }
 
@@ -176,8 +168,7 @@ const Products = () => {
             errors.Category_Id = 'Debe seleccionar una categoría válida';
         }
 
-        if (formData.Stock !== '' && (isNaN(formData.Stock) ||
-            parseInt(formData.Stock) < 0)) {
+        if (formData.Stock !== '' && (isNaN(formData.Stock) || parseInt(formData.Stock) < 0)) {
             errors.Stock = 'El stock debe ser un número entero no negativo';
         }
 
@@ -203,13 +194,12 @@ const Products = () => {
         }
 
         try {
-            const response = await
-                axios.put(`http://localhost:1056/api/products/${formData.id}`,
-                    formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+            const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`,
+                formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             if (response.status === 200 || response.status === 204) {
                 handleClose();
@@ -227,8 +217,7 @@ const Products = () => {
             } else if (error.request) {
                 show_alerta('No se pudo conectar con el servidor', 'error');
             } else {
-                show_alerta(`Error al procesar la solicitud:
-${error.message}`, 'error');
+                show_alerta(`Error al procesar la solicitud: ${error.message}`, 'error');
             }
         }
     };
@@ -245,17 +234,17 @@ ${error.message}`, 'error');
         formDataToSend.append('Price', formData.Price);
         formDataToSend.append('Category_Id', formData.Category_Id);
         formDataToSend.append('status', formData.status);
+        formDataToSend.append('Stock', formData.Stock);
         if (formData.Image) {
             formDataToSend.append('Image', formData.Image);
         }
 
         try {
-            const response = await
-                axios.post('http://localhost:1056/api/products', formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
+            const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
 
             if (response.status === 200 || response.status === 201) {
                 handleClose()
@@ -267,19 +256,16 @@ ${error.message}`, 'error');
         } catch (error) {
             console.error('Error:', error)
             if (error.response) {
-                show_alerta(`Error del servidor:
-${error.response.data.message || 'Error desconocido'}`, 'error')
+                show_alerta(`Error del servidor: ${error.response.data.message || 'Error desconocido'}`, 'error')
             } else if (error.request) {
                 show_alerta('No se pudo conectar con el servidor', 'error')
             } else {
-                show_alerta(`Error al procesar la solicitud:
-${error.message}`, 'error')
+                show_alerta(`Error al procesar la solicitud: ${error.message}`, 'error')
             }
         }
     }
 
-    const openModal = (op, id, Product_Name, Price, Category_Id,
-        Image, Stock, status) => {
+    const openModal = (op, id, Product_Name, Price, Category_Id, Image, Stock, status) => {
         setOperation(op);
         setFormData({
             id,
@@ -308,8 +294,7 @@ ${error.message}`, 'error')
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await
-                        axios.delete(`http://localhost:1056/api/products/${id}`);
+                    await axios.delete(`http://localhost:1056/api/products/${id}`);
                     fetchProductData();
                     show_alerta('Producto eliminado exitosamente', 'success');
                 } catch (err) {
@@ -323,13 +308,11 @@ ${error.message}`, 'error')
     };
 
     const handleSwitchChange = async (productId, checked) => {
-        const productToUpdate = productData.find(product => product.id
-            === productId);
+        const productToUpdate = productData.find(product => product.id === productId);
         const MySwal = withReactContent(Swal);
 
         const result = await MySwal.fire({
-            title: `¿Estás seguro que deseas ${checked ? 'activar' :
-                'desactivar'} el producto "${productToUpdate.Product_Name}"?`,
+            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el producto "${productToUpdate.Product_Name}"?`,
             icon: 'question',
             text: 'Esta acción puede afectar la disponibilidad del producto.',
             showCancelButton: true,
@@ -350,12 +333,10 @@ ${error.message}`, 'error')
                     },
                 });
 
-                console.log(`Intentando actualizar producto
-${productId} a estado ${newStatus}`);
-                const response = await
-                    axios.put(`http://localhost:1056/api/products/${productId}/status`, {
-                        status: newStatus
-                    });
+                console.log(`Intentando actualizar producto ${productId} a estado ${newStatus}`);
+                const response = await axios.put(`http://localhost:1056/api/products/${productId}/status`, {
+                    status: newStatus
+                });
                 console.log('Respuesta del servidor:', response);
 
                 if (response.status === 200) {
@@ -387,7 +368,7 @@ ${productId} a estado ${newStatus}`);
                 } else if (error.request) {
                     MySwal.fire({
                         title: 'Error de conexión',
-                        text: 'No se pudo conectar con el servidor.Por favor, verifica tu conexión a internet e inténtalo de nuevo.',
+                        text: 'No se pudo conectar con el servidor. Por favor, verifica tu conexión a internet e inténtalo de nuevo.',
                         icon: 'error',
                     });
                 }
@@ -395,21 +376,19 @@ ${productId} a estado ${newStatus}`);
         } else {
             MySwal.fire({
                 title: 'Cancelado',
-                text: 'Estado del producto no cambiado',
+                text: 'Estado del producto no  cambiado',
                 icon: 'info',
             });
         }
     };
 
-    const handlePageChange = useCallback((pageNumber) => {
-        setCurrentPage(pageNumber);
-    }, []);
+    const handlePageChange = useCallback((pageNumber) => 
+        setCurrentPage(pageNumber), []);
 
     const handleSearchChange = useCallback((event) => {
         setSearchTerm(event.target.value);
         setCurrentPage(1);
     }, []);
-
 
     const filteredItems = productData.filter((product) =>
         product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -427,6 +406,60 @@ ${productId} a estado ${newStatus}`);
 
     const handleCloseDetail = () => {
         setShowDetailModal(false);
+    };
+
+    const handlePlaceOrder = async (productId, quantity, userId) => {
+        try {
+            const product = productData.find(p => p.id === productId);
+            if (!product) {
+                throw new Error('Producto no encontrado');
+            }
+
+            if (product.Stock < quantity) {
+                show_alerta('No hay suficiente stock para este pedido', 'error');
+                return;
+            }
+
+            const now = new Date();
+            const orderData = {
+                Order_Date: now.toISOString().split('T')[0],
+                Order_Time: now.toTimeString().split(' ')[0],
+                Total_Amount: (product.Price * quantity).toFixed(2),
+                Status: 'En proceso',
+                User_Id: userId,
+                Token_Expiration: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString()
+            };
+
+            // Create the order
+            const orderResponse = await axios.post('http://localhost:1056/api/orders', orderData);
+
+            if (orderResponse.status === 200 || orderResponse.status === 201) {
+                // Update the product stock
+                const updatedProduct = {
+                    ...product,
+                    Stock: product.Stock - quantity
+                };
+
+                const productResponse = await axios.put(`http://localhost:1056/api/products/${productId}`, updatedProduct);
+
+                if (productResponse.status === 200) {
+                    // Update the local state
+                    setProductData(prevData =>
+                        prevData.map(p =>
+                            p.id === productId ? updatedProduct : p
+                        )
+                    );
+                    show_alerta('Pedido realizado con éxito y stock actualizado', 'success');
+                } else {
+                    throw new Error('Error al actualizar el stock del producto');
+                }
+            } else {
+                throw new Error('Error al crear el pedido');
+            }
+        } catch (error) {
+            console.error('Error al realizar el pedido:', error);
+            show_alerta('Error al realizar el pedido', 'error');
+        }
     };
 
     return (
@@ -490,20 +523,17 @@ ${productId} a estado ${newStatus}`);
                                 {currentItems.length > 0 ? (
                                     currentItems.map((product, i) => (
                                         <tr key={product.id}>
-                                            <td>{(i + 1) +
-                                                (currentPage - 1) * itemsPerPage}</td>
+                                            <td>{(i + 1) + (currentPage - 1) * itemsPerPage}</td>
                                             <td>{product.Product_Name}</td>
-                                            <td>{new
-                                                Intl.NumberFormat('es-CO', {
-                                                    style: 'currency', currency: 'COP'
-                                                }).format(product.Price)}</td>
+                                            <td>{new Intl.NumberFormat('es-CO', {
+                                                style: 'currency', currency: 'COP'
+                                            }).format(product.Price)}</td>
                                             <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</td>
                                             <td>{product.Stock}</td>
                                             <td>
                                                 {product.Image ? (
                                                     <img
                                                         src={product.Image}
-
                                                         alt={product.Product_Name}
                                                         style={{
                                                             width: '50px', height: '50px', objectFit: 'cover'
@@ -512,14 +542,12 @@ ${productId} a estado ${newStatus}`);
                                                 ) : 'No'}
                                             </td>
                                             <td><span
-                                                className={`productStatus ${product.status === 'A' ? '' :
-                                                    'Inactive'}`}>{product.status === 'A' ? 'Activo' :
-                                                        'Inactivo'}</span></td>
+                                                className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>
+                                                {product.status === 'A' ? 'Activo' : 'Inactivo'}
+                                            </span></td>
                                             <td>
-                                                <div
-                                                    className='actions d-flex align-items-center'>
+                                                <div className='actions d-flex align-items-center'>
                                                     <BlueSwitch
-
                                                         checked={product.status === 'A'}
                                                         onChange={(e) => handleSwitchChange(product.id, e.target.checked)}
                                                     />
@@ -551,8 +579,6 @@ ${productId} a estado ${newStatus}`);
                                 )}
                             </tbody>
                         </table>
-
-
                     </div>
                 </div>
             </div>
@@ -600,8 +626,7 @@ ${productId} a estado ${newStatus}`);
                                 onChange={handleInputChange}
                                 isInvalid={!!formErrors.Category_Id}
                             >
-                                <option value="">Seleccione una
-                                    categoría</option>
+                                <option value="">Seleccione una categoría</option>
                                 {categories.map(category => (
                                     <option key={category.id}
                                         value={category.id}>{category.name}</option>
@@ -609,6 +634,20 @@ ${productId} a estado ${newStatus}`);
                             </Form.Select>
                             <Form.Control.Feedback type="invalid">
                                 {formErrors.Category_Id}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Stock</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="Stock"
+                                value={formData.Stock}
+                                onChange={handleInputChange}
+                                isInvalid={!!formErrors.Stock}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {formErrors.Stock}
                             </Form.Control.Feedback>
                         </Form.Group>
 
