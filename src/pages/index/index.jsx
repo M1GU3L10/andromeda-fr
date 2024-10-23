@@ -38,7 +38,6 @@ const Index = () => {
         navigate('/login');
     };
 
- 
     return (
         <>
             <header className="header-index">
@@ -62,23 +61,23 @@ const Index = () => {
                         </Button>
                     </nav>
                     <div className='MyAccWrapper d-flex align-items-center'>
-                        <div className='d-flex align-items-center'>
-                            <Button className='MyAcc' onClick={handleClick}>
-                                <Avatar
-                                    alt="User Avatar"
-                                    src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
-                                />
-                            </Button>
-                            <div className='userInfo' style={{ marginLeft: '8px' }}>
-                                {context.isLogin ? (
+                        {context.isLogin ? (
+                            <div className='d-flex align-items-center'>
+                                <Button className='MyAcc' onClick={handleClick}>
+                                    <Avatar
+                                        alt="User Avatar"
+                                        src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
+                                    />
+                                </Button>
+                                <div className='userInfo' style={{ marginLeft: '8px' }}>
                                     <span style={{ color: 'white' }}>{context.userName}</span>
-                                ) : (
-                                    <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
-                                        INICIAR SESIÓN
-                                    </Button>
-                                )}
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
+                                INICIAR SESIÓN
+                            </Button>
+                        )}
                         <Menu
                             anchorEl={anchorEl}
                             id="account-menu"

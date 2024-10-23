@@ -21,9 +21,6 @@ const Login = () => {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
-    useEffect(() => {
-        context.setIsHideSidebarAndHeader(true);
-    }, [context]);
 
     const focusInput = (index) => {
         setInputIndex(index);
@@ -69,7 +66,7 @@ const Login = () => {
                 context.setIsLogin(true);
                 context.setUserName(user.name); // Establecer el nombre del usuario en el contexto
                 navigate('/index');
-                context.setIsHideSidebarAndHeader(false);
+                
             } else {
                 throw new Error('Token o roleId no recibidos');
             }

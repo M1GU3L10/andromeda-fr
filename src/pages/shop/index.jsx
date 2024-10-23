@@ -19,7 +19,7 @@ import IconButton from '@mui/material/IconButton';
 
 
 
-  
+
 
 import axios from 'axios';
 import {
@@ -40,7 +40,7 @@ import Swal from 'sweetalert2';
 import './shop.css';
 
 const Shop = () => {
-  
+
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -229,68 +229,69 @@ const Shop = () => {
     return (
         <>
             <header className="header-index1">
-            <div className="header-content d-flex align-items-center justify-content-between">
-                <Link to={'/'} className='d-flex align-items-center logo-index'>
-                    <img src={logo} alt="Barberia Orion Logo" />
-                    <span className='ml-2'>Barberia Orion</span>
-                </Link>
-                <nav className='navBar-index'>
-                    <Link to='/index'>INICIO</Link>
-                    <Link to='/services'>SERVICIOS</Link>
-                    <Link to='/appointment'>CITAS</Link>
-                    <Link to='/shop'>PRODUCTOS</Link>
-                    <Link to='/index'>CONTACTO</Link>
-                    <Button
-                        variant="text"
-                        className="administrar-btn"
-                        onClick={handleAdministrar}
-                    >
-                        ADMINISTRAR
-                    </Button>
-                    <IconButton onClick={() => setDrawerOpen(true)}>
-                        <Badge badgeContent={getTotalItems()} color="secondary">
-                            <ShoppingCart />
-                        </Badge>
-                    </IconButton>
-                </nav>
-                <div className='MyAccWrapper d-flex align-items-center'>
-                    <div className='d-flex align-items-center'>
-                        <Button className='MyAcc' onClick={handleClick}>
-                            <Avatar
-                                alt="User Avatar"
-                                src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
-                            />
+                <div className="header-content d-flex align-items-center justify-content-between">
+                    <Link to={'/'} className='d-flex align-items-center logo-index'>
+                        <img src={logo} alt="Barberia Orion Logo" />
+                        <span className='ml-2'>Barberia Orion</span>
+                    </Link>
+                    <nav className='navBar-index'>
+                        <Link to='/index'>INICIO</Link>
+                        <Link to='/services'>SERVICIOS</Link>
+                        <Link to='/appointment'>CITAS</Link>
+                        <Link to='/shop'>PRODUCTOS</Link>
+                        <Link to='/index'>CONTACTO</Link>
+                        <Button
+                            variant="text"
+                            className="administrar-btn"
+                            onClick={handleAdministrar}
+                        >
+                            ADMINISTRAR
                         </Button>
-                        <div className='userInfo' style={{ marginLeft: '8px' }}>
-                            {context.isLogin ? (
-                                <span style={{ color: 'white' }}>{context.userName}</span>
-                            ) : (
-                                <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
-                                    INICIAR SESIÓN
+                        <IconButton onClick={() => setDrawerOpen(true)}>
+                            <Badge badgeContent={getTotalItems()} color="secondary">
+                                <ShoppingCart />
+                            </Badge>
+                        </IconButton>
+                    </nav>
+                    <div className='MyAccWrapper d-flex align-items-center'>
+                        {context.isLogin ? (
+                            <div className='d-flex align-items-center'>
+                                <Button className='MyAcc' onClick={handleClick}>
+                                    <Avatar
+                                        alt="User Avatar"
+                                        src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
+                                    />
                                 </Button>
-                            )}
-                        </div>
-                    </div>
-                    <Menu
-                        anchorEl={anchorEl}
-                        id="account-menu"
-                        open={open}
-                        onClose={handleClose}
-                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                    >
-                        {context.isLogin && (
-                            <MenuItem onClick={handleLogout}>
-                                <ListItemIcon>
-                                    <Logout fontSize="small" />
-                                </ListItemIcon>
-                                Cerrar sesión
-                            </MenuItem>
+                                <div className='userInfo' style={{ marginLeft: '8px' }}>
+                                    <span style={{ color: 'white' }}>{context.userName}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
+                                INICIAR SESIÓN
+                            </Button>
                         )}
-                    </Menu>
+                        <Menu
+                            anchorEl={anchorEl}
+                            id="account-menu"
+                            open={open}
+                            onClose={handleClose}
+                            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                        >
+                            {context.isLogin && (
+                                <MenuItem onClick={handleLogout}>
+                                    <ListItemIcon>
+                                        <Logout fontSize="small" />
+                                    </ListItemIcon>
+                                    Cerrar sesión
+                                </MenuItem>
+                            )}
+                        </Menu>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
+
 
             <main className="container mx-auto mt-8 shop-container">
                 <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
