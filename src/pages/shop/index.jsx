@@ -11,6 +11,16 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CloseIcon from '@mui/icons-material/Close';
 
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Logout from '@mui/icons-material/Logout';
+import IconButton from '@mui/material/IconButton';
+
+
+
+  
+
 import axios from 'axios';
 import {
     TextField,
@@ -20,7 +30,6 @@ import {
     ListItemText,
     Typography,
     CircularProgress,
-    IconButton,
     Badge,
     ListItemAvatar,
     Avatar,
@@ -31,8 +40,7 @@ import Swal from 'sweetalert2';
 import './shop.css';
 
 const Shop = () => {
-    const context = useContext(MyContext);
-    const navigate = useNavigate();
+  
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,6 +49,35 @@ const Shop = () => {
     const [alertMessage, setAlertMessage] = useState('');
     const [cart, setCart] = useState({});
     const [total, setTotal] = useState(0);
+    const context = useContext(MyContext);
+    const navigate = useNavigate();
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+
+
+    const handleLogin = () => {
+        navigate('/login');
+    };
+
+    const handleAdministrar = () => {
+        context.setIsHideSidebarAndHeader(false);
+        navigate('/sales');
+    };
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('jwtToken');
+        context.setIsLogin(false);
+        navigate('/login');
+    };
+
 
     useEffect(() => {
         calculateTotal();
@@ -74,15 +111,6 @@ const Shop = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleLogin = () => {
-        navigate('/login');
-    };
-
-    const handleAdministrar = () => {
-        context.setIsHideSidebarAndHeader(false);
-        navigate('/sales');
     };
 
     const addToCart = (product) => {
@@ -201,39 +229,68 @@ const Shop = () => {
     return (
         <>
             <header className="header-index1">
-                <div className="header-content">
-                    <Link to={'/'} className='d-flex align-items-center logo-index'>
-                        <img src={logo} alt="Barberia Orion Logo" />
-                        <span className='ml-2'>Barberia Orion</span>
-                    </Link>
-                    <nav className='navBar-index'>
-                        <Link to='/index'>INICIO</Link>
-                        <Link to='/services'>SERVICIOS</Link>
-                        <Link to='/appointment'>CITAS</Link>
-                        <Link to='/shop'>PRODUCTOS</Link>
-                        <Link to='/index'>CONTACTO</Link>
-                        <Button
-                            variant="text"
-                            className="administrar-btn"
-                            onClick={handleAdministrar}
-                        >
-                            ADMINISTRAR
+            <div className="header-content d-flex align-items-center justify-content-between">
+                <Link to={'/'} className='d-flex align-items-center logo-index'>
+                    <img src={logo} alt="Barberia Orion Logo" />
+                    <span className='ml-2'>Barberia Orion</span>
+                </Link>
+                <nav className='navBar-index'>
+                    <Link to='/index'>INICIO</Link>
+                    <Link to='/services'>SERVICIOS</Link>
+                    <Link to='/appointment'>CITAS</Link>
+                    <Link to='/shop'>PRODUCTOS</Link>
+                    <Link to='/index'>CONTACTO</Link>
+                    <Button
+                        variant="text"
+                        className="administrar-btn"
+                        onClick={handleAdministrar}
+                    >
+                        ADMINISTRAR
+                    </Button>
+                    <IconButton onClick={() => setDrawerOpen(true)}>
+                        <Badge badgeContent={getTotalItems()} color="secondary">
+                            <ShoppingCart />
+                        </Badge>
+                    </IconButton>
+                </nav>
+                <div className='MyAccWrapper d-flex align-items-center'>
+                    <div className='d-flex align-items-center'>
+                        <Button className='MyAcc' onClick={handleClick}>
+                            <Avatar
+                                alt="User Avatar"
+                                src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
+                            />
                         </Button>
-                        <IconButton onClick={() => setDrawerOpen(true)}>
-                            <Badge badgeContent={getTotalItems()} color="secondary">
-                                <ShoppingCart />
-                            </Badge>
-                        </IconButton>
-                    </nav>
-                    {context.isLogin ? (
-                        <span style={{ color: 'white' }}>{context.userName}</span>
-                    ) : (
-                        <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
-                            INICIAR SESIÓN
-                        </Button>
-                    )}
+                        <div className='userInfo' style={{ marginLeft: '8px' }}>
+                            {context.isLogin ? (
+                                <span style={{ color: 'white' }}>{context.userName}</span>
+                            ) : (
+                                <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
+                                    INICIAR SESIÓN
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                    <Menu
+                        anchorEl={anchorEl}
+                        id="account-menu"
+                        open={open}
+                        onClose={handleClose}
+                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                        {context.isLogin && (
+                            <MenuItem onClick={handleLogout}>
+                                <ListItemIcon>
+                                    <Logout fontSize="small" />
+                                </ListItemIcon>
+                                Cerrar sesión
+                            </MenuItem>
+                        )}
+                    </Menu>
                 </div>
-            </header>
+            </div>
+        </header>
 
             <main className="container mx-auto mt-8 shop-container">
                 <h1 className="shop-title">NUESTROS PRODUCTOS</h1>

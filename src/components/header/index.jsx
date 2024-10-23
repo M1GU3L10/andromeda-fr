@@ -37,7 +37,7 @@ const Header = () => {
     const handleLogout = () => {
         // Elimina el token del almacenamiento local
         localStorage.removeItem('jwtToken');
-        
+
         // Actualiza el estado de login en el contexto
         context.setIsLogin(false);
 
@@ -87,11 +87,16 @@ const Header = () => {
                                         </span>
                                     </div>
                                     <div className='userInfo'>
-                                        <h5>Migue Perez</h5>
-                                        <p className='mb-0'>
-                                            Administrador
-                                        </p>
+                                        {context.isLogin ? (
+                                            <>
+                                                <h5>{context.userName}</h5>
+                                                <p className='mb-0'>Administrador</p>
+                                            </>
+                                        ) : (
+                                            <p className='mb-0'>No está logueado</p> // Mensaje alternativo si no está logueado
+                                        )}
                                     </div>
+
                                 </Button>
                                 <Menu
                                     anchorEl={anchorEl}
