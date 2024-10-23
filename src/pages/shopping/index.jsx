@@ -25,8 +25,6 @@ import { Switch } from '@mui/material';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 
-
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
         theme.palette.mode === 'light'
@@ -103,7 +101,6 @@ const Shopping = () => {
         setSearch(e.target.value);
         setCurrentPages(1); // Resetear la paginación al hacer una búsqueda
     };
-
     const handleOpenModal = (shopping) => {
         setSelectedShopping(shopping);
         setShowDetailModal(true);
@@ -156,7 +153,6 @@ const Shopping = () => {
             }
         });
     };
-
     return (
         <>
             <div className="right-content w-100">
@@ -226,7 +222,7 @@ const Shopping = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {paginatedResults.length > 0 ? (
+                                    {
                                         paginatedResults.map((shopping, i) => (
                                             <tr key={shopping.id}>
                                                 <td>{(indexStart + i + 1)}</td>
@@ -250,19 +246,23 @@ const Shopping = () => {
                                                         </PDFDownloadLink>
                                                     </div>
                                                 </td>
-
-
                                             </tr>
                                         ))
-                                    ) : 
-                                    (
-                                        <tr>
-                                            <td colSpan={7} className='text-center'>No hay compras disponibles</td>
-                                        </tr>
-                                    )
                                     }
                                 </tbody>
                             </table>
+                            {
+                                filteredResults.length > 0 ? (
+                                    <div className="d-flex table-footer">
+                                        <Pagination
+                                            setCurrentPages={setCurrentPages}
+                                            currentPages={currentPages}
+                                            nPages={nPages} />
+                                    </div>
+                                ) : (<div className="d-flex table-footer">
+                                    No se encontraron resultados.
+                                </div>)
+                            }
                         </div>
                     </div>
                 </div>
