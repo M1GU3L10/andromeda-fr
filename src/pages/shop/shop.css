@@ -150,7 +150,6 @@
     transform: scale(1.05);
 }
 
-/* Estilo de la cuadrícula de productos */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -159,18 +158,19 @@
     align-items: center;
     justify-content: center;
 }
-
 /* Estilo de las tarjetas de productos */
 .product-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: none; /* Eliminamos el borde por defecto */
+    border-radius: 10px; /* Aumentamos el radio de borde para esquinas redondeadas */
     padding: 16px;
     text-align: center;
     margin: 10px;
-    transition: transform 0.2s, border-color 0.2s;
-    height: 320px;
+    transition: transform 0.3s, box-shadow 0.3s; /* Añadimos sombra y escala en hover */
+    height: 360px; /* Ajustamos la altura */
     display: flex;
     flex-direction: column;
+    background: linear-gradient(145deg, #1a1a1a, #333333); /* Fondo degradado */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Sombra de tarjeta */
 }
 
 .close-drawer-btn {
@@ -181,8 +181,8 @@
     background-color: rgba(0, 0, 0, 0.04);
 }
 .product-card:hover {
-    transform: scale(1.05);
-    border-color: #000000;
+    transform: translateY(-5px); /* Levanta la tarjeta al pasar el mouse */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); /* Aumenta la sombra en hover */
 }
 
 /* Estilo de la imagen del producto */
@@ -190,14 +190,19 @@
     width: 100%;
     height: 200px;
     object-fit: cover;
-    border-radius: 4px;
-    margin-bottom: 10px;
+    border-radius: 10px; /* Esquinas redondeadas */
+    margin-bottom: 15px; /* Espacio adicional abajo */
 }
 
+.product-price{
+    color:#fff;
+}
 /* Estilo del título y descripción del producto */
 .product-title {
-    font-size: 18px;
+    font-size: 15px; /* Aumentamos el tamaño del título */
     margin-bottom: 10px;
+    font-weight: 60; /* Peso de fuente más fuerte */
+    color: #fff; /* Color blanco para mejor contraste */
 }
 
 .product-description {
@@ -208,17 +213,19 @@
 /* Estilo del botón de agregar al carrito */
 .add-to-cart-btn {
     margin-top: auto;
-    padding: 10px 20px;
-    background: #000000;
+    padding: 12px 20px; /* Ajustamos el padding para un botón más grande */
+    background: linear-gradient(45deg, #c59d5f, #dfbd83); /* Degradado en el botón */
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: background 0.3s, transform 0.2s;
+    font-weight: bold; /* Hacemos que el texto del botón sea más destacado */
+    font-size: 16px; /* Aumentamos el tamaño de fuente del botón */
 }
-
 .add-to-cart-btn:hover {
-    background: #000000;
+    background: linear-gradient(45deg, #dfbd83, #c59d5f); /* Cambia el degradado en hover */
+    transform: translateY(-2px); /* Efecto de levantar el botón */
 }
 
 /* Estilo del contenido del cajón de compras */
@@ -491,4 +498,50 @@
         padding: 24px 20px !important; /* Aumenta el padding en pantallas pequeñas */
         font-size: 1rem !important; /* Aumenta el tamaño de la fuente en pantallas pequeñas */
     }
+}
+
+
+.cart-buttons1 {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Espacio entre botones */
+    margin-top: 20px; /* Margen superior */
+}
+
+.barber-button {
+    border-radius: 20px; /* Bordes redondeados */
+    padding: 8px 15px; /* Espaciado interno reducido */
+    font-weight: 500; /* Peso de fuente moderado */
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transición suave */
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); /* Sombra más sutil */
+}
+
+.barber-button-clear {
+    background-color: #ffebee; /* Color de fondo suave */
+    color: #c62828; /* Color del texto */
+    border: 2px solid #c62828; /* Borde */
+}
+
+.barber-button-clear:hover {
+    background-color: #ffcdd2; /* Color de fondo en hover */
+    transform: translateY(-1px); /* Efecto de elevación leve */
+}
+
+.barber-button-checkout {
+    background-color: #66bb6a; /* Color de fondo */
+    color: white; /* Color del texto */
+}
+
+.barber-button-checkout:hover {
+    background-color: #57a053; /* Color de fondo en hover */
+    transform: translateY(-1px); /* Efecto de elevación leve */
+}
+
+/* Estilo para deshabilitar el botón */
+.barber-button:disabled {
+    background-color: #e0e0e0; /* Color de fondo deshabilitado */
+    color: #999999; /* Color del texto deshabilitado */
+    box-shadow: none; /* Sin sombra para deshabilitado */
+    cursor: not-allowed; /* Cursor de no permitido */
 }

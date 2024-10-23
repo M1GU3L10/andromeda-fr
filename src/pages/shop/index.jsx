@@ -143,21 +143,49 @@ const Shop = () => {
     };
 
     const handleCheckout = async () => {
-        if (Object.keys(cart).length === 0) {
-            setAlertMessage('Tu carrito está vacío. Agrega productos antes de realizar un pedido.');
-            return;
+        try {
+            const now = new Date();
+            const orderData = {
+                Order_Date: now.toISOString().split('T')[0],
+                Order_Time: now.toTimeString().split(' ')[0],
+                Total_Amount: parseFloat(total).toFixed(2),
+                Status: 'En proceso',
+                User_Id: context.userId || 1, // Asume que el ID del usuario está en el contexto
+                Token_Expiration: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+                createdAt: now.toISOString(),
+                updatedAt: now.toISOString()
+            };
+
+            const response = await axios.post('http://localhost:1056/api/orders', orderData);
+
+            // Actualiza el stock de los productos en el backend
+            for (const [productId, quantity] of Object.entries(cart)) {
+                const product = products.find(p => p.id === parseInt(productId));
+                if (product) {
+                    await axios.put(`http://localhost:1056/api/products/${productId}`, {
+                        ...product,
+                        Stock: product.Stock - quantity
+                    });
+                }
+            }
+
+            Swal.fire({
+                title: '¡Pedido creado!',
+                html: `
+                    <p>Tu pedido ha sido registrado correctamente.</p>
+                    <p>El pedido tiene un tiempo para ser entregado y vence: ${new Date(response.data.Token_Expiration).toLocaleDateString()} a las ${new Date(response.data.Token_Expiration).toLocaleTimeString()}</p>
+                `,
+                icon: 'success'
+            });
+
+            clearCart();
+            setDrawerOpen(false);
+        } catch (error) {
+            Swal.fire('Error', 'Hubo un problema al crear el pedido. Intente de nuevo.', 'error');
+            console.error('Error creating order:', error);
         }
-
-        console.log('Realizando pedido con los siguientes productos:', cart);
-        clearCart();
-
-        await Swal.fire({
-            title: '¡Pedido realizado con éxito!',
-            text: 'Tu pedido ha sido procesado.',
-            icon: 'success',
-            confirmButtonText: 'Aceptar'
-        });
     };
+
 
     const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
@@ -297,11 +325,11 @@ const Shop = () => {
                     <div className="drawer-header">
                         <Typography variant="h6">Carrito de Compras</Typography>
                         <IconButton
-    onClick={() => setDrawerOpen(false)}
-    className="close-drawer-btn"
->
-    <CloseIcon />
-</IconButton>
+                            onClick={() => setDrawerOpen(false)}
+                            className="close-drawer-btn"
+                        >
+                            <CloseIcon />
+                        </IconButton>
                     </div>
 
                     {alertMessage && <Alert severity="warning">{alertMessage}</Alert>}
@@ -356,7 +384,6 @@ const Shop = () => {
                     )}
                     <div className="drawer-footer">
                         <div className="total-amount">
-
                             <Typography variant="h6">Total:</Typography>
                             <Typography variant="h6">
                                 {new Intl.NumberFormat('es-CO', {
@@ -365,9 +392,8 @@ const Shop = () => {
                                 }).format(total)}
                             </Typography>
                         </div>
-
                     </div>
-                    <div className="cart-buttons">
+                    <div className="cart-buttons1">
                         <Button
                             variant="outlined"
                             onClick={clearCart}
@@ -381,10 +407,13 @@ const Shop = () => {
                             onClick={handleCheckout}
                             className="barber-button barber-button-checkout"
                             startIcon={<ShoppingBagIcon />}
+                            disabled={Object.keys(cart).length === 0}
                         >
                             Realizar pedido
                         </Button>
                     </div>
+
+
                 </div>
             </Drawer>
         </>
