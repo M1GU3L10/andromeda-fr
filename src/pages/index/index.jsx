@@ -52,13 +52,15 @@ const Index = () => {
                         <Link to='/appointment'>CITAS</Link>
                         <Link to='/shop'>PRODUCTOS</Link>
                         <Link to='/index'>CONTACTO</Link>
-                        <Button
-                            variant="text"
-                            className="administrar-btn"
-                            onClick={handleAdministrar}
-                        >
-                            ADMINISTRAR
-                        </Button>
+                        {context.isLogin && ( // El botón solo se mostrará si el usuario está logueado
+                            <Button
+                                variant="text"
+                                className="administrar-btn"
+                                onClick={handleAdministrar}
+                            >
+                                ADMINISTRAR
+                            </Button>
+                        )}
                     </nav>
                     <div className='MyAccWrapper d-flex align-items-center'>
                         {context.isLogin ? (
@@ -110,6 +112,7 @@ const Index = () => {
                     </Button>
                 </div>
             </header>
+
         </>
     );
 };
