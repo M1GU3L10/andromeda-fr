@@ -40,7 +40,6 @@ import Swal from 'sweetalert2';
 import './shop.css';
 
 const Shop = () => {
-
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -49,16 +48,44 @@ const Shop = () => {
     const [alertMessage, setAlertMessage] = useState('');
     const [cart, setCart] = useState({});
     const [total, setTotal] = useState(0);
+    const [email, setEmail] = useState(''); // Agregando estado para email
+    const [password, setPassword] = useState(''); // Agregando estado para password
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
+    const [userId, setUserId] = useState(null); // Agregando estado para userId
+    const [isLogin, setIsLogin] = useState(false);
+    
 
 
-    const handleLogin = () => {
-        navigate('/login');
-    };
+  
 
+  const handleLogin = async () => {
+    // Navega a la página de inicio de sesión
+    navigate('/login');
+
+    try {
+        // Realiza la solicitud POST para iniciar sesión
+        const response = await axios.post('http://localhost:1056/api/login', { email, password });
+
+        // Asegúrate de que la respuesta contenga el ID del usuario
+        const { id } = response.data; // Desestructura el ID de la respuesta
+
+        // Establece el userId en el contexto
+        setUserId(id); 
+        setIsLogin(true); // Marca al usuario como conectado
+
+        // Aquí podrías redirigir al usuario a otra página después de iniciar sesión
+        // navigate('/home'); // Descomenta y ajusta la ruta según sea necesario
+    } catch (error) {
+        // Maneja cualquier error durante el inicio de sesión
+        console.error("Error al iniciar sesión:", error);
+        Swal.fire('Error', 'Credenciales incorrectas o hubo un problema al iniciar sesión.', 'error');
+    }
+};
+
+    
     const handleAdministrar = () => {
         context.setIsHideSidebarAndHeader(false);
         navigate('/sales');
@@ -132,6 +159,56 @@ const Shop = () => {
         });
         setAlertMessage('');
     };
+
+    const getOrdersByUserId = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:1056/api/orders/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error al obtener los pedidos:", error.response ? error.response.data : error.message);
+            throw error;
+        }
+    };
+    const handleShowOrders = async () => {
+        if (context.isLogin) {
+            console.log("Contexto:", context); // Para ver qué hay en el contexto
+            const userId = context.userId;
+    
+            if (userId !== null) { // Cambiado a !== null para comprobar explícitamente
+                try {
+                    const response = await axios.get('http://localhost:1056/api/orders');
+                    const orders = response.data;
+    
+                    const userOrders = orders.filter(order => order.userId === userId);
+    
+                    if (userOrders.length > 0) {
+                        const ordersList = userOrders.map(order => 
+                            `Pedido ID: ${order.id}, Total: ${order.Total_Amount}, Estado: ${order.Status}`
+                        ).join('\n');
+    
+                        Swal.fire({
+                            title: 'Tus Pedidos',
+                            text: ordersList,
+                            icon: 'info'
+                        });
+                    } else {
+                        Swal.fire('No tienes pedidos realizados.');
+                    }
+                } catch (error) {
+                    console.error("Error al mostrar los pedidos:", error);
+                    Swal.fire('Error', 'Hubo un problema al obtener tus pedidos.', 'error');
+                }
+            } else {
+                console.error("Error: userId está indefinido");
+                Swal.fire('Error', 'No se pudo encontrar el ID del usuario.', 'error');
+            }
+        } else {
+            Swal.fire('Error', 'Debes iniciar sesión para ver tus pedidos.', 'warning');
+        }
+    };
+    
+
+
 
     const increaseQuantity = (productId) => {
         const product = products.find(p => p.id === parseInt(productId));
@@ -228,71 +305,71 @@ const Shop = () => {
 
     return (
         <><header className="header-index1">
-        <div className="header-content d-flex align-items-center justify-content-between">
-            <Link to={'/'} className='d-flex align-items-center logo-index'>
-                <img src={logo} alt="Barberia Orion Logo" />
-                <span className='ml-2'>Barberia Orion</span>
-            </Link>
-            <nav className='navBar-index'>
-                <Link to='/index'>INICIO</Link>
-                <Link to='/services'>SERVICIOS</Link>
-                <Link to='/appointment'>CITAS</Link>
-                <Link to='/shop'>PRODUCTOS</Link>
-                <Link to='/index'>CONTACTO</Link>
-                {context.isLogin && ( // El botón solo se mostrará si el usuario está logueado
-                    <Button
-                        variant="text"
-                        className="administrar-btn"
-                        onClick={handleAdministrar}
-                    >
-                        ADMINISTRAR
-                    </Button>
-                )}
-                <IconButton onClick={() => setDrawerOpen(true)}>
-                    <Badge badgeContent={getTotalItems()} color="secondary">
-                        <ShoppingCart />
-                    </Badge>
-                </IconButton>
-            </nav>
-            <div className='MyAccWrapper d-flex align-items-center'>
-                {context.isLogin ? (
-                    <div className='d-flex align-items-center'>
-                        <Button className='MyAcc' onClick={handleClick}>
-                            <Avatar
-                                alt="User Avatar"
-                                src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
-                            />
+            <div className="header-content d-flex align-items-center justify-content-between">
+                <Link to={'/'} className='d-flex align-items-center logo-index'>
+                    <img src={logo} alt="Barberia Orion Logo" />
+                    <span className='ml-2'>Barberia Orion</span>
+                </Link>
+                <nav className='navBar-index'>
+                    <Link to='/index'>INICIO</Link>
+                    <Link to='/services'>SERVICIOS</Link>
+                    <Link to='/appointment'>CITAS</Link>
+                    <Link to='/shop'>PRODUCTOS</Link>
+                    <Link to='/index'>CONTACTO</Link>
+                    {context.isLogin && ( // El botón solo se mostrará si el usuario está logueado
+                        <Button
+                            variant="text"
+                            className="administrar-btn"
+                            onClick={handleAdministrar}
+                        >
+                            ADMINISTRAR
                         </Button>
-                        <div className='userInfo' style={{ marginLeft: '8px' }}>
-                            <span style={{ color: 'white' }}>{context.userName}</span>
-                        </div>
-                    </div>
-                ) : (
-                    <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
-                        INICIAR SESIÓN
-                    </Button>
-                )}
-                <Menu
-                    anchorEl={anchorEl}
-                    id="account-menu"
-                    open={open}
-                    onClose={handleClose}
-                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                >
-                    {context.isLogin && (
-                        <MenuItem onClick={handleLogout}>
-                            <ListItemIcon>
-                                <Logout fontSize="small" />
-                            </ListItemIcon>
-                            Cerrar sesión
-                        </MenuItem>
                     )}
-                </Menu>
+                    <IconButton onClick={() => setDrawerOpen(true)}>
+                        <Badge badgeContent={getTotalItems()} color="secondary">
+                            <ShoppingCart />
+                        </Badge>
+                    </IconButton>
+                </nav>
+                <div className='MyAccWrapper d-flex align-items-center'>
+                    {context.isLogin ? (
+                        <div className='d-flex align-items-center'>
+                            <Button className='MyAcc' onClick={handleClick}>
+                                <Avatar
+                                    alt="User Avatar"
+                                    src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
+                                />
+                            </Button>
+                            <div className='userInfo' style={{ marginLeft: '8px' }}>
+                                <span style={{ color: 'white' }}>{context.userName}</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
+                            INICIAR SESIÓN
+                        </Button>
+                    )}
+                    <Menu
+                        anchorEl={anchorEl}
+                        id="account-menu"
+                        open={open}
+                        onClose={handleClose}
+                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                        {context.isLogin && (
+                            <MenuItem onClick={handleLogout}>
+                                <ListItemIcon>
+                                    <Logout fontSize="small" />
+                                </ListItemIcon>
+                                Cerrar sesión
+                            </MenuItem>
+                        )}
+                    </Menu>
+                </div>
             </div>
-        </div>
-    </header>
-    
+        </header>
+
 
 
             <main className="container mx-auto mt-8 shop-container">
@@ -453,6 +530,11 @@ const Shop = () => {
                             </Typography>
                         </div>
                     </div>
+                    {context.isLogin && (
+                        <Button variant="contained" onClick={handleShowOrders}>
+                            Ver Mis Pedidos
+                        </Button>
+                    )}
                     <div className="cart-buttons1">
                         <Button
                             variant="outlined"
@@ -471,7 +553,9 @@ const Shop = () => {
                         >
                             Realizar pedido
                         </Button>
+
                     </div>
+
 
 
                 </div>
