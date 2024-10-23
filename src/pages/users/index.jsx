@@ -47,7 +47,7 @@ const Users = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('A');
   const [roleId, setRoleId] = useState('');
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState('');
@@ -58,6 +58,7 @@ const Users = () => {
   const [dataQt, setDataQt] = useState(5);
   const [currentPages, setCurrentPages] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [errors, setErrors] = useState({
     name: '',
@@ -66,6 +67,7 @@ const Users = () => {
     phone: '',
     roleId: ''
   });
+
   const [touched, setTouched] = useState({
     name: false,
     email: false,
@@ -84,89 +86,31 @@ const Users = () => {
       const response = await axios.get(urlRoles);
       setRoles(response.data);
     } catch (error) {
-      show_alerta('Error al obtener los roles', 'error');
+      show_alerta('Error al obtener los roles: ' + (error.response?.data?.message || error.message), 'error');
     }
-  }
+  };
 
   const getRolesNames = (role_Id) => {
     try {
       const role = roles.find(role => role.id === role_Id);
       return role ? role.name : 'Desconocido';
     } catch (error) {
-      show_alerta('Error al obtener los nombres de los roles', 'error');
+      console.error('Error al obtener nombres de roles:', error);
+      return 'Error';
     }
-  }
+  };
 
   const getUsers = async () => {
-    const response = await axios.get(url);
-    setUsers(response.data);
+    try {
+      const response = await axios.get(url);
+      setUsers(response.data);
+    } catch (error) {
+      show_alerta('Error al obtener los usuarios: ' + (error.response?.data?.message || error.message), 'error');
+    }
   };
 
   const searcher = (e) => {
     setSearch(e.target.value);
-  }
-
-  const indexEnd = currentPages * dataQt;
-  const indexStart = indexEnd - dataQt;
-
-  const nPages = Math.ceil(users.length / dataQt);
-
-  let results = []
-  if (!search) {
-    results = users.slice(indexStart, indexEnd);
-  } else {
-    results = users.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
-  }
-
-  const openModal = (op, user = {}) => {
-    setOperation(op);
-    setTitle(op === 1 ? 'Registrar usuario' : 'Editar usuario');
-
-    if (op === 1) {
-      setId('');
-      setName('');
-      setEmail('');
-      setPassword('');
-      setPhone('');
-      setStatus('A');
-      setRoleId('');
-    } else if (op === 2) {
-      setId(user.id);
-      setName(user.name);
-      setEmail(user.email);
-      setPassword('');
-      setPhone(user.phone);
-      setStatus(user.status);
-      setRoleId(user.roleId);
-    }
-    setShowModal(true);
-  };
-
-  const handleClose = () => {
-    setId('');
-    setName('');
-    setEmail('');
-    setPassword('');
-    setPhone('');
-    setStatus('A');
-    setRoleId('');
-
-    setErrors({
-      name: '',
-      email: '',
-      password: '',
-      phone: '',
-      roleId: ''
-    });
-    setTouched({
-      name: false,
-      email: false,
-      password: false,
-      phone: false,
-      roleId: false
-    });
-
-    setShowModal(false);
   };
 
   const validateName = (value) => {
@@ -180,7 +124,7 @@ const Users = () => {
   };
 
   const validatePassword = (value) => {
-    if (operation === 2 && value === '') return ''; // Allow empty password for editing
+    if (operation === 2 && value === '') return '';
     const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     return regex.test(value) ? '' : 'La contraseña debe tener al menos 8 caracteres, incluyendo letras y números';
   };
@@ -215,7 +159,7 @@ const Users = () => {
       default:
         break;
     }
-    setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+    setErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleInputChange = (e) => {
@@ -245,19 +189,63 @@ const Users = () => {
 
   const handleBlur = (e) => {
     const { name } = e.target;
-    setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
+    setTouched(prev => ({ ...prev, [name]: true }));
     handleValidation(name, e.target.value);
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const resetForm = () => {
+    setId('');
+    setName('');
+    setEmail('');
+    setPassword('');
+    setPhone('');
+    setStatus('A');
+    setRoleId('');
+    setErrors({
+      name: '',
+      email: '',
+      password: '',
+      phone: '',
+      roleId: ''
+    });
+    setTouched({
+      name: false,
+      email: false,
+      password: false,
+      phone: false,
+      roleId: false
+    });
   };
 
-  const validar = () => {
+  const openModal = (op, user = {}) => {
+    setOperation(op);
+    setTitle(op === 1 ? 'Registrar usuario' : 'Editar usuario');
+    resetForm();
+
+    if (op === 2) {
+      setId(user.id);
+      setName(user.name);
+      setEmail(user.email);
+      setPassword('');
+      setPhone(user.phone);
+      setStatus(user.status);
+      setRoleId(user.roleId);
+    }
+    setShowModal(true);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    setShowModal(false);
+  };
+
+  const validar = async () => {
+    if (isSubmitting) return;
+
     const newErrors = {
       name: validateName(name),
       email: validateEmail(email),
-      password: validatePassword(password),
+      password: operation === 1 ? validatePassword(password) : '',
       phone: validatePhone(phone),
       roleId: validateRoleId(roleId)
     };
@@ -276,68 +264,117 @@ const Users = () => {
       return;
     }
 
-    const parametros = {
-      id: id,
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      status: status,
-      roleId: roleId
-    };
+    setIsSubmitting(true);
 
-    if (password) {
-      parametros.password = password.trim();
-    }
-
-    const metodo = operation === 2 ? 'PUT' : 'POST';
-    enviarSolicitud(metodo, parametros, handleClose);
-  };
-
-  const enviarSolicitud = async (metodo, parametros, closeModal) => {
-    const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
     try {
-      const response = await axios({ method: metodo, url: urlWithId, data: parametros });
+      const parametros = {
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        status: status,
+        roleId: roleId
+      };
 
-      if (response.status >= 200 && response.status < 300) {
-        show_alerta('Operación exitosa', 'success');
-        if (metodo === 'PUT' || metodo === 'POST') {
-          closeModal();
-        }
+      if (operation === 1 || (operation === 2 && password)) {
+        parametros.password = password.trim();
+      }
+
+      const response = await axios({
+        method: operation === 1 ? 'POST' : 'PUT',
+        url: operation === 1 ? url : `${url}/${id}`,
+        data: parametros
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        show_alerta(
+          operation === 1 ? 'Usuario creado exitosamente' : 'Usuario actualizado exitosamente',
+          'success'
+        );
+        handleClose();
         getUsers();
-      } else {
-        throw new Error('Respuesta no exitosa del servidor');
       }
     } catch (error) {
-      console.error('Error en la solicitud:', error);
-      if (error.response) {
-        show_alerta(`Error: ${error.response.data.message || 'Error en la solicitud'}`, 'error');
-      } else if (error.request) {
-        show_alerta('No se recibió respuesta del servidor', 'error');
-      } else {
-        show_alerta('Error al procesar la solicitud', 'error');
-      }
+      console.error('Error en la operación:', error);
+      show_alerta(
+        error.response?.data?.message || 
+        'Error al procesar la solicitud. Por favor, intente nuevamente.',
+        'error'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const handleSwitchChange = async (userId, checked) => {
+        // Encuentra el servicio que está siendo actualizado
+        const userToUpdate = users.find(user => user.id === userId);
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el Usuario "${userToUpdate.name}"?`,
+            icon: 'question',
+            text: 'Esta acción puede afectar la disponibilidad del usuario.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const updatedUser = {
+                    ...userToUpdate,
+                    status: checked ? 'A' : 'I'
+                };
+                try {
+                    const response = await axios.put(`${url}/${userId}`, updatedUser);
+                    if (response.status === 200) {
+                        setUsers(users.map(user =>
+                            user.id === userId ? { ...user, status: updatedUser.status } : user
+                        ));
+                        show_alerta('Estado del usuario actualizado exitosamente', 'success');
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        console.log('Error details:', error.response.data);
+                        show_alerta('Error al actualizar el estado del usuario: ' + JSON.stringify(error.response.data.errors), 'error');
+                    } else {
+                        console.log('Error details:', error.message);
+                        show_alerta('Error al actualizar el estado del usuario', 'error');
+                    }
+                }
+            } else {
+                // Si el usuario cancela, restablece el switch a su estado original
+                setUsers(users.map(user =>
+                    user.id === userId ? { ...user, status: !checked ? 'A' : 'I' } : user
+                ));
+                show_alerta('Estado del servicio no cambiado', 'info');
+            }
+        });
+    };
 
   const deleteUser = async (id, name) => {
     const Myswal = withReactContent(Swal);
-    Myswal.fire({
+    const result = await Myswal.fire({
       title: `¿Estás seguro que deseas eliminar el usuario ${name}?`,
       icon: 'question',
       text: 'No se podrá deshacer esta acción',
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        enviarSolicitud('DELETE', { id });
-      }
     });
-  };
 
-  const handleCloseDetail = () => {
-    setShowModal(false);
-    setShowDetailModal(false);
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.delete(`${url}/${id}`);
+        if (response.status === 200) {
+          show_alerta('Usuario eliminado exitosamente', 'success');
+          getUsers();
+        }
+      } catch (error) {
+        show_alerta(
+          error.response?.data?.message || 
+          'Error al eliminar el usuario. Por favor, intente nuevamente.',
+          'error'
+        );
+      }
+    }
   };
 
   const handleViewDetails = (user) => {
@@ -345,47 +382,17 @@ const Users = () => {
     setShowDetailModal(true);
   };
 
-  const handleSwitchChange = async (userId, checked) => {
-    const userToUpdate = users.find(user => user.id === userId);
-    const Myswal = withReactContent(Swal);
-    Myswal.fire({
-      title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el Usuario "${userToUpdate.name}"?`,
-      icon: 'question',
-      text: 'Esta acción puede afectar la disponibilidad del usuario.',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        const updatedUser = {
-          ...userToUpdate,
-          status: checked ? 'A' : 'I'
-        };
-        try {
-          const response = await axios.put(`${url}/${userId}`, updatedUser);
-          if (response.status === 200) {
-            setUsers(users.map(user =>
-              user.id === userId ? { ...user, status: updatedUser.status } : user
-            ));
-            show_alerta('Estado del usuario actualizado exitosamente', 'success');
-          }
-        } catch (error) {
-          if (error.response) {
-            console.log('Error details:', error.response.data);
-            show_alerta('Error al actualizar el estado del usuario: ' + JSON.stringify(error.response.data.errors), 'error');
-          } else {
-            console.log('Error details:', error.message);
-            show_alerta('Error al actualizar el estado del usuario', 'error');
-          }
-        }
-      } else {
-        setUsers(users.map(user =>
-          user.id === userId ? { ...user, status: !checked ? 'A' : 'I' } : user
-        ));
-        show_alerta('Estado del servicio no cambiado', 'info');
-      }
-    });
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
+
+  const indexEnd = currentPages * dataQt;
+  const indexStart = indexEnd - dataQt;
+  const nPages = Math.ceil(users.length / dataQt);
+
+  let results = !search 
+    ? users.slice(indexStart, indexEnd)
+    : users.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()));
 
   return (
     <>
@@ -599,4 +606,4 @@ const Users = () => {
   );
 };
 
-export default Users;  
+export default Users;
