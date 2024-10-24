@@ -49,8 +49,8 @@
     text-decoration: none;
 }
 
-header .logo-index span{
-color: #fff;
+header .logo-index span {
+    color: #fff;
 }
 
 .navBar-index {
@@ -124,4 +124,73 @@ color: #fff;
 
 .read-more-btn:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.userLoginn {
+    font-size: 16px !important;
+    color: #fff !important;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 1024px) {
+    .hero-content h1 {
+        font-size: 48px;
+    }
+
+    .navBar-index {
+        gap: 20px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .navBar-index {
+        margin-top: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .hero-content {
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        width: 90%;
+    }
+
+    .hero-content h1 {
+        font-size: 36px;
+    }
+
+    .hero-content p {
+        font-size: 14px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .logo-index {
+        font-size: 24px;
+    }
+
+    .logo-index img {
+        width: 40px;
+    }
+
+    .logo-index span {
+        font-size: 18px;
+    }
+
+    .hero-content h1 {
+        font-size: 28px;
+    }
+
+    .book-now-btn,
+    .read-more-btn {
+        padding: 8px 16px !important;
+        font-size: 12px !important;
+    }
 }

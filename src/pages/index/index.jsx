@@ -1,54 +1,77 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Logout from '@mui/icons-material/Logout';
+import { Avatar, Menu, MenuItem } from '@mui/material';
 
 const Index = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
+
+    useEffect(() => {
+        context.setIsHideSidebarAndHeader(true);
+        checkLoginStatus();
+    }, [context]);
+
+    const checkLoginStatus = () => {
+        const token = localStorage.getItem('jwtToken');
+        const storedEmail = localStorage.getItem('userName');
+        if (token && storedEmail) {
+            setIsLoggedIn(true);
+            setUserEmail(storedEmail);
+        } else {
+            setIsLoggedIn(false);
+            setUserEmail('');
+        }
+    };
 
     const handleLogin = () => {
         navigate('/login');
     };
 
-    const handleAdministrar = () => {
-        context.setIsHideSidebarAndHeader(false);
-        navigate('/sales');
+    const handledashboard = () => {
+        navigate('/register');
     };
 
-    const handleClick = (event) => {
+    const handleMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
-    const handleClose = () => {
+    const handleMenuClose = () => {
         setAnchorEl(null);
     };
 
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
-        context.setIsLogin(false);
-        navigate('/login');
+        localStorage.removeItem('roleId');
+        localStorage.removeItem('userEmail');
+        setIsLoggedIn(false);
+        setUserEmail('');
+        handleMenuClose();
+        navigate('/index');
+    };
+
+    // Función para obtener la inicial del usuario de forma segura
+    const getUserInitial = () => {
+        return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
     };
 
     return (
         <>
             <header className="header-index">
-                <div className="header-content d-flex align-items-center justify-content-between">
+                <div className="header-content">
                     <Link to={'/'} className='d-flex align-items-center logo-index'>
-                        <img src={logo} alt="Barberia Orion Logo" />
+                        <img src={logo} alt="Logo" />
                         <span className='ml-2'>Barberia Orion</span>
                     </Link>
                     <nav className='navBar-index'>
                         <Link to='/index'>INICIO</Link>
                         <Link to='/services'>SERVICIOS</Link>
+<<<<<<< HEAD
                         <Link to='/appointmentView'>CITAS</Link>
                         <Link to='/shop'>PRODUCTOS</Link>
                         <Link to='/index'>CONTACTO</Link>
@@ -61,46 +84,47 @@ const Index = () => {
                                 ADMINISTRAR
                             </Button>
                         )}
+=======
+                        <Link to='/blog'>CITAS</Link>
+                        <Link to='/Shop'>PRODUCTOS</Link>
+                        <Link to='/contact'>CONTACTO</Link>
+>>>>>>> a0f10feee4886e7cc6d2ce20a28a44a97e4a26f3
                     </nav>
-                    <div className='MyAccWrapper d-flex align-items-center'>
-                        {context.isLogin ? (
-                            <div className='d-flex align-items-center'>
-                                <Button className='MyAcc' onClick={handleClick}>
-                                    <Avatar
-                                        alt="User Avatar"
-                                        src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
-                                    />
-                                </Button>
-                                <div className='userInfo' style={{ marginLeft: '8px' }}>
-                                    <span style={{ color: 'white' }}>{context.userName}</span>
-                                </div>
-                            </div>
-                        ) : (
-                            <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
-                                INICIAR SESIÓN
+                    {isLoggedIn && userEmail ? (
+                        <div className="user-menu">
+                            <Button
+                                onClick={handleMenuClick}
+                                className="userLoginn"
+                                startIcon={
+                                    <Avatar sx={{ width: 32, height: 32 }}>
+                                        {getUserInitial()}
+                                    </Avatar>
+                                }
+                            >
+                                {userEmail}
                             </Button>
-                        )}
-                        <Menu
-                            anchorEl={anchorEl}
-                            id="account-menu"
-                            open={open}
-                            onClose={handleClose}
-                            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                            <Menu
+                                anchorEl={anchorEl}
+                                open={Boolean(anchorEl)}
+                                onClose={handleMenuClose}
+                            >
+                                <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+                            </Menu>
+                        </div>
+                    ) : (
+                        <Button
+                            variant="contained"
+                            className="book-now-btn"
+                            onClick={handleLogin}
                         >
-                            {context.isLogin && (
-                                <MenuItem onClick={handleLogout}>
-                                    <ListItemIcon>
-                                        <Logout fontSize="small" />
-                                    </ListItemIcon>
-                                    Cerrar sesión
-                                </MenuItem>
-                            )}
-                        </Menu>
-                    </div>
+                            INICIAR SESION
+                        </Button>
+                    )}
                 </div>
-                <div className="hero-content text-center">
-                    <h1>Sólo los mejores barberos</h1>
+                <div className="hero-content">
+                    <h1>
+                        Sólo los mejores barberos
+                    </h1>
                     <p>
                         La barbería es el lugar donde puedes conseguir un corte de pelo de alta calidad de barberos certificados, que no sólo son profesionales, sino también maestros con talento.
                     </p>
@@ -108,11 +132,10 @@ const Index = () => {
                         variant="outlined"
                         className="read-more-btn"
                     >
-                        VER MÁS
+                        VER MAS
                     </Button>
                 </div>
             </header>
-
         </>
     );
 };
