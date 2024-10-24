@@ -99,18 +99,7 @@ const Index = () => {
                         </Menu>
                     </div>
                 </div>
-                <div className="hero-content text-center">
-                    <h1>Sólo los mejores barberos</h1>
-                    <p>
-                        La barbería es el lugar donde puedes conseguir un corte de pelo de alta calidad de barberos certificados, que no sólo son profesionales, sino también maestros con talento.
-                    </p>
-                    <Button
-                        variant="outlined"
-                        className="read-more-btn"
-                    >
-                        VER MÁS
-                    </Button>
-                </div>
+              
             </header>
 
         </>

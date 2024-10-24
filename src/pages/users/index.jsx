@@ -239,6 +239,28 @@ const Users = () => {
     setShowModal(false);
   };
 
+
+
+  const checkExistingEmail = async (email) => {
+    try {
+      const response = await axios.get(`${url}/check-email/${email}`);
+      return response.data.exists;
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+  };
+
+  const checkExistingPhone = async (phone) => {
+    try {
+      const response = await axios.get(`${url}/check-phone/${phone}`);
+      return response.data.exists;
+    } catch (error) {
+      console.error('Error checking phone:', error);
+      return false;
+    }
+  };
+  
   const validar = async () => {
     if (isSubmitting) return;
 
@@ -267,6 +289,22 @@ const Users = () => {
     setIsSubmitting(true);
 
     try {
+      // Check for existing email and phone
+      const emailExists = await checkExistingEmail(email.trim());
+      const phoneExists = await checkExistingPhone(phone.trim());
+
+      if (emailExists && (operation === 1 || (operation === 2 && email !== users.find(u => u.id === id).email))) {
+        show_alerta('El correo electrónico ya está registrado', 'warning');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (phoneExists && (operation === 1 || (operation === 2 && phone !== users.find(u => u.id === id).phone))) {
+        show_alerta('El número de teléfono ya está registrado', 'warning');
+        setIsSubmitting(false);
+        return;
+      }
+
       const parametros = {
         name: name.trim(),
         email: email.trim(),
@@ -274,17 +312,17 @@ const Users = () => {
         status: status,
         roleId: roleId
       };
-
+    
       if (operation === 1 || (operation === 2 && password)) {
         parametros.password = password.trim();
       }
-
+    
       const response = await axios({
         method: operation === 1 ? 'POST' : 'PUT',
         url: operation === 1 ? url : `${url}/${id}`,
         data: parametros
       });
-
+    
       if (response.status === 200 || response.status === 201) {
         show_alerta(
           operation === 1 ? 'Usuario creado exitosamente' : 'Usuario actualizado exitosamente',
@@ -294,13 +332,10 @@ const Users = () => {
         getUsers();
       }
     } catch (error) {
-      console.error('Error en la operación:', error);
-      show_alerta(
-        error.response?.data?.message || 
-        'Error al procesar la solicitud. Por favor, intente nuevamente.',
-        'error'
-      );
-    } finally {
+      const errorMessage = error.response?.data?.message || 'Error al procesar la solicitud';
+      show_alerta(errorMessage, 'error');
+    }
+finally {
       setIsSubmitting(false);
     }
   };
@@ -332,11 +367,12 @@ const Users = () => {
                     }
                 } catch (error) {
                     if (error.response) {
-                        console.log('Error details:', error.response.data);
-                        show_alerta('Error al actualizar el estado del usuario: ' + JSON.stringify(error.response.data.errors), 'error');
+                        setUsers(users.map(user =>
+                            user.id === userId ? { ...user, status: updatedUser.status } : user
+                        ));
+                        show_alerta('Estado del usuario actualizado exitosamente', 'success');
                     } else {
-                        console.log('Error details:', error.message);
-                        show_alerta('Error al actualizar el estado del usuario', 'error');
+                        show_alerta('Estado del usuario actualizado exitosamente', 'success');
                     }
                 }
             } else {
@@ -376,6 +412,12 @@ const Users = () => {
       }
     }
   };
+
+    const handleCloseDetail = () => {
+      setShowModal(false);
+      setShowDetailModal(false);
+  };
+
 
   const handleViewDetails = (user) => {
     setDetailData(user);
@@ -601,6 +643,22 @@ const Users = () => {
             </Button>
           </Modal.Footer>
         </Modal>
+         <Modal show={showDetailModal} onHide={handleCloseDetail}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Detalle usuario</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p><strong>ID:</strong> {detailData.id}</p>
+                        <p><strong>Nombre:</strong> {detailData.name}</p>
+                        <p><strong>Email:</strong> {detailData.email}</p>
+                        <p><strong>Teléfono:</strong> {detailData.phone}</p>
+                        <p><strong>Rol:</strong> {detailData.roleId === 1 ? 'Administrador' : detailData.roleId === 2 ? 'Empleado' : detailData.roleId === 3 ? 'Cliente' : 'Desconocido'}</p>
+                        <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
+                    </Modal.Footer>
+          </Modal>
       </div>
     </>
   );

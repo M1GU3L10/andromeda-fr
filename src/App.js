@@ -13,6 +13,7 @@ import Products from './pages/products';
 import Programming from './pages/programming';
 import Sales from './pages/sales';
 import ServicesView from './pages/servicesView';
+import AppointmentView from './pages/appointmentView';
 import Shopping from './pages/shopping';
 import Suppliers from './pages/suppliers';
 import Users from './pages/users';
@@ -135,6 +136,11 @@ function App() {
                 <Route path="/appointment" element={
                   <PermissionCheck requiredPermission="Citas">
                     <Appointment />
+                  </PermissionCheck>
+                } />
+                <Route path="/appointmentView" element={
+                  <PermissionCheck requiredPermission="Citas">
+                    <AppointmentView />
                   </PermissionCheck>
                 } />
                 <Route path="/appointmentRegister" element={
