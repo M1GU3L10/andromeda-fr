@@ -13,6 +13,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Logout from '@mui/icons-material/Logout';
 import IconButton from '@mui/material/IconButton';
+
+
 import axios from 'axios';
 import {
     TextField,
@@ -33,6 +35,7 @@ import Swal from 'sweetalert2';
 import './shop.css';
 
 export default function Component() {
+    const [anchorEl, setAnchorEl] = useState(null); // Mover esto al principio
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -44,8 +47,10 @@ export default function Component() {
     const [total, setTotal] = useState(0);
     const context = useContext(MyContext);
     const navigate = useNavigate();
-    const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+
+    const open = Boolean(anchorEl); // Después de declarar anchorEl
 
     useEffect(() => {
         calculateTotal();
@@ -56,6 +61,22 @@ export default function Component() {
         fetchProducts();
     }, [context]);
 
+    useEffect(() => {
+        context.setIsHideSidebarAndHeader(true);
+        checkLoginStatus();
+    }, [context]);
+
+    const checkLoginStatus = () => {
+        const token = localStorage.getItem('jwtToken');
+        const storedEmail = localStorage.getItem('userName');
+        if (token && storedEmail) {
+            setIsLoggedIn(true);
+            setUserEmail(storedEmail);
+        } else {
+            setIsLoggedIn(false);
+            setUserEmail('');
+        }
+    };
     const calculateTotal = () => {
         let sum = 0;
         Object.entries(cart).forEach(([productId, quantity]) => {
@@ -296,51 +317,52 @@ export default function Component() {
     const handleClose = () => {
         setAnchorEl(null);
     };
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
-        context.setIsLogin(false);
-        context.setUserId(null);
-        context.setUserName('');
-        navigate('/login');
+        localStorage.removeItem('roleId');
+        localStorage.removeItem('userEmail');
+        setIsLoggedIn(false);
+        setUserEmail('');
+        handleMenuClose();
+        navigate('/index');
     };
 
     const getUserInitial = () => {
-        return context.userName ? context.userName.charAt(0).toUpperCase() : '';
+        return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
     };
+
 
     return (
         <>
             <header className="header-index1">
-                <div className="header-content d-flex align-items-center justify-content-between">
+                <div className="header-content">
                     <Link to={'/'} className='d-flex align-items-center logo-index'>
-                        <img src={logo} alt="Barberia Orion Logo" />
+                        <img src={logo} alt="Logo" />
                         <span className='ml-2'>Barberia Orion</span>
                     </Link>
                     <nav className='navBar-index'>
                         <Link to='/index'>INICIO</Link>
                         <Link to='/services'>SERVICIOS</Link>
-                        <Link to='/appointment'>CITAS</Link>
+                        <Link to='/appointmentView'>CITAS</Link>
                         <Link to='/shop'>PRODUCTOS</Link>
                         <Link to='/index'>CONTACTO</Link>
-                        {context.isLogin && (
-                            <Button
-                                variant="text"
-                                className="administrar-btn"
-                                onClick={handleAdministrar}
-                            >
-                                ADMINISTRAR
-                            </Button>
-                        )}
                         <IconButton onClick={() => setDrawerOpen(true)}>
                             <Badge badgeContent={getTotalItems()} color="primary">
-                                <ShoppingCart />
+                                <AddShoppingCartIcon /> {/* Cambia ShoppingCart por AddShoppingCartIcon */}
                             </Badge>
                         </IconButton>
+
                     </nav>
-                    {context.isLogin && context.userName ? (
+                    {isLoggedIn && userEmail ? (
                         <div className="user-menu">
                             <Button
-                                onClick={handleClick}
+                                onClick={handleMenuClick}
                                 className="userLoginn"
                                 startIcon={
                                     <Avatar sx={{ width: 32, height: 32 }}>
@@ -348,12 +370,12 @@ export default function Component() {
                                     </Avatar>
                                 }
                             >
-                                {context.userName}
+                                {userEmail}
                             </Button>
                             <Menu
                                 anchorEl={anchorEl}
                                 open={Boolean(anchorEl)}
-                                onClose={handleClose}
+                                onClose={handleMenuClose}
                             >
                                 <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
                             </Menu>
@@ -364,7 +386,7 @@ export default function Component() {
                             className="book-now-btn"
                             onClick={handleLogin}
                         >
-                            INICIAR SESIÓN
+                            INICIAR SESION
                         </Button>
                     )}
                 </div>
@@ -406,7 +428,7 @@ export default function Component() {
                                     <Typography variant="h5" component="h2" className="product-title">
                                         {product.Product_Name}
                                     </Typography>
-                                    <Typography  variant="body2" color="text.secondary" className="product-description">
+                                    <Typography variant="body2" color="text.secondary" className="product-description">
                                         {product.Description}
                                     </Typography>
                                     <Typography variant="body1" className="product-price">
