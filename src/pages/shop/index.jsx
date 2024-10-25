@@ -126,33 +126,49 @@ export default function Component() {
     };
 
     const handleShowOrders = async () => {
-        if (!context.isLogin || !context.userId) {
-            Swal.fire('Error', 'Debes iniciar sesión para ver tus pedidos.', 'warning');
-            return;
-        }
-
         try {
-            const response = await axios.get(`http://localhost:1056/api/orders/user/${context.userId}`);
+            const response = await axios.get(`http://localhost:1056/api/orders`);
             const orders = response.data;
-
+    
             if (orders.length > 0) {
-                const ordersList = orders.map(order => {
-                    const tokenExpiration = new Date(order.Token_Expiration);
-                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                    const formattedExpiration = tokenExpiration.toLocaleDateString('es-ES', options);
-
-                    return `
-                        Pedido ID: ${order.id || 'Sin ID'}, 
-                        Total: ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(order.total_price)}, 
-                        Estado: ${order.status || 'Desconocido'}, 
-                        Expira el: ${formattedExpiration}
-                    `;
-                }).join('\n');
-
+                // Generar HTML para mostrar los pedidos en formato de tabla
+                const ordersList = `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Pedido ID</th>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Total</th>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Estado</th>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Expira el</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orders.map(order => {
+                                const tokenExpiration = new Date(order.Token_Expiration);
+                                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                                const formattedExpiration = tokenExpiration.toLocaleDateString('es-ES', options);
+                                
+                                return `
+                                    <tr>
+                                        <td style="border: 1px solid #ccc; padding: 8px;">${order.id || 'Sin ID'}</td>
+                                        <td style="border: 1px solid #ccc; padding: 8px;">${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(order.total_price)}</td>
+                                        <td style="border: 1px solid #ccc; padding: 8px;">${order.status || 'Desconocido'}</td>
+                                        <td style="border: 1px solid #ccc; padding: 8px;">${formattedExpiration}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+    
                 Swal.fire({
                     title: 'Tus Pedidos',
-                    html: `<pre>${ordersList}</pre>`,
-                    icon: 'info'
+                    html: ordersList,
+                    icon: 'info',
+                    customClass: {
+                        popup: 'swal-popup', // Puedes aplicar estilos adicionales aquí si lo deseas
+                    },
+                    showCloseButton: true,
                 });
             } else {
                 Swal.fire('No tienes pedidos realizados.');
@@ -162,6 +178,7 @@ export default function Component() {
             Swal.fire('Error', 'Hubo un problema al obtener tus pedidos.', 'error');
         }
     };
+    
 
     const increaseQuantity = (productId) => {
         const product = products.find(p => p.id === parseInt(productId));
@@ -209,91 +226,102 @@ export default function Component() {
     };
 
     const handleCheckout = async () => {
-        if (!context.isLogin) {
-            Swal.fire({
-                title: 'Error',
-                text: 'Debes iniciar sesión para realizar un pedido.',
-                icon: 'error'
-            }).then(() => {
-                navigate('/login');
-            });
-            return;
+        // Validar que haya al menos un producto en el carrito
+        if (Object.keys(cart).length === 0) {
+            Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
+            return; // Salir de la función
         }
 
-        if (!context.userId) {
-            console.error('Error: User ID is not available');
-            Swal.fire('Error', 'No se pudo identificar al usuario. Por favor, inicia sesión nuevamente.', 'error');
-            return;
-        }
+        // Validar que todos los productos en el carrito tengan stock suficiente
+        const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
+            quantity: quantity, // Cantidad del producto
+            id_producto: parseInt(productId) // Convertir el ID del producto a entero
+        }));
 
-        if (!cart || Object.keys(cart).length === 0) {
-            Swal.fire({
-                title: 'Error',
-                text: 'Debes agregar al menos un producto para realizar un pedido.',
-                icon: 'error'
-            });
-            return;
+        const invalidProducts = orderDetails.filter(detail => {
+            const product = products.find(p => p.id === detail.id_producto);
+            return !product || product.Stock < detail.quantity || detail.quantity <= 0; // Verificar stock y cantidad
+        });
+
+        // Si hay productos inválidos, mostrar alerta y detener la ejecución
+        if (invalidProducts.length > 0) {
+            Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
+            return; // Salir de la función
         }
 
         try {
+            // Obtener la fecha y hora actual
             const now = new Date();
-            const tokenExpiration = new Date(now);
-            tokenExpiration.setDate(tokenExpiration.getDate() + 3);
+            const orderDateTime = now.toISOString().split('T'); // Obtener fecha y hora en formato ISO
+            const orderDate = orderDateTime[0]; // Fecha en formato YYYY-MM-DD
+            const orderTime = orderDateTime[1].split('.')[0]; // Hora en formato HH:mm:ss
 
+            // Calcular la fecha de vencimiento del token (3 días después)
+            const expirationDate = new Date(now);
+            expirationDate.setDate(expirationDate.getDate() + 3); // Agregar 3 días
+            const expirationDateString = expirationDate.toLocaleDateString('es-ES'); // Formato legible en español
+
+            // Crear objeto con los datos del pedido
             const orderData = {
-                Billnumber: `ORD${Date.now()}`,
-                OrderDate: now.toISOString().split('T')[0],
-                total_price: parseFloat(total.toFixed(2)),
-                status: 'Completada',
-                id_usuario: context.userId,
-                Token_Expiration: tokenExpiration.toISOString(),
-                orderDetails: Object.entries(cart).map(([productId, quantity]) => ({
-                    quantity: quantity,
-                    id_producto: parseInt(productId)
-                }))
+                Billnumber: `ORD${Date.now()}`, // Generación automática del número de factura
+                OrderDate: orderDate, // Fecha actual
+                OrderTime: orderTime, // Hora actual
+                total_price: parseFloat(total.toFixed(2)), // Precio total con 2 decimales
+                status: 'Completada', // Estado del pedido
+                id_usuario: context.userId, // ID del usuario que realiza el pedido
+                orderDetails: orderDetails // Usar la variable ya creada con los detalles
             };
 
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedExpiration = tokenExpiration.toLocaleDateString('es-ES', options);
-
-            console.log('Order data being sent:', JSON.stringify(orderData, null, 2));
-
+            // Enviar la solicitud POST para crear el pedido
             const response = await axios.post('http://localhost:1056/api/orders', orderData);
 
-            console.log('Server response:', response.data);
+            // Comprobar si la respuesta fue exitosa
+            if (response.status === 201) {
+                // Mostrar alerta de éxito
+                Swal.fire({
+                    title: '¡Pedido creado!',
+                    html: `
+                        <p>Tu pedido ha sido registrado correctamente.</p>
+                        <p>Número de factura: ${orderData.Billnumber}</p>
+                        <p>Fecha: ${orderData.OrderDate}</p>
+                        <p>Hora: ${orderData.OrderTime}</p>
+                        <p>Fecha de vencimiento del token: ${expirationDateString}</p>
+                    `,
+                    icon: 'success'
+                });
 
+                // Limpiar el carrito
+                clearCart();
+                setDrawerOpen(false); // Cerrar el drawer o menú
+            }
+
+            // Actualizar el stock de los productos
             for (const detail of orderData.orderDetails) {
-                const productId = detail.id_producto;
-                const quantity = detail.quantity;
-                const product = products.find(p => p.id === productId);
+                const productId = detail.id_producto; // ID del producto
+                const quantity = detail.quantity; // Cantidad vendida
+                const product = products.find(p => p.id === productId); // Buscar el producto en el estado
+
                 if (product) {
+                    // Enviar solicitud PUT para actualizar el stock del producto
                     await axios.put(`http://localhost:1056/api/products/${productId}`, {
-                        ...product,
-                        Stock: product.Stock - quantity
+                        Stock: product.Stock - quantity // Restar la cantidad del stock
                     });
                 }
             }
-
-            Swal.fire({
-                title: '¡Pedido creado!',
-                html: `
-                    <p>Tu pedido ha sido registrado correctamente.</p>
-                    <p>Número de factura: ${orderData.Billnumber}</p>
-                    <p>Tu pedido expira el: ${formattedExpiration}</p>
-                `,
-                icon: 'success'
-            });
-
-            clearCart();
-            setDrawerOpen(false);
         } catch (error) {
-            console.error('Error creating order:', error);
+            console.error('Error creando el pedido:', error); // Manejo del error
             if (error.response) {
-                console.error('Server responded with:', error.response.data);
+                console.error('El servidor respondió con:', error.response.data);
             }
+            // Mostrar alerta de error
             Swal.fire('Error', 'Hubo un problema al crear el pedido. Intente de nuevo.', 'error');
+        } finally {
+            // Mensaje positivo al final de la ejecución
+            Swal.fire('¡Éxito!', 'Tu pedido ha sido procesado. Gracias por tu compra.', 'success');
         }
     };
+
+
 
     const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
@@ -537,6 +565,8 @@ export default function Component() {
                             })}
                         </List>
                     )}
+
+
                     <div className="drawer-footer">
                         <div className="total-amount">
                             <Typography variant="h6">Total:</Typography>
@@ -548,11 +578,10 @@ export default function Component() {
                             </Typography>
                         </div>
                     </div>
-                    {context.isLogin && (
-                        <Button variant="contained" onClick={handleShowOrders}>
-                            Ver Mis Pedidos
-                        </Button>
-                    )}
+                    <Button variant="contained" onClick={handleShowOrders}>
+                        Ver Mis Pedidos
+                    </Button>
+
                     <div className="cart-buttons1">
                         <Button
                             variant="outlined"
@@ -570,6 +599,7 @@ export default function Component() {
                         >
                             Realizar pedido
                         </Button>
+
                     </div>
                 </div>
             </Drawer>
