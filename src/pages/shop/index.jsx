@@ -13,6 +13,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Logout from '@mui/icons-material/Logout';
 import IconButton from '@mui/material/IconButton';
+import ReactPaginate from 'react-paginate';
+
 
 
 import axios from 'axios';
@@ -48,9 +50,11 @@ export default function Component() {
     const [total, setTotal] = useState(0);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userEmail, setUserEmail] = useState('');
-
+    const ITEMS_PER_PAGE = 5;
     const context = useContext(MyContext);
     const navigate = useNavigate();
+    const [orders, setOrders] = useState([]);
+
 
     const open = Boolean(anchorEl);
 
@@ -108,10 +112,10 @@ export default function Component() {
 
     const fetchProducts = async () => {
         setLoading(true); // Inicia el estado de carga
-    
+
         try {
             const response = await axios.get('http://localhost:1056/api/products');
-            
+
             // Filtra los productos activos
             const activeProducts = response.data.filter(product => product.status === 'A');
             setProducts(activeProducts); // Establece los productos activos en el estado
@@ -123,7 +127,7 @@ export default function Component() {
             setLoading(false); // Finaliza el estado de carga
         }
     };
-    
+
 
     const addToCart = (product) => {
         if (product.Stock <= 0) {
@@ -150,33 +154,70 @@ export default function Component() {
 
     const handleShowOrders = async () => {
         try {
-            const response = await axios.get(`http://localhost:1056/api/orders`);
-            const orders = response.data;
+            // Obtener los pedidos
+            const ordersResponse = await axios.get('http://localhost:1056/api/orders');
+            const orders = ordersResponse.data;
+            console.log('Orders:', orders); // Verifica la estructura de los pedidos
+    
+            // Obtener los productos
+            const productsResponse = await axios.get('http://localhost:1056/api/products');
+            const products = productsResponse.data;
+            console.log('Products:', products); // Verifica la estructura de los productos
     
             if (orders.length > 0) {
-                // Generar HTML para mostrar los pedidos en formato de tabla
                 const ordersList = `
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
+                    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+                        <thead style="background-color: #f8f9fa;">
                             <tr>
-                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Pedido ID</th>
-                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Total</th>
-                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Estado</th>
-                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Expira el</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Pedido ID</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Total</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Estado</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Expira el</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Detalles</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${orders.map(order => {
                                 const tokenExpiration = new Date(order.Token_Expiration);
                                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                                const formattedExpiration = tokenExpiration.toLocaleDateString('es-ES', options);
+                                const formattedExpiration = tokenExpiration.toLocaleDateString('es-CO', options);
                                 
+                                const product = products.find(p => p.id === order.product_id); // Asegúrate de que `product_id` exista en tu modelo
+                                const quantity = order.quantity || 1; // Asegúrate de que este campo existe en tus pedidos
+    
                                 return `
                                     <tr>
-                                        <td style="border: 1px solid #ccc; padding: 8px;">${order.id || 'Sin ID'}</td>
-                                        <td style="border: 1px solid #ccc; padding: 8px;">${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(order.total_price)}</td>
-                                        <td style="border: 1px solid #ccc; padding: 8px;">${order.status || 'Desconocido'}</td>
-                                        <td style="border: 1px solid #ccc; padding: 8px;">${formattedExpiration}</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            ${order.id || 'Sin ID'}
+                                        </td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(order.total_price)}
+                                        </td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            ${order.status === 'A' ? 'Activo' : 'Inactivo'}
+                                        </td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            ${formattedExpiration}
+                                        </td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <img 
+                                                    src="${product ? `data:${product.ImageMimeType};base64,${Buffer.from(product.Image).toString('base64')}` : 'default_image_url'}" 
+                                                    alt="${product ? product.Product_Name : 'Producto'}" 
+                                                    class="product-image" 
+                                                    style="max-width: 50px; height: auto; border-radius: 5px; object-fit: cover;"
+                                                />
+                                                <div>
+                                                    <p style="margin: 0; font-size: 14px; color: #333;">
+                                                        Cantidad: ${quantity}
+                                                    </p>
+                                                    <p style="margin: 0; font-size: 14px; color: #666;">
+                                                        Precio: 
+                                                        ${product ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price) : 'Sin Precio'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
                                     </tr>
                                 `;
                             }).join('')}
@@ -184,15 +225,27 @@ export default function Component() {
                     </table>
                 `;
     
-                Swal.fire({
-                    title: 'Tus Pedidos',
-                    html: ordersList,
-                    icon: 'info',
-                    customClass: {
-                        popup: 'swal-popup', // Puedes aplicar estilos adicionales aquí si lo deseas
-                    },
-                    showCloseButton: true,
-                });
+                // Verificar si hay contenido para mostrar
+                if (ordersList.trim()) {
+                    Swal.fire({
+                        title: 'Tus Pedidos',
+                        html: ordersList,
+                        icon: 'info',
+                        customClass: {
+                            popup: 'swal-popup',
+                        },
+                        showCloseButton: true,
+                        width: '70%',
+                        padding: '20px',
+                        backdrop: `
+                            rgba(0, 0, 0, 0)
+                            left top
+                            no-repeat
+                        `,
+                    });
+                } else {
+                    Swal.fire('No tienes pedidos realizados.');
+                }
             } else {
                 Swal.fire('No tienes pedidos realizados.');
             }
