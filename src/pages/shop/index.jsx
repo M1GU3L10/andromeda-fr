@@ -35,7 +35,8 @@ import Swal from 'sweetalert2';
 import './shop.css';
 
 export default function Component() {
-    const [anchorEl, setAnchorEl] = useState(null); // Mover esto al principio
+    // Mover todas las declaraciones de estado al principio
+    const [anchorEl, setAnchorEl] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,12 +46,13 @@ export default function Component() {
     const [alertSeverity, setAlertSeverity] = useState('info');
     const [cart, setCart] = useState({});
     const [total, setTotal] = useState(0);
-    const context = useContext(MyContext);
-    const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userEmail, setUserEmail] = useState('');
 
-    const open = Boolean(anchorEl); // Después de declarar anchorEl
+    const context = useContext(MyContext);
+    const navigate = useNavigate();
+
+    const open = Boolean(anchorEl);
 
     useEffect(() => {
         calculateTotal();
@@ -65,6 +67,22 @@ export default function Component() {
         context.setIsHideSidebarAndHeader(true);
         checkLoginStatus();
     }, [context]);
+    useEffect(() => {
+        // Lógica para cargar productos, manejar errores, etc.
+        const fetchProducts = async () => {
+            try {
+                const response = await fetch('http://localhost:1056/api/products');
+                const data = await response.json();
+                setProducts(data);
+            } catch (err) {
+                setError('Error al cargar los productos.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
 
     const checkLoginStatus = () => {
         const token = localStorage.getItem('jwtToken');
@@ -89,18 +107,23 @@ export default function Component() {
     };
 
     const fetchProducts = async () => {
+        setLoading(true); // Inicia el estado de carga
+    
         try {
-            setLoading(true);
             const response = await axios.get('http://localhost:1056/api/products');
+            
+            // Filtra los productos activos
             const activeProducts = response.data.filter(product => product.status === 'A');
-            setProducts(activeProducts);
+            setProducts(activeProducts); // Establece los productos activos en el estado
         } catch (err) {
+            // Manejo de errores
             setError('Error al cargar los productos. Por favor, intente más tarde.');
             console.error('Error fetching products:', err);
         } finally {
-            setLoading(false);
+            setLoading(false); // Finaliza el estado de carga
         }
     };
+    
 
     const addToCart = (product) => {
         if (product.Stock <= 0) {
