@@ -71,24 +71,9 @@ const Index = () => {
                     <nav className='navBar-index'>
                         <Link to='/index'>INICIO</Link>
                         <Link to='/services'>SERVICIOS</Link>
-<<<<<<< HEAD
                         <Link to='/appointmentView'>CITAS</Link>
                         <Link to='/shop'>PRODUCTOS</Link>
                         <Link to='/index'>CONTACTO</Link>
-                        {context.isLogin && ( // El botón solo se mostrará si el usuario está logueado
-                            <Button
-                                variant="text"
-                                className="administrar-btn"
-                                onClick={handleAdministrar}
-                            >
-                                ADMINISTRAR
-                            </Button>
-                        )}
-=======
-                        <Link to='/blog'>CITAS</Link>
-                        <Link to='/Shop'>PRODUCTOS</Link>
-                        <Link to='/contact'>CONTACTO</Link>
->>>>>>> a0f10feee4886e7cc6d2ce20a28a44a97e4a26f3
                     </nav>
                     {isLoggedIn && userEmail ? (
                         <div className="user-menu">

@@ -340,7 +340,7 @@ const Shop = () => {
                         </Button>
                     )}
                     <IconButton onClick={() => setDrawerOpen(true)}>
-                        <Badge badgeContent={getTotalItems()} color="secondary">
+                        <Badge badgeContent={getTotalItems()} color="primary">
                             <ShoppingCart />
                         </Badge>
                     </IconButton>
