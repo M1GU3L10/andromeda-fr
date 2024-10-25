@@ -71,9 +71,9 @@ const Index = () => {
                     <nav className='navBar-index'>
                         <Link to='/index'>INICIO</Link>
                         <Link to='/services'>SERVICIOS</Link>
-                        <Link to='/appointmentView'>CITAS</Link>
-                        <Link to='/shop'>PRODUCTOS</Link>
-                        <Link to='/index'>CONTACTO</Link>
+                        <Link to='/blog'>CITAS</Link>
+                        <Link to='/Shop'>PRODUCTOS</Link>
+                        <Link to='/contact'>CONTACTO</Link>
                     </nav>
                     {isLoggedIn && userEmail ? (
                         <div className="user-menu">

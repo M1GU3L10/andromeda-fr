@@ -64,7 +64,7 @@ const Login = () => {
             if (token && user.roleId) {
                 localStorage.setItem('jwtToken', token);
                 localStorage.setItem('roleId', user.roleId.toString());
-                localStorage.setItem('userEmail', email); // Guardar el email del usuario
+                localStorage.setItem('userName', user.name); // Guardar el email del usuario
                 console.log('Token and roleId stored:', { token, roleId: user.roleId });
                 navigate('/index');
                 context.setIsHideSidebarAndHeader(true);
