@@ -1,44 +1,39 @@
 import React, { useContext, useState } from 'react';
 import logo from '../../assets/images/logo.png';
-import { Link, useNavigate } from 'react-router-dom'; // useNavigate agregado para redirigir
+import { Link, useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { MdMenuOpen } from 'react-icons/md';
-import { MdOutlineMenu } from "react-icons/md";
-import { MdOutlineLightMode } from "react-icons/md";
+import { MdMenuOpen, MdOutlineMenu, MdOutlineLightMode, MdOutlineMailOutline } from 'react-icons/md';
+import { BsCart3, BsShieldFillExclamation } from 'react-icons/bs';
+import { LuBell } from 'react-icons/lu';
+import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import PersonAdd from '@mui/icons-material/PersonAdd';
-import { BsShieldFillExclamation } from "react-icons/bs";
 import Logout from '@mui/icons-material/Logout';
+import Divider from '@mui/material/Divider';
 import { MyContext } from '../../App';
 
 const Header = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
     const context = useContext(MyContext);
-    const navigate = useNavigate();  // Hook para redirigir
+    const navigate = useNavigate();
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
+
     const handleClose = () => {
         setAnchorEl(null);
     };
 
-    // Función para cerrar sesión
     const handleLogout = () => {
-        // Elimina el token del almacenamiento local
         localStorage.removeItem('jwtToken');
-        
-        // Actualiza el estado de login en el contexto
         context.setIsLogin(false);
-
-        // Redirige al login
         navigate('/login');
     };
 
-    // Función para redirigir al inicio
     const handleGoToHome = () => {
         navigate('/index');
     };
@@ -48,7 +43,6 @@ const Header = () => {
             <header className="d-flex align-items-center">
                 <div className="container-fluid w-100">
                     <div className='row d-flex align-items-center'>
-                        {/* Logo wropper */}
                         <div className="col-sm-2 parte1">
                             <Link to={'/'} className='d-flex align-items-center logo'>
                                 <img src={logo} alt="Barberia Orion Logo" />
@@ -56,16 +50,17 @@ const Header = () => {
                             </Link>
                         </div>
                         <div className="col-sm-3 d-flex align-items-center parte2">
-                            <Button className='rounded-circle mr-3' onClick={() => {
-                                const newValue = !context.isToggleSidebar;
-                                context.setIsToggleSidebar(newValue);
-                                if (context.onSidebarToggle) {
-                                    context.onSidebarToggle(newValue); // Notifica a Programming sobre el cambio
-                                }
-                            }}>
-                                {
-                                    context.isToggleSidebar === false ? <MdMenuOpen /> : <MdOutlineMenu />
-                                }
+                            <Button 
+                                className='rounded-circle mr-3' 
+                                onClick={() => {
+                                    const newValue = !context.isToggleSidebar;
+                                    context.setIsToggleSidebar(newValue);
+                                    if (context.onSidebarToggle) {
+                                        context.onSidebarToggle(newValue);
+                                    }
+                                }}
+                            >
+                                {context.isToggleSidebar ? <MdOutlineMenu /> : <MdMenuOpen />}
                             </Button>
                         </div>
                         <div className="col-sm-7 d-flex align-items-center justify-content-end parte3">
@@ -80,10 +75,14 @@ const Header = () => {
                                         </span>
                                     </div>
                                     <div className='userInfo'>
-                                        <h5>Migue Perez</h5>
-                                        <p className='mb-0'>
-                                            Administrador
-                                        </p>
+                                        {context.isLogin ? (
+                                            <>
+                                                <h5>{context.userName}</h5>
+                                                <p className='mb-0'>Administrador</p>
+                                            </>
+                                        ) : (
+                                            <p className='mb-0'>No está logueado</p>
+                                        )}
                                     </div>
                                 </Button>
                                 <Menu
@@ -101,7 +100,7 @@ const Header = () => {
                                         </ListItemIcon>
                                         Mi cuenta
                                     </MenuItem>
-                                    <MenuItem onClick={handleGoToHome}> {/* Usar handleGoToHome para redirigir */}
+                                    <MenuItem onClick={handleGoToHome}>
                                         <ListItemIcon>
                                             <BsShieldFillExclamation />
                                         </ListItemIcon>
@@ -120,7 +119,7 @@ const Header = () => {
                 </div>
             </header>
         </>
-    )
-}
+    );
+};
 
 export default Header;

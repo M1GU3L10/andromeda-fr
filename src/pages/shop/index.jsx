@@ -13,6 +13,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Logout from '@mui/icons-material/Logout';
 import IconButton from '@mui/material/IconButton';
+import ReactPaginate from 'react-paginate';
 
 import axios from 'axios';
 import {
@@ -27,14 +28,20 @@ import {
     ListItemAvatar,
     Avatar,
     Alert,
-    Snackbar
+    Snackbar,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow
 } from '@mui/material';
 import { ShoppingCart, Search } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 import './shop.css';
 
 export default function Component() {
-    // Mover todas las declaraciones de estado al principio
     const [anchorEl, setAnchorEl] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
@@ -47,13 +54,16 @@ export default function Component() {
     const [total, setTotal] = useState(0);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userEmail, setUserEmail] = useState('');
-    const ITEMS_PER_PAGE = 5;
-    const context = useContext(MyContext);
-    const navigate = useNavigate();
+    const [userRole, setUserRole] = useState('');
+    const [userId, setUserId] = useState(null);
     const [orders, setOrders] = useState([]);
 
+    const [currentPage, setCurrentPage] = useState(0);
+    const context = useContext(MyContext);
+    const navigate = useNavigate();
 
     const open = Boolean(anchorEl);
+    const ITEMS_PER_PAGE = 5;
 
     useEffect(() => {
         calculateTotal();
@@ -62,40 +72,46 @@ export default function Component() {
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
         fetchProducts();
-    }, [context]);
-
-    useEffect(() => {
-        context.setIsHideSidebarAndHeader(true);
         checkLoginStatus();
     }, [context]);
-    useEffect(() => {
-        // Lógica para cargar productos, manejar errores, etc.
-        const fetchProducts = async () => {
-            try {
-                const response = await fetch('http://localhost:1056/api/products');
-                const data = await response.json();
-                setProducts(data);
-            } catch (err) {
-                setError('Error al cargar los productos.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProducts();
-    }, []);
 
     const checkLoginStatus = () => {
         const token = localStorage.getItem('jwtToken');
         const storedEmail = localStorage.getItem('userName');
-        if (token && storedEmail) {
+        const idRole = localStorage.getItem('roleId');
+        const userId = localStorage.getItem('userId'); // Captura el userId
+    
+        console.log("Token:", token); // Para depurar
+        console.log("Email almacenado:", storedEmail); // Para depurar
+        console.log("ID de rol:", idRole); // Para depurar
+        console.log("ID de usuario:", userId); // Para depurar
+    
+        if (token && storedEmail && idRole && userId) {
             setIsLoggedIn(true);
             setUserEmail(storedEmail);
+            setUserRole(idRole); // Establecer el rol del usuario
+            setUserId(userId); // Establecer el ID del usuario
+            console.log("Usuario está logueado. Rol de usuario:", idRole); // Para depurar
         } else {
             setIsLoggedIn(false);
             setUserEmail('');
+            setUserRole(''); // Asegurarte de que el rol se restablezca si no está logueado
+            setUserId(null); // Restablecer el userId si no está logueado
+            console.log("Usuario no está logueado."); // Para depurar
         }
     };
+    
+    useEffect(() => {
+        checkLoginStatus();
+    
+        if (isLoggedIn) {
+            console.log("Rol de usuario cargado:", userRole); // Para depurar
+        } else {
+            setUserRole(null);
+        }
+    }, [isLoggedIn]);
+    
+
     const calculateTotal = () => {
         let sum = 0;
         Object.entries(cart).forEach(([productId, quantity]) => {
@@ -108,23 +124,18 @@ export default function Component() {
     };
 
     const fetchProducts = async () => {
-        setLoading(true); // Inicia el estado de carga
-
+        setLoading(true);
         try {
             const response = await axios.get('http://localhost:1056/api/products');
-
-            // Filtra los productos activos
             const activeProducts = response.data.filter(product => product.status === 'A');
-            setProducts(activeProducts); // Establece los productos activos en el estado
+            setProducts(activeProducts);
         } catch (err) {
-            // Manejo de errores
             setError('Error al cargar los productos. Por favor, intente más tarde.');
             console.error('Error fetching products:', err);
         } finally {
-            setLoading(false); // Finaliza el estado de carga
+            setLoading(false);
         }
     };
-
 
     const addToCart = (product) => {
         if (product.Stock <= 0) {
@@ -148,96 +159,106 @@ export default function Component() {
             };
         });
     };
-
     const handleShowOrders = async () => {
-    try {
-        // Obtener los pedidos
-        const ordersResponse = await axios.get('http://localhost:1056/api/orders');
-        const orders = ordersResponse.data;
-        console.log('Orders:', orders); // Verifica la estructura de los pedidos
-
-        // Obtener los productos
-        const productsResponse = await axios.get('http://localhost:1056/api/products');
-        const products = productsResponse.data;
-        console.log('Products:', products); // Verifica la estructura de los productos
-
-        if (orders.length > 0) {
-            const ordersList = `
-                <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
-                    <thead style="background-color: #f8f9fa;">
-                        <tr>
-                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Pedido ID</th>
-                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Total</th>
-                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Estado</th>
-                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Expira el</th>
-                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Detalles</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${orders.map(order => {
-                const tokenExpiration = new Date(order.Token_Expiration);
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                const formattedExpiration = tokenExpiration.toLocaleDateString('es-CO', options);
-                const quantity = order.quantity || 1;
-
-                // Ajuste en la búsqueda del producto
-                const product = products.find(p => p.id === Number(order.product_id)); // Conversión a número
-
-                return `
-                            <tr>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${order.id || 'Sin ID'}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">
-                                    ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(order.total_price)}
-                                </td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${order.status === 'Cancelada' ? 'Cancelada' : 'Completada'}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${formattedExpiration}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">
-                                    <div>
-                                        <p style="margin: 0; font-size: 14px; color: #333;">Nombre: ${product ? product.Product_Name : 'Sin Nombre'}</p>
-                                        <p style="margin: 0; font-size: 14px; color: #333;">Cantidad: ${quantity}</p>
-                                        <p style="margin: 0; font-size: 14px; color: #666;">
-                                            Precio: ${product ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price) : 'Sin Precio'}
-                                        </p>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-            }).join('')}
-                    </tbody>
-                </table>
-            `;
-
-            // Verificar si hay contenido para mostrar
-            if (ordersList.trim()) {
-                Swal.fire({
-                    title: 'Tus Pedidos',
-                    html: ordersList,
-                    icon: 'info',
-                    customClass: {
-                        popup: 'swal-popup',
-                    },
-                    showCloseButton: true,
-                    width: '70%',
-                    padding: '20px',
-                    backdrop: `
-                        rgba(0, 0, 0, 0)
-                        left top
-                        no-repeat
-                    `,
-                });
-            } else {
-                Swal.fire('No tienes pedidos realizados.');
-            }
-        } else {
-            Swal.fire('No tienes pedidos realizados.');
+        if (!isLoggedIn) {
+            Swal.fire({
+                title: 'Inicio de sesión requerido',
+                text: 'Debes iniciar sesión para ver tus pedidos',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Iniciar sesión',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    handleLogin();
+                }
+            });
+            return;
         }
-    } catch (error) {
-        console.error("Error al mostrar los pedidos:", error);
-        Swal.fire('Error', 'Hubo un problema al obtener tus pedidos.', 'error');
-    }
-};
-
     
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            Swal.fire('Error', 'No se pudo identificar el usuario', 'error');
+            return;
+        }
+    
+        try {
+            Swal.fire({
+                title: 'Cargando pedidos',
+                text: 'Por favor espere...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+    
+            const ordersResponse = await axios.get(`http://localhost:1056/api/orders/user/${userId}`);
+            const orders = ordersResponse.data;
+    
+            if (!orders || orders.length === 0) {
+                Swal.fire('Info', 'No tienes pedidos realizados', 'info');
+                return;
+            }
+    
+            const ordersList = orders.map(order => {
+                const orderDate = new Date(order.OrderDate).toLocaleDateString('es-CO');
+                const orderDetails = order.OrderDetails.map(detail => `
+                    <div class="order-detail">
+                        <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
+                        <p><strong>Cantidad:</strong> ${detail.quantity}</p>
+                        <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', { 
+                            style: 'currency', 
+                            currency: 'COP' 
+                        }).format(detail.unitPrice)}</p>
+                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
+                            style: 'currency', 
+                            currency: 'COP' 
+                        }).format(detail.total_price)}</p>
+                    </div>
+                `).join('<hr>');
+    
+                return `
+                    <div class="order-item">
+                        <h3>Pedido #${order.id}</h3>
+                        <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
+                        <p><strong>Fecha:</strong> ${orderDate}</p>
+                        <p><strong>Estado:</strong> ${order.status}</p>
+                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
+                            style: 'currency', 
+                            currency: 'COP' 
+                        }).format(order.total_price)}</p>
+                        <div class="order-details">
+                            <h4>Detalles del pedido:</h4>
+                            ${orderDetails}
+                        </div>
+                    </div>
+                `;
+            }).join('<hr class="order-separator">');
+    
+            Swal.fire({
+                title: 'Mis Pedidos',
+                html: `
+                    <div class="orders-container">
+                        ${ordersList}
+                    </div>
+                `,
+                width: '80%',
+                showConfirmButton: true,
+                customClass: {
+                    container: 'orders-modal',
+                    popup: 'orders-modal-popup',
+                    content: 'orders-modal-content'
+                }
+            });
+        } catch (error) {
+            console.error("Error al mostrar los pedidos:", error);
+            Swal.fire('Error', 'No se pudieron cargar los pedidos: ' + error.message, 'error');
+        }
+    };
+    
+    const handlePageChange = ({ selected }) => {
+        setCurrentPage(selected);
+    };
 
     const increaseQuantity = (productId) => {
         const product = products.find(p => p.id === parseInt(productId));
@@ -283,95 +304,183 @@ export default function Component() {
         setAlertMessage('Carrito vacío');
         setAlertSeverity('info');
     };
-    const handleCheckout = async () => {
-        // Validar que haya al menos un producto en el carrito
-        if (Object.keys(cart).length === 0) {
-            Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
-            return; // Salir de la función
-        }
 
-        // Validar que todos los productos en el carrito tengan stock suficiente
-        const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
-            quantity: quantity, // Cantidad del producto
-            id_producto: parseInt(productId) // Convertir el ID del producto a entero
-        }));
-
-        const invalidProducts = orderDetails.filter(detail => {
-            const product = products.find(p => p.id === detail.id_producto);
-            return !product || product.Stock < detail.quantity || detail.quantity <= 0; // Verificar stock y cantidad
-        });
-
-        // Si hay productos inválidos, mostrar alerta y detener la ejecución
-        if (invalidProducts.length > 0) {
-            Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
-            return; // Salir de la función
-        }
-
-        let orderCreated = false; // Variable para rastrear si el pedido fue creado
-        let orderData; // Declarar variable para los datos del pedido
-        let expirationDateString; // Declarar la variable para la fecha de vencimiento
-
-        try {
-            // Obtener la fecha y hora actual
-            const now = new Date();
-            const orderDateTime = now.toISOString().split('T'); // Obtener fecha y hora en formato ISO
-            const orderDate = orderDateTime[0]; // Fecha en formato YYYY-MM-DD
-            const orderTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }); // Formato HH:mm:ss en español, 12 horas
-
-            // Calcular la fecha de vencimiento del token (3 días después)
-            const expirationDate = new Date(now);
-            expirationDate.setDate(expirationDate.getDate() + 3); // Agregar 3 días
-            expirationDateString = expirationDate.toLocaleDateString('es-ES'); // Formato legible en español
-
-            // Crear objeto con los datos del pedido
-            orderData = {
-                Billnumber: `ORD${Date.now()}`, // Generación automática del número de factura
-                OrderDate: orderDate, // Fecha actual
-                OrderTime: orderTime, // Hora en formato legible
-                total_price: parseFloat(total.toFixed(2)), // Precio total con 2 decimales
-                status: 'Completada', // Estado del pedido
-                id_usuario: context.userId, // ID del usuario que realiza el pedido
-                orderDetails: orderDetails // Usar la variable ya creada con los detalles
-            };
-
-            // Enviar la solicitud POST para crear el pedido
-            const response = await axios.post('http://localhost:1056/api/orders', orderData);
-
-            // Comprobar si la respuesta fue exitosa
-            if (response.status === 201) {
-                orderCreated = true; // Marcar que el pedido fue creado
-
-                // Limpiar el carrito
-                clearCart();
-                setDrawerOpen(false); // Cerrar el drawer o menú
+        // Verificar si el usuario está logueado
+        const handleCheckout = async () => {
+            if (!isLoggedIn) {
+                const result = await Swal.fire({
+                    title: 'Inicio de sesión requerido',
+                    text: 'Debes iniciar sesión para realizar un pedido',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Iniciar sesión',
+                    cancelButtonText: 'Cancelar'
+                });
+        
+                if (result.isConfirmed) {
+                    handleLogin(); // Asegúrate de que esta función esté definida
+                }
+                return;
             }
-        } catch (error) {
-            console.error('Error creando el pedido:', error); // Manejo del error
-            if (error.response) {
-                console.error('El servidor respondió con:', error.response.data);
+        
+            console.log("Id usuario en checkout:", userId);
+        
+            // Verificar el rol del usuario
+            if (userRole < 1 || userRole > 3) { // Permitir solo roles 1, 2 y 3
+                Swal.fire('Error', 'Rol de usuario no permitido para realizar un pedido.', 'error');
+                return;
             }
-            // Mostrar alerta de error
-            Swal.fire('Error', 'Hubo un problema al crear el pedido. Intente de nuevo.', 'error');
-        } finally {
-            // Mensaje positivo al final de la ejecución, solo si el pedido fue exitoso
-            if (orderCreated) {
+        
+            if (Object.keys(cart).length === 0) {
+                Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
+                return;
+            }
+        
+            // Comprobar el ID del usuario
+            if (!userId) {
+                Swal.fire('Error', 'No se pudo identificar el usuario. Por favor, inicia sesión nuevamente.', 'error');
+                return;
+            }
+        
+            // Crear los detalles del pedido
+            const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
+                quantity: quantity,
+                id_producto: parseInt(productId)
+            }));
+        
+            // Verificar stock y validez de productos
+            const invalidProducts = [];
+            for (const detail of orderDetails) {
+                const product = products.find(p => p.id === detail.id_producto);
+                if (!product) {
+                    invalidProducts.push(`Producto no encontrado (ID: ${detail.id_producto})`);
+                } else if (product.Stock < detail.quantity) {
+                    invalidProducts.push(`Stock insuficiente para ${product.Product_Name} (Disponible: ${product.Stock})`);
+                } else if (detail.quantity <= 0) {
+                    invalidProducts.push(`Cantidad inválida para ${product.Product_Name}`);
+                }
+            }
+        
+            if (invalidProducts.length > 0) {
                 Swal.fire({
-                    title: '¡Pedido creado!',
+                    title: 'Error en productos',
                     html: `
-                        <p>Tu pedido ha sido registrado correctamente.</p>
-                        <p>Número de factura: ${orderData.Billnumber}</p>
-                        <p>Fecha: ${orderData.OrderDate}</p>
-                        <p>Hora: ${orderData.OrderTime}</p>
-                        <p>Fecha de vencimiento del token: ${expirationDateString}</p>
+                        <p>Se encontraron los siguientes problemas:</p>
+                        <ul>
+                            ${invalidProducts.map(error => `<li>${error}</li>`).join('')}
+                        </ul>
                     `,
-                    icon: 'success'
+                    icon: 'error'
+                });
+                return;
+            }
+        
+            // Confirmar el pedido
+            const confirmResult = await Swal.fire({
+                title: '¿Confirmar pedido?',
+                html: `
+                    <p>Total a pagar: ${new Intl.NumberFormat('es-CO', { 
+                        style: 'currency', 
+                        currency: 'COP' 
+                    }).format(total)}</p>
+                    <p>¿Deseas proceder con la compra?</p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            });
+        
+            if (!confirmResult.isConfirmed) {
+                return;
+            }
+        
+            // Crear el pedido
+            try {
+                const now = new Date();
+                const orderData = {
+                    Billnumber: `ORD${now.getTime()}`,
+                    OrderDate: now.toISOString().split('T')[0],
+                    OrderTime: now.toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit', 
+                        hour12: true 
+                    }),
+                    total_price: parseFloat(total.toFixed(2)),
+                    status: 'Completada',
+                    id_usuario: userId,
+                    orderDetails: orderDetails
+                };
+        
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Procesando pedido',
+                    text: 'Por favor espere...',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+        
+                const response = await axios.post('http://localhost:1056/api/orders', orderData);
+        
+                if (response.status === 201) {
+                    // Actualizar el stock de productos
+                    await Promise.all(orderDetails.map(async detail => {
+                        const product = products.find(p => p.id === detail.id_producto);
+                        if (product) {
+                            try {
+                                await axios.put(`http://localhost:1056/api/products/${detail.id_producto}`, {
+                                    ...product,
+                                    Stock: product.Stock - detail.quantity
+                                });
+                            } catch (error) {
+                                console.error(`Error actualizando stock del producto ${detail.id_producto}:`, error);
+                            }
+                        }
+                    }));
+        
+                    // Limpiar carrito
+                    clearCart(); // Asegúrate de que esta función esté definida
+        
+                    // Mostrar confirmación
+                    Swal.fire({
+                        title: '¡Pedido creado exitosamente!',
+                        html: `
+                            <div class="order-confirmation">
+                                <p><strong>Número de factura:</strong> ${orderData.Billnumber}</p>
+                                <p><strong>Fecha:</strong> ${orderData.OrderDate}</p>
+                                <p><strong>Hora:</strong> ${orderData.OrderTime}</p>
+                                <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
+                                    style: 'currency', 
+                                    currency: 'COP' 
+                                }).format(orderData.total_price)}</p>
+                            </div>
+                        `,
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    });
+        
+                    // No recargar la lista de productos
+                    // fetchProducts(); // Evita esta llamada para mantener el estado
+        
+                }
+            } catch (error) {
+                console.error('Error creando el pedido:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: error.response?.data?.message || 'Hubo un problema al crear el pedido. Intente de nuevo.',
+                    icon: 'error'
                 });
             }
-        }
-    };
-
-
-
+        };
+        
+        
+        
+        
     const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
     const filteredProducts = products.filter(product => {
@@ -383,10 +492,14 @@ export default function Component() {
         );
     });
 
-    const handleLogin = () => navigate('/login');
+ const handleLogin = () => navigate('/login');
     const handleAdministrar = () => {
-        context.setIsHideSidebarAndHeader(false);
-        navigate('/sales');
+        if (isLoggedIn && (userRole === '1' || userRole === '2')) {
+            context.setIsHideSidebarAndHeader(false);
+            navigate('/sales');
+        } else {
+            Swal.fire('Error', 'No tienes permisos para acceder a la sección de administración.', 'error');
+        }
     };
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -394,32 +507,39 @@ export default function Component() {
     const handleClose = () => {
         setAnchorEl(null);
     };
+    
     const handleMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
     const handleMenuClose = () => {
         setAnchorEl(null);
     };
+
+    
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('roleId');
-        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userId');
+        
         setIsLoggedIn(false);
         setUserEmail('');
+        setUserRole('');
+        setUserId(null);
+        
         handleMenuClose();
-        navigate('/index');
+        navigate('/shop');
     };
-
+    
     const getUserInitial = () => {
         return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
     };
-
 
     return (
         <>
             <header className="header-index1">
                 <div className="header-content">
-                    <Link to={'/'} className='d-flex align-items-center logo-index'>
+                    <Link to={'/'} className='d-flex  align-items-center logo-index'>
                         <img src={logo} alt="Logo" />
                         <span className='ml-2'>Barberia Orion</span>
                     </Link>
@@ -429,19 +549,12 @@ export default function Component() {
                         <Link to='/appointmentView'>CITAS</Link>
                         <Link to='/shop'>PRODUCTOS</Link>
                         <Link to='/index'>CONTACTO</Link>
-                        <Button
-                            variant="text"
-                            className="administrar-btn"
-                            onClick={handleAdministrar}
-                        >
-                            ADMINISTRAR
-                        </Button>
+
                         <IconButton onClick={() => setDrawerOpen(true)}>
                             <Badge badgeContent={getTotalItems()} color="primary">
-                                <AddShoppingCartIcon /> {/* Cambia ShoppingCart por AddShoppingCartIcon */}
+                                <AddShoppingCartIcon />
                             </Badge>
                         </IconButton>
-
                     </nav>
                     {isLoggedIn && userEmail ? (
                         <div className="user-menu">
@@ -461,6 +574,11 @@ export default function Component() {
                                 open={Boolean(anchorEl)}
                                 onClose={handleMenuClose}
                             >
+                                {userRole === '1' || userRole === '2' ? (
+                                    <MenuItem onClick={handleAdministrar}>Administrar</MenuItem>
+                                ) : (
+                                    <MenuItem onClick={() => setDrawerOpen(true)}>Carrito</MenuItem>
+                                )}
                                 <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
                             </Menu>
                         </div>
@@ -622,7 +740,6 @@ export default function Component() {
                         </List>
                     )}
 
-
                     <div className="drawer-footer">
                         <div className="total-amount">
                             <Typography variant="h6">Total:</Typography>
@@ -655,7 +772,6 @@ export default function Component() {
                         >
                             Realizar pedido
                         </Button>
-
                     </div>
                 </div>
             </Drawer>
@@ -670,6 +786,20 @@ export default function Component() {
                     {alertMessage}
                 </Alert>
             </Snackbar>
+
+            {orders.length > 0 && (
+                <ReactPaginate
+                    previousLabel={'Anterior'}
+                    nextLabel={'Siguiente'}
+                    breakLabel={'...'}
+                    pageCount={Math.ceil(orders.length / ITEMS_PER_PAGE)}
+                    marginPagesDisplayed={2}
+                    pageRangeDisplayed={5}
+                    onPageChange={handlePageChange}
+                    containerClassName={'pagination'}
+                    activeClassName={'active'}
+                />
+            )}
         </>
     );
 }

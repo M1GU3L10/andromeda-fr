@@ -21,6 +21,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
@@ -59,15 +60,16 @@ const Login = () => {
                 email,
                 password
             });
-
+    
             const { user, token } = response.data;
-
+    
             if (token && user.roleId) {
                 localStorage.setItem('jwtToken', token);
-                localStorage.setItem('roleId', user.roleId.toString());
-                localStorage.setItem('userName', user.name); // Guardar el email del usuario
-                console.log('Token and roleId stored:', { token, roleId: user.roleId });
-                toast.success('Bienvendo, ' + user.name, {
+                localStorage.setItem('roleId', user.roleId.toString()); // Guardar el roleId del usuario
+                localStorage.setItem('userId', user.id.toString()); // Guardar el ID del usuario
+                localStorage.setItem('userName', user.name); // Guardar el nombre del usuario
+                console.log('Token, roleId y userId almacenados:', { token, roleId: user.roleId, userId: user.id });
+                toast.success('Bienvenido, ' + user.name, {
                     position: "top-right",
                     autoClose: 1000,
                     hideProgressBar: false,
@@ -75,7 +77,7 @@ const Login = () => {
                     pauseOnHover: true,
                     draggable: true,
                     progress: undefined,
-                    onClose: () => navigate('/index')  // Navega a /resetPassword al cerrar la alerta
+                    onClose: () => navigate('/index')  // Navega a /index al cerrar la alerta
                 });
                 context.setIsHideSidebarAndHeader(true);
             } else {
@@ -94,6 +96,7 @@ const Login = () => {
             });
         }
     };
+    
 
     const handleRegister = () => {
         navigate('/register');
