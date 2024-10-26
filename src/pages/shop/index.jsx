@@ -432,6 +432,13 @@ export default function Component() {
                         <Link to='/appointmentView'>CITAS</Link>
                         <Link to='/shop'>PRODUCTOS</Link>
                         <Link to='/index'>CONTACTO</Link>
+                        <Button
+                            variant="text"
+                            className="administrar-btn"
+                            onClick={handleAdministrar}
+                        >
+                            ADMINISTRAR
+                        </Button>
                         <IconButton onClick={() => setDrawerOpen(true)}>
                             <Badge badgeContent={getTotalItems()} color="primary">
                                 <AddShoppingCartIcon /> {/* Cambia ShoppingCart por AddShoppingCartIcon */}
