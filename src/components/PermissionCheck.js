@@ -61,6 +61,9 @@ export const PermissionProvider = ({ children }) => {
         color="#4fa94d"
         ariaLabel="loading-indicator"
       />
+     <div>
+      <span>
+        CARGANDO...</span></div> 
     </div>;
   }
 

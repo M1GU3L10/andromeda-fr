@@ -4,8 +4,10 @@ import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
 import { Avatar, Menu, MenuItem } from '@mui/material';
+import { Menu as MenuIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ServicesSection from './SectionServices';
 
 const Index = () => {
     const context = useContext(MyContext);
@@ -14,6 +16,7 @@ const Index = () => {
     const [userEmail, setUserEmail] = useState('');
     const [userRole, setUserRole] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
+    const [isNavOpen, setIsNavOpen] = useState(false);
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
@@ -67,11 +70,14 @@ const Index = () => {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            onClose: () => navigate('/index') 
-        }); 
+            onClose: () => navigate('/index')
+        });
     };
 
-    // Función para obtener la inicial del usuario de forma segura
+    const toggleNav = () => {
+        setIsNavOpen(!isNavOpen);
+    };
+
     const getUserInitial = () => {
         return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
     };
@@ -80,48 +86,59 @@ const Index = () => {
         <>
             <header className="header-index">
                 <div className="header-content">
-                    <Link to={'/'} className='d-flex align-items-center logo-index'>
-                        <img src={logo} alt="Logo" />
-                        <span className='ml-2'>Barberia Orion</span>
-                    </Link>
-                    <nav className='navBar-index'>
-                        <Link to='/index'>INICIO</Link>
-                        <Link to='/services'>SERVICIOS</Link>
-                        <Link to='/blog'>CITAS</Link>
-                        <Link to='/Shop'>PRODUCTOS</Link>
-                        <Link to='/contact'>CONTACTO</Link>
-                    </nav>
-                    {isLoggedIn && userEmail ? (
-                        <div className="user-menu">
-                            <Button
-                                onClick={handleMenuClick}
-                                className="userLoginn"
-                                startIcon={
-                                    <Avatar sx={{ width: 32, height: 32 }}>
-                                        {getUserInitial()}
-                                    </Avatar>
-                                }
-                            >
-                                {userEmail}
-                            </Button>
-                            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} >
-                                {userRole == 1 || userRole == 2 ? (
-                                    <MenuItem onClick={handledashboard}>Administrar</MenuItem>
-                                ):(
-                                    <MenuItem>Carrito</MenuItem>
-                                )}
-                                <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
-                            </Menu>
+                    <div className="header-top">
+                        <Link to={'/'} className='d-flex align-items-center logo-index'>
+                            <img src={logo} alt="Logo" />
+                            <span className='ml-2'>Barberia Orion</span>
+                        </Link>
+                        <button className="nav-toggle" onClick={toggleNav}>
+                            <MenuIcon className="h-6 w-6 text-white" />
+                        </button>
+                    </div>
+
+                    <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
+                        <nav className='navBar-index'>
+                            <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
+                            <Link to='/services' onClick={() => setIsNavOpen(false)}>SERVICIOS</Link>
+                            <Link to='/blog' onClick={() => setIsNavOpen(false)}>CITAS</Link>
+                            <Link to='/Shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+                            <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+                        </nav>
+
+                        <div className="auth-buttons">
+                            {isLoggedIn && userEmail ? (
+                                <div className="user-menu">
+                                    <Button
+                                        onClick={handleMenuClick}
+                                        className="userLoginn"
+                                        startIcon={
+                                            <Avatar sx={{ width: 32, height: 32 }}>
+                                                {getUserInitial()}
+                                            </Avatar>
+                                        }
+                                    >
+                                        {userEmail}
+                                    </Button>
+                                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                                        {userRole == 1 || userRole == 2 ? (
+                                            <MenuItem onClick={handledashboard}>Administrar</MenuItem>
+                                        ) : (
+                                            <MenuItem>Carrito</MenuItem>
+                                        )}
+                                        <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+                                    </Menu>
+                                </div>
+                            ) : (
+                                <Button
+                                    variant="contained"
+                                    className="book-now-btn"
+                                    onClick={handleLogin}
+                                >
+                                    Iniciar sesión
+                                </Button>
+                            )}
                         </div>
-                    ) : (
-                        <Button
-                            variant="contained"
-                            className="book-now-btn"
-                            onClick={handleLogin}
-                        >
-                            INICIAR SESION
-                        </Button>
-                    )}
+                    </div>
                 </div>
                 <div className="hero-content">
                     <h1>
@@ -138,6 +155,15 @@ const Index = () => {
                     </Button>
                 </div>
             </header>
+            <section>
+                <div className='d-flex align-items-center justify-content-center mt-5'>
+                    <h2 className='tittle-landingPage'>Nuestros servicios</h2>
+                </div>
+                <div className='w-100 section-services'>
+                    <p className='description-landingPage'>En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.</p>
+                    <ServicesSection/>
+                </div>
+            </section>
         </>
     );
 };
