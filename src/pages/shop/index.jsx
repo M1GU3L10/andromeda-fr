@@ -159,102 +159,104 @@ export default function Component() {
             };
         });
     };
-    const handleShowOrders = async () => {
-        if (!isLoggedIn) {
-            Swal.fire({
-                title: 'Inicio de sesión requerido',
-                text: 'Debes iniciar sesión para ver tus pedidos',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Iniciar sesión',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    handleLogin();
-                }
-            });
-            return;
-        }
-    
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-            Swal.fire('Error', 'No se pudo identificar el usuario', 'error');
-            return;
-        }
-    
-        try {
-            Swal.fire({
-                title: 'Cargando pedidos',
-                text: 'Por favor espere...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-    
-            const ordersResponse = await axios.get(`http://localhost:1056/api/orders/user/${userId}`);
-            const orders = ordersResponse.data;
-    
-            if (!orders || orders.length === 0) {
-                Swal.fire('Info', 'No tienes pedidos realizados', 'info');
-                return;
+   const handleShowOrders = async () => {
+    if (!isLoggedIn) {
+        Swal.fire({
+            title: 'Inicio de sesión requerido',
+            text: 'Debes iniciar sesión para ver tus pedidos',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Iniciar sesión',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                handleLogin(); // Asegúrate de que esta función redirija al usuario al login.
             }
-    
-            const ordersList = orders.map(order => {
-                const orderDate = new Date(order.OrderDate).toLocaleDateString('es-CO');
-                const orderDetails = order.OrderDetails.map(detail => `
-                    <div class="order-detail">
-                        <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
-                        <p><strong>Cantidad:</strong> ${detail.quantity}</p>
-                        <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', { 
-                            style: 'currency', 
-                            currency: 'COP' 
-                        }).format(detail.unitPrice)}</p>
-                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
-                            style: 'currency', 
-                            currency: 'COP' 
-                        }).format(detail.total_price)}</p>
-                    </div>
-                `).join('<hr>');
-    
-                return `
-                    <div class="order-item">
-                        <h3>Pedido #${order.id}</h3>
-                        <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
-                        <p><strong>Fecha:</strong> ${orderDate}</p>
-                        <p><strong>Estado:</strong> ${order.status}</p>
-                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
-                            style: 'currency', 
-                            currency: 'COP' 
-                        }).format(order.total_price)}</p>
-                        <div class="order-details">
-                            <h4>Detalles del pedido:</h4>
-                            ${orderDetails}
-                        </div>
-                    </div>
-                `;
-            }).join('<hr class="order-separator">');
-    
-            Swal.fire({
-                title: 'Mis Pedidos',
-                html: `
-                    <div class="orders-container">
-                        ${ordersList}
-                    </div>
-                `,
-                width: '80%',
-                showConfirmButton: true,
-                customClass: {
-                    container: 'orders-modal',
-                    popup: 'orders-modal-popup',
-                    content: 'orders-modal-content'
-                }
-            });
-        } catch (error) {
-            console.error("Error al mostrar los pedidos:", error);
-            Swal.fire('Error', 'No se pudieron cargar los pedidos: ' + error.message, 'error');
+        });
+        return;
+    }
+
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+        Swal.fire('Error', 'No se pudo identificar el usuario', 'error');
+        return;
+    }
+
+    try {
+        Swal.fire({
+            title: 'Cargando pedidos',
+            text: 'Por favor espere...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const ordersResponse = await axios.get(`http://localhost:1056/api/orders/user/${userId}`);
+        const orders = ordersResponse.data;
+
+        if (!orders || orders.length === 0) {
+            Swal.fire('Info', 'No tienes pedidos realizados', 'info');
+            return;
         }
-    };
+
+        // Formato de la lista de pedidos
+        const ordersList = orders.map(order => {
+            const orderDate = new Date(order.OrderDate).toLocaleDateString('es-CO');
+            const orderDetails = order.OrderDetails.map(detail => `
+                <div class="order-detail">
+                    <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
+                    <p><strong>Cantidad:</strong> ${detail.quantity}</p>
+                    <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', { 
+                        style: 'currency', 
+                        currency: 'COP' 
+                    }).format(detail.unitPrice)}</p>
+                    <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
+                        style: 'currency', 
+                        currency: 'COP' 
+                    }).format(detail.total_price)}</p>
+                </div>
+            `).join('<hr>');
+
+            return `
+                <div class="order-item">
+                    <h3>Pedido #${order.id}</h3>
+                    <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
+                    <p><strong>Fecha:</strong> ${orderDate}</p>
+                    <p><strong>Estado:</strong> ${order.status}</p>
+                    <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
+                        style: 'currency', 
+                        currency: 'COP' 
+                    }).format(order.total_price)}</p>
+                    <div class="order-details">
+                        <h4>Detalles del pedido:</h4>
+                        ${orderDetails}
+                    </div>
+                </div>
+            `;
+        }).join('<hr class="order-separator">');
+
+        Swal.fire({
+            title: 'Mis Pedidos',
+            html: `
+                <div class="orders-container">
+                    ${ordersList}
+                </div>
+            `,
+            width: '80%',
+            showConfirmButton: true,
+            customClass: {
+                container: 'orders-modal',
+                popup: 'orders-modal-popup',
+                content: 'orders-modal-content'
+            }
+        });
+    } catch (error) {
+        console.error("Error al mostrar los pedidos:", error);
+        Swal.fire('Error', 'No se pudieron cargar los pedidos: ' + error.message, 'error');
+    }
+};
+
     
     const handlePageChange = ({ selected }) => {
         setCurrentPage(selected);
@@ -307,174 +309,115 @@ export default function Component() {
 
         // Verificar si el usuario está logueado
         const handleCheckout = async () => {
-            if (!isLoggedIn) {
-                const result = await Swal.fire({
-                    title: 'Inicio de sesión requerido',
-                    text: 'Debes iniciar sesión para realizar un pedido',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Iniciar sesión',
-                    cancelButtonText: 'Cancelar'
-                });
-        
-                if (result.isConfirmed) {
-                    handleLogin(); // Asegúrate de que esta función esté definida
-                }
-                return;
-            }
-        
-            console.log("Id usuario en checkout:", userId);
-        
-            // Verificar el rol del usuario
-            if (userRole < 1 || userRole > 3) { // Permitir solo roles 1, 2 y 3
-                Swal.fire('Error', 'Rol de usuario no permitido para realizar un pedido.', 'error');
-                return;
-            }
-        
+            // Validar que haya al menos un producto en el carrito
             if (Object.keys(cart).length === 0) {
                 Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
-                return;
+                return; // Salir de la función
             }
         
-            // Comprobar el ID del usuario
-            if (!userId) {
-                Swal.fire('Error', 'No se pudo identificar el usuario. Por favor, inicia sesión nuevamente.', 'error');
-                return;
-            }
-        
-            // Crear los detalles del pedido
+            // Validar que todos los productos en el carrito tengan stock suficiente
             const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
-                quantity: quantity,
-                id_producto: parseInt(productId)
+                quantity: quantity, // Cantidad del producto
+                id_producto: parseInt(productId) // Convertir el ID del producto a entero
             }));
         
-            // Verificar stock y validez de productos
-            const invalidProducts = [];
-            for (const detail of orderDetails) {
+            const invalidProducts = orderDetails.filter(detail => {
                 const product = products.find(p => p.id === detail.id_producto);
-                if (!product) {
-                    invalidProducts.push(`Producto no encontrado (ID: ${detail.id_producto})`);
-                } else if (product.Stock < detail.quantity) {
-                    invalidProducts.push(`Stock insuficiente para ${product.Product_Name} (Disponible: ${product.Stock})`);
-                } else if (detail.quantity <= 0) {
-                    invalidProducts.push(`Cantidad inválida para ${product.Product_Name}`);
-                }
-            }
+                return !product || product.Stock < detail.quantity || detail.quantity <= 0; // Verificar stock y cantidad
+            });
         
+            // Si hay productos inválidos, mostrar alerta y detener la ejecución
             if (invalidProducts.length > 0) {
-                Swal.fire({
-                    title: 'Error en productos',
-                    html: `
-                        <p>Se encontraron los siguientes problemas:</p>
-                        <ul>
-                            ${invalidProducts.map(error => `<li>${error}</li>`).join('')}
-                        </ul>
-                    `,
-                    icon: 'error'
-                });
-                return;
+                Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
+                return; // Salir de la función
             }
         
-            // Confirmar el pedido
-            const confirmResult = await Swal.fire({
-                title: '¿Confirmar pedido?',
+            // Calcular el total
+            const total = orderDetails.reduce((acc, detail) => {
+                const product = products.find(p => p.id === detail.id_producto);
+                return acc + (product.Price * detail.quantity); // Sumar el precio total
+            }, 0);
+        
+            // Confirmar pedido
+            const confirmation = await Swal.fire({
+                title: 'Confirmar Pedido',
                 html: `
-                    <p>Total a pagar: ${new Intl.NumberFormat('es-CO', { 
-                        style: 'currency', 
-                        currency: 'COP' 
-                    }).format(total)}</p>
-                    <p>¿Deseas proceder con la compra?</p>
+                    <p>Estás a punto de realizar un pedido con un total de: <strong>${total.toFixed(2)} €</strong></p>
+                    <p>¿Deseas continuar?</p>
                 `,
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Confirmar',
+                confirmButtonText: 'Sí, confirmar',
                 cancelButtonText: 'Cancelar'
             });
         
-            if (!confirmResult.isConfirmed) {
-                return;
+            if (!confirmation.isConfirmed) {
+                return; // Salir de la función si el usuario cancela
             }
         
-            // Crear el pedido
+            let orderCreated = false; // Variable para rastrear si el pedido fue creado
+            let orderData; // Declarar variable para los datos del pedido
+            let expirationDateString; // Declarar la variable para la fecha de vencimiento
+        
             try {
+                // Obtener la fecha y hora actual
                 const now = new Date();
-                const orderData = {
-                    Billnumber: `ORD${now.getTime()}`,
-                    OrderDate: now.toISOString().split('T')[0],
-                    OrderTime: now.toLocaleTimeString('es-ES', { 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        second: '2-digit', 
-                        hour12: true 
-                    }),
-                    total_price: parseFloat(total.toFixed(2)),
-                    status: 'Completada',
-                    id_usuario: userId,
-                    orderDetails: orderDetails
+                const orderDateTime = now.toISOString().split('T'); // Obtener fecha y hora en formato ISO
+                const orderDate = orderDateTime[0]; // Fecha en formato YYYY-MM-DD
+                const orderTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }); // Formato HH:mm:ss en español, 12 horas
+        
+                // Calcular la fecha de vencimiento del token (3 días después)
+                const expirationDate = new Date(now);
+                expirationDate.setDate(expirationDate.getDate() + 3); // Agregar 3 días
+                expirationDateString = expirationDate.toLocaleDateString('es-ES'); // Formato legible en español
+        
+                // Crear objeto con los datos del pedido
+                orderData = {
+                    Billnumber: `ORD${Date.now()}`, // Generación automática del número de factura
+                    OrderDate: orderDate, // Fecha actual
+                    OrderTime: orderTime, // Hora en formato legible
+                    total_price: parseFloat(total.toFixed(2)), // Precio total con 2 decimales
+                    status: 'Completada', // Estado del pedido
+                    id_usuario: userId, // ID del usuario que realiza el pedido
+                    orderDetails: orderDetails // Usar la variable ya creada con los detalles
                 };
         
-                // Mostrar loading
-                Swal.fire({
-                    title: 'Procesando pedido',
-                    text: 'Por favor espere...',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    showConfirmButton: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-        
+                // Enviar la solicitud POST para crear el pedido
                 const response = await axios.post('http://localhost:1056/api/orders', orderData);
         
+                // Comprobar si la respuesta fue exitosa
                 if (response.status === 201) {
-                    // Actualizar el stock de productos
-                    await Promise.all(orderDetails.map(async detail => {
-                        const product = products.find(p => p.id === detail.id_producto);
-                        if (product) {
-                            try {
-                                await axios.put(`http://localhost:1056/api/products/${detail.id_producto}`, {
-                                    ...product,
-                                    Stock: product.Stock - detail.quantity
-                                });
-                            } catch (error) {
-                                console.error(`Error actualizando stock del producto ${detail.id_producto}:`, error);
-                            }
-                        }
-                    }));
+                    orderCreated = true; // Marcar que el pedido fue creado
         
-                    // Limpiar carrito
+                    // Limpiar el carrito
                     clearCart(); // Asegúrate de que esta función esté definida
-        
-                    // Mostrar confirmación
+                }
+            } catch (error) {
+                console.error('Error creando el pedido:', error); // Manejo del error
+                if (error.response) {
+                    console.error('El servidor respondió con:', error.response.data);
+                }
+                // Mostrar alerta de error
+                Swal.fire('Error', 'Hubo un problema al crear el pedido. Intente de nuevo.', 'error');
+            } finally {
+                // Mensaje positivo al final de la ejecución, solo si el pedido fue exitoso
+                if (orderCreated) {
                     Swal.fire({
                         title: '¡Pedido creado exitosamente!',
                         html: `
                             <div class="order-confirmation">
-                                <p><strong>Número de factura:</strong> ${orderData.Billnumber}</p>
-                                <p><strong>Fecha:</strong> ${orderData.OrderDate}</p>
-                                <p><strong>Hora:</strong> ${orderData.OrderTime}</p>
-                                <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
-                                    style: 'currency', 
-                                    currency: 'COP' 
-                                }).format(orderData.total_price)}</p>
+                                <img src="ruta/a/tu/imagen.jpg" alt="Confirmación de Pedido" style="width: 100%; height: auto;" />
+                                <p>Tu pedido ha sido registrado correctamente.</p>
+                                <p>Número de factura: ${orderData.Billnumber}</p>
+                                <p>Fecha: ${orderData.OrderDate}</p>
+                                <p>Hora: ${orderData.OrderTime}</p>
+                                <p>Fecha de vencimiento del token: ${expirationDateString}</p>
+                                <p>Total a pagar: <strong>${total.toFixed(2)} €</strong></p>
                             </div>
                         `,
-                        icon: 'success',
-                        confirmButtonText: 'Aceptar'
+                        icon: 'success'
                     });
-        
-                    // No recargar la lista de productos
-                    // fetchProducts(); // Evita esta llamada para mantener el estado
-        
                 }
-            } catch (error) {
-                console.error('Error creando el pedido:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: error.response?.data?.message || 'Hubo un problema al crear el pedido. Intente de nuevo.',
-                    icon: 'error'
-                });
             }
         };
         
