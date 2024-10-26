@@ -80,12 +80,12 @@ export default function Component() {
         const storedEmail = localStorage.getItem('userName');
         const idRole = localStorage.getItem('roleId');
         const userId = localStorage.getItem('userId'); // Captura el userId
-    
+
         console.log("Token:", token); // Para depurar
         console.log("Email almacenado:", storedEmail); // Para depurar
         console.log("ID de rol:", idRole); // Para depurar
         console.log("ID de usuario:", userId); // Para depurar
-    
+
         if (token && storedEmail && idRole && userId) {
             setIsLoggedIn(true);
             setUserEmail(storedEmail);
@@ -100,18 +100,18 @@ export default function Component() {
             console.log("Usuario no está logueado."); // Para depurar
         }
     };
-    
+
     useEffect(() => {
         checkLoginStatus();
-    
+
         if (isLoggedIn) {
             console.log("Rol de usuario cargado:", userRole); // Para depurar
         } else {
             setUserRole(null);
         }
     }, [isLoggedIn]);
-    
-    
+
+
 
     const calculateTotal = () => {
         let sum = 0;
@@ -177,14 +177,14 @@ export default function Component() {
             });
             return;
         }
-    
+
         // Obtiene el ID del usuario desde localStorage
         const userId = localStorage.getItem('userId');
         if (!userId) {
             Swal.fire('Error', 'No se pudo identificar el usuario', 'error');
             return;
         }
-    
+
         try {
             // Muestra un mensaje de carga
             Swal.fire({
@@ -195,17 +195,17 @@ export default function Component() {
                     Swal.showLoading();
                 }
             });
-    
+
             // Realiza la solicitud a la API para obtener los pedidos del usuario
             const ordersResponse = await axios.get(`http://localhost:1056/api/orders/user/${userId}`);
             const orders = ordersResponse.data;
-    
+
             // Verifica si el usuario no tiene pedidos
             if (!orders || orders.length === 0) {
                 Swal.fire('Info', 'No tienes pedidos realizados', 'info');
                 return;
             }
-    
+
             // Formato de la lista de pedidos
             const ordersList = orders.map(order => {
                 // Formatear la fecha del pedido
@@ -214,27 +214,27 @@ export default function Component() {
                     <div class="order-detail">
                         <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
                         <p><strong>Cantidad:</strong> ${detail.quantity}</p>
-                        <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', { 
-                            style: 'currency', 
-                            currency: 'COP' 
-                        }).format(detail.unitPrice)}</p>
-                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
-                            style: 'currency', 
-                            currency: 'COP' 
-                        }).format(detail.total_price)}</p>
+                        <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP'
+                }).format(detail.unitPrice)}</p>
+                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP'
+                }).format(detail.total_price)}</p>
                     </div>
                 `).join('<hr>');
-    
+
                 return `
                     <div class="order-item">
                         <h3>Pedido #${order.id}</h3>
                         <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
                         <p><strong>Fecha:</strong> ${orderDate}</p>
                         <p><strong>Estado:</strong> ${order.status}</p>
-                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
-                            style: 'currency', 
-                            currency: 'COP' 
-                        }).format(order.total_price)}</p>
+                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP'
+                }).format(order.total_price)}</p>
                         <div class="order-details">
                             <h4>Detalles del pedido:</h4>
                             ${orderDetails}
@@ -242,7 +242,7 @@ export default function Component() {
                     </div>
                 `;
             }).join('<hr class="order-separator">');
-    
+
             // Muestra la lista de pedidos en un modal
             Swal.fire({
                 title: 'Mis Pedidos',
@@ -265,9 +265,9 @@ export default function Component() {
             Swal.fire('Error', 'No se pudieron cargar los pedidos: ' + error.message, 'error');
         }
     };
-    
 
-    
+
+
     const handlePageChange = ({ selected }) => {
         setCurrentPage(selected);
     };
@@ -317,104 +317,104 @@ export default function Component() {
         setAlertSeverity('info');
     };
 
-        // Verificar si el usuario está logueado
-        const handleCheckout = async () => {
-            // Validar que haya al menos un producto en el carrito
-            if (Object.keys(cart).length === 0) {
-                Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
-                return; // Salir de la función
-            }
-        
-            // Validar que todos los productos en el carrito tengan stock suficiente
-            const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
-                quantity: quantity, // Cantidad del producto
-                id_producto: parseInt(productId) // Convertir el ID del producto a entero
-            }));
-        
-            const invalidProducts = orderDetails.filter(detail => {
-                const product = products.find(p => p.id === detail.id_producto);
-                return !product || product.Stock < detail.quantity || detail.quantity <= 0; // Verificar stock y cantidad
-            });
-        
-            // Si hay productos inválidos, mostrar alerta y detener la ejecución
-            if (invalidProducts.length > 0) {
-                Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
-                return; // Salir de la función
-            }
-        
-            // Calcular el total
-            const total = orderDetails.reduce((acc, detail) => {
-                const product = products.find(p => p.id === detail.id_producto);
-                return acc + (product.Price * detail.quantity); // Sumar el precio total
-            }, 0);
-        
-            // Confirmar pedido
-            const confirmation = await Swal.fire({
-                title: 'Confirmar Pedido',
-                html: `
-                    <p>Estás a punto de realizar un pedido con un total de: <strong>${total.toFixed(2)} €</strong></p>
+    // Verificar si el usuario está logueado
+    const handleCheckout = async () => {
+        // Validar que haya al menos un producto en el carrito
+        if (Object.keys(cart).length === 0) {
+            Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
+            return; // Salir de la función
+        }
+
+        // Validar que todos los productos en el carrito tengan stock suficiente
+        const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
+            quantity: quantity, // Cantidad del producto
+            id_producto: parseInt(productId) // Convertir el ID del producto a entero
+        }));
+
+        const invalidProducts = orderDetails.filter(detail => {
+            const product = products.find(p => p.id === detail.id_producto);
+            return !product || product.Stock < detail.quantity || detail.quantity <= 0; // Verificar stock y cantidad
+        });
+
+        // Si hay productos inválidos, mostrar alerta y detener la ejecución
+        if (invalidProducts.length > 0) {
+            Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
+            return; // Salir de la función
+        }
+
+        // Calcular el total
+        const total = orderDetails.reduce((acc, detail) => {
+            const product = products.find(p => p.id === detail.id_producto);
+            return acc + (product.Price * detail.quantity); // Sumar el precio total
+        }, 0);
+
+        // Confirmar pedido
+        const confirmation = await Swal.fire({
+            title: 'Confirmar Pedido',
+            html: `
+                    <p>Estás a punto de realizar un pedido con un total de: <strong>${total.toFixed(2)} COP</strong></p>
                     <p>¿Deseas continuar?</p>
                 `,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, confirmar',
-                cancelButtonText: 'Cancelar'
-            });
-        
-            if (!confirmation.isConfirmed) {
-                return; // Salir de la función si el usuario cancela
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!confirmation.isConfirmed) {
+            return; // Salir de la función si el usuario cancela
+        }
+
+        let orderCreated = false; // Variable para rastrear si el pedido fue creado
+        let orderData; // Declarar variable para los datos del pedido
+        let expirationDateString; // Declarar la variable para la fecha de vencimiento
+
+        try {
+            // Obtener la fecha y hora actual
+            const now = new Date();
+            const orderDateTime = now.toISOString().split('T'); // Obtener fecha y hora en formato ISO
+            const orderDate = orderDateTime[0]; // Fecha en formato YYYY-MM-DD
+            const orderTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }); // Formato HH:mm:ss en español, 12 horas
+
+            // Calcular la fecha de vencimiento del token (3 días después)
+            const expirationDate = new Date(now);
+            expirationDate.setDate(expirationDate.getDate() + 3); // Agregar 3 días
+            expirationDateString = expirationDate.toLocaleDateString('es-ES'); // Formato legible en español
+
+            // Crear objeto con los datos del pedido
+            orderData = {
+                Billnumber: `ORD${Date.now()}`, // Generación automática del número de factura
+                OrderDate: orderDate, // Fecha actual
+                OrderTime: orderTime, // Hora en formato legible
+                total_price: parseFloat(total.toFixed(2)), // Precio total con 2 decimales
+                status: 'Completada', // Estado del pedido
+                id_usuario: userId, // ID del usuario que realiza el pedido
+                orderDetails: orderDetails // Usar la variable ya creada con los detalles
+            };
+
+            // Enviar la solicitud POST para crear el pedido
+            const response = await axios.post('http://localhost:1056/api/orders', orderData);
+
+            // Comprobar si la respuesta fue exitosa
+            if (response.status === 201) {
+                orderCreated = true; // Marcar que el pedido fue creado
+
+                // Limpiar el carrito
+                clearCart(); // Asegúrate de que esta función esté definida
             }
-        
-            let orderCreated = false; // Variable para rastrear si el pedido fue creado
-            let orderData; // Declarar variable para los datos del pedido
-            let expirationDateString; // Declarar la variable para la fecha de vencimiento
-        
-            try {
-                // Obtener la fecha y hora actual
-                const now = new Date();
-                const orderDateTime = now.toISOString().split('T'); // Obtener fecha y hora en formato ISO
-                const orderDate = orderDateTime[0]; // Fecha en formato YYYY-MM-DD
-                const orderTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }); // Formato HH:mm:ss en español, 12 horas
-        
-                // Calcular la fecha de vencimiento del token (3 días después)
-                const expirationDate = new Date(now);
-                expirationDate.setDate(expirationDate.getDate() + 3); // Agregar 3 días
-                expirationDateString = expirationDate.toLocaleDateString('es-ES'); // Formato legible en español
-        
-                // Crear objeto con los datos del pedido
-                orderData = {
-                    Billnumber: `ORD${Date.now()}`, // Generación automática del número de factura
-                    OrderDate: orderDate, // Fecha actual
-                    OrderTime: orderTime, // Hora en formato legible
-                    total_price: parseFloat(total.toFixed(2)), // Precio total con 2 decimales
-                    status: 'Completada', // Estado del pedido
-                    id_usuario: userId, // ID del usuario que realiza el pedido
-                    orderDetails: orderDetails // Usar la variable ya creada con los detalles
-                };
-        
-                // Enviar la solicitud POST para crear el pedido
-                const response = await axios.post('http://localhost:1056/api/orders', orderData);
-        
-                // Comprobar si la respuesta fue exitosa
-                if (response.status === 201) {
-                    orderCreated = true; // Marcar que el pedido fue creado
-        
-                    // Limpiar el carrito
-                    clearCart(); // Asegúrate de que esta función esté definida
-                }
-            } catch (error) {
-                console.error('Error creando el pedido:', error); // Manejo del error
-                if (error.response) {
-                    console.error('El servidor respondió con:', error.response.data);
-                }
-                // Mostrar alerta de error
-                Swal.fire('Error', 'Hubo un problema al crear el pedido. Intente de nuevo.', 'error');
-            } finally {
-                // Mensaje positivo al final de la ejecución, solo si el pedido fue exitoso
-                if (orderCreated) {
-                    Swal.fire({
-                        title: '¡Pedido creado exitosamente!',
-                        html: `
+        } catch (error) {
+            console.error('Error creando el pedido:', error); // Manejo del error
+            if (error.response) {
+                console.error('El servidor respondió con:', error.response.data);
+            }
+            // Mostrar alerta de error
+            Swal.fire('Error', 'Hubo un problema al crear el pedido. Intente de nuevo.', 'error');
+        } finally {
+            // Mensaje positivo al final de la ejecución, solo si el pedido fue exitoso
+            if (orderCreated) {
+                Swal.fire({
+                    title: '¡Pedido creado exitosamente!',
+                    html: `
                             <div class="order-confirmation">
                                
                                 <p>Tu pedido ha sido registrado correctamente.</p>
@@ -422,18 +422,18 @@ export default function Component() {
                                 <p>Fecha: ${orderData.OrderDate}</p>
                                 <p>Hora: ${orderData.OrderTime}</p>
                                 <p>Fecha de vencimiento del token: ${expirationDateString}</p>
-                                <p>Total a pagar: <strong>${total.toFixed(2)} €</strong></p>
+                                <p>Total a pagar: <strong>${total.toFixed(2)} COP</strong></p>
                             </div>
                         `,
-                        icon: 'success'
-                    });
-                }
+                    icon: 'success'
+                });
             }
-        };
-        
-        
-        
-        
+        }
+    };
+
+
+
+
     const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
     const filteredProducts = products.filter(product => {
@@ -445,7 +445,7 @@ export default function Component() {
         );
     });
 
- const handleLogin = () => navigate('/login');
+    const handleLogin = () => navigate('/login');
     const handleAdministrar = () => {
         if (isLoggedIn && (userRole === '1' || userRole === '2')) {
             context.setIsHideSidebarAndHeader(false);
@@ -460,7 +460,7 @@ export default function Component() {
     const handleClose = () => {
         setAnchorEl(null);
     };
-    
+
     const handleMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -468,22 +468,22 @@ export default function Component() {
         setAnchorEl(null);
     };
 
-    
+
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('roleId');
         localStorage.removeItem('userName');
         localStorage.removeItem('userId');
-        
+
         setIsLoggedIn(false);
         setUserEmail('');
         setUserRole('');
         setUserId(null);
-        
+
         handleMenuClose();
         navigate('/shop');
     };
-    
+
     const getUserInitial = () => {
         return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
     };
@@ -704,9 +704,20 @@ export default function Component() {
                             </Typography>
                         </div>
                     </div>
-                    <Button variant="contained" onClick={handleShowOrders}>
+                    <Button
+                        variant="contained"
+                        onClick={handleShowOrders}
+                        sx={{
+                            backgroundColor: '#c59d5f', // Color dorado
+                            '&:hover': {
+                                backgroundColor: '#c59d5f', // Color dorado más oscuro al pasar el mouse
+                            },
+                            color: '#fff' // Color del texto
+                        }}
+                    >
                         Ver Mis Pedidos
                     </Button>
+
 
                     <div className="cart-buttons1">
                         <Button
