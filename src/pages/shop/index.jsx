@@ -13,9 +13,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Logout from '@mui/icons-material/Logout';
 import IconButton from '@mui/material/IconButton';
-import ReactPaginate from 'react-paginate';
-
-
 
 import axios from 'axios';
 import {

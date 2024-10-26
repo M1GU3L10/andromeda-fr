@@ -4,20 +4,13 @@ import { Link, useNavigate } from 'react-router-dom'; // useNavigate agregado pa
 import Button from '@mui/material/Button';
 import { MdMenuOpen } from 'react-icons/md';
 import { MdOutlineMenu } from "react-icons/md";
-import SearchBox from '../SearchBox';
 import { MdOutlineLightMode } from "react-icons/md";
-import { MdDarkMode } from "react-icons/md";
-import { BsCart3 } from "react-icons/bs";
-import { MdOutlineMailOutline } from "react-icons/md";
-import { LuBell } from "react-icons/lu";
-import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import PersonAdd from '@mui/icons-material/PersonAdd';
 import { BsShieldFillExclamation } from "react-icons/bs";
 import Logout from '@mui/icons-material/Logout';
-import Divider from '@mui/material/Divider';
 import { MyContext } from '../../App';
 
 const Header = () => {
