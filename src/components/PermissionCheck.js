@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { Circles } from 'react-loader-spinner';
 
 const PermissionContext = createContext([]);
 
@@ -15,9 +16,8 @@ export const PermissionProvider = ({ children }) => {
     const fetchPermissions = async () => {
       const roleId = localStorage.getItem('roleId');
       console.log('roleId from localStorage:', roleId);
-
       // Lista de rutas públicas
-      const publicRoutes = ['/login', '/register', '/forgotPassword', '/resetPassword','/index','/shop','/dashboard'];
+      const publicRoutes = ['/login', '/register', '/forgotPassword', '/resetPassword', '/index', '/shop', '/dashboard'];
 
       if (!roleId && !publicRoutes.includes(location.pathname)) {
         console.error('No roleId found in localStorage');
@@ -37,7 +37,7 @@ export const PermissionProvider = ({ children }) => {
         const permissionsResponse = await axios.get('http://localhost:1056/api/permissions');
 
         const rolePermissions = permissionsRoleResponse.data.filter(pr => pr.roleId === parseInt(roleId));
-        const permissionNames = permissionsResponse.data.filter(p => 
+        const permissionNames = permissionsResponse.data.filter(p =>
           rolePermissions.some(rp => rp.permissionId === p.id)
         ).map(p => p.name);
 
@@ -54,7 +54,14 @@ export const PermissionProvider = ({ children }) => {
   }, [location]);
 
   if (loading) {
-    return <div>Cargando permisos...</div>;
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Circles
+        height="80"
+        width="80"
+        color="#4fa94d"
+        ariaLabel="loading-indicator"
+      />
+    </div>;
   }
 
   return (

@@ -95,6 +95,7 @@ function App() {
                 <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
                 <Route path="/resetPassword" element={<PermissionCheck requiredPermission="public"><ResetPassword /></PermissionCheck>} />
                 <Route path="/" element={<Navigate to="/index" replace />} />
+
                 <Route path="/dashboard" element={
                   <PermissionCheck requiredPermission="Dashboard">
                     <Dashboard />
@@ -145,7 +146,7 @@ function App() {
                     <Sales />
                   </PermissionCheck>
                 } />
-                <Route path="/registerSales" element={
+                <Route path="/salesRegister" element={
                   <PermissionCheck requiredPermission="Ventas">
                     <RegisterSales />
                   </PermissionCheck>
@@ -160,7 +161,7 @@ function App() {
                     <Shopping />
                   </PermissionCheck>
                 } />
-                <Route path="/registerShopping" element={
+                <Route path="/shoppingRegister" element={
                   <PermissionCheck requiredPermission="Compras">
                     <RegisterShopping />
                   </PermissionCheck>

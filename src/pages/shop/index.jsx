@@ -1,25 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
-import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CloseIcon from '@mui/icons-material/Close';
-
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import Logout from '@mui/icons-material/Logout';
 import IconButton from '@mui/material/IconButton';
-
-
-
-
 
 import axios from 'axios';
 import {
@@ -33,78 +26,34 @@ import {
     Badge,
     ListItemAvatar,
     Avatar,
-    Alert
+    Alert,
+    Snackbar
 } from '@mui/material';
 import { ShoppingCart, Search } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 import './shop.css';
 
-const Shop = () => {
+export default function Component() {
+    // Mover todas las declaraciones de estado al principio
+    const [anchorEl, setAnchorEl] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
+    const [alertSeverity, setAlertSeverity] = useState('info');
     const [cart, setCart] = useState({});
     const [total, setTotal] = useState(0);
-    const [email, setEmail] = useState(''); // Agregando estado para email
-    const [password, setPassword] = useState(''); // Agregando estado para password
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+    const ITEMS_PER_PAGE = 5;
     const context = useContext(MyContext);
     const navigate = useNavigate();
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [orders, setOrders] = useState([]);
+
+
     const open = Boolean(anchorEl);
-    const [userId, setUserId] = useState(null); // Agregando estado para userId
-    const [isLogin, setIsLogin] = useState(false);
-
-
-
-
-
-    const handleLogin = async () => {
-        // Navega a la página de inicio de sesión
-        navigate('/login');
-
-        try {
-            // Realiza la solicitud POST para iniciar sesión
-            const response = await axios.post('http://localhost:1056/api/login', { email, password });
-
-            // Asegúrate de que la respuesta contenga el ID del usuario
-            const { id } = response.data; // Desestructura el ID de la respuesta
-
-            // Establece el userId en el contexto
-            setUserId(id);
-            setIsLogin(true); // Marca al usuario como conectado
-
-            // Aquí podrías redirigir al usuario a otra página después de iniciar sesión
-            // navigate('/home'); // Descomenta y ajusta la ruta según sea necesario
-        } catch (error) {
-            // Maneja cualquier error durante el inicio de sesión
-            console.error("Error al iniciar sesión:", error);
-            Swal.fire('Error', 'Credenciales incorrectas o hubo un problema al iniciar sesión.', 'error');
-        }
-    };
-
-
-    const handleAdministrar = () => {
-        context.setIsHideSidebarAndHeader(false);
-        navigate('/sales');
-    };
-
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('jwtToken');
-        context.setIsLogin(false);
-        navigate('/login');
-    };
-
 
     useEffect(() => {
         calculateTotal();
@@ -115,6 +64,38 @@ const Shop = () => {
         fetchProducts();
     }, [context]);
 
+    useEffect(() => {
+        context.setIsHideSidebarAndHeader(true);
+        checkLoginStatus();
+    }, [context]);
+    useEffect(() => {
+        // Lógica para cargar productos, manejar errores, etc.
+        const fetchProducts = async () => {
+            try {
+                const response = await fetch('http://localhost:1056/api/products');
+                const data = await response.json();
+                setProducts(data);
+            } catch (err) {
+                setError('Error al cargar los productos.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
+    const checkLoginStatus = () => {
+        const token = localStorage.getItem('jwtToken');
+        const storedEmail = localStorage.getItem('userName');
+        if (token && storedEmail) {
+            setIsLoggedIn(true);
+            setUserEmail(storedEmail);
+        } else {
+            setIsLoggedIn(false);
+            setUserEmail('');
+        }
+    };
     const calculateTotal = () => {
         let sum = 0;
         Object.entries(cart).forEach(([productId, quantity]) => {
@@ -127,22 +108,28 @@ const Shop = () => {
     };
 
     const fetchProducts = async () => {
+        setLoading(true); // Inicia el estado de carga
+
         try {
-            setLoading(true);
             const response = await axios.get('http://localhost:1056/api/products');
+
+            // Filtra los productos activos
             const activeProducts = response.data.filter(product => product.status === 'A');
-            setProducts(activeProducts);
+            setProducts(activeProducts); // Establece los productos activos en el estado
         } catch (err) {
+            // Manejo de errores
             setError('Error al cargar los productos. Por favor, intente más tarde.');
             console.error('Error fetching products:', err);
         } finally {
-            setLoading(false);
+            setLoading(false); // Finaliza el estado de carga
         }
     };
+
 
     const addToCart = (product) => {
         if (product.Stock <= 0) {
             setAlertMessage('Producto agotado');
+            setAlertSeverity('warning');
             return;
         }
 
@@ -150,65 +137,121 @@ const Shop = () => {
             const currentQuantity = prevCart[product.id] || 0;
             if (currentQuantity + 1 > product.Stock) {
                 setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
+                setAlertSeverity('warning');
                 return prevCart;
             }
+            setAlertMessage('Producto agregado al carrito');
+            setAlertSeverity('success');
             return {
                 ...prevCart,
                 [product.id]: currentQuantity + 1
             };
         });
-        setAlertMessage('');
     };
 
-    const getOrdersByUserId = async (id) => {
-        try {
-            const response = await axios.get(`http://localhost:1056/api/orders/${id}`);
-            return response.data;
-        } catch (error) {
-            console.error("Error al obtener los pedidos:", error.response ? error.response.data : error.message);
-            throw error;
-        }
-    };
     const handleShowOrders = async () => {
-        if (context.isLogin) {
-            console.log("Contexto:", context); // Para ver qué hay en el contexto
-            const userId = context.userId;
-
-            if (userId !== null) { // Cambiado a !== null para comprobar explícitamente
-                try {
-                    const response = await axios.get('http://localhost:1056/api/orders');
-                    const orders = response.data;
-
-                    const userOrders = orders.filter(order => order.userId === userId);
-
-                    if (userOrders.length > 0) {
-                        const ordersList = userOrders.map(order =>
-                            `Pedido ID: ${order.id}, Total: ${order.Total_Amount}, Estado: ${order.Status}`
-                        ).join('\n');
-
-                        Swal.fire({
-                            title: 'Tus Pedidos',
-                            text: ordersList,
-                            icon: 'info'
-                        });
-                    } else {
-                        Swal.fire('No tienes pedidos realizados.');
-                    }
-                } catch (error) {
-                    console.error("Error al mostrar los pedidos:", error);
-                    Swal.fire('Error', 'Hubo un problema al obtener tus pedidos.', 'error');
+        try {
+            // Obtener los pedidos
+            const ordersResponse = await axios.get('http://localhost:1056/api/orders');
+            const orders = ordersResponse.data;
+            console.log('Orders:', orders); // Verifica la estructura de los pedidos
+    
+            // Obtener los productos
+            const productsResponse = await axios.get('http://localhost:1056/api/products');
+            const products = productsResponse.data;
+            console.log('Products:', products); // Verifica la estructura de los productos
+    
+            if (orders.length > 0) {
+                const ordersList = `
+                    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+                        <thead style="background-color: #f8f9fa;">
+                            <tr>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Pedido ID</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Total</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Estado</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Expira el</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orders.map(order => {
+                                const tokenExpiration = new Date(order.Token_Expiration);
+                                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                                const formattedExpiration = tokenExpiration.toLocaleDateString('es-CO', options);
+                                
+                                const product = products.find(p => p.id === order.product_id); // Asegúrate de que `product_id` exista en tu modelo
+                                const quantity = order.quantity || 1; // Asegúrate de que este campo existe en tus pedidos
+    
+                                return `
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            ${order.id || 'Sin ID'}
+                                        </td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(order.total_price)}
+                                        </td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            ${order.status === 'A' ? 'Activo' : 'Inactivo'}
+                                        </td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            ${formattedExpiration}
+                                        </td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <img 
+                                                    src="${product ? `data:${product.ImageMimeType};base64,${Buffer.from(product.Image).toString('base64')}` : 'default_image_url'}" 
+                                                    alt="${product ? product.Product_Name : 'Producto'}" 
+                                                    class="product-image" 
+                                                    style="max-width: 50px; height: auto; border-radius: 5px; object-fit: cover;"
+                                                />
+                                                <div>
+                                                    <p style="margin: 0; font-size: 14px; color: #333;">
+                                                        Cantidad: ${quantity}
+                                                    </p>
+                                                    <p style="margin: 0; font-size: 14px; color: #666;">
+                                                        Precio: 
+                                                        ${product ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price) : 'Sin Precio'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+    
+                // Verificar si hay contenido para mostrar
+                if (ordersList.trim()) {
+                    Swal.fire({
+                        title: 'Tus Pedidos',
+                        html: ordersList,
+                        icon: 'info',
+                        customClass: {
+                            popup: 'swal-popup',
+                        },
+                        showCloseButton: true,
+                        width: '70%',
+                        padding: '20px',
+                        backdrop: `
+                            rgba(0, 0, 0, 0)
+                            left top
+                            no-repeat
+                        `,
+                    });
+                } else {
+                    Swal.fire('No tienes pedidos realizados.');
                 }
             } else {
-                console.error("Error: userId está indefinido");
-                Swal.fire('Error', 'No se pudo encontrar el ID del usuario.', 'error');
+                Swal.fire('No tienes pedidos realizados.');
             }
-        } else {
-            Swal.fire('Error', 'Debes iniciar sesión para ver tus pedidos.', 'warning');
+        } catch (error) {
+            console.error("Error al mostrar los pedidos:", error);
+            Swal.fire('Error', 'Hubo un problema al obtener tus pedidos.', 'error');
         }
     };
-
-
-
+    
 
     const increaseQuantity = (productId) => {
         const product = products.find(p => p.id === parseInt(productId));
@@ -218,8 +261,11 @@ const Shop = () => {
             const currentQuantity = prevCart[productId] || 0;
             if (currentQuantity + 1 > product.Stock) {
                 setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
+                setAlertSeverity('warning');
                 return prevCart;
             }
+            setAlertMessage('Cantidad aumentada');
+            setAlertSeverity('success');
             return {
                 ...prevCart,
                 [productId]: currentQuantity + 1
@@ -233,8 +279,12 @@ const Shop = () => {
             if (currentQuantity <= 1) {
                 const newCart = { ...prevCart };
                 delete newCart[productId];
+                setAlertMessage('Producto eliminado del carrito');
+                setAlertSeverity('info');
                 return newCart;
             }
+            setAlertMessage('Cantidad disminuida');
+            setAlertSeverity('info');
             return {
                 ...prevCart,
                 [productId]: currentQuantity - 1
@@ -245,62 +295,102 @@ const Shop = () => {
     const clearCart = () => {
         setCart({});
         setAlertMessage('Carrito vacío');
+        setAlertSeverity('info');
     };
 
     const handleCheckout = async () => {
-        // Lógica para manejar el checkout
-        if (!context.isLogin) {
-            Swal.fire({
-                title: 'Error',
-                text: 'Debes iniciar sesión para realizar un pedido.',
-                icon: 'error'
-            }).then(() => {
-                // Redirigir al usuario a la página de inicio de sesión
-                window.location.href = '/login';
-            });
-            return;
+        // Validar que haya al menos un producto en el carrito
+        if (Object.keys(cart).length === 0) {
+            Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
+            return; // Salir de la función
+        }
+
+        // Validar que todos los productos en el carrito tengan stock suficiente
+        const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
+            quantity: quantity, // Cantidad del producto
+            id_producto: parseInt(productId) // Convertir el ID del producto a entero
+        }));
+
+        const invalidProducts = orderDetails.filter(detail => {
+            const product = products.find(p => p.id === detail.id_producto);
+            return !product || product.Stock < detail.quantity || detail.quantity <= 0; // Verificar stock y cantidad
+        });
+
+        // Si hay productos inválidos, mostrar alerta y detener la ejecución
+        if (invalidProducts.length > 0) {
+            Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
+            return; // Salir de la función
         }
 
         try {
+            // Obtener la fecha y hora actual
             const now = new Date();
+            const orderDateTime = now.toISOString().split('T'); // Obtener fecha y hora en formato ISO
+            const orderDate = orderDateTime[0]; // Fecha en formato YYYY-MM-DD
+            const orderTime = orderDateTime[1].split('.')[0]; // Hora en formato HH:mm:ss
+
+            // Calcular la fecha de vencimiento del token (3 días después)
+            const expirationDate = new Date(now);
+            expirationDate.setDate(expirationDate.getDate() + 3); // Agregar 3 días
+            const expirationDateString = expirationDate.toLocaleDateString('es-ES'); // Formato legible en español
+
+            // Crear objeto con los datos del pedido
             const orderData = {
-                Order_Date: now.toISOString().split('T')[0],
-                Order_Time: now.toTimeString().split(' ')[0],
-                Total_Amount: parseFloat(total).toFixed(2),
-                Status: 'En proceso',
-                User_Id: context.userId || 1, // Asume que el ID del usuario está en el contexto
-                Token_Expiration: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-                createdAt: now.toISOString(),
-                updatedAt: now.toISOString()
+                Billnumber: `ORD${Date.now()}`, // Generación automática del número de factura
+                OrderDate: orderDate, // Fecha actual
+                OrderTime: orderTime, // Hora actual
+                total_price: parseFloat(total.toFixed(2)), // Precio total con 2 decimales
+                status: 'Completada', // Estado del pedido
+                id_usuario: context.userId, // ID del usuario que realiza el pedido
+                orderDetails: orderDetails // Usar la variable ya creada con los detalles
             };
 
+            // Enviar la solicitud POST para crear el pedido
             const response = await axios.post('http://localhost:1056/api/orders', orderData);
 
-            // Actualiza el stock de los productos en el backend
-            for (const [productId, quantity] of Object.entries(cart)) {
-                const product = products.find(p => p.id === parseInt(productId));
+            // Comprobar si la respuesta fue exitosa
+            if (response.status === 201) {
+                // Mostrar alerta de éxito
+                Swal.fire({
+                    title: '¡Pedido creado!',
+                    html: `
+                        <p>Tu pedido ha sido registrado correctamente.</p>
+                        <p>Número de factura: ${orderData.Billnumber}</p>
+                        <p>Fecha: ${orderData.OrderDate}</p>
+                        <p>Hora: ${orderData.OrderTime}</p>
+                        <p>Fecha de vencimiento del token: ${expirationDateString}</p>
+                    `,
+                    icon: 'success'
+                });
+
+                // Limpiar el carrito
+                clearCart();
+                setDrawerOpen(false); // Cerrar el drawer o menú
+            }
+
+            // Actualizar el stock de los productos
+            for (const detail of orderData.orderDetails) {
+                const productId = detail.id_producto; // ID del producto
+                const quantity = detail.quantity; // Cantidad vendida
+                const product = products.find(p => p.id === productId); // Buscar el producto en el estado
+
                 if (product) {
+                    // Enviar solicitud PUT para actualizar el stock del producto
                     await axios.put(`http://localhost:1056/api/products/${productId}`, {
-                        ...product,
-                        Stock: product.Stock - quantity
+                        Stock: product.Stock - quantity // Restar la cantidad del stock
                     });
                 }
             }
-
-            Swal.fire({
-                title: '¡Pedido creado!',
-                html: `
-                    <p>Tu pedido ha sido registrado correctamente.</p>
-                    <p>El pedido tiene un tiempo para ser entregado y vence: ${new Date(response.data.Token_Expiration).toLocaleDateString()} a las ${new Date(response.data.Token_Expiration).toLocaleTimeString()}</p>
-                `,
-                icon: 'success'
-            });
-
-            clearCart();
-            setDrawerOpen(false);
         } catch (error) {
+            console.error('Error creando el pedido:', error); // Manejo del error
+            if (error.response) {
+                console.error('El servidor respondió con:', error.response.data);
+            }
+            // Mostrar alerta de error
             Swal.fire('Error', 'Hubo un problema al crear el pedido. Intente de nuevo.', 'error');
-            console.error('Error creating order:', error);
+        } finally {
+            // Mensaje positivo al final de la ejecución
+            Swal.fire('¡Éxito!', 'Tu pedido ha sido procesado. Gracias por tu compra.', 'success');
         }
     };
 
@@ -317,74 +407,91 @@ const Shop = () => {
         );
     });
 
+    const handleLogin = () => navigate('/login');
+    const handleAdministrar = () => {
+        context.setIsHideSidebarAndHeader(false);
+        navigate('/sales');
+    };
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+    const handleLogout = () => {
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('roleId');
+        localStorage.removeItem('userEmail');
+        setIsLoggedIn(false);
+        setUserEmail('');
+        handleMenuClose();
+        navigate('/index');
+    };
+
+    const getUserInitial = () => {
+        return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
+    };
+
+
     return (
-        <><header className="header-index1">
-            <div className="header-content d-flex align-items-center justify-content-between">
-                <Link to={'/'} className='d-flex align-items-center logo-index'>
-                    <img src={logo} alt="Barberia Orion Logo" />
-                    <span className='ml-2'>Barberia Orion</span>
-                </Link>
-                <nav className='navBar-index'>
-                    <Link to='/index'>INICIO</Link>
-                    <Link to='/services'>SERVICIOS</Link>
-                    <Link to='/appointment'>CITAS</Link>
-                    <Link to='/shop'>PRODUCTOS</Link>
-                    <Link to='/index'>CONTACTO</Link>
-                    {context.isLogin && ( // El botón solo se mostrará si el usuario está logueado
-                        <Button
-                            variant="text"
-                            className="administrar-btn"
-                            onClick={handleAdministrar}
-                        >
-                            ADMINISTRAR
-                        </Button>
-                    )}
-                    <IconButton onClick={() => setDrawerOpen(true)}>
-                        <Badge badgeContent={getTotalItems()} color="primary">
-                            <ShoppingCart />
-                        </Badge>
-                    </IconButton>
-                </nav>
-                <div className='MyAccWrapper d-flex align-items-center'>
-                    {context.isLogin ? (
-                        <div className='d-flex align-items-center'>
-                            <Button className='MyAcc' onClick={handleClick}>
-                                <Avatar
-                                    alt="User Avatar"
-                                    src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
-                                />
+        <>
+            <header className="header-index1">
+                <div className="header-content">
+                    <Link to={'/'} className='d-flex align-items-center logo-index'>
+                        <img src={logo} alt="Logo" />
+                        <span className='ml-2'>Barberia Orion</span>
+                    </Link>
+                    <nav className='navBar-index'>
+                        <Link to='/index'>INICIO</Link>
+                        <Link to='/services'>SERVICIOS</Link>
+                        <Link to='/appointmentView'>CITAS</Link>
+                        <Link to='/shop'>PRODUCTOS</Link>
+                        <Link to='/index'>CONTACTO</Link>
+                        <IconButton onClick={() => setDrawerOpen(true)}>
+                            <Badge badgeContent={getTotalItems()} color="primary">
+                                <AddShoppingCartIcon /> {/* Cambia ShoppingCart por AddShoppingCartIcon */}
+                            </Badge>
+                        </IconButton>
+
+                    </nav>
+                    {isLoggedIn && userEmail ? (
+                        <div className="user-menu">
+                            <Button
+                                onClick={handleMenuClick}
+                                className="userLoginn"
+                                startIcon={
+                                    <Avatar sx={{ width: 32, height: 32 }}>
+                                        {getUserInitial()}
+                                    </Avatar>
+                                }
+                            >
+                                {userEmail}
                             </Button>
-                            <div className='userInfo' style={{ marginLeft: '8px' }}>
-                                <span style={{ color: 'white' }}>{context.userName}</span>
-                            </div>
+                            <Menu
+                                anchorEl={anchorEl}
+                                open={Boolean(anchorEl)}
+                                onClose={handleMenuClose}
+                            >
+                                <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+                            </Menu>
                         </div>
                     ) : (
-                        <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
-                            INICIAR SESIÓN
+                        <Button
+                            variant="contained"
+                            className="book-now-btn"
+                            onClick={handleLogin}
+                        >
+                            INICIAR SESION
                         </Button>
                     )}
-                    <Menu
-                        anchorEl={anchorEl}
-                        id="account-menu"
-                        open={open}
-                        onClose={handleClose}
-                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                    >
-                        {context.isLogin && (
-                            <MenuItem onClick={handleLogout}>
-                                <ListItemIcon>
-                                    <Logout fontSize="small" />
-                                </ListItemIcon>
-                                Cerrar sesión
-                            </MenuItem>
-                        )}
-                    </Menu>
                 </div>
-            </div>
-        </header>
-
-
+            </header>
 
             <main className="container mx-auto mt-8 shop-container">
                 <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
@@ -483,8 +590,6 @@ const Shop = () => {
                         </IconButton>
                     </div>
 
-                    {alertMessage && <Alert severity="warning">{alertMessage}</Alert>}
-
                     {Object.keys(cart).length === 0 ? (
                         <Typography className="empty-cart-message">Tu carrito está vacío</Typography>
                     ) : (
@@ -533,6 +638,8 @@ const Shop = () => {
                             })}
                         </List>
                     )}
+
+
                     <div className="drawer-footer">
                         <div className="total-amount">
                             <Typography variant="h6">Total:</Typography>
@@ -544,11 +651,10 @@ const Shop = () => {
                             </Typography>
                         </div>
                     </div>
-                    {context.isLogin && (
-                        <Button variant="contained" onClick={handleShowOrders}>
-                            Ver Mis Pedidos
-                        </Button>
-                    )}
+                    <Button variant="contained" onClick={handleShowOrders}>
+                        Ver Mis Pedidos
+                    </Button>
+
                     <div className="cart-buttons1">
                         <Button
                             variant="outlined"
@@ -567,16 +673,20 @@ const Shop = () => {
                             Realizar pedido
                         </Button>
 
-
-
                     </div>
-
-
-
                 </div>
             </Drawer>
+
+            <Snackbar
+                open={!!alertMessage}
+                autoHideDuration={3000}
+                onClose={() => setAlertMessage('')}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setAlertMessage('')} severity={alertSeverity} sx={{ width: '100%' }}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
         </>
     );
-};
-
-export default Shop;
+}

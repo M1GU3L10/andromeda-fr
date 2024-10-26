@@ -37,29 +37,37 @@ const Sidebar = () => {
     context.setIsHideSidebarAndHeader(true);
     navigate('/login');
   };
-  
+
   return (
     <>
       <div className="sidebar">
         <ul>
-          <li>
-            <Link to="/">
-              <Button className={`w-100 ${activeTab === 0 ? 'active' : ''}`} onClick={() => isOpensubMenu(0)}>
-                <span className='icon'><TbLayoutDashboardFilled /></span>
-                <span className='sidebar-option'>Panel de control</span>
-                <span className='arrow'></span>
-              </Button>
-            </Link>
-          </li>
-          <li>
-            <Link to="/">
-              <Button className={`w-100 ${activeTab === 1 ? 'active' : ''}`} onClick={() => isOpensubMenu(1)}>
-                <span className='icon'><FaCircleUser /></span>
-                <span className='sidebar-option'>Mi perfil</span>
-                <span className='arrow'></span>
-              </Button>
-            </Link>
-          </li>
+          {
+            hasPermission('Dashboard') && (
+              <li>
+                <Link to="/dashboard">
+                  <Button className={`w-100 ${activeTab === 0 ? 'active' : ''}`} onClick={() => isOpensubMenu(0)}>
+                    <span className='icon'><TbLayoutDashboardFilled /></span>
+                    <span className='sidebar-option'>Panel de control</span>
+                    <span className='arrow'></span>
+                  </Button>
+                </Link>
+              </li>
+            )
+          }
+          {
+            hasPermission('Dashboard') && (
+              <li>
+              <Link to="/">
+                <Button className={`w-100 ${activeTab === 1 ? 'active' : ''}`} onClick={() => isOpensubMenu(1)}>
+                  <span className='icon'><FaCircleUser /></span>
+                  <span className='sidebar-option'>Mi perfil</span>
+                  <span className='arrow'></span>
+                </Button>
+              </Link>
+            </li>
+            )
+          }
           {hasPermission('Roles') && (
             <li>
               <Button className={`w-100 ${activeTab === 2 && isToggleSubmenu ? 'active' : ''}`} onClick={() => isOpensubMenu(2)}>
@@ -165,7 +173,7 @@ const Sidebar = () => {
                   {hasPermission('Citas') && (
                     <li>
                       <Link to="/appointment">Citas</Link>
-                      
+
                     </li>
 
                   )}

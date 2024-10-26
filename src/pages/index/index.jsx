@@ -4,12 +4,15 @@ import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
 import { Avatar, Menu, MenuItem } from '@mui/material';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Index = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userEmail, setUserEmail] = useState('');
+    const [userRole, setUserRole] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
 
     useEffect(() => {
@@ -20,12 +23,15 @@ const Index = () => {
     const checkLoginStatus = () => {
         const token = localStorage.getItem('jwtToken');
         const storedEmail = localStorage.getItem('userName');
-        if (token && storedEmail) {
+        const idRole = localStorage.getItem('roleId');
+        if (token && storedEmail && idRole) {
             setIsLoggedIn(true);
             setUserEmail(storedEmail);
+            setUserRole(idRole);
         } else {
             setIsLoggedIn(false);
             setUserEmail('');
+            setUserRole('');
         }
     };
 
@@ -34,7 +40,8 @@ const Index = () => {
     };
 
     const handledashboard = () => {
-        navigate('/register');
+        context.setIsHideSidebarAndHeader(false);
+        navigate('/services');
     };
 
     const handleMenuClick = (event) => {
@@ -52,7 +59,16 @@ const Index = () => {
         setIsLoggedIn(false);
         setUserEmail('');
         handleMenuClose();
-        navigate('/index');
+        toast.error('Sesion cerrada', {
+            position: "top-right",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            onClose: () => navigate('/index') 
+        }); 
     };
 
     // Función para obtener la inicial del usuario de forma segura
@@ -88,11 +104,12 @@ const Index = () => {
                             >
                                 {userEmail}
                             </Button>
-                            <Menu
-                                anchorEl={anchorEl}
-                                open={Boolean(anchorEl)}
-                                onClose={handleMenuClose}
-                            >
+                            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} >
+                                {userRole == 1 || userRole == 2 ? (
+                                    <MenuItem onClick={handledashboard}>Administrar</MenuItem>
+                                ):(
+                                    <MenuItem>Carrito</MenuItem>
+                                )}
                                 <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
                             </Menu>
                         </div>

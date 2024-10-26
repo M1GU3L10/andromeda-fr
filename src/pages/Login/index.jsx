@@ -10,6 +10,7 @@ import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { Button, Link } from '@mui/material';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { User } from 'lucide-react';
 
 const Login = () => {
     const context = useContext(MyContext);
@@ -66,7 +67,16 @@ const Login = () => {
                 localStorage.setItem('roleId', user.roleId.toString());
                 localStorage.setItem('userName', user.name); // Guardar el email del usuario
                 console.log('Token and roleId stored:', { token, roleId: user.roleId });
-                navigate('/index');
+                toast.success('Bienvendo, ' + user.name, {
+                    position: "top-right",
+                    autoClose: 1000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    onClose: () => navigate('/index')  // Navega a /resetPassword al cerrar la alerta
+                });
                 context.setIsHideSidebarAndHeader(true);
             } else {
                 throw new Error('Token o roleId no recibidos');
@@ -81,7 +91,7 @@ const Login = () => {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-            }); 
+            });
         }
     };
 
@@ -132,31 +142,31 @@ const Login = () => {
                                     {isShowPassword ? <IoMdEyeOff /> : <IoMdEye />}
                                 </span>
                                 {passwordError && <div className="invalid-feedback">{passwordError}</div>}
-            </div>
-            <div className='form-group'>
-                <Button type="submit" className='btn-submit btn-big btn-lg w-100'>
-                    Ingresar
-                </Button>
-            </div>
-            <div className='form-group text-center mt-3 p-10'>
-                <Link onClick={handleReestablish} className='link'>
-                    ¿Olvidaste la contraseña?
-                </Link>
-            </div>
-        </form>
-    </div>
-    <div className='wrapper mt-3 card border footer p-3'>
-        <span className='text-center'>
-            ¿No estas registrado?
-            <Link className='link color' onClick={handleRegister}>
-                Registrarme
-            </Link>
-        </span>
-    </div>
-</div>
-</section>
-</>
-);
+                            </div>
+                            <div className='form-group'>
+                                <Button type="submit" className='btn-submit btn-big btn-lg w-100'>
+                                    Ingresar
+                                </Button>
+                            </div>
+                            <div className='form-group text-center mt-3 p-10'>
+                                <Link onClick={handleReestablish} className='link'>
+                                    ¿Olvidaste la contraseña?
+                                </Link>
+                            </div>
+                        </form>
+                    </div>
+                    <div className='wrapper mt-3 card border footer p-3'>
+                        <span className='text-center'>
+                            ¿No estas registrado?
+                            <Link className='link color' onClick={handleRegister}>
+                                Registrarme
+                            </Link>
+                        </span>
+                    </div>
+                </div>
+            </section>
+        </>
+    );
 }
 
 export default Login;
