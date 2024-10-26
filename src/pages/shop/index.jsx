@@ -111,6 +111,7 @@ export default function Component() {
         }
     }, [isLoggedIn]);
     
+    
 
     const calculateTotal = () => {
         let sum = 0;
@@ -159,103 +160,112 @@ export default function Component() {
             };
         });
     };
-   const handleShowOrders = async () => {
-    if (!isLoggedIn) {
-        Swal.fire({
-            title: 'Inicio de sesión requerido',
-            text: 'Debes iniciar sesión para ver tus pedidos',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Iniciar sesión',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                handleLogin(); // Asegúrate de que esta función redirija al usuario al login.
-            }
-        });
-        return;
-    }
-
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-        Swal.fire('Error', 'No se pudo identificar el usuario', 'error');
-        return;
-    }
-
-    try {
-        Swal.fire({
-            title: 'Cargando pedidos',
-            text: 'Por favor espere...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        const ordersResponse = await axios.get(`http://localhost:1056/api/orders/user/${userId}`);
-        const orders = ordersResponse.data;
-
-        if (!orders || orders.length === 0) {
-            Swal.fire('Info', 'No tienes pedidos realizados', 'info');
+    const handleShowOrders = async () => {
+        // Verifica si el usuario está logueado
+        if (!isLoggedIn) {
+            Swal.fire({
+                title: 'Inicio de sesión requerido',
+                text: 'Debes iniciar sesión para ver tus pedidos',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Iniciar sesión',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    handleLogin(); // Asegúrate de que esta función redirija al usuario al login.
+                }
+            });
             return;
         }
-
-        // Formato de la lista de pedidos
-        const ordersList = orders.map(order => {
-            const orderDate = new Date(order.OrderDate).toLocaleDateString('es-CO');
-            const orderDetails = order.OrderDetails.map(detail => `
-                <div class="order-detail">
-                    <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
-                    <p><strong>Cantidad:</strong> ${detail.quantity}</p>
-                    <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', { 
-                        style: 'currency', 
-                        currency: 'COP' 
-                    }).format(detail.unitPrice)}</p>
-                    <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
-                        style: 'currency', 
-                        currency: 'COP' 
-                    }).format(detail.total_price)}</p>
-                </div>
-            `).join('<hr>');
-
-            return `
-                <div class="order-item">
-                    <h3>Pedido #${order.id}</h3>
-                    <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
-                    <p><strong>Fecha:</strong> ${orderDate}</p>
-                    <p><strong>Estado:</strong> ${order.status}</p>
-                    <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
-                        style: 'currency', 
-                        currency: 'COP' 
-                    }).format(order.total_price)}</p>
-                    <div class="order-details">
-                        <h4>Detalles del pedido:</h4>
-                        ${orderDetails}
-                    </div>
-                </div>
-            `;
-        }).join('<hr class="order-separator">');
-
-        Swal.fire({
-            title: 'Mis Pedidos',
-            html: `
-                <div class="orders-container">
-                    ${ordersList}
-                </div>
-            `,
-            width: '80%',
-            showConfirmButton: true,
-            customClass: {
-                container: 'orders-modal',
-                popup: 'orders-modal-popup',
-                content: 'orders-modal-content'
+    
+        // Obtiene el ID del usuario desde localStorage
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            Swal.fire('Error', 'No se pudo identificar el usuario', 'error');
+            return;
+        }
+    
+        try {
+            // Muestra un mensaje de carga
+            Swal.fire({
+                title: 'Cargando pedidos',
+                text: 'Por favor espere...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+    
+            // Realiza la solicitud a la API para obtener los pedidos del usuario
+            const ordersResponse = await axios.get(`http://localhost:1056/api/orders/user/${userId}`);
+            const orders = ordersResponse.data;
+    
+            // Verifica si el usuario no tiene pedidos
+            if (!orders || orders.length === 0) {
+                Swal.fire('Info', 'No tienes pedidos realizados', 'info');
+                return;
             }
-        });
-    } catch (error) {
-        console.error("Error al mostrar los pedidos:", error);
-        Swal.fire('Error', 'No se pudieron cargar los pedidos: ' + error.message, 'error');
-    }
-};
+    
+            // Formato de la lista de pedidos
+            const ordersList = orders.map(order => {
+                // Formatear la fecha del pedido
+                const orderDate = new Date(order.OrderDate).toLocaleDateString('es-CO');
+                const orderDetails = order.OrderDetails.map(detail => `
+                    <div class="order-detail">
+                        <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
+                        <p><strong>Cantidad:</strong> ${detail.quantity}</p>
+                        <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', { 
+                            style: 'currency', 
+                            currency: 'COP' 
+                        }).format(detail.unitPrice)}</p>
+                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
+                            style: 'currency', 
+                            currency: 'COP' 
+                        }).format(detail.total_price)}</p>
+                    </div>
+                `).join('<hr>');
+    
+                return `
+                    <div class="order-item">
+                        <h3>Pedido #${order.id}</h3>
+                        <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
+                        <p><strong>Fecha:</strong> ${orderDate}</p>
+                        <p><strong>Estado:</strong> ${order.status}</p>
+                        <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', { 
+                            style: 'currency', 
+                            currency: 'COP' 
+                        }).format(order.total_price)}</p>
+                        <div class="order-details">
+                            <h4>Detalles del pedido:</h4>
+                            ${orderDetails}
+                        </div>
+                    </div>
+                `;
+            }).join('<hr class="order-separator">');
+    
+            // Muestra la lista de pedidos en un modal
+            Swal.fire({
+                title: 'Mis Pedidos',
+                html: `
+                    <div class="orders-container">
+                        ${ordersList}
+                    </div>
+                `,
+                width: '80%',
+                showConfirmButton: true,
+                customClass: {
+                    container: 'orders-modal',
+                    popup: 'orders-modal-popup',
+                    content: 'orders-modal-content'
+                }
+            });
+        } catch (error) {
+            console.error("Error al mostrar los pedidos:", error);
+            // Muestra un mensaje de error si la solicitud falla
+            Swal.fire('Error', 'No se pudieron cargar los pedidos: ' + error.message, 'error');
+        }
+    };
+    
 
     
     const handlePageChange = ({ selected }) => {
@@ -406,7 +416,7 @@ export default function Component() {
                         title: '¡Pedido creado exitosamente!',
                         html: `
                             <div class="order-confirmation">
-                                <img src="ruta/a/tu/imagen.jpg" alt="Confirmación de Pedido" style="width: 100%; height: auto;" />
+                               
                                 <p>Tu pedido ha sido registrado correctamente.</p>
                                 <p>Número de factura: ${orderData.Billnumber}</p>
                                 <p>Fecha: ${orderData.OrderDate}</p>
