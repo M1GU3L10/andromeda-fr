@@ -1,107 +1,148 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Logout from '@mui/icons-material/Logout';
+import { Avatar, Menu, MenuItem } from '@mui/material';
+import { Menu as MenuIcon } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const Index = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+    const [userRole, setUserRole] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
+    const [isNavOpen, setIsNavOpen] = useState(false);
+
+    useEffect(() => {
+        context.setIsHideSidebarAndHeader(true);
+        checkLoginStatus();
+    }, [context]);
+
+    const checkLoginStatus = () => {
+        const token = localStorage.getItem('jwtToken');
+        const storedEmail = localStorage.getItem('userName');
+        const idRole = localStorage.getItem('roleId');
+        if (token && storedEmail && idRole) {
+            setIsLoggedIn(true);
+            setUserEmail(storedEmail);
+            setUserRole(idRole);
+        } else {
+            setIsLoggedIn(false);
+            setUserEmail('');
+            setUserRole('');
+        }
+    };
 
     const handleLogin = () => {
         navigate('/login');
     };
 
-    const handleAdministrar = () => {
+    const handledashboard = () => {
         context.setIsHideSidebarAndHeader(false);
-        navigate('/sales');
+        navigate('/services');
     };
 
-    const handleClick = (event) => {
+    const handleMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
-    const handleClose = () => {
+    const handleMenuClose = () => {
         setAnchorEl(null);
     };
 
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
-        context.setIsLogin(false);
-        navigate('/login');
+        localStorage.removeItem('roleId');
+        localStorage.removeItem('userEmail');
+        setIsLoggedIn(false);
+        setUserEmail('');
+        handleMenuClose();
+        toast.error('Sesion cerrada', {
+            position: "top-right",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            onClose: () => navigate('/index')
+        });
+    };
+
+    const toggleNav = () => {
+        setIsNavOpen(!isNavOpen);
+    };
+
+    const getUserInitial = () => {
+        return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
     };
 
     return (
         <>
-            <header className="header-index">
-                <div className="header-content d-flex align-items-center justify-content-between">
-                    <Link to={'/'} className='d-flex align-items-center logo-index'>
-                        <img src={logo} alt="Barberia Orion Logo" />
-                        <span className='ml-2'>Barberia Orion</span>
-                    </Link>
-                    <nav className='navBar-index'>
-                        <Link to='/index'>INICIO</Link>
-                        <Link to='/services'>SERVICIOS</Link>
-                        <Link to='/appointmentView'>CITAS</Link>
-                        <Link to='/shop'>PRODUCTOS</Link>
-                        <Link to='/index'>CONTACTO</Link>
-                        {context.isLogin && ( // El botón solo se mostrará si el usuario está logueado
-                            <Button
-                                variant="text"
-                                className="administrar-btn"
-                                onClick={handleAdministrar}
-                            >
-                                ADMINISTRAR
-                            </Button>
-                        )}
-                    </nav>
-                    <div className='MyAccWrapper d-flex align-items-center'>
-                        {context.isLogin ? (
-                            <div className='d-flex align-items-center'>
-                                <Button className='MyAcc' onClick={handleClick}>
-                                    <Avatar
-                                        alt="User Avatar"
-                                        src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
-                                    />
-                                </Button>
-                                <div className='userInfo' style={{ marginLeft: '8px' }}>
-                                    <span style={{ color: 'white' }}>{context.userName}</span>
+            <header className="header-index1">
+                <div className="header-content">
+                    <div className="header-top">
+                        <Link to={'/'} className='d-flex align-items-center logo-index'>
+                            <img src={logo} alt="Logo" />
+                            <span className='ml-2'>Barberia Orion</span>
+                        </Link>
+                        <button className="nav-toggle" onClick={toggleNav}>
+                            <MenuIcon className="h-6 w-6 text-white" />
+                        </button>
+                    </div>
+
+                    <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
+                        <nav className='navBar-index'>
+                            <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
+                            <Link to='/services' onClick={() => setIsNavOpen(false)}>SERVICIOS</Link>
+                            <Link to='/appointmentView'>CITAS</Link>
+                            <Link to='/Shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+                            <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+                        </nav>
+
+                        <div className="auth-buttons">
+                            {isLoggedIn && userEmail ? (
+                                <div className="user-menu">
+                                    <Button
+                                        onClick={handleMenuClick}
+                                        className="userLoginn"
+                                        startIcon={
+                                            <Avatar sx={{ width: 32, height: 32 }}>
+                                                {getUserInitial()}
+                                            </Avatar>
+                                        }
+                                    >
+                                        {userEmail}
+                                    </Button>
+                                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                                        {userRole == 1 || userRole == 2 ? (
+                                            <MenuItem onClick={handledashboard}>Administrar</MenuItem>
+                                        ) : (
+                                            <MenuItem>Carrito</MenuItem>
+                                        )}
+                                        <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+                                    </Menu>
                                 </div>
-                            </div>
-                        ) : (
-                            <Button variant="contained" className="book-now-btn" onClick={handleLogin}>
-                                INICIAR SESIÓN
-                            </Button>
-                        )}
-                        <Menu
-                            anchorEl={anchorEl}
-                            id="account-menu"
-                            open={open}
-                            onClose={handleClose}
-                            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                        >
-                            {context.isLogin && (
-                                <MenuItem onClick={handleLogout}>
-                                    <ListItemIcon>
-                                        <Logout fontSize="small" />
-                                    </ListItemIcon>
-                                    Cerrar sesión
-                                </MenuItem>
+                            ) : (
+                                <Button
+                                    variant="contained"
+                                    className="book-now-btn"
+                                    onClick={handleLogin}
+                                >
+                                    Iniciar sesión
+                                </Button>
                             )}
-                        </Menu>
+                        </div>
                     </div>
                 </div>
-              
+        
             </header>
-
+       
         </>
     );
 };

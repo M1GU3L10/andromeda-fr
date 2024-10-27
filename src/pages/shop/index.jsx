@@ -162,28 +162,9 @@ export default function Component() {
     };
     const handleShowOrders = async () => {
         // Verifica si el usuario está logueado
-        if (!isLoggedIn) {
-            Swal.fire({
-                title: 'Inicio de sesión requerido',
-                text: 'Debes iniciar sesión para ver tus pedidos',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Iniciar sesión',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    handleLogin(); // Asegúrate de que esta función redirija al usuario al login.
-                }
-            });
-            return;
-        }
+
 
         // Obtiene el ID del usuario desde localStorage
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-            Swal.fire('Error', 'No se pudo identificar el usuario', 'error');
-            return;
-        }
 
         try {
             // Muestra un mensaje de carga
@@ -197,7 +178,7 @@ export default function Component() {
             });
 
             // Realiza la solicitud a la API para obtener los pedidos del usuario
-            const ordersResponse = await axios.get(`http://localhost:1056/api/orders/user/${userId}`);
+            const ordersResponse = await axios.get(`http://localhost:1056/api/orders`);
             const orders = ordersResponse.data;
 
             // Verifica si el usuario no tiene pedidos
@@ -330,7 +311,7 @@ export default function Component() {
             quantity: quantity, // Cantidad del producto
             id_producto: parseInt(productId) // Convertir el ID del producto a entero
         }));
-
+         
         const invalidProducts = orderDetails.filter(detail => {
             const product = products.find(p => p.id === detail.id_producto);
             return !product || product.Stock < detail.quantity || detail.quantity <= 0; // Verificar stock y cantidad
@@ -347,19 +328,19 @@ export default function Component() {
             const product = products.find(p => p.id === detail.id_producto);
             return acc + (product.Price * detail.quantity); // Sumar el precio total
         }, 0);
-
+        const formattedTotal = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(total);
         // Confirmar pedido
         const confirmation = await Swal.fire({
             title: 'Confirmar Pedido',
             html: `
-                    <p>Estás a punto de realizar un pedido con un total de: <strong>${total.toFixed(2)} COP</strong></p>
-                    <p>¿Deseas continuar?</p>
-                `,
+                <p>Estás a punto de realizar un pedido con un total de: <strong>${formattedTotal} COP</strong></p>
+                <p>¿Deseas continuar?</p>
+            `,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sí, confirmar',
             cancelButtonText: 'Cancelar'
-        });
+        }); 
 
         if (!confirmation.isConfirmed) {
             return; // Salir de la función si el usuario cancela
@@ -422,7 +403,7 @@ export default function Component() {
                                 <p>Fecha: ${orderData.OrderDate}</p>
                                 <p>Hora: ${orderData.OrderTime}</p>
                                 <p>Fecha de vencimiento del token: ${expirationDateString}</p>
-                                <p>Total a pagar: <strong>${total.toFixed(2)} COP</strong></p>
+                                <p>Total a pagar: <strong>${formattedTotal} COP</strong></p>
                             </div>
                         `,
                     icon: 'success'
@@ -587,8 +568,10 @@ export default function Component() {
                                         {product.Description}
                                     </Typography>
                                     <Typography variant="body1" className="product-price">
-                                        Precio: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}
+                                        Precio: {new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(product.Price)}
                                     </Typography>
+
+
 
                                     <Button
                                         variant="contained"

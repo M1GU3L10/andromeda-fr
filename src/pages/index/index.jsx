@@ -100,7 +100,7 @@ const Index = () => {
                         <nav className='navBar-index'>
                             <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
                             <Link to='/services' onClick={() => setIsNavOpen(false)}>SERVICIOS</Link>
-                            <Link to='/blog' onClick={() => setIsNavOpen(false)}>CITAS</Link>
+                            <Link to='/appointmentView'>CITAS</Link>
                             <Link to='/Shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
                             <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
                         </nav>
