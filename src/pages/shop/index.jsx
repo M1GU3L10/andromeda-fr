@@ -57,6 +57,7 @@ export default function Component() {
     const [userRole, setUserRole] = useState('');
     const [userId, setUserId] = useState(null);
     const [orders, setOrders] = useState([]);
+    const formattedTotal = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(total);
 
     const [currentPage, setCurrentPage] = useState(0);
     const context = useContext(MyContext);
@@ -311,7 +312,7 @@ export default function Component() {
             quantity: quantity, // Cantidad del producto
             id_producto: parseInt(productId) // Convertir el ID del producto a entero
         }));
-         
+
         const invalidProducts = orderDetails.filter(detail => {
             const product = products.find(p => p.id === detail.id_producto);
             return !product || product.Stock < detail.quantity || detail.quantity <= 0; // Verificar stock y cantidad
@@ -340,7 +341,7 @@ export default function Component() {
             showCancelButton: true,
             confirmButtonText: 'Sí, confirmar',
             cancelButtonText: 'Cancelar'
-        }); 
+        });
 
         if (!confirmation.isConfirmed) {
             return; // Salir de la función si el usuario cancela
@@ -675,18 +676,15 @@ export default function Component() {
                             })}
                         </List>
                     )}
-
                     <div className="drawer-footer">
                         <div className="total-amount">
                             <Typography variant="h6">Total:</Typography>
                             <Typography variant="h6">
-                                {new Intl.NumberFormat('es-CO', {
-                                    style: 'currency',
-                                    currency: 'COP'
-                                }).format(total)}
+                                {formattedTotal}
                             </Typography>
                         </div>
                     </div>
+
                     <Button
                         variant="contained"
                         onClick={handleShowOrders}

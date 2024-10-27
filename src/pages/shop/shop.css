@@ -692,8 +692,8 @@
 }
 
 .product-price {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 500;
     color: #c59d5f;
     margin-bottom: 15px;
     background: linear-gradient(45deg, #c59d5f, #dfbd83);
@@ -704,7 +704,7 @@
 /* Botón de agregar al carrito */
 .add-to-cart-btn {
     margin-top: auto;
-    padding: 12px 24px;
+    padding: 18px 24px;
     background: linear-gradient(45deg, #1a1a1a, #333333);
     color: #ffffff;
     border: 2px solid #c59d5f;
