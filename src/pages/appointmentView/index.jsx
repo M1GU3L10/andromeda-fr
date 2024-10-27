@@ -123,7 +123,7 @@ const Index = () => {
                                         {userRole == 1 || userRole == 2 ? (
                                             <MenuItem onClick={handledashboard}>Administrar</MenuItem>
                                         ) : (
-                                            <MenuItem>Carrito</MenuItem>
+                                            <MenuItem></MenuItem>
                                         )}
                                         <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
                                     </Menu>
