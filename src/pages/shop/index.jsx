@@ -645,13 +645,16 @@ export default function Component() {
                                             primary={product.Product_Name}
                                             secondary={
                                                 <span>
-                                                    <span className="price-text">
-                                                        {new Intl.NumberFormat('es-CO', {
-                                                            style: 'currency',
-                                                            currency: 'COP'
-                                                        }).format(product.Price * quantity)}
-                                                    </span>
+                                                <span className="price-text">
+                                                    {new Intl.NumberFormat('es-CO', {
+                                                        style: 'currency',
+                                                        currency: 'COP',
+                                                        minimumFractionDigits: 0,  // Sin decimales
+                                                        maximumFractionDigits: 0   // Sin decimales
+                                                    }).format(product.Price * quantity)}
                                                 </span>
+                                            </span>
+                                            
                                             }
                                         />
                                         <div className="quantity-controls">
