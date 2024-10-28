@@ -8,7 +8,6 @@ import { Menu as MenuIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 const Index = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
@@ -44,7 +43,7 @@ const Index = () => {
 
     const handledashboard = () => {
         context.setIsHideSidebarAndHeader(false);
-        navigate('/services');
+        navigate('/appointmentView');
     };
 
     const handleMenuClick = (event) => {
@@ -97,10 +96,10 @@ const Index = () => {
                     </div>
 
                     <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
-                        <nav className='navBar-index'>
+                        <nav className='navBar-index1'>
                             <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-                            <Link to='/services' onClick={() => setIsNavOpen(false)}>SERVICIOS</Link>
-                            <Link to='/appointmentView'>CITAS</Link>
+                            <Link to='/services' onClick={handledashboard}>SERVICIOS</Link>
+                            <Link to='/appointmentView' onClick={() => setIsNavOpen(false)}>CITAS</Link>
                             <Link to='/Shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
                             <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
                         </nav>
@@ -140,9 +139,7 @@ const Index = () => {
                         </div>
                     </div>
                 </div>
-        
             </header>
-       
         </>
     );
 };

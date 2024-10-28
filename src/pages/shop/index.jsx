@@ -452,7 +452,7 @@ export default function Component() {
             <img src={logo} alt="Logo" />
             <span className='ml-2'>Barberia Orion</span>
           </Link>
-          <nav className='navBar-index'>
+          <nav className='navBar-index1'>
             <Link to='/index'>INICIO</Link>
             <Link to='/services'>SERVICIOS</Link>
             <Link to='/appointmentView'>CITAS</Link>
