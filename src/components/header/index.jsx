@@ -13,6 +13,8 @@ import Logout from '@mui/icons-material/Logout';
 import Divider from '@mui/material/Divider';
 import { MyContext } from '../../App';
 import { toast } from 'react-toastify';
+import { BsHouseFill } from 'react-icons/bs';
+
 import 'react-toastify/dist/ReactToastify.css';
 
 const Header = () => {
@@ -144,6 +146,12 @@ const Header = () => {
                                             Administrar
                                         </MenuItem>
                                     ) : null}
+                                     <MenuItem onClick={handleGoToHome}>
+                                        <ListItemIcon>
+                                            <BsHouseFill />
+                                        </ListItemIcon>
+                                        Volver al inicio
+                                    </MenuItem>
                                     <MenuItem onClick={handleLogout}>
                                         <ListItemIcon>
                                             <Logout fontSize="small" />
