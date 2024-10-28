@@ -193,7 +193,7 @@ const Register = () => {
                                         <input
                                             type="text"
                                             className={`form-control ${phoneError ? 'is-invalid' : ''}`}
-                                            placeholder='Enter your phone number'
+                                            placeholder='Ingrese su numero de celular'
                                             value={phone}
                                             onChange={handlePhoneChange}
                                             onFocus={() => focusInput(2)}
@@ -209,7 +209,7 @@ const Register = () => {
                                         <input
                                             type={isShowPassword ? 'text' : 'password'}
                                             className={`form-control ${passwordError ? 'is-invalid' : ''}`}
-                                            placeholder='Enter your password'
+                                            placeholder='Ingrese su contraseña'
                                             value={password}
                                             onChange={handlePasswordChange}
                                             onFocus={() => focusInput(3)}
