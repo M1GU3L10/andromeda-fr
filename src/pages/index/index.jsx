@@ -101,11 +101,11 @@ const Index = () => {
                     </div>
 
                     <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
-                        <nav className='navBar-index'>
+                        <nav className='navBar-index1'>
                             <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
                             <Link to='/services' onClick={() => setIsNavOpen(false)}>SERVICIOS</Link>
-                            <Link to='/blog' onClick={() => setIsNavOpen(false)}>CITAS</Link>
-                            <Link to='/Shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+                            <Link to='/appointmentView'>CITAS</Link>
+                            <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
                             <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
                         </nav>
 
@@ -127,7 +127,7 @@ const Index = () => {
                                         {userRole == 1 || userRole == 2 ? (
                                             <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
                                         ) : (
-                                            <MenuItem className='menu-item-landingPage'><MdProductionQuantityLimits />Mis pedidos</MenuItem>
+                                            <MenuItem>Carrito</MenuItem>
                                         )}
                                         <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
                                     </Menu>

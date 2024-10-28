@@ -161,7 +161,7 @@ const Register = () => {
                                         <input
                                             type="text"
                                             className={`form-control ${nameError ? 'is-invalid' : ''}`}
-                                            placeholder='Enter your name'
+                                            placeholder='Ingrese su nombre y apellidos'
                                             value={name}
                                             onChange={handleNameChange}
                                             onFocus={() => focusInput(0)}
@@ -177,7 +177,7 @@ const Register = () => {
                                         <input
                                             type="email"
                                             className={`form-control ${emailError ? 'is-invalid' : ''}`}
-                                            placeholder='Enter your email'
+                                            placeholder='Ingrese su correo '
                                             value={email}
                                             onChange={handleEmailChange}
                                             onFocus={() => focusInput(1)}
@@ -193,7 +193,7 @@ const Register = () => {
                                         <input
                                             type="text"
                                             className={`form-control ${phoneError ? 'is-invalid' : ''}`}
-                                            placeholder='Enter your phone number'
+                                            placeholder='Ingrese su numero de celular'
                                             value={phone}
                                             onChange={handlePhoneChange}
                                             onFocus={() => focusInput(2)}
@@ -209,7 +209,7 @@ const Register = () => {
                                         <input
                                             type={isShowPassword ? 'text' : 'password'}
                                             className={`form-control ${passwordError ? 'is-invalid' : ''}`}
-                                            placeholder='Enter your password'
+                                            placeholder='Ingrese su contraseña'
                                             value={password}
                                             onChange={handlePasswordChange}
                                             onFocus={() => focusInput(3)}
