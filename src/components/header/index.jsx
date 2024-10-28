@@ -1,10 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import logo from '../../assets/images/logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { MdMenuOpen, MdOutlineMenu, MdOutlineLightMode, MdOutlineMailOutline } from 'react-icons/md';
 import { BsCart3, BsShieldFillExclamation } from 'react-icons/bs';
-import { LuBell } from 'react-icons/lu';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -13,12 +12,36 @@ import PersonAdd from '@mui/icons-material/PersonAdd';
 import Logout from '@mui/icons-material/Logout';
 import Divider from '@mui/material/Divider';
 import { MyContext } from '../../App';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Header = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
     const context = useContext(MyContext);
     const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+    const [userRole, setUserRole] = useState('');
+
+    useEffect(() => {
+        checkLoginStatus();
+    }, []);
+
+    const checkLoginStatus = () => {
+        const token = localStorage.getItem('jwtToken');
+        const storedEmail = localStorage.getItem('userName');
+        const idRole = localStorage.getItem('roleId');
+        if (token && storedEmail && idRole) {
+            setIsLoggedIn(true);
+            setUserEmail(storedEmail);
+            setUserRole(idRole);
+        } else {
+            setIsLoggedIn(false);
+            setUserEmail('');
+            setUserRole('');
+        }
+    };
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -30,12 +53,28 @@ const Header = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
-        context.setIsLogin(false);
-        navigate('/login');
+        localStorage.removeItem('roleId');
+        localStorage.removeItem('userName');
+        setIsLoggedIn(false);
+        setUserEmail('');
+        handleClose();
+        toast.error('Sesión cerrada', {
+            position: "top-right",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            onClose: () => navigate('/index')
+        });
     };
 
     const handleGoToHome = () => {
         navigate('/index');
+    };
+
+    const handleAdminDashboard = () => {
+        navigate('/services');
     };
 
     return (
@@ -50,8 +89,8 @@ const Header = () => {
                             </Link>
                         </div>
                         <div className="col-sm-3 d-flex align-items-center parte2">
-                            <Button 
-                                className='rounded-circle mr-3' 
+                            <Button
+                                className='rounded-circle mr-3'
                                 onClick={() => {
                                     const newValue = !context.isToggleSidebar;
                                     context.setIsToggleSidebar(newValue);
@@ -74,16 +113,19 @@ const Header = () => {
                                             <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' alt="User Avatar" />
                                         </span>
                                     </div>
-                                    <div className='userInfo'>
-                                        {context.isLogin ? (
+                                    <div className="userInfo" style={{ textAlign: 'center', margin: '0 auto' }}>
+                                        {isLoggedIn ? (
                                             <>
-                                                <h5>{context.userName}</h5>
-                                                <p className='mb-0'>Administrador</p>
+                                                <p className="text-sm font-medium" style={{ margin: '0', fontWeight: 'bold' }}>{userEmail}</p>
+                                                <p className="text-xs text-gray-500" style={{ margin: '0', fontSize: '12px' }}>
+                                                    {userRole === '1' ? 'Administrador' : userRole === '2' ? 'Empleado' : 'Usuario'}
+                                                </p>
                                             </>
                                         ) : (
-                                            <p className='mb-0'>No está logueado</p>
+                                            <p className="text-sm" style={{ margin: '0' }}>No está logueado</p>
                                         )}
                                     </div>
+
                                 </Button>
                                 <Menu
                                     anchorEl={anchorEl}
@@ -94,23 +136,19 @@ const Header = () => {
                                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                 >
-                                    <MenuItem onClick={handleClose}>
-                                        <ListItemIcon>
-                                            <PersonAdd fontSize="small" />
-                                        </ListItemIcon>
-                                        Mi cuenta
-                                    </MenuItem>
-                                    <MenuItem onClick={handleGoToHome}>
-                                        <ListItemIcon>
-                                            <BsShieldFillExclamation />
-                                        </ListItemIcon>
-                                        Volver al inicio
-                                    </MenuItem>
+                                    {userRole === '1' || userRole === '2' ? (
+                                        <MenuItem onClick={handleAdminDashboard}>
+                                            <ListItemIcon>
+                                                <BsShieldFillExclamation />
+                                            </ListItemIcon>
+                                            Administrar
+                                        </MenuItem>
+                                    ) : null}
                                     <MenuItem onClick={handleLogout}>
                                         <ListItemIcon>
                                             <Logout fontSize="small" />
                                         </ListItemIcon>
-                                        Cerrar sesion
+                                        Cerrar sesión
                                     </MenuItem>
                                 </Menu>
                             </div>
