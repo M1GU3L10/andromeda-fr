@@ -481,7 +481,7 @@ export default function Component() {
                 {userRole === '1' || userRole === '2' ? (
                   <MenuItem onClick={handleAdministrar}>Administrar</MenuItem>
                 ) : (
-                  <MenuItem onClick={() => setDrawerOpen(true)}>Carrito</MenuItem>
+                  <MenuItem></MenuItem>
                 )}
                 <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
               </Menu>
