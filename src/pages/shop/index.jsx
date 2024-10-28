@@ -285,6 +285,14 @@ export default function Component() {
   };
 
   const handleCheckout = async () => {
+    // Primero, verifica si el usuario está autenticado
+    if (!isLoggedIn) {
+      Swal.fire('Error', 'Debes iniciar sesión para realizar un pedido.', 'error');
+      // Aquí podrías redirigir al usuario a la página de inicio de sesión
+      // history.push('/login');
+      return;
+    }
+
     if (Object.keys(cart).length === 0) {
       Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
       return;
