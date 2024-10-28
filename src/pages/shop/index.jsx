@@ -381,7 +381,7 @@ export default function Component() {
               <p>Número de factura: ${orderData.Billnumber}</p>
               <p>Fecha: ${orderData.OrderDate}</p>
               <p>Hora: ${orderData.OrderTime}</p>
-              <p>Fecha de vencimiento del token: ${expirationDateString}</p>
+              <p>Fecha de vencimiento del pedido (en caso de no ser cancelado): ${expirationDateString}</p>
               <p>Total a pagar: <strong>${formattedTotal} COP</strong></p>
             </div>
           `,

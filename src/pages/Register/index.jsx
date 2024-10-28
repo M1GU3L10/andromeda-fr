@@ -161,7 +161,7 @@ const Register = () => {
                                         <input
                                             type="text"
                                             className={`form-control ${nameError ? 'is-invalid' : ''}`}
-                                            placeholder='Enter your name'
+                                            placeholder='Ingrese su nombre y apellidos'
                                             value={name}
                                             onChange={handleNameChange}
                                             onFocus={() => focusInput(0)}
@@ -177,7 +177,7 @@ const Register = () => {
                                         <input
                                             type="email"
                                             className={`form-control ${emailError ? 'is-invalid' : ''}`}
-                                            placeholder='Enter your email'
+                                            placeholder='Ingrese su correo '
                                             value={email}
                                             onChange={handleEmailChange}
                                             onFocus={() => focusInput(1)}
