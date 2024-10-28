@@ -7,9 +7,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Fade from '@mui/material/Fade';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Button } from '@mui/material';
+import StarIcon from '@mui/icons-material/Star'; 
 
 const SectionServices = () => {
-    const [expanded, setExpanded] = React.useState(false);
+    const [expanded, setExpanded] = React.useState(null); // Inicialmente ningún acordeón está expandido
     const url = 'http://localhost:1056/api/services';
     const [services, setServices] = useState([]);
 
@@ -22,34 +24,61 @@ const SectionServices = () => {
         setServices(response.data);
     };
 
-    const handleExpansion = (panel) => (event, isExpanded) => {
-        setExpanded(isExpanded ? panel : false);
+    const handleExpansion = (id) => {
+        setExpanded((prevExpanded) => (prevExpanded === id ? null : id));
     };
 
     return (
         <div>
             {services.map((service) => (
                 <Accordion
+                    className='accordion'
                     key={service.id}
                     expanded={expanded === service.id}
-                    onChange={handleExpansion(service.id)}
+                    onChange={() => handleExpansion(service.id)}
                     slots={{ transition: Fade }}
                     slotProps={{ transition: { timeout: 400 } }}
-                    sx={{
-                        '& .MuiAccordionDetails-root': {
-                            display: 'block',
-                        },
-                    }}
+                    sx={[
+                        expanded === service.id
+                            ? {
+                                '& .MuiAccordion-region': {
+                                    height: 'auto',
+                                },
+                                '& .MuiAccordionDetails-root': {
+                                    display: 'block',
+                                },
+                            }
+                            : {
+                                '& .MuiAccordion-region': {
+                                    height: 0,
+                                },
+                                '& .MuiAccordionDetails-root': {
+                                    display: 'none',
+                                },
+                            },
+                    ]}
                 >
                     <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls={`panel-${service.id}-content`}
                         id={`panel-${service.id}-header`}
                     >
-                        <Typography>{service.name}</Typography>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <StarIcon /> {/* O cualquier otro icono de Material-UI que prefieras */}
+                            <Typography>{service.name}</Typography>
+                        </div>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <Typography>{service.description}</Typography>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <Typography>{service.description}</Typography>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                size="small"
+                            >
+                                RESERVAR
+                            </Button>
+                        </div>
                     </AccordionDetails>
                 </Accordion>
             ))}

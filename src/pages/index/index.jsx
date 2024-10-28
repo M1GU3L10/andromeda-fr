@@ -8,6 +8,10 @@ import { Menu as MenuIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ServicesSection from './SectionServices';
+import ProductSection from './SectionProducts';
+import { GrUserAdmin } from "react-icons/gr";
+import { MdProductionQuantityLimits } from "react-icons/md";
+import { GiExitDoor } from "react-icons/gi";
 
 const Index = () => {
     const context = useContext(MyContext);
@@ -119,13 +123,13 @@ const Index = () => {
                                     >
                                         {userEmail}
                                     </Button>
-                                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
                                         {userRole == 1 || userRole == 2 ? (
-                                            <MenuItem onClick={handledashboard}>Administrar</MenuItem>
+                                            <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
                                         ) : (
-                                            <MenuItem>Carrito</MenuItem>
+                                            <MenuItem className='menu-item-landingPage'><MdProductionQuantityLimits />Mis pedidos</MenuItem>
                                         )}
-                                        <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+                                        <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
                                     </Menu>
                                 </div>
                             ) : (
@@ -159,9 +163,19 @@ const Index = () => {
                 <div className='d-flex align-items-center justify-content-center mt-5'>
                     <h2 className='tittle-landingPage'>Nuestros servicios</h2>
                 </div>
+                <p className='description-landingPage'>En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.</p>
                 <div className='w-100 section-services'>
-                    <p className='description-landingPage'>En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.</p>
-                    <ServicesSection/>
+                    <ServicesSection />
+                </div>
+            </section>
+
+            <section className='section-products'>
+                <div className='d-flex align-items-center justify-content-center mt-5'>
+                    <h2 className='tittle-landingPage White'>Nuestros Mejores Productos</h2>
+                </div>
+                <p className='description-landingPage White'>En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.</p>
+                <div className='w-100'>
+                    <ProductSection/>
                 </div>
             </section>
         </>

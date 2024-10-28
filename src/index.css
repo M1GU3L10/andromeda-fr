@@ -1,10 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Delius&display=swap');
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: "Poppins", sans-serif !important;
+}
+
+.White {
+    color: #fff !important;
 }
 
 
@@ -17,7 +22,7 @@
     width: 100%;
     height: 100vh;
     background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-                url('assets/images/h1_hero.png') center/cover no-repeat;
+        url('assets/images/h1_hero.png') center/cover no-repeat;
     color: #fff;
 }
 
@@ -31,7 +36,7 @@
     align-items: center;
     justify-content: space-between;
     z-index: 100;
-    background: transparent;
+    background: #000;
 }
 
 .logo-index {
@@ -221,7 +226,7 @@ header .logo-index span {
     gap: 40px;
 }
 
-.auth-buttons{
+.auth-buttons {
     width: 170px !important;
     margin-left: 10px;
 }
@@ -285,33 +290,82 @@ header .logo-index span {
     }
 }
 
+.css-3dzjca-MuiPaper-root-MuiPopover-paper-MuiMenu-paper {
+    background-color: #171614 !important;
+    color: #fff !important;
+}
+
+.menu-landingPage .menu-item-landingPage svg {
+    font-size: 20px;
+    margin-right: 15px;
+}
+
+.menu-landingPage .menu-item-landingPage {
+    border: 1px solid #1a1919;
+}
+
 /****************************/
 /*********FIN HEADER*********/
 /****************************/
 
-.tittle-landingPage{
+.tittle-landingPage {
     font-family: "Poppins", sans-serif !important;
-    font-size: 28px;
+    font-size: 40px;
     font-weight: 600;
 }
 
-.description-landingPage{
+.description-landingPage {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "Poppins", sans-serif !important;
-    font-size: 18px;
-    font-weight: 400;
-    margin-top: 10px;
+    font-size: 15px;
+    margin-top: 5px;
     text-align: center;
-    padding: 20px 0px;
+    padding: 10px 400px;
+    font-family: "Poppins", sans-serif !important;
 }
 
 /*********************************/
 /*********SECTION SERVICE*********/
 /*********************************/
 
-.section-services{
-    padding: 10px 300px !important;
-    margin: 50px 0px;
+.section-services {
+    padding: 10px 270px !important;
+}
+
+.accordion {
+    background: #212126 !important;
+    color: #eee !important;
+}
+
+.accordion .MuiAccordionSummary-root {
+    background: rgba(255, 255, 255, 0.05);
+    /* Un fondo sutilmente más claro */
+    padding: 10px;
+}
+
+.accordion .MuiButton-root {
+    background: #3f51b5;
+    color: white;
+    align-self: flex-start;
+}
+
+.accordion .MuiAccordionSummary-expandIcon {
+    color: #eee;
+}
+
+.css-15v22id-MuiAccordionDetails-root {
+    padding: 28px 26px 16px !important;
+}
+
+/*********************************/
+/*********SECTION PRODUCT*********/
+/*********************************/
+
+.section-products {
+    margin-top: 40px;
+    background: url(assets/images/product.png);
+    padding-top: 20px !important;
+    margin-bottom: 100px;
+    height: 120vh;
 }
