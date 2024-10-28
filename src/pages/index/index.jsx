@@ -101,7 +101,7 @@ const Index = () => {
                     </div>
 
                     <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
-                        <nav className='navBar-index1'>
+                        <nav className='navBar-index'>
                             <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
                             <Link to='/services' onClick={() => setIsNavOpen(false)}>SERVICIOS</Link>
                             <Link to='/appointmentView'>CITAS</Link>

@@ -354,7 +354,7 @@ export default function Component() {
         OrderDate: orderDate,
         OrderTime: orderTime,
         total_price: parseFloat(total.toFixed(2)),
-        status: 'Completada',
+        status: 'Pendiente',
         id_usuario: userId,
         orderDetails: orderDetails
       };
@@ -377,10 +377,8 @@ export default function Component() {
           title: '¡Pedido creado exitosamente!',
           html: `
             <div class="order-confirmation">
-              <p>Tu pedido ha sido registrado correctamente.</p>
-              <p>Número de factura: ${orderData.Billnumber}</p>
-              <p>Fecha: ${orderData.OrderDate}</p>
-              <p>Hora: ${orderData.OrderTime}</p>
+              
+             
               <p>Fecha de vencimiento del pedido (en caso de no ser cancelado): ${expirationDateString}</p>
               <p>Total a pagar: <strong>${formattedTotal} COP</strong></p>
             </div>
