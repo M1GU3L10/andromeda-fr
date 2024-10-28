@@ -10,7 +10,7 @@
 
     /* Estilo del encabezado */
     .header-index1 {
-        position: relative;
+        position: fixed;
         background-color: #000000;  
     }
 
@@ -99,7 +99,7 @@
         text-align: center;
         font-size: 36px;
         margin-bottom: 30px;
-        color: #333;
+        color: #ffffff;
     }
 
     /* Estilo de la barra de búsqueda */
@@ -195,7 +195,7 @@
 
     .product-description {
         font-size: 14px;
-        color: #666;
+        color: #ffffff;
     }
 
     /* Estilo del botón de agregar al carrito */
@@ -242,7 +242,7 @@
 
 
     .close-drawer-btn {
-        color: #666;
+        color: #ffffff;
         transition: color 0.3s;
     }
 
@@ -271,7 +271,7 @@
 
     .price-text {
         display: block;
-        color: #666;
+        color: #ffffff;
         font-size: 0.875rem;
         margin-top: 4px;
     }
@@ -279,7 +279,7 @@
     .empty-cart-message {
         text-align: center;
         padding: 20px;
-        color: #666;
+        color: #ffffff;
     }
 
     .drawer-footer {
@@ -596,7 +596,7 @@
     }
 
     .search-bar input::placeholder {
-        color: #999;
+        color: #ffffff;
     }
 
     /* Botón de limpiar búsqueda */
@@ -852,14 +852,14 @@
     }
 
     .quantity-btn:hover {
-        background: #333333;
+        background: #ffffff;
         transform: translateY(-2px);
     }
 
     /* Total y botones del carrito */
     .cart-total {
         padding: 32px 28px;
-        border-top: 2px solid rgba(68, 68, 68, 0.8);
+        border-top: 2px solid rgba(255, 255, 255, 0.8);
         
         backdrop-filter: blur(8px);
     }
@@ -926,7 +926,7 @@
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
         transform: scale(0);
         transition: transform 0.6s ease-out;
     }

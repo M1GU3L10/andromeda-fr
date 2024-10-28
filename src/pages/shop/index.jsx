@@ -438,10 +438,7 @@ export default function Component() {
 
   return (
     <>
-      <header className="header-index1" style={{
-        position: 'fixed',
-   
-      }}>
+      <header className="header-index1">
         <div className="header-content">
           <Link to={'/'} className='d-flex  align-items-center logo-index'>
             <img src={logo} alt="Logo" />
@@ -497,8 +494,11 @@ export default function Component() {
           )}
         </div>
       </header>
+      
 
-      <main className="container mx-auto mt-8 shop-container" style={{ paddingTop: '80px' }}> {/* Adjust this value based on your header height */}
+
+      <br /><br /><br />
+      <main className="container mx-auto mt-8 shop-container" > 
         <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
 
         <div className="search-bar">
