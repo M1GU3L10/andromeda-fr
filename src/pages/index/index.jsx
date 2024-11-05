@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ServicesSection from './SectionServices';
 import ProductSection from './SectionProducts';
+import SectionFooter from './SectionFooter';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
 
@@ -205,6 +206,7 @@ const Index = () => {
                     <ProductSection />
                 </div>
             </section>
+            <SectionFooter/>
         </>
     );
 };
