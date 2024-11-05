@@ -194,7 +194,7 @@ const Sidebar = () => {
         </ul>
         <div className='logoutWrapper'>
           <div className='logoutBox'>
-            <Button variant="contained" onClick={handleLogout}><GiExitDoor />Cerrar sesión</Button>
+            <Button variant="contained" className='btn-golden' onClick={handleLogout}><GiExitDoor />Cerrar sesión</Button>
           </div>
         </div>
       </div>

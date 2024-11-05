@@ -482,7 +482,7 @@ export default function Component() {
                 onClose={handleMenuClose}
               >
                 {userRole === '1' || userRole === '2' ? (
-                  <MenuItem onClick={handleAdministrar}>Administrar</MenuItem>
+                  <MenuItem  onClick={handleAdministrar}>Administrar</MenuItem>
                 ) : (
                   <MenuItem></MenuItem>
                 )}

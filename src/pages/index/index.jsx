@@ -1,16 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
 import Button from '@mui/material/Button';
 import { Avatar, Menu, MenuItem } from '@mui/material';
-import { Menu as MenuIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ServicesSection from './SectionServices';
 import ProductSection from './SectionProducts';
 import { GrUserAdmin } from "react-icons/gr";
-import { MdProductionQuantityLimits } from "react-icons/md";
 import { GiExitDoor } from "react-icons/gi";
 
 const Index = () => {
@@ -21,9 +19,21 @@ const Index = () => {
     const [userRole, setUserRole] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
     const [isNavOpen, setIsNavOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const servicesRef = useRef(null);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 0);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
+        context.setThemeMode(false)
         checkLoginStatus();
     }, [context]);
 
@@ -41,6 +51,15 @@ const Index = () => {
             setUserRole('');
         }
     };
+
+    // const getRandomColor = () => {
+    //     const letters = '0123456789ABCDEF';
+    //     let color = '#';
+    //     for (let i = 0; i < 6; i++) {
+    //         color += letters[Math.floor(Math.random() * 16)];
+    //     }
+    //     return color;
+    // };
 
     const handleLogin = () => {
         navigate('/login');
@@ -86,64 +105,70 @@ const Index = () => {
         return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
     };
 
+    const scrollToServices = () => {
+        if (servicesRef.current) {
+            servicesRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <>
-            <header className="header-index">
-                <div className="header-content">
-                    <div className="header-top">
-                        <Link to={'/'} className='d-flex align-items-center logo-index'>
-                            <img src={logo} alt="Logo" />
-                            <span className='ml-2'>Barberia Orion</span>
-                        </Link>
-                        <button className="nav-toggle" onClick={toggleNav}>
-                            <MenuIcon className="h-6 w-6 text-white" />
-                        </button>
-                    </div>
+            <header className={`header-index ${isScrolled ? 'abajo' : ''}`}>
+                <Link to={'/'} className='d-flex align-items-center logo-index'>
+                    <img src={logo} alt="Logo" />
+                    <span className='ml-2'>Barberia Orion</span>
+                </Link>
+                <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
+                    <nav className='navBar-index'>
+                        <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
+                        <Link to='#' onClick={scrollToServices}>SERVICIOS</Link>
+                        <Link to='/appointmentView'>CITAS</Link>
+                        <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+                        <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+                    </nav>
 
-                    <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
-                        <nav className='navBar-index'>
-                            <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-                            <Link to='/services' onClick={() => setIsNavOpen(false)}>SERVICIOS</Link>
-                            <Link to='/appointmentView'>CITAS</Link>
-                            <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-                            <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
-                        </nav>
-
-                        <div className="auth-buttons">
-                            {isLoggedIn && userEmail ? (
-                                <div className="user-menu">
-                                    <Button
-                                        onClick={handleMenuClick}
-                                        className="userLoginn"
-                                        startIcon={
-                                            <Avatar sx={{ width: 32, height: 32 }}>
-                                                {getUserInitial()}
-                                            </Avatar>
-                                        }
-                                    >
-                                        {userEmail}
-                                    </Button>
-                                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
-                                        {userRole == 1 || userRole == 2 ? (
-                                            <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
-                                        ) : (
-                                            <MenuItem>Carrito</MenuItem>
-                                        )}
-                                        <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
-                                    </Menu>
-                                </div>
-                            ) : (
+                    <div className="auth-buttons">
+                        {isLoggedIn && userEmail ? (
+                            <div className="user-menu">
                                 <Button
-                                    variant="contained"
-                                    className="book-now-btn"
-                                    onClick={handleLogin}
+                                    onClick={handleMenuClick}
+                                    className="userLoginn"
+                                    startIcon={
+                                        <Avatar
+                                            sx={{
+                                                width: 32,
+                                                height: 32,
+                                                backgroundColor: '#b89b58 '// Aplica el color aleatorio
+                                            }}
+                                        >
+                                            {getUserInitial()}
+                                        </Avatar>
+                                    }
                                 >
-                                    Iniciar sesión
+                                    {userEmail}
                                 </Button>
-                            )}
-                        </div>
+                                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
+                                    {userRole == 1 || userRole == 2 ? (
+                                        <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
+                                    ) : (
+                                        <MenuItem>Carrito</MenuItem>
+                                    )}
+                                    <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
+                                </Menu>
+                            </div>
+                        ) : (
+                            <Button
+                                variant="contained"
+                                className="book-now-btn"
+                                onClick={handleLogin}
+                            >
+                                Iniciar sesión
+                            </Button>
+                        )}
                     </div>
                 </div>
+            </header >
+            <section class="zona1">
                 <div className="hero-content">
                     <h1>
                         Sólo los mejores barberos
@@ -158,8 +183,10 @@ const Index = () => {
                         VER MAS
                     </Button>
                 </div>
-            </header>
-            <section>
+
+            </section>
+
+            <section ref={servicesRef}> 
                 <div className='d-flex align-items-center justify-content-center mt-5'>
                     <h2 className='tittle-landingPage'>Nuestros servicios</h2>
                 </div>
@@ -171,11 +198,11 @@ const Index = () => {
 
             <section className='section-products'>
                 <div className='d-flex align-items-center justify-content-center mt-5'>
-                    <h2 className='tittle-landingPage White'>Nuestros Mejores Productos</h2>
+                    <h2 className='tittle-landingPage'>Nuestros Mejores Productos</h2>
                 </div>
                 <p className='description-landingPage White'>En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.</p>
                 <div className='w-100'>
-                    <ProductSection/>
+                    <ProductSection />
                 </div>
             </section>
         </>

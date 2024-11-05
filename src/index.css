@@ -16,27 +16,49 @@
 /************************/
 /*********HEADER*********/
 /************************/
-
-.header-index {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-        url('assets/images/h1_hero.png') center/cover no-repeat;
-    color: #fff;
-}
-
-.header-content {
+.header-index{
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    padding: 20px 5%;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 100;
+    justify-content: space-around;
+    transition: 0.7s;
+    padding: 30px 20px;
+    z-index: 10;
+    background: none;
+    height: 90px !important;
+}
+.header-index.abajo{
     background: #000;
+    padding: 15px 20px;
+}
+nav{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-index ul{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-index ul li{
+    list-style: none;
+}
+
+.header-index ul li a{
+    position: relative;
+    font-family: helvetica;
+    margin: 0 15px;
+    text-decoration: none;
+    color: #fff;
+    letter-spacing: 2px;
+    font-weight: 600;
+    transition: 0.7s;
 }
 
 .logo-index {
@@ -78,12 +100,16 @@ header .logo-index span {
     position: relative;
 }
 
+.navBar-index a:hover{
+    color: #b89b58 !important;
+}
+
 .navBar-index a::before {
     content: '';
     position: absolute;
     width: 100%;
     height: 2px;
-    background: #fff;
+    background: #b89b58;
     left: 0;
     bottom: -5px;
     border-radius: 10px;
@@ -96,7 +122,7 @@ header .logo-index span {
 }
 
 .book-now-btn {
-    background-color: #006D77 !important;
+    background-color: #b89b58 !important;
     border-radius: 0 !important;
     padding: 8px 24px !important;
     font-size: 14px !important;
@@ -112,15 +138,19 @@ header .logo-index span {
 }
 
 .hero-content h1 {
-    font-size: 64px;
+    color: #eee;
+    font-size: 60px;
     font-weight: 700;
     margin-bottom: 20px;
 }
 
 .hero-content p {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.6;
     margin-bottom: 30px;
+    color: #b89b58;
+    font-weight: 600;
+    font-family: "Poppins", sans-serif !important;
 }
 
 .read-more-btn {
@@ -134,6 +164,15 @@ header .logo-index span {
 
 .read-more-btn:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.zona1{
+    position: relative;
+    width: 100%;
+    height: 90vh;
+    background: url(assets/images/h1_hero.png);
+    background-size: cover;
+    background-position: center center;
 }
 
 .userLoginn {
@@ -205,12 +244,12 @@ header .logo-index span {
     }
 }
 
-.header-top {
+/* .header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-}
+} */
 
 .nav-toggle {
     display: none;
@@ -231,7 +270,7 @@ header .logo-index span {
     margin-left: 10px;
 }
 
-@media screen and (max-width: 768px) {
+/* @media screen and (max-width: 768px) {
     .header-content {
         padding: 15px 5%;
     }
@@ -288,7 +327,7 @@ header .logo-index span {
         display: flex;
         justify-content: center;
     }
-}
+} */
 
 .css-3dzjca-MuiPaper-root-MuiPopover-paper-MuiMenu-paper {
     background-color: #171614 !important;
@@ -312,6 +351,7 @@ header .logo-index span {
     font-family: "Poppins", sans-serif !important;
     font-size: 40px;
     font-weight: 600;
+    color: #b89b58;
 }
 
 .description-landingPage {
@@ -358,6 +398,14 @@ header .logo-index span {
     padding: 28px 26px 16px !important;
 }
 
+.Button-reserved{
+    background: #b89b58 !important;
+}
+
+.css-i4bv87-MuiSvgIcon-root{
+    color: #b89b58 !important;
+}
+
 /*********************************/
 /*********SECTION PRODUCT*********/
 /*********************************/
@@ -367,5 +415,142 @@ header .logo-index span {
     background: url(assets/images/product.png);
     padding-top: 20px !important;
     margin-bottom: 100px;
-    height: 120vh;
+    height: 110vh;
+}
+
+.product--image {
+    height: 200px !important;
+    filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.2));
+}
+
+.card-product-carousel {
+    width: 280px !important;
+    height: 350px !important;
+    overflow: hidden !important;
+    background: #000 !important;
+}
+
+.product-carousel {
+    padding: 40px 100px;
+}
+
+.Product--name {
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    font-family: "Poppins", sans-serif !important;
+    text-align: center;
+    color: #eee;
+}
+
+.cart {
+    --width: 140px;
+    --height: 40px;
+    --tooltip-height: 35px;
+    --tooltip-width: 90px;
+    --gap-between-tooltip-to-button: 18px;
+    --button-color: #222;
+    --tooltip-color: #fff;
+    width: var(--width);
+    height: var(--height);
+    background: var(--button-color);
+    position: relative;
+    text-align: center;
+    border-radius: 0.5em;
+    font-family: "Arial";
+    transition: background 0.7s;
+}
+
+.button::before {
+    position: absolute;
+    content: attr(data-tooltip);
+    width: var(--tooltip-width);
+    height: var(--tooltip-height);
+    background-color: #555;
+    font-size: 0.9rem;
+    color: #fff;
+    border-radius: 0.25em;
+    line-height: var(--tooltip-height);
+    bottom: calc(var(--height) + var(--gap-between-tooltip-to-button) + 10px);
+    left: calc(50% - var(--tooltip-width) / 2);
+}
+
+
+.cart::before {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.5s;
+}
+
+.text-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.button-wrapper-cart,
+.text-card,
+.icon-button-card {
+    overflow: hidden;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    color: #fff;
+}
+
+.text-card {
+    top: 0;
+}
+
+.text-card,
+.icon-button-card {
+    transition: top 0.5s;
+}
+
+.icon-button-card {
+    color: #fff;
+    top: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-button-card svg {
+    width: 22px;
+    height: 22px;
+}
+
+.cart:hover {
+    background: #222;
+}
+
+.cart:hover .text-card {
+    top: -100%;
+}
+
+.cart:hover .icon-button-card {
+    top: 0;
+}
+
+.cart:hover:before,
+.cart:hover:after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cart:hover:after {
+    bottom: calc(var(--height) + var(--gap-between-tooltip-to-button) - 20px);
+}
+
+.cart:hover:before {
+    bottom: calc(var(--height) + var(--gap-between-tooltip-to-button));
+}
+
+.price-card-product{
+    text-align: center;
+    color: #b89b58;
+    font-weight: 600;
+    margin-top: 10px;
 }

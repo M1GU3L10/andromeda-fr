@@ -73,7 +73,7 @@ const SectionServices = () => {
                             <Typography>{service.description}</Typography>
                             <Button
                                 variant="contained"
-                                color="primary"
+                               className='Button-reserved'
                                 size="small"
                             >
                                 RESERVAR
