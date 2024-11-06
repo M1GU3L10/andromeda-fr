@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Delius&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Delius&family=Oswald:wght@200..700&display=swap');
+
 
 * {
     margin: 0;
@@ -16,7 +18,7 @@
 /************************/
 /*********HEADER*********/
 /************************/
-.header-index{
+.header-index {
     position: fixed;
     top: 0;
     left: 0;
@@ -29,28 +31,30 @@
     background: none;
     height: 90px !important;
 }
-.header-index.abajo{
+
+.header-index.abajo {
     background: #000;
     padding: 15px 20px;
 }
-nav{
+
+nav {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.header-index ul{
+.header-index ul {
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.header-index ul li{
+.header-index ul li {
     list-style: none;
 }
 
-.header-index ul li a{
+.header-index ul li a {
     position: relative;
     font-family: helvetica;
     margin: 0 15px;
@@ -100,7 +104,7 @@ header .logo-index span {
     position: relative;
 }
 
-.navBar-index a:hover{
+.navBar-index a:hover {
     color: #b89b58 !important;
 }
 
@@ -166,7 +170,7 @@ header .logo-index span {
     background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-.zona1{
+.zona1 {
     position: relative;
     width: 100%;
     height: 90vh;
@@ -398,11 +402,11 @@ header .logo-index span {
     padding: 28px 26px 16px !important;
 }
 
-.Button-reserved{
+.Button-reserved {
     background: #b89b58 !important;
 }
 
-.css-i4bv87-MuiSvgIcon-root{
+.css-i4bv87-MuiSvgIcon-root {
     color: #b89b58 !important;
 }
 
@@ -548,9 +552,107 @@ header .logo-index span {
     bottom: calc(var(--height) + var(--gap-between-tooltip-to-button));
 }
 
-.price-card-product{
+.price-card-product {
     text-align: center;
     color: #b89b58;
     font-weight: 600;
     margin-top: 10px;
 }
+
+.content-footer {
+    background: #fff;
+}
+
+.title-footer {
+    font-family: "Oswald", sans-serif !important;
+    font-size: 30px !important;
+    font-weight: 600;
+    color: #b89b58;
+}
+
+.columna-footer span svg {
+    font-size: 20px;
+    color: #000;
+}
+
+.redes-footer {
+    height: 100px;
+    width: 100%;
+    font-family: "Oswald", sans-serif !important;
+    font-weight: 600;
+    font-size: 16x;
+}
+
+.redes-footer svg {
+    color: #000;
+    font-size: 18px !important;
+    margin-right: 8px;
+}
+
+.contact-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: url(assets/images/fondo-footer.png);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-footer {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.description-footer {
+    font-size: 1.1em;
+    padding: 100px 350px 30px 350px !important;
+    font-family: "Oswald", sans-serif !important;
+    color: #eee;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 600px;
+}
+
+.contact-form label {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+.contact-form input,
+.contact-form textarea {
+    margin-top: 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    width: 100%;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.submit-button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 1em;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #0056b3;
+}
+
