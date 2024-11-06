@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
@@ -15,6 +15,11 @@ import Logout from '@mui/icons-material/Logout';
 import IconButton from '@mui/material/IconButton';
 import ReactPaginate from 'react-paginate';
 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import { GrUserAdmin } from "react-icons/gr";
+import { GiExitDoor } from "react-icons/gi";
 import axios from 'axios';
 import {
   TextField,
@@ -52,11 +57,17 @@ export default function Component() {
   const [alertSeverity, setAlertSeverity] = useState('info');
   const [cart, setCart] = useState({});
   const [total, setTotal] = useState(0);
+
+  const [userId, setUserId] = useState(null);
+  const [orders, setOrders] = useState([]);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [userRole, setUserRole] = useState('');
-  const [userId, setUserId] = useState(null);
-  const [orders, setOrders] = useState([]);
+
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const servicesRef = useRef(null);
   const formattedTotal = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(total);
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -186,13 +197,13 @@ export default function Component() {
             <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
             <p><strong>Cantidad:</strong> ${detail.quantity}</p>
             <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', {
-              style: 'currency',
-              currency: 'COP'
-            }).format(detail.unitPrice)}</p>
+          style: 'currency',
+          currency: 'COP'
+        }).format(detail.unitPrice)}</p>
             <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', {
-              style: 'currency',
-              currency: 'COP'
-            }).format(detail.total_price)}</p>
+          style: 'currency',
+          currency: 'COP'
+        }).format(detail.total_price)}</p>
           </div>
         `).join('<hr>');
 
@@ -203,9 +214,9 @@ export default function Component() {
             <p><strong>Fecha:</strong> ${orderDate}</p>
             <p><strong>Estado:</strong> ${order.status}</p>
             <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', {
-              style: 'currency',
-              currency: 'COP'
-            }).format(order.total_price)}</p>
+          style: 'currency',
+          currency: 'COP'
+        }).format(order.total_price)}</p>
             <div class="order-details">
               <h4>Detalles del pedido:</h4>
               ${orderDetails}
@@ -402,23 +413,24 @@ export default function Component() {
 
   const handleLogin = () => navigate('/login');
   const handleAdministrar = () => {
-    if (isLoggedIn && (userRole ===   '1' || userRole === '2')) {
+    if (isLoggedIn && (userRole === '1' || userRole === '2')) {
       context.setIsHideSidebarAndHeader(false);
       navigate('/sales');
     } else {
       Swal.fire('Error', 'No tienes permisos para acceder a la sección de administración.', 'error');
     }
   };
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
+
+
+  const handledashboard = () => {
+    context.setIsHideSidebarAndHeader(false);
+    navigate('/services');
   };
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
@@ -426,85 +438,106 @@ export default function Component() {
   const handleLogout = () => {
     localStorage.removeItem('jwtToken');
     localStorage.removeItem('roleId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userId');
-
+    localStorage.removeItem('userEmail');
     setIsLoggedIn(false);
     setUserEmail('');
-    setUserRole('');
-    setUserId(null);
-
     handleMenuClose();
-    navigate('/shop');
+    toast.error('Sesion cerrada', {
+      position: "top-right",
+      autoClose: 1000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      onClose: () => navigate('/index')
+    });
   };
 
   const getUserInitial = () => {
     return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
   };
+  const toggleNav = () => {
+    setIsNavOpen(!isNavOpen);
+  };
+
+
+
+  const scrollToServices = () => {
+    if (servicesRef.current) {
+      servicesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <>
-      <header className="header-index1">
-        <div className="header-content">
-          <Link to={'/'} className='d-flex  align-items-center logo-index'>
-            <img src={logo} alt="Logo" />
-            <span className='ml-2'>Barberia Orion</span>
-          </Link>
-          <nav className='navBar-index1'>
-            <Link to='/index'>INICIO</Link>
-            <Link to='/services'>SERVICIOS</Link>
+      <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
+        <Link to={'/'} className='d-flex align-items-center logo-index'>
+          <img src={logo} alt="Logo" />
+          <span className='ml-2'>Barberia Orion</span>
+        </Link>
+        <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
+          <nav className='navBar-index'>
+            <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
             <Link to='/appointmentView'>CITAS</Link>
-            <Link to='/shop'>PRODUCTOS</Link>
-            <Link to='/index'>CONTACTO</Link>
-
-            <IconButton onClick={() => setDrawerOpen(true)}>
+            <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+            <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+                 <IconButton onClick={() => setDrawerOpen(true)}>
               <Badge badgeContent={getTotalItems()} color="primary">
                 <AddShoppingCartIcon />
               </Badge>
             </IconButton>
           </nav>
-          {isLoggedIn && userEmail ? (
-            <div className="user-menu">
+
+          <div className="auth-buttons">
+            {isLoggedIn && userEmail ? (
+              <div className="user-menu">
+                <Button
+                  onClick={handleMenuClick}
+                  className="userLoginn"
+                  startIcon={
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        backgroundColor: '#b89b58 '// Aplica el color aleatorio
+                      }}
+                    >
+                      {getUserInitial()}
+                    </Avatar>
+                    
+                  }
+                  
+                >
+              
+                  {userEmail}
+                </Button>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
+                  {userRole == 1 || userRole == 2 ? (
+                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
+                  ) : (
+                    <MenuItem>Carrito</MenuItem>
+                  )}
+                  <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
+                </Menu>
+              </div>
+            ) : (
               <Button
-                onClick={handleMenuClick}
-                className="userLoginn"
-                startIcon={
-                  <Avatar sx={{ width: 32, height: 32 }}>
-                    {getUserInitial()}
-                  </Avatar>
-                }
+                variant="contained"
+                className="book-now-btn"
+                onClick={handleLogin}
               >
-                {userEmail}
+                Iniciar sesión
               </Button>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                {userRole === '1' || userRole === '2' ? (
-                  <MenuItem  onClick={handleAdministrar}>Administrar</MenuItem>
-                ) : (
-                  <MenuItem></MenuItem>
-                )}
-                <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
-              </Menu>
-            </div>
-          ) : (
-            <Button
-              variant="contained"
-              className="book-now-btn"
-              onClick={handleLogin}
-            >
-              INICIAR SESION
-            </Button>
-          )}
+            )}
+          </div>
         </div>
-      </header>
-      
+      </header >
+
 
 
       <br /><br /><br />
-      <main className="container mx-auto mt-8 shop-container" > 
+      <main className="container mx-auto mt-8 shop-container" >
         <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
 
         <div className="search-bar">
@@ -655,7 +688,7 @@ export default function Component() {
             <div className="total-amount">
               <Typography variant="h6">Total:</Typography>
               <Typography variant="h6">
-               {formattedTotal}$
+                {formattedTotal}$
               </Typography>
             </div>
           </div>
