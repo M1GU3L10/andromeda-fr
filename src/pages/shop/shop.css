@@ -1,4 +1,5 @@
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Delius&display=swap');
 
     /* Estilos globales */
     * {
@@ -8,34 +9,64 @@
         font-family: "Poppins", sans-serif !important;
     }
 
-    /* Estilo del encabezado */
-    .header-index1 {
-        position: fixed;
-        background-color: #000000;  
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif !important;
     }
-
-    .cantidad-azul {
-        color: rgb(0, 0, 0); /* Color para cantidades */
-    }
-
-    .white-text {
-        color: white;
-    }
-
-    .header-content1 {
+ 
+    
+    /************************/
+    /*********HEADER*********/
+    /************************/
+    .header-index1{
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
-        padding: 20px 5%;
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        z-index: 100;
-        background: transparent;
+        justify-content: space-around;
+        transition: 0.7s;
+        padding: 30px 20px;
+        z-index: 10;
+        background: none;
+        height: 90px !important;
+        background-color: #000;
     }
-
-    /* Estilo del logo */
+    .header-index.abajo{
+        background: #000;
+        padding: 15px 20px;
+    }
+    nav{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .header-index ul{
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .header-index ul li{
+        list-style: none;
+    }
+    
+    .header-index ul li a{
+        position: relative;
+        font-family: helvetica;
+        margin: 0 15px;
+        text-decoration: none;
+        color: #fff;
+        letter-spacing: 2px;
+        font-weight: 600;
+        transition: 0.7s;
+    }
+    
     .logo-index {
         text-decoration: none;
         font-size: 32px;
@@ -44,48 +75,267 @@
         display: flex;
         align-items: center;
     }
-
+    
     .logo-index img {
         width: 50px;
         margin-right: 5px;
     }
-
+    
     .logo-index span {
         color: #fff;
         font-size: 22px;
+        text-decoration: none;
     }
-
-    /* Estilo de la barra de navegación */
-    .navBar-index1 {
+    
+    header .logo-index span {
+        color: #fff;
+    }
+    
+    .navBar-index {
         display: flex;
         align-items: center;
         gap: 40px;
     }
-
-    .navBar-index1 a {
+    
+    .navBar-index a {
         font-size: 14px;
         text-decoration: none;
         color: #fff;
         font-weight: 500;
         letter-spacing: 1px;
         position: relative;
-        padding: 5px; /* Espacio alrededor del texto */
     }
-
-    .navBar-index1 a::before {
+    
+    .navBar-index a:hover{
+        color: #b89b58 !important;
+    }
+    
+    .navBar-index a::before {
         content: '';
         position: absolute;
         width: 100%;
         height: 2px;
-        bottom: -5px;
+        background: #b89b58;
         left: 0;
-        background-color: transparent;
-        transition: background-color 0.3s;
+        bottom: -5px;
+        border-radius: 10px;
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
     }
+    
+    .navBar-index a:hover::before {
+        transform: scaleX(1);
+    }
+    
 
-    .navBar-index1 a:hover::before {
-        background-color: white; /* Subrayado al pasar el ratón */
+    .userLoginn {
+        font-size: 16px !important;
+        color: #fff !important;
     }
+    
+    /* Responsive styles */
+    @media screen and (max-width: 1024px) {
+        .hero-content h1 {
+            font-size: 48px;
+        }
+    
+        .navBar-index {
+            gap: 20px;
+        }
+    }
+    
+    @media screen and (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    
+        .navBar-index {
+            margin-top: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+    
+        .hero-content {
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 90%;
+        }
+    
+        .hero-content h1 {
+            font-size: 36px;
+        }
+    
+        .hero-content p {
+            font-size: 14px;
+        }
+    }
+    
+    @media screen and (max-width: 480px) {
+        .logo-index {
+            font-size: 24px;
+        }
+    
+        .logo-index img {
+            width: 40px;
+        }
+    
+        .logo-index span {
+            font-size: 18px;
+        }
+    
+        .hero-content h1 {
+            font-size: 28px;
+        }
+    
+        .book-now-btn,
+        .read-more-btn {
+            padding: 8px 16px !important;
+            font-size: 12px !important;
+        }
+    }
+    
+    /* .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    } */
+    
+    .nav-toggle {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+    }
+    
+    .nav-container {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+    }
+    
+    .auth-buttons {
+        width: 170px !important;
+        margin-left: 10px;
+    }
+    
+    /* @media screen and (max-width: 768px) {
+        .header-content {
+            padding: 15px 5%;
+        }
+    
+        .nav-toggle {
+            display: block;
+        }
+    
+        .nav-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            transform: translateY(-100%);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+    
+        .nav-container.nav-open {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+    
+        .navBar-index {
+            flex-direction: column;
+            align-items: center;
+            margin-top: 0;
+            width: 100%;
+            text-align: center;
+        }
+    
+        .navBar-index a {
+            display: block;
+            padding: 10px 0;
+            width: 100%;
+            text-align: center;
+        }
+    
+        .auth-buttons {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    
+        .user-menu {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+    } */
+    
+    .css-3dzjca-MuiPaper-root-MuiPopover-paper-MuiMenu-paper {
+        background-color: #171614 !important;
+        color: #fff !important;
+    }
+    
+    .menu-landingPage .menu-item-landingPage svg {
+        font-size: 20px;
+        margin-right: 15px;
+    }
+    
+    .menu-landingPage .menu-item-landingPage {
+        border: 1px solid #1a1919;
+    }
+    
+    /****************************/
+    /*********FIN HEADER*********/
+    /****************************/
+    
+    .tittle-landingPage {
+        font-family: "Poppins", sans-serif !important;
+        font-size: 40px;
+        font-weight: 600;
+        color: #b89b58;
+    }
+    
+    .description-landingPage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        margin-top: 5px;
+        text-align: center;
+        padding: 10px 400px;
+        font-family: "Poppins", sans-serif !important;
+    }
+    
+    /*********************************/
+    /*********SECTION SERVICE*********/
+    /*********************************/
+    
+    .section-services {
+        padding: 10px 270px !important;
+    }
+    
+    
+  
+
+
+
+ 
+
+ 
+
+  
 
     /* Contenedor principal de la tienda */
     .shop-container {

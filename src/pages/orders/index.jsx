@@ -1,24 +1,20 @@
 'use client'
 
 import * as React from 'react'
-import { emphasize, styled } from '@mui/material/styles'
 import axios from 'axios'
-import Breadcrumbs from '@mui/material/Breadcrumbs'
-import Chip from '@mui/material/Chip'
+import { emphasize, styled, alpha } from '@mui/material/styles'
+import { Button, Breadcrumbs, Chip, Switch } from '@mui/material'
 import HomeIcon from '@mui/icons-material/Home'
 import { GiShoppingCart } from "react-icons/gi"
-import Button from '@mui/material/Button'
 import { BsPlusSquareFill } from "react-icons/bs"
 import { FaEye, FaPencilAlt } from "react-icons/fa"
-import { IoTrashSharp } from "react-icons/io5"
-import { IoSearch } from "react-icons/io5"
-import { show_alerta } from '../../assets/functions'
-import withReactContent from 'sweetalert2-react-content'
+import { IoTrashSharp, IoSearch } from "react-icons/io5"
+import { MdOutlineSave } from "react-icons/md"
 import Swal from 'sweetalert2'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
-import { Modal, Form } from 'react-bootstrap'
+import withReactContent from 'sweetalert2-react-content'
+import { Modal, Form, Row, Col } from 'react-bootstrap'
 import Pagination from '../../components/pagination/index'
+import { blue } from '@mui/material/colors'
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -34,31 +30,43 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   },
 }))
 
+const BlueSwitch = styled(Switch)(({ theme }) => ({
+  '& .MuiSwitch-switchBase.Mui-checked': {
+    color: blue[600],
+    '&:hover': {
+      backgroundColor: alpha(blue[600], theme.palette.action.hoverOpacity),
+    },
+  },
+  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+    backgroundColor: blue[600],
+  },
+}))
+
 const Orders = () => {
   const url = 'http://localhost:1056/api/orders'
-  const usersUrl = 'http://localhost:1056/api/users'
   const [orders, setOrders] = React.useState([])
-  const [users, setUsers] = React.useState([])
-  const [id, setId] = React.useState('')
-  const [Order_Date, setOrderDate] = React.useState('')
-  const [Order_Time, setOrderTime] = React.useState('')
-  const [Total_Amount, setTotalAmount] = React.useState('')
-  const [Status, setStatus] = React.useState('')
-  const [User_Id, setUserId] = React.useState('')
+  const [formValues, setFormValues] = React.useState({
+    id: '',
+    Billnumber: '',
+    OrderDate: '',
+    registrationDate: '',
+    total_price: '',
+    status: '',
+    id_usuario: ''
+  })
   const [operation, setOperation] = React.useState(1)
   const [title, setTitle] = React.useState('')
   const [search, setSearch] = React.useState('')
   const [currentPage, setCurrentPage] = React.useState(1)
   const [ordersPerPage] = React.useState(8)
   const [showModal, setShowModal] = React.useState(false)
-  const [showDetailModal, setShowDetailModal] = React.useState(false)
-  const [detailData, setDetailData] = React.useState({})
+  const [errors, setErrors] = React.useState({})
+  const [touched, setTouched] = React.useState({})
 
-  const statusOptions = ['Completado', 'Cancelado', 'En proceso']
+  const statusOptions = ['Completada', 'Cancelada', 'En proceso']
 
   React.useEffect(() => {
     getOrders()
-    getUsers()
   }, [])
 
   const getOrders = async () => {
@@ -66,28 +74,17 @@ const Orders = () => {
       const response = await axios.get(url)
       setOrders(response.data)
     } catch (error) {
-      show_alerta('Error al obtener órdenes', 'error')
+      showAlert('Error al obtener órdenes', 'error')
     }
   }
 
-
-  const getUsers = async () => {
-    try {
-      const response = await axios.get(usersUrl);
-      setUsers(response.data);
-      console.log('Users loaded:', response.data); // Verificar los datos obtenidos
-    } catch (error) {
-      show_alerta('Error al obtener usuarios', 'error');
-      console.error('Error al obtener usuarios:', error);
-    }
-  };
-
-  const getUserName = (userId) => {
-    const user = users.find(u => u.id === userId); // Busca el usuario por su ID
-    return user ? user.name : 'Usuario no encontrado'; // Devuelve el nombre si existe, si no, un mensaje de error
-  };
-
-
+  const showAlert = (message, icon) => {
+    Swal.fire({
+      title: message,
+      icon: icon,
+      confirmButtonText: 'Ok'
+    })
+  }
 
   const searcher = (e) => {
     setSearch(e.target.value)
@@ -95,8 +92,8 @@ const Orders = () => {
   }
 
   const filteredOrders = orders.filter((order) =>
-    order.Order_Date.toLowerCase().includes(search.toLowerCase()) ||
-    order.Status.toLowerCase().includes(search.toLowerCase())
+    order.Billnumber.toLowerCase().includes(search.toLowerCase()) ||
+    order.status.toLowerCase().includes(search.toLowerCase())
   )
 
   const indexOfLastOrder = currentPage * ordersPerPage
@@ -106,135 +103,104 @@ const Orders = () => {
   const nPages = Math.ceil(filteredOrders.length / ordersPerPage)
 
   const openModal = (op, order = null) => {
-    setId('')
-    setOrderDate('')
-    setOrderTime('')
-    setTotalAmount('')
-    setStatus('')
-    setUserId('')
     setOperation(op)
-
-    if (op === 1) {
-      setTitle('Registrar orden')
-      const now = new Date()
-      setOrderDate(now.toISOString().split('T')[0])
-      setOrderTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }))
-    } else if (op === 2 && order) {
-      setTitle('Editar orden')
-      setId(order.id)
-      setOrderDate(new Date(order.Order_Date).toISOString().split('T')[0])
-      setOrderTime(new Date(`2000-01-01T${order.Order_Time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }))
-      setTotalAmount(order.Total_Amount)
-      setStatus(order.Status)
-      setUserId(order.User_Id.toString())
-    }
+    setTitle(op === 1 ? 'Registrar orden' : 'Editar orden')
+    setFormValues(op === 1 ? {
+      id: '',
+      Billnumber: '',
+      OrderDate: new Date().toISOString().split('T')[0],
+      registrationDate: new Date().toISOString().split('T')[0],
+      total_price: '',
+      status: '',
+      id_usuario: ''
+    } : {
+      id: order.id,
+      Billnumber: order.Billnumber,
+      OrderDate: order.OrderDate,
+      registrationDate: order.registrationDate,
+      total_price: order.total_price,
+      status: order.status,
+      id_usuario: order.id_usuario.toString()
+    })
     setShowModal(true)
   }
 
   const handleClose = () => {
     setShowModal(false)
+    setErrors({})
+    setTouched({})
+  }
+
+  const handleValidation = (name, value) => {
+    let error = ''
+    switch (name) {
+      
+      case 'total_price':
+        error = value.trim() === '' ? 'El monto total es requerido' : ''
+        break
+      case 'status':
+        error = value.trim() === '' ? 'El estado es requerido' : ''
+        break
+      case 'id_usuario':
+        error = value.trim() === '' ? 'El ID de usuario es requerido' : ''
+        break
+      default:
+        break
+    }
+    setErrors(prevErrors => ({ ...prevErrors, [name]: error }))
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormValues(prevValues => ({ ...prevValues, [name]: value }))
+    handleValidation(name, value)
+  }
+
+  const handleBlur = (e) => {
+    const { name } = e.target
+    setTouched(prevTouched => ({ ...prevTouched, [name]: true }))
+    handleValidation(name, e.target.value)
   }
 
   const validar = () => {
-    if (Order_Date.trim() === '' || Order_Time.trim() === '' || Total_Amount.trim() === '' || Status.trim() === '' || User_Id.trim() === '') {
-      show_alerta('Todos los campos son obligatorios', 'warning')
-      return false
-    }
-    return true
+    const newErrors = {}
+    Object.keys(formValues).forEach(key => {
+      if (formValues[key].trim() === '' && key !== 'id') {
+        newErrors[key] = `El campo ${key} es requerido`
+      }
+    })
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = () => {
     if (validar()) {
-      const now = new Date();
-
-      // Crear una fecha para `Order_Date` y mantener solo el formato `YYYY-MM-DDTHH:MM:SSZ`
-      const orderDateISO = new Date(`${Order_Date}T${Order_Time}`).toISOString();
-
-      // Mantener solo el formato `HH:MM:SS` para `Order_Time`
-      const formattedOrderTime = new Date(`${Order_Date}T${Order_Time}`).toTimeString().split(' ')[0];
-
-      // Calcular `Token_Expiration` a 3 días después de la fecha y hora actuales
-      const tokenExpiration = new Date(now);
-      tokenExpiration.setDate(now.getDate() + 3); // Añadir 3 días
-      const tokenExpirationISO = tokenExpiration.toISOString();
-
-      // Configurar parámetros para la solicitud
-      const parametros = {
-        Order_Date: orderDateISO, // Enviar en formato ISO completo
-        Order_Time: formattedOrderTime, // Enviar solo la hora HH:MM:SS
-        Total_Amount: parseFloat(Total_Amount).toFixed(2),
-        Status: Status,
-        User_Id: parseInt(User_Id),
-        Token_Expiration: tokenExpirationISO, // Expiración 3 días después
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      };
-
-      // Solo incluir id si estamos editando una orden existente
-      if (operation === 2 && id) {
-        parametros.id = parseInt(id);
-      }
-
-      console.log('Sending data:', parametros);
-
-      // Definir el método de la solicitud
-      const metodo = operation === 1 ? 'POST' : 'PUT';
-      enviarSolicitud(metodo, parametros)
-        .then(response => {
-          // Manejar la respuesta aquí
-          console.log('Respuesta del servidor:', response);
-        })
-        .catch(error => {
-          // Manejar errores aquí
-          console.error('Error al enviar la solicitud:', error);
-        });
+      const metodo = operation === 1 ? 'POST' : 'PUT'
+      enviarSolicitud(metodo, formValues)
+    } else {
+      showAlert('Por favor, complete todos los campos requeridos', 'warning')
     }
-  };
-
+  }
 
   const enviarSolicitud = async (metodo, parametros) => {
-    const urlWithId = metodo === 'PUT' && parametros.id ? `${url}/${parametros.id}` : url;
     try {
       const response = await axios({
         method: metodo,
-        url: urlWithId,
+        url: metodo === 'PUT' ? `${url}/${parametros.id}` : url,
         data: parametros,
-      });
-      console.log('Response:', response);
-      show_alerta('Operación exitosa', 'success');
-      if (metodo === 'POST') {
-        showExpirationMessage(response.data.Token_Expiration);
-      }
-      handleClose();
-      getOrders();
+      })
+      showAlert('Operación exitosa', 'success')
+      handleClose()
+      getOrders()
     } catch (error) {
-      console.error('Error details:', error.response);
-
-      // Imprimir los detalles del error
-      if (error.response?.data?.errors) {
-        console.error('Validation errors:', error.response.data.errors);
-      }
-
-      show_alerta(`Error en la solicitud: ${error.response?.data?.message || error.message}`, 'error');
+      showAlert(`Error en la solicitud: ${error.response?.data?.message || error.message}`, 'error')
     }
-  };
-
-  const showExpirationMessage = (expirationDate) => {
-    const expDate = new Date(expirationDate)
-    Swal.fire({
-      title: 'Pedido registrado',
-      html: `
-            <p>La orden ha sido registrada exitosamente.</p>
-            <p>El token expirará el ${expDate.toLocaleDateString()} a las ${expDate.toLocaleTimeString()}</p>
-          `,
-      icon: 'info',
-      confirmButtonText: 'Entendido'
-    })
   }
-  const deleteOrder = (id, Order_Date) => {
-    const MySwal = withReactContent(Swal);
+
+  const deleteOrder = (id, billNumber) => {
+    const MySwal = withReactContent(Swal)
     MySwal.fire({
-      title: `¿Estás seguro que deseas eliminar la orden del ${new Date(Order_Date).toLocaleDateString()}?`,
+      title: `¿Estás seguro que deseas eliminar la orden ${billNumber}?`,
       icon: 'question',
       text: 'No se podrá dar marcha atrás',
       showCancelButton: true,
@@ -242,39 +208,38 @@ const Orders = () => {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        axios.delete(`http://localhost:1056/api/orders/${id}`)
-          .then((response) => {
-            show_alerta('Orden eliminada correctamente', 'success');
-            getOrders(); // Llama a la función para obtener la lista actualizada de órdenes
+        axios.delete(`${url}/${id}`)
+          .then(() => {
+            showAlert('Orden eliminada correctamente', 'success')
+            getOrders()
           })
           .catch((error) => {
-            show_alerta('Error al eliminar la orden', 'error');
-            console.error('Error details:', error);
-          });
+            showAlert('Error al eliminar la orden', 'error')
+            console.error('Error details:', error)
+          })
       } else {
-        show_alerta('La orden NO fue eliminada', 'info');
+        showAlert('La orden NO fue eliminada', 'info')
       }
-    });
-  };
-
+    })
+  }
 
   const handleViewDetails = (order) => {
-    setDetailData(order)
-    setShowDetailModal(true)
-  }
-
-  const handleCloseDetail = () => {
-    setShowDetailModal(false)
-  }
-
-  const translateStatus = (status) => {
-    const statusMap = {
-      'Completado': 'Completado',
-      'En proceso': 'En proceso',
-      'Cancelado': 'Cancelado',
-
-    }
-    return statusMap[status] || status
+    Swal.fire({
+      title: 'Detalles de la Orden',
+      html: `
+        <div class="text-left">
+          <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
+          <p><strong>Fecha de Orden:</strong> ${new Date(order.OrderDate).toLocaleDateString()}</p>
+          <p><strong>Fecha de Registro:</strong> ${new Date(order.registrationDate).toLocaleDateString()}</p>
+          <p><strong>Monto Total:</strong> ${order.total_price}</p>
+          <p><strong>Estado:</strong> ${order.status}</p>
+          <p><strong>Usuario ID:</strong> ${order.id_usuario}</p>
+          <p><strong>Expiración Token:</strong> ${new Date(order.Token_Expiration).toLocaleString()}</p>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Cerrar'
+    })
   }
 
   return (
@@ -285,22 +250,20 @@ const Orders = () => {
             <span className='Title'>Pedidos</span>
           </div>
           <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
-            <div role="presentation">
-              <Breadcrumbs aria-label="breadcrumb">
-                <StyledBreadcrumb
-                  component="a"
-                  href="#"
-                  label="Home"
-                  icon={<HomeIcon fontSize="small" />}
-                />
-                <StyledBreadcrumb
-                  component="a"
-                  href="#"
-                  label="Pedidos"
-                  icon={<GiShoppingCart fontSize="small" />}
-                />
-              </Breadcrumbs>
-            </div>
+            <Breadcrumbs aria-label="breadcrumb">
+              <StyledBreadcrumb
+                component="a"
+                href="#"
+                label="Home"
+                icon={<HomeIcon fontSize="small" />}
+              />
+              <StyledBreadcrumb
+                component="a"
+                href="#"
+                label="Pedidos"
+                icon={<GiShoppingCart fontSize="small" />}
+              />
+            </Breadcrumbs>
           </div>
         </div>
         <div className='card shadow border-0 p-3'>
@@ -320,8 +283,8 @@ const Orders = () => {
               <thead className='table-primary'>
                 <tr>
                   <th>#</th>
-                  <th>Fecha</th>
-                  <th>Hora</th>
+                  <th>Número de Factura</th>
+                  <th>Fecha de Orden</th>
                   <th>Monto Total</th>
                   <th>Estado</th>
                   <th>Usuario ID</th>
@@ -332,24 +295,23 @@ const Orders = () => {
                 {currentOrders.map((order, i) => (
                   <tr key={order.id}>
                     <td>{indexOfFirstOrder + i + 1}</td>
-                    <td>{new Date(order.Order_Date).toLocaleDateString()}</td>
-                    <td>{new Date(`2000-01-01T${order.Order_Time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
-                    <td>{order.Total_Amount}</td>
-                    <td>{order.Status}</td>
-                    <td>{getUserName(order.User_Id)}</td> {/* Muestra el nombre del usuario */}
-
+                    <td>{order.Billnumber}</td>
+                    <td>{new Date(order.OrderDate).toLocaleDateString()}</td>
+                    <td>{order.total_price}</td>
+                    <td>{order.status}</td>
+                    <td>{order.id_usuario}</td>
                     <td>
                       <div className='actions d-flex align-items-center'>
                         <Button color='primary' className='primary' onClick={() => handleViewDetails(order)}><FaEye /></Button>
                         <Button color="secondary" className='secondary' onClick={() => openModal(2, order)}><FaPencilAlt /></Button>
-                        <Button color='error' className='delete' onClick={() => deleteOrder(order.id, order.Order_Date)}><IoTrashSharp /></Button>
+                        <Button color='error' className='delete' onClick={() => deleteOrder(order.id, order.Billnumber)}><IoTrashSharp /></Button>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {filteredOrders.length > 0 ? (
+            {filteredOrders.length > 0 && (
               <div className="d-flex table-footer">
                 <Pagination
                   setCurrentPages={setCurrentPage}
@@ -357,97 +319,126 @@ const Orders = () => {
                   nPages={nPages}
                 />
               </div>
-            ) : (
-              <div className="d-flex table-footer"></div>
             )}
           </div>
         </div>
       </div>
 
-      <Modal show={showModal} >
-        <Modal.Header >
+      <Modal show={showModal} onHide={handleClose}>
+        <Modal.Header>
           <Modal.Title>{title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Fecha</Form.Label>
-              <Form.Control
-                type="date"
-                value={Order_Date}
-                onChange={(e) => setOrderDate(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Hora</Form.Label>
-              <Form.Control
-                type="time"
-                value={Order_Time}
-                onChange={(e) => setOrderTime(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Monto Total</Form.Label>
-              <Form.Control
-                type="number"
-                step="0.01"
-                value={Total_Amount}
-                onChange={(e) => setTotalAmount(e.target.value)}
-                placeholder="Monto Total"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Estado</Form.Label>
-              <Form.Select
-                value={Status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="">Sel
-                  eccione un estado</option>
-                {statusOptions.map((status, index) => (
-                  <option key={index} value={status}>{status}</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Usuario</Form.Label>
-              <Form.Select
-                value={User_Id}
-                onChange={(e) => setUserId(e.target.value)}
-              >
-                <option value="">Seleccione un usuario</option>
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>{user.name}</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
+            <Row className="mb-3">
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Número de Factura</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="Billnumber"
+                    value={formValues.Billnumber}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.Billnumber && !!errors.Billnumber}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.Billnumber}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Fecha de Orden</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="OrderDate"
+                    value={formValues.OrderDate}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Fecha de Registro</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="registrationDate"
+                    value={formValues.registrationDate}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Monto Total</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="total_price"
+                    value={formValues.total_price}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.total_price && !!errors.total_price}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.total_price}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Estado</Form.Label>
+                  <Form.Select
+                    name="status"
+                    value={formValues.status}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.status && !!errors.status}
+                  >
+                    <option value="">Seleccione un estado</option>
+                    {statusOptions.map((status, index) => (
+                      <option key={index} value={status}>{status}</option>
+                    ))}
+                  </Form.Select>
+                  {errors.status && (
+                    <div className="invalid-feedback">
+                      {errors.status}
+                    </div>
+                  )}
+
+                </Form.Group>
+              </Col>
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Usuario ID</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="id_usuario"
+                    value={formValues.id_usuario}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.id_usuario && !!errors.id_usuario}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.id_usuario}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+          <Button variant="secondary" className='btn-red' onClick={handleClose}>
             Cerrar
           </Button>
-          <Button variant="primary" onClick={handleSubmit} className='btn-sucess'>
-            Guardar
+          <Button variant="primary" className='btn-sucess' onClick={handleSubmit}>
+            <MdOutlineSave /> Guardar
           </Button>
-         
-        </Modal.Footer>
-      </Modal>
-
-      <Modal show={showDetailModal} onHide={handleCloseDetail}>
-        <Modal.Header closeButton>
-          <Modal.Title>Detalle de la Orden</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p><strong>Fecha:</strong> {new Date(detailData.Order_Date).toLocaleDateString()}</p>
-          <p><strong>Hora:</strong> {new Date(`2000-01-01T${detailData.Order_Time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
-          <p><strong>Monto Total:</strong> {detailData.Total_Amount}</p>
-          <p><strong>Estado:</strong> {translateStatus(detailData.Status)}</p>
-          <p><strong>Usuario ID:</strong> {detailData.User_Id}</p>
-          <p><strong>Expiración Token:</strong> {new Date(detailData.Token_Expiration).toLocaleString()}</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
         </Modal.Footer>
       </Modal>
     </div>
