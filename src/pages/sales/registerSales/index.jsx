@@ -165,6 +165,11 @@ const RegisterSales = () => {
             return;
         }
 
+        if (selectedProducts.length === 0) {
+            show_alerta('Debe agregar al menos un producto al detalle de la venta', 'warning');
+            return;
+        }
+
         const saleData = {
             ...saleInfo,
             total_price: calculateTotal(),

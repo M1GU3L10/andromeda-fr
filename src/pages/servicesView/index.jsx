@@ -347,7 +347,16 @@ const Services = () => {
         }).then((result) => {
             if (result.isConfirmed) {
                 setId(id);
-                enviarSolicitud('DELETE', { id: id })
+                enviarSolicitud('DELETE', { id: id });
+
+                const totalItems = services.length - 1; // Restamos 1 por el elemento eliminado
+                const newTotalPages = Math.ceil(totalItems / dataQt);
+
+                // Si estamos en la última página y está vacía después de eliminar
+                if (currentPages > newTotalPages) {
+                    // Regresar a la página anterior
+                    setCurrentPages(Math.max(1, currentPages - 1));
+                }
             } else {
                 show_alerta('El servicio NO fue eliminado', 'info')
             }

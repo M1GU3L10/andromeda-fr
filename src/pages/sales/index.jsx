@@ -18,6 +18,10 @@ import DocumentPdf from './DocumentoPdf';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import { Modal } from 'react-bootstrap';
 import Pagination from '../../components/pagination/index';
+import { show_alerta } from '../../assets/functions'
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
+import Switch from '@mui/material/Switch';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -111,6 +115,51 @@ const Sales = () => {
 
     results = results.slice(indexStart, indexEnd);
 
+    const handleSwitchChange = async (saleId, checked) => {
+        // Encuentra el servicio que está siendo actualizado
+        const saleToUpdate = sales.find(sale => sale.id === saleId);
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el servicio "${saleToUpdate.Billnumber}"?`,
+            icon: 'question',
+            text: 'Esta acción puede afectar la disponibilidad del servicio.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const updatedSale = {
+                    ...saleToUpdate,
+                    status: checked ? 'Completada' : 'Cancelada'
+                };
+                try {
+                    const response = await axios.put(`${url}/${saleId}/status`, updatedSale);
+                    if (response.status === 200) {
+                        SetSales(sales.map(sale =>
+                            sale.id === saleId ? { ...sale, status: updatedSale.status } : sale
+                        ));
+                        show_alerta('Estado de la venta actualizado exitosamente', 'success');
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        console.log('Error details:', error.response.data);
+                        show_alerta('Error al actualizar el estado de la venta: ' + JSON.stringify(error.response.data.errors), 'error');
+                    } else {
+                        console.log('Error details:', error.message);
+                        show_alerta('Error al actualizar el estado de la venta', 'error');
+                    }
+                }
+            } else {
+                // Si el usuario cancela, restablece el switch a su estado original
+                SetSales(sales.map(sale =>
+                    sale.id === saleId ? { ...sale, status: !checked ? 'Completada' : 'Cancelada' } : sale
+                ));
+                show_alerta('Estado de la venta no cambiado', 'info');
+            }
+        });
+    };
+
+
     return (
         <>
             <div className="right-content w-100">
@@ -184,6 +233,10 @@ const Sales = () => {
                                                     <td>{sale.status}</td>
                                                     <td>
                                                         <div className='actions d-flex align-items-center'>
+                                                            <Switch
+                                                                checked={sale.status === 'Completada'}
+                                                                onChange={(e) => handleSwitchChange(sale.id, e.target.checked)}
+                                                            />
                                                             <Button color="primary" className='primary' onClick={() => handleViewDetails(sale)} ><FaEye /></Button>
                                                             <PDFDownloadLink document={<DocumentPdf sale={sale} />} fileName={`DetalleVenta ${sale.Billnumber}.pdf`}>
                                                                 <Button color='warning' className='warning'><TbFileDownload /></Button>
@@ -192,12 +245,12 @@ const Sales = () => {
                                                     </td>
                                                 </tr>
                                             ))
-                                        ) : 
-                                        (
-                                            <tr>
-                                                <td colSpan={7} className='text-center'>No hay ventas disponibles</td>
-                                            </tr>
-                                        )
+                                        ) :
+                                            (
+                                                <tr>
+                                                    <td colSpan={7} className='text-center'>No hay ventas disponibles</td>
+                                                </tr>
+                                            )
                                     }
                                 </tbody>
                             </table>
