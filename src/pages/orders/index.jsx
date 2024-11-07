@@ -50,6 +50,7 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);  // Estado para los productos
   const [users, setUsers] = useState([]);  // Estado para los usuarios
+  const [userNames, setUserNames] = useState({});
   const [formValues, setFormValues] = useState({
     id: '',
     Billnumber: '',
@@ -112,7 +113,27 @@ const Orders = () => {
       showAlert('Error al obtener órdenes', 'error')
     }
   }
+  useEffect(() => {
+    // Función para obtener el nombre de usuario por su id
+    const fetchUserNames = async () => {
+      try {
+        const response = await axios.get('http://localhost:1056/api/users'); // API que devuelve los usuarios
+        const users = response.data;
+        
+        // Mapear los nombres de usuario y almacenarlos en el estado
+        const userNamesMap = users.reduce((acc, user) => {
+          acc[user.id] = user.name; // Suponiendo que el objeto de usuario tiene 'id' y 'name'
+          return acc;
+        }, {});
 
+        setUserNames(userNamesMap); // Actualizar el estado con los nombres de los usuarios
+      } catch (error) {
+        console.error('Error al obtener los usuarios:', error);
+      }
+    };
+
+    fetchUserNames();
+  }, []);
   const showAlert = (message, icon) => {
     Swal.fire({
       title: message,
@@ -397,7 +418,7 @@ const Orders = () => {
                   <th>Fecha de Orden</th>
                   <th>Monto Total</th>
                   <th>Estado</th>
-                  <th>Usuario ID</th>
+                  <th>Usuario</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -409,7 +430,7 @@ const Orders = () => {
                     <td>{new Date(order.OrderDate).toLocaleDateString()}</td>
                     <td>{order.total_price}</td>
                     <td>{order.status}</td>
-                    <td>{order.id_usuario}</td>
+                    <td>{userNames[order.id_usuario] || 'Cargando...'}</td> {/* Mostrar el nombre del usuario */}
 
                     {/* Mostrar detalles del producto dentro de la orden */}
                    
