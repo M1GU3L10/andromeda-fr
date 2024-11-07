@@ -14,6 +14,7 @@ import Programming from './pages/programming';
 import Sales from './pages/sales';
 import ServicesView from './pages/servicesView';
 import AppointmentView from './pages/appointmentView';
+import RegisterView from './pages/appointmentView/registerView';
 import Shopping from './pages/shopping';
 import Suppliers from './pages/suppliers';
 import Users from './pages/users';
@@ -24,15 +25,16 @@ import RegisterShopping from './pages/shopping/registerShopping';
 import ViewShopping from './pages/shopping/viewShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
 import UpdateAppointment from './pages/appointment/updateAppointment';
+import Ordermy from './pages/ordermy';
 import Login from './pages/Login';
 import Shop from './pages/shop';
+import Index from './pages/index';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
-import Index from './pages/index';
 
 export const MyContext = createContext();
 
@@ -90,6 +92,7 @@ function App() {
             <div className={`content ${isHideSidebarAndHeader === true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
               <Routes>
                 <Route path="/login" element={<PermissionCheck requiredPermission="public"><Login /></PermissionCheck>} />
+                <Route path="/RegisterView" element={<PermissionCheck requiredPermission="public"><RegisterView /></PermissionCheck>} />
                 <Route path="/index" element={<PermissionCheck requiredPermission="public"><Index /></PermissionCheck>} />
                 <Route path="/register" element={<PermissionCheck requiredPermission="public"><Register /></PermissionCheck>} />
                 <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
@@ -172,11 +175,16 @@ function App() {
                   </PermissionCheck>
                 } />
                 <Route path="/shop" element={
-                  <PermissionCheck requiredPermission="Productos">
+                  <PermissionCheck requiredPermission="public">
                     <Shop />
                   </PermissionCheck>
                 } />
-
+                <Route
+                   path="/ordermy" element={
+                    <PermissionCheck requiredPermission="public">
+                      <Ordermy />
+                    </PermissionCheck>
+                  } />
                 <Route path="/suppliers" element={
                   <PermissionCheck requiredPermission="Proveedores">
                     <Suppliers />

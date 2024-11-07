@@ -1,20 +1,23 @@
 'use client'
 
-import * as React from 'react'
-import axios from 'axios'
-import { emphasize, styled, alpha } from '@mui/material/styles'
-import { Button, Breadcrumbs, Chip, Switch } from '@mui/material'
-import HomeIcon from '@mui/icons-material/Home'
-import { GiShoppingCart } from "react-icons/gi"
-import { BsPlusSquareFill } from "react-icons/bs"
-import { FaEye, FaPencilAlt } from "react-icons/fa"
-import { IoTrashSharp, IoSearch } from "react-icons/io5"
-import { MdOutlineSave } from "react-icons/md"
-import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
-import { Modal, Form, Row, Col } from 'react-bootstrap'
-import Pagination from '../../components/pagination/index'
-import { blue } from '@mui/material/colors'
+import * as React from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { emphasize, styled, alpha } from '@mui/material/styles';
+import { Button, Breadcrumbs, Chip, Switch } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import { GiShoppingCart } from 'react-icons/gi';
+import { BsPlusSquareFill } from 'react-icons/bs';
+import { FaEye, FaPencilAlt } from 'react-icons/fa';
+import { IoTrashSharp, IoSearch } from 'react-icons/io5';
+import { MdOutlineSave } from 'react-icons/md';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import { Modal, Form, Row, Col } from 'react-bootstrap';
+import Pagination from '../../components/pagination/index';
+import { blue } from '@mui/material/colors';
+import { FaMoneyBillWave } from "react-icons/fa";
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -43,17 +46,55 @@ const BlueSwitch = styled(Switch)(({ theme }) => ({
 }))
 
 const Orders = () => {
-  const url = 'http://localhost:1056/api/orders'
-  const [orders, setOrders] = React.useState([])
-  const [formValues, setFormValues] = React.useState({
+  const url = 'http://localhost:1056/api/orders';
+  const usersUrl = 'http://localhost:1056/api/users';
+  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);  // Estado para los productos
+  const [users, setUsers] = useState([]);  // Estado para los usuarios
+  const [userNames, setUserNames] = useState({});
+
+  const [detail, setDetail] = useState({
+    id_producto: '', // Asegúrate de que este valor esté correctamente asignado
+  });
+  const [formValues, setFormValues] = useState({
     id: '',
     Billnumber: '',
     OrderDate: '',
     registrationDate: '',
     total_price: '',
     status: '',
-    id_usuario: ''
-  })
+    id_usuario: '',
+    orderDetails: []  // Detalles de la orden
+  });
+
+
+  // Función para cargar las órdenes desde la API
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get(url);
+      setOrders(response.data);
+    } catch (error) {
+      console.error('Error al obtener las órdenes:', error);
+    }
+  };
+
+  // Función para obtener productos y usuarios
+  const fetchProductsAndUsers = async () => {
+    try {
+      const productsResponse = await axios.get('http://localhost:1056/api/products');
+      const usersResponse = await axios.get('http://localhost:1056/api/users');
+      setProducts(productsResponse.data);
+      setUsers(usersResponse.data);
+    } catch (error) {
+      console.error('Error al obtener productos y usuarios:', error);
+    }
+  };
+
+  // useEffect para cargar las órdenes y los productos/usuarios cuando el componente se monta
+  useEffect(() => {
+    fetchOrders();
+    fetchProductsAndUsers();
+  }, []);
   const [operation, setOperation] = React.useState(1)
   const [title, setTitle] = React.useState('')
   const [search, setSearch] = React.useState('')
@@ -63,7 +104,8 @@ const Orders = () => {
   const [errors, setErrors] = React.useState({})
   const [touched, setTouched] = React.useState({})
 
-  const statusOptions = ['Completada', 'Cancelada', 'En proceso']
+
+  const statusOptions = ['Completada', 'Cancelada', 'Pendiente']
 
   React.useEffect(() => {
     getOrders()
@@ -78,6 +120,54 @@ const Orders = () => {
     }
   }
 
+  const fetchUserNames = async () => {
+    try {
+      const response = await axios.get('http://localhost:1056/api/users');
+      const users = response.data;
+
+      const userNamesMap = users.reduce((acc, user) => {
+        acc[user.id] = user.name;
+        return acc;
+      }, {});
+
+      setUserNames(userNamesMap);
+    } catch (error) {
+      console.error('Error al obtener los usuarios', error);
+    }
+  };
+  useEffect(() => {
+    // Llamamos a la función para obtener las órdenes y los usuarios
+    getOrders();
+    fetchUserNames();
+  }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:1056/api/products')
+      .then((response) => response.json())
+      .then((data) => setProducts(data))
+      .catch((error) => console.error('Error fetching products:', error));
+  }, []);
+  useEffect(() => {
+    // Función para obtener el nombre de usuario por su id
+    const fetchUserNames = async () => {
+      try {
+        const response = await axios.get('http://localhost:1056/api/users'); // API que devuelve los usuarios
+        const users = response.data;
+
+        // Mapear los nombres de usuario y almacenarlos en el estado
+        const userNamesMap = users.reduce((acc, user) => {
+          acc[user.id] = user.name; // Suponiendo que el objeto de usuario tiene 'id' y 'name'
+          return acc;
+        }, {});
+
+        setUserNames(userNamesMap); // Actualizar el estado con los nombres de los usuarios
+      } catch (error) {
+        console.error('Error al obtener los usuarios:', error);
+      }
+    };
+
+    fetchUserNames();
+  }, []);
   const showAlert = (message, icon) => {
     Swal.fire({
       title: message,
@@ -85,17 +175,17 @@ const Orders = () => {
       confirmButtonText: 'Ok'
     })
   }
-
   const searcher = (e) => {
-    setSearch(e.target.value)
-    setCurrentPage(1)
-  }
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  };
 
+  // Filtro para las órdenes basado en la búsqueda
   const filteredOrders = orders.filter((order) =>
-    order.Billnumber.toLowerCase().includes(search.toLowerCase()) ||
-    order.status.toLowerCase().includes(search.toLowerCase())
-  )
-
+    order.Billnumber.toLowerCase().includes(search.toLowerCase()) || // Filtrar por número de factura
+    order.status.toLowerCase().includes(search.toLowerCase()) ||    // Filtrar por estado
+    (userNames[order.id_usuario] && userNames[order.id_usuario].toLowerCase().includes(search.toLowerCase())) // Filtrar por nombre de usuario
+  );
   const indexOfLastOrder = currentPage * ordersPerPage
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage
   const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder)
@@ -103,38 +193,97 @@ const Orders = () => {
   const nPages = Math.ceil(filteredOrders.length / ordersPerPage)
 
   const openModal = (op, order = null) => {
-    setOperation(op)
-    setTitle(op === 1 ? 'Registrar orden' : 'Editar orden')
-    setFormValues(op === 1 ? {
-      id: '',
-      Billnumber: '',
-      OrderDate: new Date().toISOString().split('T')[0],
-      registrationDate: new Date().toISOString().split('T')[0],
-      total_price: '',
-      status: '',
-      id_usuario: ''
-    } : {
-      id: order.id,
-      Billnumber: order.Billnumber,
-      OrderDate: order.OrderDate,
-      registrationDate: order.registrationDate,
-      total_price: order.total_price,
-      status: order.status,
-      id_usuario: order.id_usuario.toString()
-    })
-    setShowModal(true)
-  }
+    setOperation(op);
+    setTitle(op === 1 ? 'Registrar orden' : 'Editar orden');
+
+    setFormValues(op === 1
+      ? {
+        id: '',
+        Billnumber: '',
+        OrderDate: new Date().toISOString().split('T')[0],
+        registrationDate: new Date().toISOString().split('T')[0],
+        total_price: '',
+        status: '',
+        id_usuario: '', // Aquí irá el id del usuario cuando se registre una nueva orden
+        orderDetails: []
+      }
+      : {
+        id: order.id,
+        Billnumber: order.Billnumber,
+        OrderDate: order.OrderDate,
+        registrationDate: order.registrationDate,
+        total_price: order.total_price,
+        status: order.status,
+        id_usuario: order.id_usuario.toString(), // El id_usuario viene de la orden al editarla
+        orderDetails: order.OrderDetails || []
+      }
+    );
+
+    setShowModal(true);
+  };
+
+  // Función para guardar una nueva orden o actualizar una existente
+  const handleSaveOrder = async () => {
+    try {
+      const orderData = { ...formValues };
+
+      // Si la operación es de creación (op === 1), hacer un POST
+      if (operation === 1) {
+        const response = await axios.post(url, orderData);
+        const orderDetails = formValues.orderDetails.map(detail => ({
+          ...detail,
+          id_order: response.data.id // Asociar el id de la orden con los detalles
+        }));
+        await axios.post('http://localhost:1056/api/orderdetails', orderDetails);
+      }
+      // Si la operación es de edición (op !== 1), hacer un PUT
+      else {
+        await axios.put(`${url}/${formValues.id}`, orderData);
+        const orderDetails = formValues.orderDetails.map(detail => ({
+          ...detail,
+          id_order: formValues.id // Asociar el id de la orden con los detalles
+        }));
+        await axios.put('http://localhost:1056/api/orderdetails', orderDetails);
+      }
+
+      // Cerrar el modal y recargar las órdenes
+      setShowModal(false);
+      fetchOrders();  // Refrescar la lista de órdenes
+    } catch (error) {
+      console.error('Error al guardar la orden:', error);
+    }
+  };
 
   const handleClose = () => {
     setShowModal(false)
     setErrors({})
     setTouched({})
   }
+  const handleRemoveDetail = (index) => {
+    const newOrderDetails = [...formValues.orderDetails];
+    newOrderDetails.splice(index, 1);
+    setFormValues({
+      ...formValues,
+      orderDetails: newOrderDetails
+    });
+  };
+  const handleAddDetail = () => {
+    setFormValues({
+      ...formValues,
+      orderDetails: [...formValues.orderDetails, { quantity: '', unitPrice: '', id_producto: '' }]
+    });
+  };
+
+  const handleDetailChange = (index, field, value) => {
+    const newDetails = [...formValues.orderDetails];
+    newDetails[index] = { ...newDetails[index], [field]: value };
+    setFormValues({ ...formValues, orderDetails: newDetails });
+  };
 
   const handleValidation = (name, value) => {
     let error = ''
     switch (name) {
-      
+
       case 'total_price':
         error = value.trim() === '' ? 'El monto total es requerido' : ''
         break
@@ -223,24 +372,70 @@ const Orders = () => {
     })
   }
 
-  const handleViewDetails = (order) => {
+  const handleViewDetails = async (order) => {
+    // Generar el contenido HTML con los detalles de la orden y los productos
+    let orderDetailsHtml = '';
+
+    // Función para obtener el nombre del usuario de la API
+    const fetchUserName = async (userId) => {
+      try {
+        const response = await axios.get(`http://localhost:1056/api/users/${userId}`);
+        return response.data.name; // Suponiendo que la API devuelve un objeto con un campo 'name'
+      } catch (error) {
+        console.error('Error al obtener el nombre del usuario:', error);
+        return 'Usuario no encontrado';
+      }
+    };
+
+    // Realizar la solicitud GET a la API para obtener los productos
+    let products = [];
+    try {
+      const response = await axios.get('http://localhost:1056/api/products');
+      products = response.data; // Suponiendo que la API devuelve una lista de productos
+    } catch (error) {
+      console.error('Error al obtener los productos:', error);
+    }
+
+    // Iterar sobre los detalles de la orden y generar el HTML para cada producto
+    for (const detail of order.OrderDetails) {
+      // Buscar el nombre del producto basado en el id_producto
+      const product = products.find(p => p.id === detail.id_producto);
+
+      // Si se encuentra el producto, generar el HTML, si no, mostrar 'Desconocido'
+      orderDetailsHtml += `
+        <p><strong>Producto:</strong> ${product ? product.Product_Name : 'Desconocido'}</p>
+        <p><strong>Cantidad:</strong> ${detail.quantity}</p>
+        <p><strong>Precio Unitario:</strong> ${detail.unitPrice}</p>
+        <p><strong>Total:</strong> ${detail.total_price}</p>
+        <hr />
+      `;
+    }
+
+    // Obtener el nombre del usuario y generar el contenido HTML del SweetAlert
+    const userName = await fetchUserName(order.id_usuario);
+
+    // Mostrar el SweetAlert con los detalles de la orden y los productos
     Swal.fire({
       title: 'Detalles de la Orden',
       html: `
         <div class="text-left">
           <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
           <p><strong>Fecha de Orden:</strong> ${new Date(order.OrderDate).toLocaleDateString()}</p>
-          <p><strong>Fecha de Registro:</strong> ${new Date(order.registrationDate).toLocaleDateString()}</p>
           <p><strong>Monto Total:</strong> ${order.total_price}</p>
           <p><strong>Estado:</strong> ${order.status}</p>
-          <p><strong>Usuario ID:</strong> ${order.id_usuario}</p>
+          <p><strong>Usuario:</strong> ${userName}</p> <!-- Mostrar el nombre del usuario -->
           <p><strong>Expiración Token:</strong> ${new Date(order.Token_Expiration).toLocaleString()}</p>
+          <hr />
+          <p><strong>Detalles del Pedido:</strong></p>
+          ${orderDetailsHtml}
         </div>
       `,
-      icon: 'info',
+
       confirmButtonText: 'Cerrar'
-    })
-  }
+    });
+  };
+
+
 
   return (
     <div className="right-content w-100">
@@ -256,6 +451,12 @@ const Orders = () => {
                 href="#"
                 label="Home"
                 icon={<HomeIcon fontSize="small" />}
+              />
+              <StyledBreadcrumb
+                component="a"
+                href="#"
+                label="Salidas"
+                icon={<FaMoneyBillWave fontSize="small" />}
               />
               <StyledBreadcrumb
                 component="a"
@@ -287,7 +488,7 @@ const Orders = () => {
                   <th>Fecha de Orden</th>
                   <th>Monto Total</th>
                   <th>Estado</th>
-                  <th>Usuario ID</th>
+                  <th>Usuario</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -299,7 +500,11 @@ const Orders = () => {
                     <td>{new Date(order.OrderDate).toLocaleDateString()}</td>
                     <td>{order.total_price}</td>
                     <td>{order.status}</td>
-                    <td>{order.id_usuario}</td>
+                    <td>{userNames[order.id_usuario] || 'Cargando...'}</td> {/* Mostrar el nombre del usuario */}
+
+                    {/* Mostrar detalles del producto dentro de la orden */}
+
+
                     <td>
                       <div className='actions d-flex align-items-center'>
                         <Button color='primary' className='primary' onClick={() => handleViewDetails(order)}><FaEye /></Button>
@@ -321,6 +526,7 @@ const Orders = () => {
               </div>
             )}
           </div>
+
         </div>
       </div>
 
@@ -339,12 +545,7 @@ const Orders = () => {
                     name="Billnumber"
                     value={formValues.Billnumber}
                     onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.Billnumber && !!errors.Billnumber}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.Billnumber}
-                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col sm="6">
@@ -359,6 +560,7 @@ const Orders = () => {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row className="mb-3">
               <Col sm="6">
                 <Form.Group>
@@ -380,15 +582,11 @@ const Orders = () => {
                     name="total_price"
                     value={formValues.total_price}
                     onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.total_price && !!errors.total_price}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.total_price}
-                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
+
             <Row className="mb-3">
               <Col sm="6">
                 <Form.Group>
@@ -397,39 +595,83 @@ const Orders = () => {
                     name="status"
                     value={formValues.status}
                     onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.status && !!errors.status}
                   >
                     <option value="">Seleccione un estado</option>
                     {statusOptions.map((status, index) => (
                       <option key={index} value={status}>{status}</option>
                     ))}
                   </Form.Select>
-                  {errors.status && (
-                    <div className="invalid-feedback">
-                      {errors.status}
-                    </div>
-                  )}
-
                 </Form.Group>
               </Col>
               <Col sm="6">
                 <Form.Group>
                   <Form.Label className='required'>Usuario ID</Form.Label>
-                  <Form.Control
-                    type="number"
+                  <Form.Select
                     name="id_usuario"
                     value={formValues.id_usuario}
                     onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.id_usuario && !!errors.id_usuario}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.id_usuario}
-                  </Form.Control.Feedback>
+                  >
+                    <option value="">Seleccione un usuario</option>
+                    {users.map(user => (
+                      <option key={user.id} value={user.id}>{user.name}</option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
+
+            <div>
+              <h5>Detalles de la Orden</h5>
+              {formValues.orderDetails.map((detail, index) => (
+                <Row key={index} className="mb-3">
+                  <Col sm="4">
+
+                    <Form.Group>
+                      <Form.Label>Producto</Form.Label>
+                      <Form.Select
+                        value={detail.id_producto}
+                        onChange={(e) => handleDetailChange(index, 'id_producto', e.target.value)}
+                        style={{ color: 'black' }}  // Color negro para el texto
+                      >
+                        <option value="">Seleccione un producto</option>
+                        {products.map((product) => (
+                          <option key={product.id} value={product.id}>
+                            {product.name} {/* Aquí mostramos el nombre del producto */}
+                          </option>
+                        ))}
+                      </Form.Select>
+
+                    </Form.Group>
+
+
+                  </Col>
+                  <Col sm="4">
+                    <Form.Group>
+                      <Form.Label>Cantidad</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={detail.quantity}
+                        onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col sm="4">
+                    <Form.Group>
+                      <Form.Label>Precio Unitario</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={detail.unitPrice}
+                        onChange={(e) => handleDetailChange(index, 'unitPrice', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col sm="12">
+                    <Button variant="danger" onClick={() => handleRemoveDetail(index)}>Eliminar</Button>
+                  </Col>
+                </Row>
+              ))}
+              <Button variant="secondary" onClick={handleAddDetail}>Agregar detalle</Button>
+            </div>
           </Form>
         </Modal.Body>
         <Modal.Footer>
