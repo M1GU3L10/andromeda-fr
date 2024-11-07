@@ -52,6 +52,7 @@ const Orders = () => {
   const [products, setProducts] = useState([]);  // Estado para los productos
   const [users, setUsers] = useState([]);  // Estado para los usuarios
   const [userNames, setUserNames] = useState({});
+  
   const [detail, setDetail] = useState({
     id_producto: '', // Asegúrate de que este valor esté correctamente asignado
   });
@@ -118,6 +119,28 @@ const Orders = () => {
       showAlert('Error al obtener órdenes', 'error')
     }
   }
+
+  const fetchUserNames = async () => {
+    try {
+      const response = await axios.get('http://localhost:1056/api/users');
+      const users = response.data;
+
+      const userNamesMap = users.reduce((acc, user) => {
+        acc[user.id] = user.name;
+        return acc;
+      }, {});
+
+      setUserNames(userNamesMap);
+    } catch (error) {
+      console.error('Error al obtener los usuarios', error);
+    }
+  };
+  useEffect(() => {
+    // Llamamos a la función para obtener las órdenes y los usuarios
+    getOrders();
+    fetchUserNames();
+  }, []);
+
   useEffect(() => {
     fetch('http://localhost:1056/api/products')
       .then((response) => response.json())
@@ -152,17 +175,17 @@ const Orders = () => {
       confirmButtonText: 'Ok'
     })
   }
-
   const searcher = (e) => {
-    setSearch(e.target.value)
-    setCurrentPage(1)
-  }
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  };
 
+  // Filtro para las órdenes basado en la búsqueda
   const filteredOrders = orders.filter((order) =>
-    order.Billnumber.toLowerCase().includes(search.toLowerCase()) ||
-    order.status.toLowerCase().includes(search.toLowerCase())
-  )
-
+    order.Billnumber.toLowerCase().includes(search.toLowerCase()) || // Filtrar por número de factura
+    order.status.toLowerCase().includes(search.toLowerCase()) ||    // Filtrar por estado
+    (userNames[order.id_usuario] && userNames[order.id_usuario].toLowerCase().includes(search.toLowerCase())) // Filtrar por nombre de usuario
+  );
   const indexOfLastOrder = currentPage * ordersPerPage
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage
   const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder)
