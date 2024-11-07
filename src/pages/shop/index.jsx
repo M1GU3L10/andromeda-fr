@@ -235,8 +235,7 @@ export default function Component() {
 
   const clearCart = () => {
     setCart({});
-    setAlertMessage('Carrito vacío');
-    setAlertSeverity('info');
+
   };
 
   const handleCheckout = async () => {
