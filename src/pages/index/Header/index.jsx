@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../../App.js';
 import logo from '../../../assets/images/logo-light.png';
-import { Avatar, Menu, MenuItem, Button } from '@mui/material';
+import { Avatar, Menu, MenuItem, Button, IconButton, Badge } from '@mui/material';
 import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
 const Header = ({ scrollToServices }) => {
     const context = useContext(MyContext);
@@ -16,19 +18,18 @@ const Header = ({ scrollToServices }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [cart, setCart] = useState({});
 
     useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 0);
-        };
-
+        const handleScroll = () => setIsScrolled(window.scrollY > 0);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
-        context.setThemeMode(false)
+        context.setThemeMode(false);
         checkLoginStatus();
     }, [context]);
 
@@ -47,22 +48,15 @@ const Header = ({ scrollToServices }) => {
         }
     };
 
-    const handleLogin = () => {
-        navigate('/login');
-    };
-
+    const handleLogin = () => navigate('/login');
+    const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
     const handledashboard = () => {
         context.setIsHideSidebarAndHeader(false);
         navigate('/services');
     };
 
-    const handleMenuClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
+    const handleMenuClick = (event) => setAnchorEl(event.currentTarget);
+    const handleMenuClose = () => setAnchorEl(null);
 
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
@@ -78,18 +72,13 @@ const Header = ({ scrollToServices }) => {
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
-            progress: undefined,
             onClose: () => navigate('/index')
         });
     };
 
-    const toggleNav = () => {
-        setIsNavOpen(!isNavOpen);
-    };
+    const toggleNav = () => setIsNavOpen(!isNavOpen);
 
-    const getUserInitial = () => {
-        return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
-    };
+    const getUserInitial = () => (userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?');
 
     return (
         <header className={`header-index ${isScrolled ? 'abajo' : ''}`}>
@@ -126,10 +115,17 @@ const Header = ({ scrollToServices }) => {
                                 {userEmail}
                             </Button>
                             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
-                                {userRole == 1 || userRole == 2 ? (
+                                {userRole === 1 || userRole === 2 ? (
                                     <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
                                 ) : (
-                                    <MenuItem>Carrito</MenuItem>
+                                    <MenuItem onClick={() => setDrawerOpen(true)}>
+                                        <IconButton color="inherit">
+                                            <Badge badgeContent={getTotalItems()} color="primary">
+                                                <AddShoppingCartIcon />
+                                            </Badge>
+                                        </IconButton>
+                                        Carrito
+                                    </MenuItem>
                                 )}
                                 <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
                             </Menu>
@@ -144,6 +140,7 @@ const Header = ({ scrollToServices }) => {
                         </Button>
                     )}
                 </div>
+                
             </div>
         </header>
     );

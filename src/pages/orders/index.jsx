@@ -18,6 +18,7 @@ import Pagination from '../../components/pagination/index';
 import { blue } from '@mui/material/colors';
 
 
+
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
   height: theme.spacing(3),
@@ -51,6 +52,9 @@ const Orders = () => {
   const [products, setProducts] = useState([]);  // Estado para los productos
   const [users, setUsers] = useState([]);  // Estado para los usuarios
   const [userNames, setUserNames] = useState({});
+  const [detail, setDetail] = useState({
+    id_producto: '', // Asegúrate de que este valor esté correctamente asignado
+  });
   const [formValues, setFormValues] = useState({
     id: '',
     Billnumber: '',
@@ -99,7 +103,8 @@ const Orders = () => {
   const [errors, setErrors] = React.useState({})
   const [touched, setTouched] = React.useState({})
 
-  const statusOptions = ['Completada', 'Cancelada', 'En proceso']
+
+  const statusOptions = ['Completada', 'Cancelada', 'Pendiente']
 
   React.useEffect(() => {
     getOrders()
@@ -114,12 +119,18 @@ const Orders = () => {
     }
   }
   useEffect(() => {
+    fetch('http://localhost:1056/api/products')
+      .then((response) => response.json())
+      .then((data) => setProducts(data))
+      .catch((error) => console.error('Error fetching products:', error));
+  }, []);
+  useEffect(() => {
     // Función para obtener el nombre de usuario por su id
     const fetchUserNames = async () => {
       try {
         const response = await axios.get('http://localhost:1056/api/users'); // API que devuelve los usuarios
         const users = response.data;
-        
+
         // Mapear los nombres de usuario y almacenarlos en el estado
         const userNamesMap = users.reduce((acc, user) => {
           acc[user.id] = user.name; // Suponiendo que el objeto de usuario tiene 'id' y 'name'
@@ -225,6 +236,26 @@ const Orders = () => {
     setErrors({})
     setTouched({})
   }
+  const handleRemoveDetail = (index) => {
+    const newOrderDetails = [...formValues.orderDetails];
+    newOrderDetails.splice(index, 1);
+    setFormValues({
+      ...formValues,
+      orderDetails: newOrderDetails
+    });
+  };
+  const handleAddDetail = () => {
+    setFormValues({
+      ...formValues,
+      orderDetails: [...formValues.orderDetails, { quantity: '', unitPrice: '', id_producto: '' }]
+    });
+  };
+
+  const handleDetailChange = (index, field, value) => {
+    const newDetails = [...formValues.orderDetails];
+    newDetails[index] = { ...newDetails[index], [field]: value };
+    setFormValues({ ...formValues, orderDetails: newDetails });
+  };
 
   const handleValidation = (name, value) => {
     let error = ''
@@ -321,7 +352,7 @@ const Orders = () => {
   const handleViewDetails = async (order) => {
     // Generar el contenido HTML con los detalles de la orden y los productos
     let orderDetailsHtml = '';
-  
+
     // Función para obtener el nombre del usuario de la API
     const fetchUserName = async (userId) => {
       try {
@@ -332,7 +363,7 @@ const Orders = () => {
         return 'Usuario no encontrado';
       }
     };
-  
+
     // Realizar la solicitud GET a la API para obtener los productos
     let products = [];
     try {
@@ -341,12 +372,12 @@ const Orders = () => {
     } catch (error) {
       console.error('Error al obtener los productos:', error);
     }
-  
+
     // Iterar sobre los detalles de la orden y generar el HTML para cada producto
     for (const detail of order.OrderDetails) {
       // Buscar el nombre del producto basado en el id_producto
       const product = products.find(p => p.id === detail.id_producto);
-  
+
       // Si se encuentra el producto, generar el HTML, si no, mostrar 'Desconocido'
       orderDetailsHtml += `
         <p><strong>Producto:</strong> ${product ? product.Product_Name : 'Desconocido'}</p>
@@ -356,10 +387,10 @@ const Orders = () => {
         <hr />
       `;
     }
-  
+
     // Obtener el nombre del usuario y generar el contenido HTML del SweetAlert
     const userName = await fetchUserName(order.id_usuario);
-  
+
     // Mostrar el SweetAlert con los detalles de la orden y los productos
     Swal.fire({
       title: 'Detalles de la Orden',
@@ -376,13 +407,13 @@ const Orders = () => {
           ${orderDetailsHtml}
         </div>
       `,
-      
+
       confirmButtonText: 'Cerrar'
     });
   };
-  
-  
-  
+
+
+
   return (
     <div className="right-content w-100">
       <div className="row d-flex align-items-center w-100">
@@ -443,7 +474,7 @@ const Orders = () => {
                     <td>{userNames[order.id_usuario] || 'Cargando...'}</td> {/* Mostrar el nombre del usuario */}
 
                     {/* Mostrar detalles del producto dentro de la orden */}
-                   
+
 
                     <td>
                       <div className='actions d-flex align-items-center'>
@@ -485,12 +516,7 @@ const Orders = () => {
                     name="Billnumber"
                     value={formValues.Billnumber}
                     onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.Billnumber && !!errors.Billnumber}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.Billnumber}
-                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col sm="6">
@@ -505,6 +531,7 @@ const Orders = () => {
                 </Form.Group>
               </Col>
             </Row>
+
             <Row className="mb-3">
               <Col sm="6">
                 <Form.Group>
@@ -526,15 +553,11 @@ const Orders = () => {
                     name="total_price"
                     value={formValues.total_price}
                     onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.total_price && !!errors.total_price}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.total_price}
-                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
+
             <Row className="mb-3">
               <Col sm="6">
                 <Form.Group>
@@ -543,39 +566,83 @@ const Orders = () => {
                     name="status"
                     value={formValues.status}
                     onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.status && !!errors.status}
                   >
                     <option value="">Seleccione un estado</option>
                     {statusOptions.map((status, index) => (
                       <option key={index} value={status}>{status}</option>
                     ))}
                   </Form.Select>
-                  {errors.status && (
-                    <div className="invalid-feedback">
-                      {errors.status}
-                    </div>
-                  )}
-
                 </Form.Group>
               </Col>
               <Col sm="6">
                 <Form.Group>
                   <Form.Label className='required'>Usuario ID</Form.Label>
-                  <Form.Control
-                    type="number"
+                  <Form.Select
                     name="id_usuario"
                     value={formValues.id_usuario}
                     onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.id_usuario && !!errors.id_usuario}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.id_usuario}
-                  </Form.Control.Feedback>
+                  >
+                    <option value="">Seleccione un usuario</option>
+                    {users.map(user => (
+                      <option key={user.id} value={user.id}>{user.name}</option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
+
+            <div>
+              <h5>Detalles de la Orden</h5>
+              {formValues.orderDetails.map((detail, index) => (
+                <Row key={index} className="mb-3">
+                  <Col sm="4">
+
+                    <Form.Group>
+                      <Form.Label>Producto</Form.Label>
+                      <Form.Select
+                        value={detail.id_producto}
+                        onChange={(e) => handleDetailChange(index, 'id_producto', e.target.value)}
+                        style={{ color: 'black' }}  // Color negro para el texto
+                      >
+                        <option value="">Seleccione un producto</option>
+                        {products.map((product) => (
+                          <option key={product.id} value={product.id}>
+                            {product.name} {/* Aquí mostramos el nombre del producto */}
+                          </option>
+                        ))}
+                      </Form.Select>
+
+                    </Form.Group>
+                        
+
+                  </Col>
+                  <Col sm="4">
+                    <Form.Group>
+                      <Form.Label>Cantidad</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={detail.quantity}
+                        onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col sm="4">
+                    <Form.Group>
+                      <Form.Label>Precio Unitario</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={detail.unitPrice}
+                        onChange={(e) => handleDetailChange(index, 'unitPrice', e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col sm="12">
+                    <Button variant="danger" onClick={() => handleRemoveDetail(index)}>Eliminar</Button>
+                  </Col>
+                </Row>
+              ))}
+              <Button variant="secondary" onClick={handleAddDetail}>Agregar detalle</Button>
+            </div>
           </Form>
         </Modal.Body>
         <Modal.Footer>

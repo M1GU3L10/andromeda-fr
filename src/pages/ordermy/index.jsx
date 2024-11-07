@@ -25,13 +25,13 @@ const Ordermy = () => {
   const context = useContext(MyContext);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  
   const [userRole, setUserRole] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const servicesRef = useRef(null);
   const [userId, setUserId] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [expandedOrder, setExpandedOrder] = useState(null);
 
   useEffect(() => {
     checkLoginStatus();
@@ -51,32 +51,58 @@ const Ordermy = () => {
     const idRole = localStorage.getItem('roleId');
     const userId = localStorage.getItem('userId');
 
-
-
     if (token && storedEmail && idRole && userId) {
       setIsLoggedIn(true);
       setUserEmail(storedEmail);
       setUserRole(idRole);
       setUserId(userId);
-      
     } else {
       setIsLoggedIn(false);
       setUserEmail('');
       setUserRole('');
       setUserId(null);
-      
     }
   };
 
-  useEffect(() => {
-    checkLoginStatus();
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
-    if (isLoggedIn) {
-      
-    } else {
-      setUserRole(null);
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP'
+    }).format(amount);
+  };
+
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'pendiente':
+        return '#fbbf24';
+      case 'completado':
+        return '#22c55e';
+      case 'cancelado':
+        return '#ef4444';
+      default:
+        return '#3b82f6';
     }
-  }, [isLoggedIn]);
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('http://localhost:1056/api/orders');
+      const data = await response.json();
+      setOrders(data);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error('Error al cargar los pedidos');
+    }
+  };
+
   const handleLogin = () => {
     navigate('/login');
   };
@@ -85,7 +111,6 @@ const Ordermy = () => {
     context.setIsHideSidebarAndHeader(false);
     navigate('/services');
   };
-
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -112,21 +137,6 @@ const Ordermy = () => {
       progress: undefined,
       onClose: () => navigate('/index')
     });
-  };
-
-
-  const fetchOrders = async () => {
-    try {
-      const exampleOrders = [
-        { id: 1, date: '2023-11-01', total: 50.00, status: 'Entregado' },
-        { id: 2, date: '2023-11-05', total: 75.50, status: 'En proceso' },
-        { id: 3, date: '2023-11-10', total: 100.00, status: 'Pendiente' },
-      ];
-      setOrders(exampleOrders);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Error al cargar los pedidos');
-    }
   };
 
   const toggleNav = () => {
@@ -190,20 +200,69 @@ const Ordermy = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>ID Pedido</TableCell>
+                    <TableCell>N° Pedido</TableCell>
                     <TableCell>Fecha</TableCell>
                     <TableCell>Total</TableCell>
                     <TableCell>Estado</TableCell>
+                    <TableCell>Detalles</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>{order.id}</TableCell>
-                      <TableCell>{order.date}</TableCell>
-                      <TableCell>${order.total.toFixed(2)}</TableCell>
-                      <TableCell>{order.status}</TableCell>
-                    </TableRow>
+                    <React.Fragment key={order.id}>
+                      <TableRow>
+                        <TableCell>{order.Billnumber}</TableCell>
+                        <TableCell>{formatDate(order.OrderDate)}</TableCell>
+                        <TableCell>{formatCurrency(order.total_price)}</TableCell>
+                        <TableCell>
+                          <span style={{ 
+                            backgroundColor: getStatusColor(order.status),
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '0.875rem'
+                          }}>
+                            {order.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                            variant="text"
+                          >
+                            {expandedOrder === order.id ? 'Ocultar' : 'Ver detalles'}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      {expandedOrder === order.id && (
+                        <TableRow>
+                          <TableCell colSpan={5} style={{ padding: '0' }}>
+                            <div style={{ padding: '16px', backgroundColor: '#f8f9fa' }}>
+                              <Table size="small">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>Producto ID</TableCell>
+                                    <TableCell>Cantidad</TableCell>
+                                    <TableCell>Precio Unitario</TableCell>
+                                    <TableCell>Total</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {order.OrderDetails.map((detail) => (
+                                    <TableRow key={detail.id}>
+                                      <TableCell>{detail.id_producto}</TableCell>
+                                      <TableCell>{detail.quantity}</TableCell>
+                                      <TableCell>{formatCurrency(detail.unitPrice)}</TableCell>
+                                      <TableCell>{formatCurrency(detail.total_price)}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
                   ))}
                 </TableBody>
               </Table>

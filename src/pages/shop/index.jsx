@@ -102,13 +102,13 @@ export default function Component() {
       setUserEmail(storedEmail);
       setUserRole(idRole);
       setUserId(userId);
-      
+
     } else {
       setIsLoggedIn(false);
       setUserEmail('');
       setUserRole('');
       setUserId(null);
-      
+
     }
   };
 
@@ -116,7 +116,7 @@ export default function Component() {
     checkLoginStatus();
 
     if (isLoggedIn) {
-      
+
     } else {
       setUserRole(null);
     }
@@ -162,7 +162,7 @@ export default function Component() {
     }
     setCart((prevCart) => {
       const currentQuantity = prevCart[product.id] || 0;
-    
+
       if (currentQuantity + 1 > product.Stock) {
         // Usamos un estado para activar el mensaje de alerta
         toast.error(`¡Producto agotado! `, {
@@ -174,31 +174,31 @@ export default function Component() {
           draggable: true,
           progress: undefined
         });
-    
+
         return prevCart;
       }
-    
+
       return {
         ...prevCart,
         [product.id]: currentQuantity + 1
       };
     });
-    
-    
-    
-   
-    
-    
-    
+
+
+
+
+
+
+
   };
 
-  
+
 
   const handleShowOrders = () => {
     navigate('/ordermy');
-  };  
+  };
 
-  
+
   const handlePageChange = ({ selected }) => {
     setCurrentPage(selected);
   };
@@ -214,7 +214,7 @@ export default function Component() {
         setAlertSeverity('warning');
         return prevCart;
       }
-    
+
       return {
         ...prevCart,
         [productId]: currentQuantity + 1
@@ -232,7 +232,7 @@ export default function Component() {
         setAlertSeverity('info');
         return newCart;
       }
-    
+
       return {
         ...prevCart,
         [productId]: currentQuantity - 1
@@ -466,7 +466,15 @@ export default function Component() {
                   {userRole == 1 || userRole == 2 ? (
                     <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
                   ) : (
-                    <MenuItem>Carrito</MenuItem>
+                    <MenuItem onClick={() => setDrawerOpen(true)}>
+                      <IconButton color="inherit">
+                        <Badge badgeContent={getTotalItems()} color="primary">
+                          <AddShoppingCartIcon />
+                        </Badge>
+                      </IconButton>
+                      Carrito
+                    </MenuItem>
+
                   )}
                   <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
                 </Menu>
