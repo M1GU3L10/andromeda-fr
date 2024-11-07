@@ -93,59 +93,63 @@ const Index = () => {
 
     return (
         <>
-            <header className={`header-index ${isScrolled ? 'abajo' : ''}`}>
-                <Link to={'/'} className='d-flex align-items-center logo-index'>
-                    <img src={logo} alt="Logo" />
-                    <span className='ml-2'>Barberia Orion</span>
-                </Link>
-                <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
-                    <nav className='navBar-index'>
-                        <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-                        <Link to='/appointmentView'>CITAS</Link>
-                        <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-                        <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
-                    </nav>
-                    <div className="auth-buttons">
-                        {isLoggedIn && userEmail ? (
-                            <div className="user-menu">
-                                <Button
-                                    onClick={handleMenuClick}
-                                    className="userLoginn"
-                                    startIcon={
-                                        <Avatar
-                                            sx={{
-                                                width: 32,
-                                                height: 32,
-                                                backgroundColor: '#b89b58'
-                                            }}
-                                        >
-                                            {getUserInitial()}
-                                        </Avatar>
-                                    }
-                                >
-                                    {userEmail}
-                                </Button>
-                                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
-                                    {userRole == 1 || userRole == 2 ? (
-                                        <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
-                                    ) : (
-                                        <MenuItem>Carrito</MenuItem>
-                                    )}
-                                    <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
-                                </Menu>
-                            </div>
-                        ) : (
-                            <Button
-                                variant="contained"
-                                className="book-now-btn"
-                                onClick={handleLogin}
-                            >
-                                Iniciar sesión
-                            </Button>
-                        )}
-                    </div>
-                </div>
-            </header>
+            <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
+        <Link to={'/'} className='d-flex align-items-center logo-index'>
+          <img src={logo} alt="Logo" />
+          <span className='ml-2'>Barberia Orion</span>
+        </Link>
+        <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
+          <nav className='navBar-index'>
+            <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
+            <Link to='/appointmentView'>CITAS</Link>
+            <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+            <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+          </nav>
+
+          <div className="auth-buttons">
+            {isLoggedIn && userEmail ? (
+              <div className="user-menu">
+                <Button
+                  onClick={handleMenuClick}
+                  className="userLoginn"
+                  startIcon={
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        backgroundColor: '#b89b58 '// Aplica el color aleatorio
+                      }}
+                    >
+                      {getUserInitial()}
+                    </Avatar>
+                    
+                  }
+                  
+                >
+              
+                  {userEmail}
+                </Button>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
+                  {userRole == 1 || userRole == 2 ? (
+                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
+                  ) : (
+                    <MenuItem>Carrito</MenuItem>
+                  )}
+                  <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
+                </Menu>
+              </div>
+            ) : (
+              <Button
+                variant="contained"
+                className="book-now-btn"
+                onClick={handleLogin}
+              >
+                Iniciar sesión
+              </Button>
+            )}
+          </div>
+        </div>
+      </header >
         </>
     );
 };

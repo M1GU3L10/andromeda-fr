@@ -75,12 +75,15 @@ const Absences = () => {
         getUsers();
     }, []);
 
+     // Modificar getAbsences para que sea async y devuelva los datos
     const getAbsences = async () => {
         try {
             const response = await axios.get(urlAbsences);
             setAbsences(response.data);
+            return response.data;
         } catch (error) {
             show_alerta('Error al obtener las ausencias', 'error');
+            return [];
         }
     }
 
@@ -180,13 +183,24 @@ const Absences = () => {
                 try {
                     await enviarSolicitud('DELETE', { id: id });
                     show_alerta('Operación exitosa', 'success');
-                    getAbsences();
+                    await getAbsences();
+                    
+                    // Calcular el número total de páginas después de eliminar
+                    const totalItems = absences.length - 1; // Restamos 1 por el elemento eliminado
+                    const newTotalPages = Math.ceil(totalItems / dataQt);
+                    
+                    // Si estamos en la última página y está vacía después de eliminar
+                    if (currentPages > newTotalPages) {
+                        // Regresar a la página anterior
+                        setCurrentPages(Math.max(1, currentPages - 1));
+                    }
+                    
                 } catch (error) {
                     show_alerta('Error al eliminar la ausencia', 'error');
                     console.log(error);
                 }
             } else {
-                show_alerta('La ausencia NO fue eliminada', 'info');
+                show_alerta('La ausencia no fue eliminada', 'info');
             }
         });
     }
