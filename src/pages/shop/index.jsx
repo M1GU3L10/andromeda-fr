@@ -149,8 +149,15 @@ export default function Component() {
 
   const addToCart = (product) => {
     if (product.Stock <= 0) {
-      setAlertMessage('Producto agotado');
-      setAlertSeverity('warning');
+      toast.error(`¡Producto agotado!`, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined
+      });
       return;
     }
     setCart((prevCart) => {
@@ -158,7 +165,7 @@ export default function Component() {
     
       if (currentQuantity + 1 > product.Stock) {
         // Usamos un estado para activar el mensaje de alerta
-        toast.error(`¡Producto agotado! Solo quedan ${product.Stock} en stock.`, {
+        toast.error(`¡Producto agotado! `, {
           position: "top-right",
           autoClose: 2000,
           hideProgressBar: false,
