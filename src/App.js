@@ -14,6 +14,7 @@ import Programming from './pages/programming';
 import Sales from './pages/sales';
 import ServicesView from './pages/servicesView';
 import AppointmentView from './pages/appointmentView';
+import RegisterView from './pages/appointmentView/registerView';
 import Shopping from './pages/shopping';
 import Suppliers from './pages/suppliers';
 import Users from './pages/users';
@@ -90,6 +91,7 @@ function App() {
             <div className={`content ${isHideSidebarAndHeader === true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
               <Routes>
                 <Route path="/login" element={<PermissionCheck requiredPermission="public"><Login /></PermissionCheck>} />
+                <Route path="/RegisterView" element={<PermissionCheck requiredPermission="public"><RegisterView /></PermissionCheck>} />
                 <Route path="/index" element={<PermissionCheck requiredPermission="public"><Index /></PermissionCheck>} />
                 <Route path="/register" element={<PermissionCheck requiredPermission="public"><Register /></PermissionCheck>} />
                 <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
