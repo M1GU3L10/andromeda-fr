@@ -18,6 +18,7 @@ import Switch from '@mui/material/Switch';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Modal, Form } from 'react-bootstrap';
+import { IoCart } from "react-icons/io5";
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ?
@@ -478,6 +479,12 @@ const Products = () => {
                                     label="Home"
                                     icon={<HomeIcon fontSize="small" />}
                                 />
+                                 <StyledBreadcrumb
+                                        component="a"
+                                        href="#"
+                                        label="Ingresos"
+                                        icon={<IoCart fontSize="small" />}
+                                    />
                                 <StyledBreadcrumb
                                     component="a"
                                     href="#"

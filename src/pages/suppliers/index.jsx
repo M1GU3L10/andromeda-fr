@@ -21,6 +21,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Modal, Form, Col, Row } from 'react-bootstrap';
 import { MdOutlineSave } from "react-icons/md";
+import { IoCart } from "react-icons/io5";
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -311,6 +312,12 @@ const Suppliers = () => {
                                         href="#"
                                         label="Home"
                                         icon={<HomeIcon fontSize="small" />}
+                                    />
+                                      <StyledBreadcrumb
+                                        component="a"
+                                        href="#"
+                                        label="Ingresos"
+                                        icon={<IoCart fontSize="small" />}
                                     />
                                     <StyledBreadcrumb
                                         component="a"
