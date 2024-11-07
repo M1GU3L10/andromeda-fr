@@ -16,7 +16,7 @@ import withReactContent from 'sweetalert2-react-content';
 import { Modal, Form, Row, Col } from 'react-bootstrap';
 import Pagination from '../../components/pagination/index';
 import { blue } from '@mui/material/colors';
-
+import { FaMoneyBillWave } from "react-icons/fa";
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
@@ -52,7 +52,7 @@ const Orders = () => {
   const [products, setProducts] = useState([]);  // Estado para los productos
   const [users, setUsers] = useState([]);  // Estado para los usuarios
   const [userNames, setUserNames] = useState({});
-  
+
   const [detail, setDetail] = useState({
     id_producto: '', // Asegúrate de que este valor esté correctamente asignado
   });
@@ -455,6 +455,12 @@ const Orders = () => {
               <StyledBreadcrumb
                 component="a"
                 href="#"
+                label="Salidas"
+                icon={<FaMoneyBillWave fontSize="small" />}
+              />
+              <StyledBreadcrumb
+                component="a"
+                href="#"
                 label="Pedidos"
                 icon={<GiShoppingCart fontSize="small" />}
               />
@@ -636,7 +642,7 @@ const Orders = () => {
                       </Form.Select>
 
                     </Form.Group>
-                        
+
 
                   </Col>
                   <Col sm="4">
