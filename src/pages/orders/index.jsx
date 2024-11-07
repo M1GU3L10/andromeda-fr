@@ -318,40 +318,46 @@ const Orders = () => {
     })
   }
 
-  const handleViewDetails = async (order) => {
+  const handleViewDetails = (order) => {
+    // Generar el contenido HTML con los detalles de la orden y los productos
     let orderDetailsHtml = '';
   
-    try {
-      // Realizar la solicitud GET a la API para obtener los productos
-      const response = await axios.get('http://localhost:1056/api/products');
-      const products = response.data; // Suponiendo que la API devuelve una lista de productos
+
   
-      // Iterar sobre los detalles de la orden y generar el HTML para cada producto
-      for (const detail of order.OrderDetails) {
-        // Buscar el nombre del producto basado en el id_producto
-        const product = products.find(p => p.id === detail.id_producto);
-  
-        // Si se encuentra el producto, generar el HTML, si no, mostrar 'Desconocido'
-        orderDetailsHtml += `
-          <p><strong>Producto:</strong> ${product ? product.Product_Name : 'Desconocido'}</p>
-          <p><strong>Cantidad:</strong> ${detail.quantity}</p>
-          <p><strong>Precio Unitario:</strong> ${detail.unitPrice}</p>
-          <p><strong>Total:</strong> ${detail.total_price}</p>
-          <hr />
-        `;
+    // Función para obtener el nombre del usuario de la API
+    const fetchUserName = async (userId) => {
+      try {
+        const response = await axios.get(`http://localhost:1056/api/users/${userId}`);
+        return response.data.name; // Suponiendo que la API devuelve un objeto con un campo 'name'
+      } catch (error) {
+        console.error('Error al obtener el nombre del usuario:', error);
+        return 'Usuario no encontrado';
       }
+    };
   
-      // Mostrar los detalles de la orden y los productos en el SweetAlert
+    // Iterar sobre los detalles de la orden y generar el HTML para cada producto
+    order.OrderDetails.forEach(detail => {
+      orderDetailsHtml += `
+        <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
+        <p><strong>Cantidad:</strong> ${detail.quantity}</p>
+        <p><strong>Precio Unitario:</strong> ${detail.unitPrice}</p>
+        <p><strong>Total:</strong> ${detail.total_price}</p>
+        <hr />
+      `;
+    });
+  
+    // Obtener el nombre del usuario y generar el contenido HTML del SweetAlert
+    fetchUserName(order.id_usuario).then((userName) => {
       Swal.fire({
         title: 'Detalles de la Orden',
         html: `
           <div class="text-left">
             <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
             <p><strong>Fecha de Orden:</strong> ${new Date(order.OrderDate).toLocaleDateString()}</p>
-            <p><strong>Fecha de Registro:</strong> ${new Date(order.registrationDate).toLocaleDateString()}</p>
+            
             <p><strong>Monto Total:</strong> ${order.total_price}</p>
             <p><strong>Estado:</strong> ${order.status}</p>
-            <p><strong>Usuario ID:</strong> ${order.id_usuario}</p>
+            <p><strong>Usuario:</strong> ${userName}</p> <!-- Mostrar el nombre del usuario -->
             <p><strong>Expiración Token:</strong> ${new Date(order.Token_Expiration).toLocaleString()}</p>
             <hr />
             <p><strong>Detalles del Pedido:</strong></p>
@@ -361,17 +367,9 @@ const Orders = () => {
         icon: 'info',
         confirmButtonText: 'Cerrar'
       });
-    } catch (error) {
-      // Si ocurre un error al obtener los productos, mostrar un mensaje de error
-      console.error('Error al obtener los productos:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'No se pudo cargar la información de los productos.',
-        icon: 'error',
-        confirmButtonText: 'Cerrar'
-      });
-    }
-  }
+    });
+  };
+  
   
   return (
     <div className="right-content w-100">
