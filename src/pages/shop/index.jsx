@@ -467,11 +467,11 @@ export default function Component() {
                     <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
                   ) : (
                     <MenuItem onClick={() => setDrawerOpen(true)}>
-                      <IconButton color="inherit">
+                      
                         <Badge badgeContent={getTotalItems()} color="primary">
                           <AddShoppingCartIcon />
                         </Badge>
-                      </IconButton>
+                     
                       Carrito
                     </MenuItem>
 
