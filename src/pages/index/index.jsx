@@ -68,7 +68,7 @@ const Index = () => {
 
     const handledashboard = () => {
         context.setIsHideSidebarAndHeader(false);
-        navigate('/services');
+        navigate('/sales');
     };
 
     const handleMenuClick = (event) => {

@@ -396,7 +396,7 @@
     }
 
     .clear-search-btn:hover {
-        background: #928402;
+       
         transform: scale(1.05);
     }
 
@@ -410,61 +410,48 @@
     }
     /* Estilo de las tarjetas de productos */
 
+/* Estilo de la tarjeta de producto */
+.product-card {
+    background-color: #1a1a1a; /* Fondo oscuro */
+    padding: 20px;
+    border-radius: 15px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
 
-    .close-drawer-btn {
-        padding: 8px;
-    }
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
 
-    .close-drawer-btn:hover {
-        background-color: rgba(0, 0, 0, 0.04);
-    }
-    .product-card:hover {
-        transform: translateY(-5px); /* Levanta la tarjeta al pasar el mouse */
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); /* Aumenta la sombra en hover */
-    }
+/* Estilo de la imagen */
+.product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
 
-    /* Estilo de la imagen del producto */
-    .product-image {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        border-radius: 10px; /* Esquinas redondeadas */
-        margin-bottom: 15px; /* Espacio adicional abajo */
-    }
+/* Estilos de texto */
+.product-title {
+    font-size: 15px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #fff;
+}
 
-    .product-price{
-        color:#fff;
-    }
-    /* Estilo del título y descripción del producto */
-    .product-title {
-        font-size: 15px; /* Aumentamos el tamaño del título */
-        margin-bottom: 10px;
-        font-weight: 60; /* Peso de fuente más fuerte */
-        color: #fff; /* Color blanco para mejor contraste */
-    }
+.product-price {
+    color: #c59d5f; /* Color dorado para el precio */
+    font-size: 18px;
+    margin-bottom: 20px;
+}
 
-    .product-description {
-        font-size: 14px;
-        color: #ffffff;
-    }
+/* Botón mejorado */
 
-    /* Estilo del botón de agregar al carrito */
-    .add-to-cart-btn {
-        margin-top: auto;
-        padding: 12px 20px; /* Ajustamos el padding para un botón más grande */
-        background: linear-gradient(45deg, #c59d5f, #dfbd83); /* Degradado en el botón */
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s, transform 0.2s;
-        font-weight: bold; /* Hacemos que el texto del botón sea más destacado */
-        font-size: 16px; /* Aumentamos el tamaño de fuente del botón */
-    }
-    .add-to-cart-btn:hover {
-        background: linear-gradient(45deg, #dfbd83, #c59d5f); /* Cambia el degradado en hover */
-        transform: translateY(-2px); /* Efecto de levantar el botón */
-    }
 
     /* Estilo del contenido del cajón de compras */
     .drawer-content {
@@ -641,23 +628,106 @@
 
 
 
+  
+    
+    /* Contenedor para el texto y el icono */
+    .button-wrapper-barber {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        height: 24px;
+    }
+    
+    /* Estilos para el texto */
+    .text-barber {
+        position: absolute;
+        transition: transform 0.3s ease;
+        color: #fff;
+    }
+    
+    /* Estilos para el icono */
+    .icon-button-barber {
+        position: absolute;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    /* Animaciones al hacer hover */
+    .barber-add-cart-btn:hover .text-barber {
+        transform: translateY(-100%);
+    }
+    
+    .barber-add-cart-btn:hover .icon-button-barber {
+        transform: translateY(0);
+    }
+    
+    /* Mantener los efectos existentes */
     .barber-add-cart-btn {
         margin-top: 16px !important;
-        padding: 16px 32px !important; /* Aumenta el padding */
-        background: linear-gradient(45deg, #1a1a1a, #333333) !important;
-        color: #fff !important;
+        padding: 8px 16px !important; /* Ajusta el padding para reducir el ancho */
+        width: 150px; /* Fija el ancho deseado del botón */
+        background: #222222 !important;
+        color: #c59d5f !important;
+        border: 2px solid #c59d5f !important;
         font-family: 'Oswald', sans-serif !important;
         text-transform: uppercase !important;
-        letter-spacing: 1.5px !important;
-        font-weight: 600 !important; /* Aumenta el peso de la fuente */
-        border: 2px solid #c59d5f !important;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.4s ease !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
-        font-size: 1.25rem !important; /* Aumenta el tamaño de la fuente */
+        letter-spacing: 1px !important;
+        font-weight: 500 !important;
+        position: relative !important;
+        overflow: hidden !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        font-size: 1rem !important;
+        cursor: pointer !important;
+        border-radius: 4px !important;
+      }
+      
+      .text-barber {
+        display: inline-block; /* Mostrar el texto AGREGAR por defecto */
+        transition: opacity 0.3s ease; /* Suavizar la transición de opacidad */
+      }
+      
+      .barber-add-cart-btn:hover .text-barber {
+        opacity: 0; /* Ocultar el texto AGREGAR al pasar el cursor */
+      }
+      
+      .icon-button-barber {
+        display: inline-block; /* Mostrar el ícono siempre */
+        transition: opacity 0.3s ease; /* Suavizar la transición */
+      }
+      
+    
+    .button-wrapper-barber {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        position: relative !important;
+        height: 24px !important;
+        width: 100% !important;
     }
-
+    
+    .text-barber {
+        position: absolute !important;
+        transition: transform 0.3s ease !important;
+        color: #fff !important;
+    }
+    
+    .icon-button-barber {
+        position: absolute !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.3s ease !important;
+    }
+    
+    .barber-add-cart-btn:hover .text-barber {
+        transform: translateY(-100%) !important;
+    }
+    
+    .barber-add-cart-btn:hover .icon-button-barber {
+        transform: translateY(0) !important;
+    }
+    
+    /* Efecto de brillo */
     .barber-add-cart-btn::before {
         content: '';
         position: absolute;
@@ -673,28 +743,30 @@
         );
         transition: 0.5s;
     }
-
+    
     .barber-add-cart-btn:hover {
         background: linear-gradient(45deg, #2a2a2a, #404040) !important;
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
         border-color: #dfbd83 !important;
     }
-
+    
     .barber-add-cart-btn:hover::before {
         left: 100%;
     }
-
-    .barber-add-cart-btn .MuiSvgIcon-root {
-        font-size: 1.5rem !important; /* Aumenta el tamaño del ícono */
-        transition: transform 0.3s ease;
+    
+    .icon-button-barber svg {
+        width: 20px !important;
+        height: 20px !important;
+        color: #c59d5f !important;
+        transition: color 0.3s ease !important;
     }
-
-    .barber-add-cart-btn:hover .MuiSvgIcon-root {
-        transform: scale(1.2);
+    
+    .barber-add-cart-btn:hover .icon-button-barber svg {
+        color: #fff !important;
     }
-
-    /* Efecto de pulso suave */
+    
+    /* Efecto de pulso al hacer click */
     @keyframes pulse {
         0% {
             box-shadow: 0 0 0 0 rgba(197, 157, 95, 0.4);
@@ -706,15 +778,28 @@
             box-shadow: 0 0 0 0 rgba(197, 157, 95, 0);
         }
     }
-
+    
     .barber-add-cart-btn:active {
-        animation: pulse 0.8s;
-        transform: translateY(0);
+        animation: pulse 0.8s !important;
+        transform: translateY(0) !important;
     }
-
+    
     /* Efecto de ripple personalizado */
     .barber-add-cart-btn .MuiTouchRipple-root {
-        color: #c59d5f;
+        color: #c59d5f !important;
+    }
+    
+    /* Responsivo */
+    @media (max-width: 900px) {
+        .barber-add-cart-btn {
+            padding: 24px 20px !important;
+            font-size: 1rem !important;
+        }
+        
+        .icon-button-barber svg {
+            width: 18px !important;
+            height: 18px !important;
+        }
     }
 
     /* Responsivo para pantallas pequeñas */
@@ -904,7 +989,7 @@
         left: 0;
         width: 90%;
         height: 90%;
-        background: linear-gradient(45deg, rgba(197, 157, 95, 0.1), rgba(223, 189, 131, 0.1));
+       
         opacity: 0;
         transition: opacity 0.3s ease;
     }
@@ -1184,7 +1269,14 @@
     .checkout-btn:hover::after {
         transform: scale(1);
     }
-
+ /* Estilo básico para el toast */
+.toast {
+    font-family: 'Arial', sans-serif;
+    font-weight: 600;
+    text-align: center;
+    transition: opacity 0.5s ease-out;
+  }
+  
     .empty-cart-message {
         text-align: center;
         padding: 60px 24px;

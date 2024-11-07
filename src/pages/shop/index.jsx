@@ -58,6 +58,8 @@ export default function Component() {
   const [cart, setCart] = useState({});
   const [total, setTotal] = useState(0);
 
+
+
   const [userId, setUserId] = useState(null);
   const [orders, setOrders] = useState([]);
 
@@ -93,23 +95,20 @@ export default function Component() {
     const idRole = localStorage.getItem('roleId');
     const userId = localStorage.getItem('userId');
 
-    console.log("Token:", token);
-    console.log("Email almacenado:", storedEmail);
-    console.log("ID de rol:", idRole);
-    console.log("ID de usuario:", userId);
+
 
     if (token && storedEmail && idRole && userId) {
       setIsLoggedIn(true);
       setUserEmail(storedEmail);
       setUserRole(idRole);
       setUserId(userId);
-      console.log("Usuario está logueado. Rol de usuario:", idRole);
+      
     } else {
       setIsLoggedIn(false);
       setUserEmail('');
       setUserRole('');
       setUserId(null);
-      console.log("Usuario no está logueado.");
+      
     }
   };
 
@@ -117,7 +116,7 @@ export default function Component() {
     checkLoginStatus();
 
     if (isLoggedIn) {
-      console.log("Rol de usuario cargado:", userRole);
+      
     } else {
       setUserRole(null);
     }
@@ -154,98 +153,45 @@ export default function Component() {
       setAlertSeverity('warning');
       return;
     }
-
-    setCart(prevCart => {
+    setCart((prevCart) => {
       const currentQuantity = prevCart[product.id] || 0;
+    
       if (currentQuantity + 1 > product.Stock) {
-        setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
-        setAlertSeverity('warning');
+        // Usamos un estado para activar el mensaje de alerta
+        toast.error(`¡Producto agotado! Solo quedan ${product.Stock} en stock.`, {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
+    
         return prevCart;
       }
-      setAlertMessage('Producto agregado al carrito');
-      setAlertSeverity('success');
+    
       return {
         ...prevCart,
         [product.id]: currentQuantity + 1
       };
     });
+    
+    
+    
+   
+    
+    
+    
   };
 
-  const handleShowOrders = async () => {
-    try {
-      Swal.fire({
-        title: 'Cargando pedidos',
-        text: 'Por favor espere...',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
+  
 
-      const ordersResponse = await axios.get(`http://localhost:1056/api/orders`);
-      const orders = ordersResponse.data;
+  const handleShowOrders = () => {
+    navigate('/ordermy');
+  };  
 
-      if (!orders || orders.length === 0) {
-        Swal.fire('Info', 'No tienes pedidos realizados', 'info');
-        return;
-      }
-
-      const ordersList = orders.map(order => {
-        const orderDate = new Date(order.OrderDate).toLocaleDateString('es-CO');
-        const orderDetails = order.OrderDetails.map(detail => `
-          <div class="order-detail">
-            <p><strong>Producto ID:</strong> ${detail.id_producto}</p>
-            <p><strong>Cantidad:</strong> ${detail.quantity}</p>
-            <p><strong>Precio Unitario:</strong> ${new Intl.NumberFormat('es-CO', {
-          style: 'currency',
-          currency: 'COP'
-        }).format(detail.unitPrice)}</p>
-            <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', {
-          style: 'currency',
-          currency: 'COP'
-        }).format(detail.total_price)}</p>
-          </div>
-        `).join('<hr>');
-
-        return `
-          <div class="order-item">
-            <h3>Pedido #${order.id}</h3>
-            <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
-            <p><strong>Fecha:</strong> ${orderDate}</p>
-            <p><strong>Estado:</strong> ${order.status}</p>
-            <p><strong>Total:</strong> ${new Intl.NumberFormat('es-CO', {
-          style: 'currency',
-          currency: 'COP'
-        }).format(order.total_price)}</p>
-            <div class="order-details">
-              <h4>Detalles del pedido:</h4>
-              ${orderDetails}
-            </div>
-          </div>
-        `;
-      }).join('<hr class="order-separator">');
-
-      Swal.fire({
-        title: 'Mis Pedidos',
-        html: `
-          <div class="orders-container">
-            ${ordersList}
-          </div>
-        `,
-        width: '80%',
-        showConfirmButton: true,
-        customClass: {
-          container: 'orders-modal',
-          popup: 'orders-modal-popup',
-          content: 'orders-modal-content'
-        }
-      });
-    } catch (error) {
-      console.error("Error al mostrar los pedidos:", error);
-      Swal.fire('Error', 'No se pudieron cargar los pedidos: ' + error.message, 'error');
-    }
-  };
-
+  
   const handlePageChange = ({ selected }) => {
     setCurrentPage(selected);
   };
@@ -261,8 +207,7 @@ export default function Component() {
         setAlertSeverity('warning');
         return prevCart;
       }
-      setAlertMessage('Cantidad aumentada');
-      setAlertSeverity('success');
+    
       return {
         ...prevCart,
         [productId]: currentQuantity + 1
@@ -280,8 +225,7 @@ export default function Component() {
         setAlertSeverity('info');
         return newCart;
       }
-      setAlertMessage('Cantidad disminuida');
-      setAlertSeverity('info');
+    
       return {
         ...prevCart,
         [productId]: currentQuantity - 1
@@ -482,7 +426,7 @@ export default function Component() {
             <Link to='/appointmentView'>CITAS</Link>
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
             <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
-                 <IconButton onClick={() => setDrawerOpen(true)}>
+            <IconButton onClick={() => setDrawerOpen(true)}>
               <Badge badgeContent={getTotalItems()} color="primary">
                 <AddShoppingCartIcon />
               </Badge>
@@ -505,11 +449,11 @@ export default function Component() {
                     >
                       {getUserInitial()}
                     </Avatar>
-                    
+
                   }
-                  
+
                 >
-              
+
                   {userEmail}
                 </Button>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
@@ -584,11 +528,18 @@ export default function Component() {
                     variant="contained"
                     onClick={() => addToCart(product)}
                     className="barber-add-cart-btn"
-                    startIcon={<AddShoppingCartIcon />}
-                    fullWidth
                   >
-                    AGREGAR
+                    <div className="button-wrapper-barber">
+                      <span className="text-barber">AGREGAR</span>
+                      <span className="icon-button-barber">
+                        <AddShoppingCartIcon />
+                      </span>
+                    </div>
                   </Button>
+
+
+
+
                 </div>
               ))
             ) : (

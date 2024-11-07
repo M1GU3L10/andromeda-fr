@@ -24,15 +24,16 @@ import RegisterShopping from './pages/shopping/registerShopping';
 import ViewShopping from './pages/shopping/viewShopping';
 import RegisterAppointment from './pages/appointment/registerAppointment';
 import UpdateAppointment from './pages/appointment/updateAppointment';
+import Ordermy from './pages/ordermy';
 import Login from './pages/Login';
 import Shop from './pages/shop';
+import Index from './pages/index';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
-import Index from './pages/index';
 
 export const MyContext = createContext();
 
@@ -172,11 +173,16 @@ function App() {
                   </PermissionCheck>
                 } />
                 <Route path="/shop" element={
-                  <PermissionCheck requiredPermission="Productos">
+                  <PermissionCheck requiredPermission="public">
                     <Shop />
                   </PermissionCheck>
                 } />
-
+                <Route
+                   path="/ordermy" element={
+                    <PermissionCheck requiredPermission="public">
+                      <Ordermy />
+                    </PermissionCheck>
+                  } />
                 <Route path="/suppliers" element={
                   <PermissionCheck requiredPermission="Proveedores">
                     <Suppliers />
