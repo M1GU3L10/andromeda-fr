@@ -5,9 +5,9 @@ import ProductSection from './SectionProducts';
 import SectionFooter from './SectionFooter';
 import Button from '@mui/material/Button';
 
-
 const Index = () => {
     const servicesRef = useRef(null);
+    const contactRef = useRef(null);
 
     const scrollToServices = () => {
         if (servicesRef.current) {
@@ -15,9 +15,15 @@ const Index = () => {
         }
     };
 
+    const scrollToContact = () => {
+        if (contactRef.current) {
+            contactRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <>
-            <Header scrollToServices={scrollToServices} />
+            <Header scrollToServices={scrollToServices} scrollToContact={scrollToContact} />
             <section className="zona1">
                 <div className="hero-content">
                     <h1>
@@ -35,7 +41,7 @@ const Index = () => {
                 </div>
             </section>
 
-            <section ref={servicesRef}> 
+            <section ref={servicesRef}>
                 <div className='d-flex align-items-center justify-content-center mt-5'>
                     <h2 className='tittle-landingPage'>Nuestros servicios</h2>
                 </div>
@@ -54,7 +60,9 @@ const Index = () => {
                     <ProductSection />
                 </div>
             </section>
-            <SectionFooter />
+            <div ref={contactRef}>
+                <SectionFooter />
+            </div>
         </>
     );
 };

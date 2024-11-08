@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../../App.js';
 import logo from '../../../assets/images/logo-light.png';
@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
 
-const Header = ({ scrollToServices }) => {
+const Header = ({ scrollToServices, scrollToContact }) => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -28,7 +28,7 @@ const Header = ({ scrollToServices }) => {
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
-        context.setThemeMode(false)
+        context.setThemeMode(false);
         checkLoginStatus();
     }, [context]);
 
@@ -101,9 +101,13 @@ const Header = ({ scrollToServices }) => {
                 <nav className='navBar-index'>
                     <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
                     <Link to='#' onClick={scrollToServices}>SERVICIOS</Link>
-                    <Link to='/appointmentView'>CITAS</Link>
-                    <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-                    <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+                    {
+                        userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
+                    }
+                    {
+                        userRole == 3  && (<Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>)
+                    }
+                    <Link to='#' onClick={scrollToContact}>CONTACTO</Link>
                 </nav>
                 <div className="auth-buttons">
                     {isLoggedIn && userEmail ? (
