@@ -17,7 +17,7 @@ export const PermissionProvider = ({ children }) => {
       const roleId = localStorage.getItem('roleId');
       console.log('roleId from localStorage:', roleId);
       // Lista de rutas públicas
-      const publicRoutes = ['/login', '/register', '/forgotPassword', '/resetPassword', '/index', '/shop', '/registerview','/appointmentView'];
+      const publicRoutes = ['/login', '/register', '/forgotPassword', '/resetPassword', '/index', '/shop', '/registerview','/appointmentView','/ordermy'];
 
       if (!roleId && !publicRoutes.includes(location.pathname)) {
         console.error('No roleId found in localStorage');

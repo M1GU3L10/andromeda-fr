@@ -456,7 +456,6 @@
     /* Estilo del contenido del cajón de compras */
     .drawer-content {
         width: 300px;
-        padding: 20px;
     }
 
     .drawer-content .MuiTypography-h6 {
@@ -488,10 +487,15 @@
     }
 
     .drawer-content {
+        width: 100% !important;
         display: flex;
         flex-direction: column;
         height: 100%;
         padding: 20px;
+    }
+
+    .drawer-header{
+        display: flex;
     }
 
     .cart-item {
@@ -1091,6 +1095,9 @@
     }
 
     .cart-drawer .MuiDrawer-paper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 360px;
         background: #1a1a1a;
         box-shadow: -8px 0 25px rgba(0, 0, 0, 0.3);
@@ -1109,6 +1116,9 @@
     }
 
     .close-drawer-btn {
+        display: flex;
+        align-self: start;
+        justify-content: start;
         color: #c59d5f;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         padding: 10px;

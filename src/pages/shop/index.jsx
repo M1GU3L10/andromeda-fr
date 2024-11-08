@@ -430,8 +430,8 @@ export default function Component() {
           <nav className='navBar-index'>
             <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
             {
-                       userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
-                    }
+              userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
+            }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
             <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
             <IconButton onClick={() => setDrawerOpen(true)}>
@@ -469,11 +469,11 @@ export default function Component() {
                     <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
                   ) : (
                     <MenuItem onClick={() => setDrawerOpen(true)}>
-                      
-                        <Badge badgeContent={getTotalItems()} color="primary">
-                          <AddShoppingCartIcon />
-                        </Badge>
-                     
+
+                      <Badge badgeContent={getTotalItems()} color="primary">
+                        <AddShoppingCartIcon />
+                      </Badge>
+
                       Carrito
                     </MenuItem>
 
@@ -590,15 +590,15 @@ export default function Component() {
           keepMounted: true,
         }}
       >
+        <IconButton
+          onClick={() => setDrawerOpen(false)}
+          className="close-drawer-btn"
+        >
+          <CloseIcon />
+        </IconButton>
         <div className="drawer-content">
           <div className="drawer-header">
             <Typography variant="h6">Carrito de Compras</Typography>
-            <IconButton
-              onClick={() => setDrawerOpen(false)}
-              className="close-drawer-btn"
-            >
-              <CloseIcon />
-            </IconButton>
           </div>
 
           {Object.keys(cart).length === 0 ? (
