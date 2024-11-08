@@ -56,10 +56,10 @@ const Index = () => {
                 axios.get(urlUsers),
                 axios.get(urlAppointment),
             ]);
-
+    
             const usersData = userResponse.data;
-            const programmingData = programmingResponse.data;
-
+            const programmingData = programmingResponse.data.filter(event => event.clienteId.toString() === localStorage.getItem('userId'));
+    
             setUsers(usersData);
             
             const transformedEvents = programmingData.map(event => ({
@@ -77,7 +77,7 @@ const Index = () => {
                     DetailAppointments: event.DetailAppointments,
                 }
             }));
-
+    
             setEvents(transformedEvents);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -88,7 +88,8 @@ const Index = () => {
         const token = localStorage.getItem('jwtToken');
         const storedEmail = localStorage.getItem('userName');
         const idRole = localStorage.getItem('roleId');
-        if (token && storedEmail && idRole) {
+        const userId = localStorage.getItem('userId');
+        if (token && storedEmail && idRole && userId) {
             setIsLoggedIn(true);
             setUserEmail(storedEmail);
             setUserRole(idRole);
@@ -98,6 +99,8 @@ const Index = () => {
             setUserRole('');
         }
     };
+    
+    
 
     const handleLogin = () => {
         navigate('/login');
