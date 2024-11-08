@@ -102,10 +102,15 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                     <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
                     <Link to='#' onClick={scrollToServices}>SERVICIOS</Link>
                     {
-                        userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
+                       userRole == 1 ||userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
                     }
                     {
-                        userRole == 3  && (<Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>)
+                        userRole == 2 || userRole == 3 || userRole == 1 && (
+                            <Link to='/shop' onClick={() => setIsNavOpen(false)}>
+                              PRODUCTOS
+                            </Link>
+                          )
+                          
                     }
                     <Link to='#' onClick={scrollToContact}>CONTACTO</Link>
                 </nav>
