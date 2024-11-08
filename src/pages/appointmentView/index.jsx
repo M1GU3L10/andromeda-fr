@@ -191,7 +191,9 @@ const Index = () => {
                 <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
                     <nav className='navBar-index'>
                         <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-                        <Link to='/appointmentView'>CITAS</Link>
+                        {
+                       userRole == 1 ||userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
+                    }
                         <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
                         <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
                     </nav>
