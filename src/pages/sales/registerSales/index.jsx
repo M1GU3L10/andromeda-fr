@@ -15,483 +15,505 @@ import Swal from 'sweetalert2';
 import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
-    height: theme.spacing(3),
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightRegular,
-    '&:hover, &:focus': {
-        backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.06),
-    },
-    '&:active': {
-        boxShadow: theme.shadows[1],
-        backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.12),
-    },
+  backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
+  height: theme.spacing(3),
+  color: theme.palette.text.primary,
+  fontWeight: theme.typography.fontWeightRegular,
+  '&:hover, &:focus': {
+    backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.06),
+  },
+  '&:active': {
+    boxShadow: theme.shadows[1],
+    backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.12),
+  },
 }));
 
-const RegisterSales = () => {
-    const [users, setUsers] = useState([]);
-    const [products, setProducts] = useState([]);
-    const [selectedProducts, setSelectedProducts] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [services, setServices] = useState([]);
-    const [saleInfo, setSaleInfo] = useState({
-        Billnumber: '',
-        SaleDate: new Date().toISOString().split('T')[0],
-        id_usuario: '',
-    });
-    const [formData, setFormData] = useState({
-        Init_Time: '',
-        Date: '',
-        clienteId: '',
-        appointmentDetails: []
-    });
-    const [errors, setErrors] = useState({
-        Billnumber: '',
-        id_usuario: ''
-    });
-    const urlServices = 'http://localhost:1056/api/services';
-    const urlUsers = 'http://localhost:1056/api/users';
+export default function Component() {
+  const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [services, setServices] = useState([]);
+  const [saleInfo, setSaleInfo] = useState({
+    Billnumber: '',
+    SaleDate: new Date().toISOString().split('T')[0],
+    total_price: 0,
+    status: 'Pendiente',
+    id_usuario: '',
+    appointmentData: {
+      Init_Time: '',
+      Finish_Time: '',
+      Date: new Date().toISOString().split('T')[0],
+      time_appointment: 60
+    },
+    saleDetails: []
+  });
+  const [errors, setErrors] = useState({});
+  const urlServices = 'http://localhost:1056/api/services';
+  const urlUsers = 'http://localhost:1056/api/users';
 
+  useEffect(() => {
+    getUsers();
+    getProducts();
+    getServices();
+  }, []);
 
-    useEffect(() => {
-        getUsers();
-        getProducts();
-        getServices()
-    }, []);
+  const getUsers = async () => {
+    const response = await axios.get(urlUsers);
+    setUsers(response.data);
+  };
 
-    const getUsers = async () => {
-        const response = await axios.get(urlUsers)
-        setUsers(response.data)
-    };
+  const getProducts = async () => {
+    try {
+      const response = await axios.get('http://localhost:1056/api/products');
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+    }
+  };
 
-    const getProducts = async () => {
-        try {
-            const response = await axios.get('http://localhost:1056/api/products');
-            setProducts(response.data);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-            Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+  const getServices = async () => {
+    try {
+      const response = await axios.get(urlServices);
+      setServices(response.data);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
+
+  const handleProductSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredProducts = products.filter(product =>
+    product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    !selectedProducts.some(sp => sp.id === product.id)
+  );
+
+  const addProduct = (product) => {
+    const existingProduct = selectedProducts.find(p => p.id === product.id);
+    if (existingProduct) {
+      if (existingProduct.quantity + 1 > product.Stock) {
+        show_alerta(`No hay suficiente stock para ${product.Product_Name}`, 'error');
+        return;
+      }
+      setSelectedProducts(selectedProducts.map(p =>
+        p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
+      ));
+    } else {
+      setSelectedProducts([...selectedProducts, { ...product, quantity: 1 }]);
+    }
+    updateSaleDetails();
+  };
+
+  const removeProduct = (productId) => {
+    setSelectedProducts(selectedProducts.filter(p => p.id !== productId));
+    updateSaleDetails();
+  };
+
+  const updateQuantity = (productId, change) => {
+    const product = products.find(p => p.id === productId);
+    const updatedProducts = selectedProducts.map(p => {
+      if (p.id === productId) {
+        const newQuantity = Math.max(1, p.quantity + change);
+        if (newQuantity > product.Stock) {
+          Swal.fire('Error', `No hay suficiente stock para ${product.Product_Name}`, 'error');
+          return p;
         }
-    };
+        return { ...p, quantity: newQuantity };
+      }
+      return p;
+    });
+    setSelectedProducts(updatedProducts);
+    updateSaleDetails();
+  };
 
-    const handleProductSearch = (event) => {
-        setSearchTerm(event.target.value);
-    };
+  const updateSaleDetails = () => {
+    const details = selectedProducts.map(product => ({
+      quantity: product.quantity,
+      unitPrice: product.Price,
+      total_price: product.Price * product.quantity,
+      id_producto: product.id,
+      empleadoId: null,
+      serviceId: null
+    }));
+    setSaleInfo(prevState => ({
+      ...prevState,
+      saleDetails: details,
+      total_price: details.reduce((sum, item) => sum + item.total_price, 0)
+    }));
+  };
 
-    const filteredProducts = products.filter(product =>
-        product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !selectedProducts.some(sp => sp.id === product.id)
-    );
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setSaleInfo(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+    validateField(name, value);
+  };
 
-    const addProduct = (product) => {
-        const existingProduct = selectedProducts.find(p => p.id === product.id);
-        if (existingProduct) {
-            if (existingProduct.quantity + 1 > product.Stock) {
-                show_alerta(`No hay suficiente stock para ${product.Product_Name}`, 'error');
-                return;
-            }
-            setSelectedProducts(selectedProducts.map(p =>
-                p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
-            ));
+  const handleAppointmentChange = (event) => {
+    const { name, value } = event.target;
+    setSaleInfo(prevState => ({
+      ...prevState,
+      appointmentData: {
+        ...prevState.appointmentData,
+        [name]: value
+      }
+    }));
+  };
+
+  const validateField = (fieldName, value) => {
+    let newErrors = { ...errors };
+
+    switch (fieldName) {
+      case 'Billnumber':
+        if (value.length === 0) {
+          newErrors.Billnumber = 'El número de factura es requerido';
+        } else if (value.length !== 3) {
+          newErrors.Billnumber = 'El número de factura debe tener exactamente 3 dígitos';
+        } else if (!/^\d+$/.test(value)) {
+          newErrors.Billnumber = 'El número de factura debe contener solo dígitos';
         } else {
-            setSelectedProducts([...selectedProducts, { ...product, quantity: 1 }]);
+          newErrors.Billnumber = '';
         }
-    };
-
-    const removeProduct = (productId) => {
-        setSelectedProducts(selectedProducts.filter(p => p.id !== productId));
-    };
-
-    const updateQuantity = (productId, change) => {
-        const product = products.find(p => p.id === productId);
-        const updatedProducts = selectedProducts.map(p => {
-            if (p.id === productId) {
-                const newQuantity = Math.max(1, p.quantity + change);
-                if (newQuantity > product.Stock) {
-                    Swal.fire('Error', `No hay suficiente stock para ${product.Product_Name}`, 'error');
-                    return p;
-                }
-                return { ...p, quantity: newQuantity };
-            }
-            return p;
-        });
-        setSelectedProducts(updatedProducts);
-    };
-
-    const calculateTotal = () => {
-        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(selectedProducts.reduce((total, product) => total + (product.Price * product.quantity), 0))
-    };
-
-    const handleInputChange = (event) => {
-        const { name, value } = event.target;
-        setSaleInfo({ ...saleInfo, [name]: value });
-        validateField(name, value);
-    };
-
-    const validateField = (fieldName, value) => {
-        let newErrors = { ...errors };
-
-        switch (fieldName) {
-            case 'Billnumber':
-                if (value.length === 0) {
-                    newErrors.Billnumber = 'El número de factura es requerido';
-                } else if (value.length !== 3) {
-                    newErrors.Billnumber = 'El número de factura debe tener exactamente 3 dígitos';
-                } else if (!/^\d+$/.test(value)) {
-                    newErrors.Billnumber = 'El número de factura debe contener solo dígitos';
-                } else {
-                    newErrors.Billnumber = '';
-                }
-                break;
-            case 'id_usuario':
-                if (!value) {
-                    newErrors.id_usuario = 'Debe seleccionar un cliente';
-                } else {
-                    newErrors.id_usuario = '';
-                }
-                break;
-            default:
-                break;
+        break;
+      case 'id_usuario':
+        if (!value) {
+          newErrors.id_usuario = 'Debe seleccionar un cliente';
+        } else {
+          newErrors.id_usuario = '';
         }
-
-        setErrors(newErrors);
-    };
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
-        validateField('Billnumber', saleInfo.Billnumber);
-        validateField('id_usuario', saleInfo.id_usuario);
-
-        if (errors.Billnumber || errors.id_usuario) {
-            show_alerta('Por favor, corrija los errores antes de enviar', 'warning');
-            return;
-        }
-
-        if (selectedProducts.length === 0) {
-            show_alerta('Debe agregar al menos un producto al detalle de la venta', 'warning');
-            return;
-        }
-
-        const saleData = {
-            ...saleInfo,
-            total_price: calculateTotal(),
-            status: 'Completada',
-            saleDetails: selectedProducts.map(product => ({
-                quantity: product.quantity,
-                id_producto: product.id
-            }))
-        };
-
-        try {
-            await axios.post('http://localhost:1056/api/sales', saleData);
-            show_alerta('Venta registrada con éxito', 'success');
-            setSaleInfo({
-                Billnumber: '',
-                SaleDate: new Date().toISOString().split('T')[0],
-                id_usuario: '',
-            });
-            setTimeout(() => {
-                document.getElementById('btn-red').click();
-            }, 2000);
-            setSelectedProducts([]);
-        } catch (error) {
-            console.error('Error al registrar la venta:', error);
-            show_alerta('Error al registrar la venta', 'error');
-        }
-    };
-
-    const getServices = async () => {
-        try {
-            const response = await axios.get(urlServices);
-            setServices(response.data);
-        } catch (error) {
-            console.error("Error fetching services:", error);
-        }
-    };
-
-    const handleServiceAdd = () => {
-        setFormData(prevData => ({
-            ...prevData,
-            appointmentDetails: [
-                ...prevData.appointmentDetails,
-                { serviceId: '', empleadoId: '' }
-            ]
-        }));
-    };
-
-    const handleDetailChange = (index, field, value) => {
-        setFormData(prevData => {
-            const newDetails = [...prevData.appointmentDetails];
-            if (newDetails[index]) {
-                newDetails[index] = { ...newDetails[index], [field]: value };
-            }
-            return { ...prevData, appointmentDetails: newDetails };
-        });
+        break;
+      default:
+        break;
     }
 
-    const handleServiceRemove = (index) => {
-        setFormData(prevData => ({
-            ...prevData,
-            appointmentDetails: prevData.appointmentDetails.filter((_, i) => i !== index)
-        }));
-    };
+    setErrors(newErrors);
+  };
 
-    return (
-        <div className="right-content w-100">
-            <div className="row d-flex align-items-center w-100">
-                <div className="spacing d-flex align-items-center">
-                    <div className='col-sm-5'>
-                        <span className='Title'>Registrar Ventas</span>
-                    </div>
-                    <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
-                        <Breadcrumbs aria-label="breadcrumb">
-                            <StyledBreadcrumb component="a" href="#" label="Home" icon={<HomeIcon fontSize="small" />} />
-                            <StyledBreadcrumb component="a" href="#" label="Salidas" icon={<FaMoneyBillWave fontSize="small" />} />
-                            <StyledBreadcrumb component="a" href="#" label="Ventas" icon={<FcSalesPerformance fontSize="small" />} />
-                        </Breadcrumbs>
-                    </div>
-                </div>
-                <div className='card border-0 p-3 d-flex colorTransparent'>
-                    <div className='row'>
-                        <div className='col-sm-7'>
-                            <div className='card-detail shadow border-0'>
-                                <div className='row p-3'>
-                                    <div className='bcg-w col-sm-7 d-flex align-items-center'>
-                                        <div className="position-relative d-flex align-items-center">
-                                            <span className='Tittle'>Detalle de venta</span>
-                                        </div>
-                                    </div>
-                                    <div className='col-sm-5 d-flex align-items-center justify-content-end'>
-                                        <div className="searchBox position-relative d-flex align-items-center">
-                                            <IoSearch className="mr-2" />
-                                            <input
-                                                type="text"
-                                                placeholder='Buscar producto...'
-                                                className='form-control'
-                                                value={searchTerm}
-                                                onChange={handleProductSearch}
-                                            />
-                                        </div>
-                                    </div>
-                                    {/* Product search results */}
-                                    <div className='d-flex aline-items-center justify-content-end'>
-                                        <div className="product-search-results">
-                                            {searchTerm && filteredProducts.map(product => (
-                                                <div>
-                                                    {
-                                                        product.Stock > 0 ? (
-                                                            <div key={product.id} className="product-item shadow border-0" onClick={() => addProduct(product)}>
-                                                                {product.Product_Name} - {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}
-                                                            </div>
-                                                        ) :
-                                                            (
-                                                                <>
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-                                                                </>
-                                                            )
-                                                    }
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className='table-responsive mt-3 p-3'>
-                                    <table className='table table-bordered table-hover v-align table-striped '>
-                                        <thead className='table-light'>
-                                            <tr>
-                                                <th>Producto</th>
-                                                <th>Cantidad</th>
-                                                <th>Precio unt</th>
-                                                <th>Subtotal</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {selectedProducts.map(product => (
-                                                <tr key={product.id}>
-                                                    <td>{product.Product_Name}</td>
-                                                    <td>{product.quantity}</td>
-                                                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
-                                                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
-                                                    <td>
-                                                        <div className='d-flex align-items-center position-static'>
-                                                            <Button color='error' className='delete' onClick={() => removeProduct(product.id)}><IoTrashSharp /></Button>
-                                                            <div className='actions-quantity'>
-                                                                <Button className='primary' onClick={() => updateQuantity(product.id, 1)}><FaPlus /></Button>
-                                                                <Button className='primary' onClick={() => updateQuantity(product.id, -1)}><FaMinus /></Button>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className='bcg-w col-sm-7 d-flex align-items-center'>
-                                    <div className="position-relative d-flex align-items-center">
-                                        <span className='Tittle'>¿Deseas agregar un servicio?</span>
-                                    </div>
-                                </div>
-                                <div className='table-responsive mt-3 w-80 p-3'>
-                                    <table className='table table-bordered table-hover v-align table-striped'>
-                                        <thead className='table-light'>
-                                            <tr>
-                                                <th>Servicio</th>
-                                                <th>Empleado</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {formData.appointmentDetails.map((detail, index) => (
-                                                <tr key={index}>
-                                                    <td>
-                                                        <Form.Select
-                                                            value={detail.serviceId}
-                                                            onChange={(e) => handleDetailChange(index, 'serviceId', e.target.value)}
-                                                            isInvalid={errors.appointmentDetails?.[index]?.serviceId}
-                                                        >
-                                                            <option value="">Seleccionar servicio</option>
-                                                            {services.map(service => (
-                                                                <option key={service.id} value={service.id}>{service.name}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                        <Form.Control.Feedback type="invalid">
-                                                            {errors.appointmentDetails?.[index]?.serviceId}
-                                                        </Form.Control.Feedback>
-                                                    </td>
-                                                    <td>
-                                                        <Form.Select
-                                                            value={detail.empleadoId}
-                                                            onChange={(e) => handleDetailChange(index, 'empleadoId', e.target.value)}
-                                                            isInvalid={errors.appointmentDetails?.[index]?.empleadoId}
-                                                        >
-                                                            <option value="">Seleccionar empleado</option>
-                                                            {users.filter(user => user.roleId === 2).map(employee => (
-                                                                <option key={employee.id} value={employee.id}>{employee.name}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                        <Form.Control.Feedback type="invalid">
-                                                            {errors.appointmentDetails?.[index]?.empleadoId}
-                                                        </Form.Control.Feedback>
-                                                    </td>
-                                                    <td>
-                                                        <div className='d-flex align-items-center'>
-                                                            <Button color='error' className='delete' onClick={() => handleServiceRemove(index)}><IoTrashSharp /></Button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+    validateField('Billnumber', saleInfo.Billnumber);
+    validateField('id_usuario', saleInfo.id_usuario);
 
-                                    <div className="d-flex justify-content-start mt-4 mb-3 px-3">
-                                        <Button
-                                            onClick={handleServiceAdd}
-                                            style={{
-                                                backgroundColor: '#198754',
-                                                color: 'white',
-                                                margin: '5px',
-                                                border: '2px solid #198754',
-                                                borderRadius: '5px',
-                                                padding: '10px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <FaPlus />
-                                        </Button>
-                                    </div>
-                                </div>
-                                <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                                    <span className='Monto'>Total:</span>
-                                    <span className='valor'>{calculateTotal()}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className='col-sm-5'>
-                            <div className='card-detail shadow border-0'>
-                                <div className="cont-title w-100">
-                                    <span className='Title'>Info de venta</span>
-                                </div>
-                                <div className='d-flex align-items-center'>
-                                    <div className="d-flex align-items-center w-100 p-4">
-                                        <Form className='form' onSubmit={handleSubmit}>
-                                            <Form.Group as={Row} className="mb-3">
-                                                <Col sm="6">
-                                                    <Form.Label className='required'># Factura</Form.Label>
-                                                    <Form.Control
-                                                        type="text"
-                                                        name="Billnumber"
-                                                        value={saleInfo.Billnumber}
-                                                        onChange={handleInputChange}
-                                                        isInvalid={!!errors.Billnumber}
-                                                    />
-                                                    <Form.Control.Feedback type="invalid">
-                                                        {errors.Billnumber}
-                                                    </Form.Control.Feedback>
-                                                </Col>
-                                                <Col sm="6">
-                                                    <Form.Label className='required'>Fecha venta</Form.Label>
-                                                    <Form.Control
-                                                        placeholder='fecha venta'
-                                                        type="date"
-                                                        name="SaleDate"
-                                                        value={FormData.SaleDate}
-                                                        onChange={handleInputChange}
-                                                    />
-                                                </Col>
-                                            </Form.Group>
-                                            <Form.Group className="mb-3">
-                                                <Form.Label className='required'>Cliente</Form.Label>
-                                                <Form.Select
-                                                    name="id_usuario"
-                                                    value={saleInfo.id_usuario}
-                                                    onChange={handleInputChange}
-                                                    isInvalid={!!errors.id_usuario}
-                                                >
-                                                    <option value="">Seleccionar cliente</option>
-                                                    {users.filter(user => user.roleId === 3).map(user => (
-                                                        <option key={user.id} value={user.id}>{user.name}</option>
-                                                    ))}
-                                                </Form.Select>
-                                                <Form.Control.Feedback type="invalid">
-                                                    {errors.id_usuario}
-                                                </Form.Control.Feedback>
-                                            </Form.Group>
-                                            <Form.Group className='d-flex align-items-center justify-content-end'>
-                                                <Button variant="secondary" className='btn-red' id='btn-red' href="/Sales">
-                                                    Cerrar
-                                                </Button>
-                                                <Button variant="primary" type="submit" className='btn-sucess'>
-                                                    Guardar
-                                                </Button>
-                                                {/* <Button variant="warning" className='btn-clear' onClick={() => {
-                                                    setSaleInfo({
-                                                        Billnumber: '',
-                                                        SaleDate: new Date().toISOString().split('T')[0],
-                                                        id_usuario: '',
-                                                    });
-                                                    setSelectedProducts([]);
-                                                }}>
-                                                    <FaBroom style={{ marginRight: '5px' }} />
-                                                    
-                                                </Button> */}
-                                            </Form.Group>
-                                        </Form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    if (errors.Billnumber || errors.id_usuario) {
+      show_alerta('Por favor, corrija los errores antes de enviar', 'warning');
+      return;
+    }
+
+    if (saleInfo.saleDetails.length === 0) {
+      show_alerta('Debe agregar al menos un producto o servicio al detalle de la venta', 'warning');
+      return;
+    }
+
+    try {
+      await axios.post('http://localhost:1056/api/sales', saleInfo);
+      show_alerta('Venta registrada con éxito', 'success');
+      setSaleInfo({
+        Billnumber: '',
+        SaleDate: new Date().toISOString().split('T')[0],
+        total_price: 0,
+        status: 'Pendiente',
+        id_usuario: '',
+        appointmentData: {
+          Init_Time: '',
+          Finish_Time: '',
+          Date: new Date().toISOString().split('T')[0],
+          time_appointment: 60
+        },
+        saleDetails: []
+      });
+      setSelectedProducts([]);
+    } catch (error) {
+      console.error('Error al registrar la venta:', error);
+      show_alerta('Error al registrar la venta', 'error');
+    }
+  };
+
+  const handleServiceAdd = () => {
+    setSaleInfo(prevState => ({
+      ...prevState,
+      saleDetails: [
+        ...prevState.saleDetails,
+        { quantity: 1, unitPrice: 0, total_price: 0, id_producto: null, empleadoId: null, serviceId: null }
+      ]
+    }));
+  };
+
+  const handleServiceChange = (index, field, value) => {
+    setSaleInfo(prevState => {
+      const newDetails = [...prevState.saleDetails];
+      newDetails[index] = { ...newDetails[index], [field]: value };
+      if (field === 'serviceId') {
+        const service = services.find(s => s.id === parseInt(value));
+        if (service) {
+          newDetails[index].unitPrice = service.price;
+          newDetails[index].total_price = service.price * newDetails[index].quantity;
+        }
+      }
+      return {
+        ...prevState,
+        saleDetails: newDetails,
+        total_price: newDetails.reduce((sum, item) => sum + item.total_price, 0)
+      };
+    });
+  };
+
+  const handleServiceRemove = (index) => {
+    setSaleInfo(prevState => ({
+      ...prevState,
+      saleDetails: prevState.saleDetails.filter((_, i) => i !== index),
+      total_price: prevState.saleDetails.reduce((sum, item, i) => i !== index ? sum + item.total_price : sum, 0)
+    }));
+  };
+
+  return (
+    <div className="right-content w-100">
+      <div className="row d-flex align-items-center w-100">
+        <div className="spacing d-flex align-items-center">
+          <div className='col-sm-5'>
+            <span className='Title'>Registrar Ventas</span>
+          </div>
+          <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
+            <Breadcrumbs aria-label="breadcrumb">
+              <StyledBreadcrumb component="a" href="#" label="Home" icon={<HomeIcon fontSize="small" />} />
+              <StyledBreadcrumb component="a" href="#" label="Salidas" icon={<FaMoneyBillWave fontSize="small" />} />
+              <StyledBreadcrumb component="a" href="#" label="Ventas" icon={<FcSalesPerformance fontSize="small" />} />
+            </Breadcrumbs>
+          </div>
         </div>
-    );
-};
+        <div className='card border-0 p-3 d-flex colorTransparent'>
+          <div className='row'>
+            <div className='col-sm-7'>
+              <div className='card-detail shadow border-0'>
+                <div className='row p-3'>
+                  <div className='bcg-w col-sm-7 d-flex align-items-center'>
+                    <div className="position-relative d-flex align-items-center">
+                      <span className='Tittle'>Detalle de venta</span>
+                    </div>
+                  </div>
+                  <div className='col-sm-5 d-flex align-items-center justify-content-end'>
+                    <div className="searchBox position-relative d-flex align-items-center">
+                      <IoSearch className="mr-2" />
+                      <input
+                        type="text"
+                        placeholder='Buscar producto...'
+                        className='form-control'
+                        value={searchTerm}
+                        onChange={handleProductSearch}
+                      />
+                    </div>
+                  </div>
+                  <div className='d-flex aline-items-center justify-content-end'>
+                    <div className="product-search-results">
+                      {searchTerm && filteredProducts.map(product => (
+                        <div key={product.id}>
+                          {product.Stock > 0 && (
+                            <div className="product-item shadow border-0" onClick={() => addProduct(product)}>
+                              {product.Product_Name} - {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className='table-responsive mt-3 p-3'>
+                  <table className='table table-bordered table-hover v-align table-striped '>
+                    <thead className='table-light'>
+                      <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio unt</th>
+                        <th>Subtotal</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedProducts.map(product => (
+                        <tr key={product.id}>
+                          <td>{product.Product_Name}</td>
+                          <td>{product.quantity}</td>
+                          <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
+                          <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
+                          <td>
+                            <div className='d-flex align-items-center position-static'>
+                              <Button color='error' className='delete' onClick={() => removeProduct(product.id)}><IoTrashSharp /></Button>
+                              <div className='actions-quantity'>
+                                <Button className='primary' onClick={() => updateQuantity(product.id, 1)}><FaPlus /></Button>
+                                <Button className='primary' onClick={() => updateQuantity(product.id, -1)}><FaMinus /></Button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className='bcg-w col-sm-7 d-flex align-items-center'>
+                  <div className="position-relative d-flex align-items-center">
+                    <span className='Tittle'>¿Deseas agregar un servicio?</span>
+                  </div>
+                </div>
+                <div className='table-responsive mt-3 w-80 p-3'>
+                  <table className='table table-bordered table-hover v-align table-striped'>
+                    <thead className='table-light'>
+                      <tr>
+                        <th>Servicio</th>
+                        <th>Empleado</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {saleInfo.saleDetails.filter(detail => detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)).map((detail, index) => (
+                        <tr key={index}>
+                          <td>
+                            <Form.Select
+                              value={detail.serviceId || ''}
+                              onChange={(e) => handleServiceChange(index, 'serviceId', e.target.value)}
+                            >
+                              <option value="">Seleccionar servicio</option>
+                              {services.map(service => (
+                                <option key={service.id} value={service.id}>{service.name}</option>
+                              ))}
+                            </Form.Select>
+                          </td>
+                          <td>
+                            <Form.Select
+                              value={detail.empleadoId || ''}
+                              onChange={(e) => handleServiceChange(index, 'empleadoId', e.target.value)}
+                            >
+                              <option value="">Seleccionar empleado</option>
+                              {users.filter(user => user.roleId === 2).map(employee => (
+                                <option key={employee.id} value={employee.id}>{employee.name}</option>
+                              ))}
+                            </Form.Select>
+                          </td>
+                          <td>
+                            <div className='d-flex align-items-center'>
+                              <Button color='error' className='delete' onClick={() => handleServiceRemove(index)}><IoTrashSharp /></Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
 
-export default RegisterSales;
+                  <div className="d-flex justify-content-start mt-4 mb-3 px-3">
+                    <Button
+                      onClick={handleServiceAdd}
+                      style={{
+                        backgroundColor: '#198754',
+                        color: 'white',
+                        margin: '5px',
+                        border: '2px solid #198754',
+                        borderRadius: '5px',
+                        padding: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <FaPlus />
+                    </Button>
+                  </div>
+                </div>
+                <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
+                  <span className='Monto'>Total:</span>
+                  <span className='valor'>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                </div>
+              </div>
+            </div>
+            <div className='col-sm-5'>
+              <div className='card-detail shadow border-0'>
+                <div className="cont-title w-100">
+                  <span className='Title'>Info de venta</span>
+                </div>
+                <div className='d-flex align-items-center'>
+                  <div className="d-flex align-items-center w-100 p-4">
+                    <Form className='form' onSubmit={handleSubmit}>
+                      <Form.Group as={Row} className="mb-3">
+                        <Col sm="6">
+                          <Form.Label className='required'># Factura</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="Billnumber"
+                            value={saleInfo.Billnumber}
+                            onChange={handleInputChange}
+                            isInvalid={!!errors.Billnumber}
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.Billnumber}
+                          </Form.Control.Feedback>
+                        </Col>
+                        <Col sm="6">
+                          <Form.Label className='required'>Fecha venta</Form.Label>
+                          <Form.Control
+                            type="date"
+                            name="SaleDate"
+                            value={saleInfo.SaleDate}
+                            onChange={handleInputChange}
+                          />
+                        </Col>
+                      </Form.Group>
+                      <Form.Group className="mb-3">
+                        <Form.Label className='required'>Cliente</Form.Label>
+                        <Form.Select
+                          name="id_usuario"
+                          value={saleInfo.id_usuario}
+                          onChange={handleInputChange}
+                          isInvalid={!!errors.id_usuario}
+                        >
+                          <option value="">Seleccionar cliente</option>
+                          {users.filter(user => user.roleId === 3).map(user => (
+                            <option key={user.id} value={user.id}>{user.name}</option>
+                          ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.id_usuario}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                      <Form.Group as={Row} className="mb-3">
+                        <Col sm="6">
+                          <Form.Label>Hora inicio</Form.Label>
+                          <Form.Control
+                            type="time"
+                            name="Init_Time"
+                            value={saleInfo.appointmentData.Init_Time}
+                            onChange={handleAppointmentChange}
+                          />
+                        </Col>
+                        <Col sm="6">
+                          <Form.Label>Hora fin</Form.Label>
+                          <Form.Control
+                            type="time"
+                            name="Finish_Time"
+                            value={saleInfo.appointmentData.Finish_Time}
+                            onChange={handleAppointmentChange}
+                          />
+                        </Col>
+                      </Form.Group>
+                      <Form.Group className='d-flex align-items-center justify-content-end'>
+                        <Button variant="secondary" className='btn-red' id='btn-red' href="/Sales">
+                          Cerrar
+                        </Button>
+                        <Button variant="primary" type="submit" className='btn-sucess'>
+                          Guardar
+                        </Button>
+                      </Form.Group>
+                    </Form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
