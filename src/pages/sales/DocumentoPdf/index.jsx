@@ -79,8 +79,10 @@ const styles = StyleSheet.create({
 const DocumentPdf = ({ sale }) => {
     const urlUsers = 'http://localhost:1056/api/users'
     const urlProducts = 'http://localhost:1056/api/products'
+    const urlServices = 'http://localhost:1056/api/services'
     const [users, SetUsers] = useState([])
     const [products, setProducts] = useState([])
+    const [services, setServices] = useState([]);
 
     useEffect(() => {
         getUsers();
@@ -97,9 +99,19 @@ const DocumentPdf = ({ sale }) => {
         setProducts(response.data)
     }
 
+    const getServices = async () => {
+        const response = await axios.get(urlServices)
+        setServices(response.data)
+    }
+
     const NameProduct = (productId) =>{
         const product = products.find(product => product.id == productId)
         return product ? product.Product_Name : 'Producto Desconocido'
+    }
+
+    const NameService = (serviceId) =>{
+        const service = services.find(service => service.id == serviceId)
+        return service ? service.name : 'Servicio desconocido'
     }
 
     const userName = (userId) => {

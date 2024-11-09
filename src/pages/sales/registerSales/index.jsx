@@ -36,29 +36,35 @@ const RegisterSales = () => {
     const [products, setProducts] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [services, setServices] = useState([]);
     const [saleInfo, setSaleInfo] = useState({
         Billnumber: '',
         SaleDate: new Date().toISOString().split('T')[0],
         id_usuario: '',
     });
+    const [formData, setFormData] = useState({
+        Init_Time: '',
+        Date: '',
+        clienteId: '',
+        appointmentDetails: []
+    });
     const [errors, setErrors] = useState({
         Billnumber: '',
         id_usuario: ''
     });
+    const urlServices = 'http://localhost:1056/api/services';
+    const urlUsers = 'http://localhost:1056/api/users';
+
 
     useEffect(() => {
         getUsers();
         getProducts();
+        getServices()
     }, []);
 
     const getUsers = async () => {
-        try {
-            const response = await axios.get('http://localhost:1056/api/users');
-            setUsers(response.data.filter(user => user.roleId === 3));
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            Swal.fire('Error', 'No se pudieron cargar los usuarios', 'error');
-        }
+        const response = await axios.get(urlUsers)
+        setUsers(response.data)
     };
 
     const getProducts = async () => {
@@ -198,6 +204,42 @@ const RegisterSales = () => {
         }
     };
 
+    const getServices = async () => {
+        try {
+            const response = await axios.get(urlServices);
+            setServices(response.data);
+        } catch (error) {
+            console.error("Error fetching services:", error);
+        }
+    };
+
+    const handleServiceAdd = () => {
+        setFormData(prevData => ({
+            ...prevData,
+            appointmentDetails: [
+                ...prevData.appointmentDetails,
+                { serviceId: '', empleadoId: '' }
+            ]
+        }));
+    };
+
+    const handleDetailChange = (index, field, value) => {
+        setFormData(prevData => {
+            const newDetails = [...prevData.appointmentDetails];
+            if (newDetails[index]) {
+                newDetails[index] = { ...newDetails[index], [field]: value };
+            }
+            return { ...prevData, appointmentDetails: newDetails };
+        });
+    }
+
+    const handleServiceRemove = (index) => {
+        setFormData(prevData => ({
+            ...prevData,
+            appointmentDetails: prevData.appointmentDetails.filter((_, i) => i !== index)
+        }));
+    };
+
     return (
         <div className="right-content w-100">
             <div className="row d-flex align-items-center w-100">
@@ -220,7 +262,7 @@ const RegisterSales = () => {
                                 <div className='row p-3'>
                                     <div className='bcg-w col-sm-7 d-flex align-items-center'>
                                         <div className="position-relative d-flex align-items-center">
-                                            <span className='Title'>Detalle de venta</span>
+                                            <span className='Tittle'>Detalle de venta</span>
                                         </div>
                                     </div>
                                     <div className='col-sm-5 d-flex align-items-center justify-content-end'>
@@ -289,6 +331,82 @@ const RegisterSales = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                                <div className='bcg-w col-sm-7 d-flex align-items-center'>
+                                    <div className="position-relative d-flex align-items-center">
+                                        <span className='Tittle'>¿Deseas agregar un servicio?</span>
+                                    </div>
+                                </div>
+                                <div className='table-responsive mt-3 w-80 p-3'>
+                                    <table className='table table-bordered table-hover v-align table-striped'>
+                                        <thead className='table-light'>
+                                            <tr>
+                                                <th>Servicio</th>
+                                                <th>Empleado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {formData.appointmentDetails.map((detail, index) => (
+                                                <tr key={index}>
+                                                    <td>
+                                                        <Form.Select
+                                                            value={detail.serviceId}
+                                                            onChange={(e) => handleDetailChange(index, 'serviceId', e.target.value)}
+                                                            isInvalid={errors.appointmentDetails?.[index]?.serviceId}
+                                                        >
+                                                            <option value="">Seleccionar servicio</option>
+                                                            {services.map(service => (
+                                                                <option key={service.id} value={service.id}>{service.name}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                        <Form.Control.Feedback type="invalid">
+                                                            {errors.appointmentDetails?.[index]?.serviceId}
+                                                        </Form.Control.Feedback>
+                                                    </td>
+                                                    <td>
+                                                        <Form.Select
+                                                            value={detail.empleadoId}
+                                                            onChange={(e) => handleDetailChange(index, 'empleadoId', e.target.value)}
+                                                            isInvalid={errors.appointmentDetails?.[index]?.empleadoId}
+                                                        >
+                                                            <option value="">Seleccionar empleado</option>
+                                                            {users.filter(user => user.roleId === 2).map(employee => (
+                                                                <option key={employee.id} value={employee.id}>{employee.name}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                        <Form.Control.Feedback type="invalid">
+                                                            {errors.appointmentDetails?.[index]?.empleadoId}
+                                                        </Form.Control.Feedback>
+                                                    </td>
+                                                    <td>
+                                                        <div className='d-flex align-items-center'>
+                                                            <Button color='error' className='delete' onClick={() => handleServiceRemove(index)}><IoTrashSharp /></Button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    <div className="d-flex justify-content-start mt-4 mb-3 px-3">
+                                        <Button
+                                            onClick={handleServiceAdd}
+                                            style={{
+                                                backgroundColor: '#198754',
+                                                color: 'white',
+                                                margin: '5px',
+                                                border: '2px solid #198754',
+                                                borderRadius: '5px',
+                                                padding: '10px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <FaPlus />
+                                        </Button>
+                                    </div>
+                                </div>
                                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
                                     <span className='Monto'>Total:</span>
                                     <span className='valor'>{calculateTotal()}</span>
@@ -337,7 +455,7 @@ const RegisterSales = () => {
                                                     isInvalid={!!errors.id_usuario}
                                                 >
                                                     <option value="">Seleccionar cliente</option>
-                                                    {users.map(user => (
+                                                    {users.filter(user => user.roleId === 3).map(user => (
                                                         <option key={user.id} value={user.id}>{user.name}</option>
                                                     ))}
                                                 </Form.Select>

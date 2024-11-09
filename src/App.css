@@ -28,7 +28,7 @@ body.dark {
   background: transparent !important;
 }
 
-.full{
+.full {
   max-width: 100% !important;
   flex: 0 0 100% !important;
   width: 100% !important;
@@ -52,17 +52,17 @@ body.dark {
   border-radius: 8px !important;
 }
 
-.btn-lg{
+.btn-lg {
   padding: 5px 25px !important;
 }
 
-.btn-big{
+.btn-big {
   padding: 10px 25px !important;
   font-size: 16px !important;
 }
 
-textarea.form-control{
-  max-height:120px;
+textarea.form-control {
+  max-height: 120px;
   min-height: 50px;
 }
 
@@ -83,7 +83,7 @@ textarea.form-control{
   text-transform: capitalize !important;
 }
 
-.btn-clear{
+.btn-clear {
   background: orange;
   font-size: 14px !important;
   border-radius: 50%;
@@ -177,7 +177,7 @@ body.dark header button.rounded-circle svg {
   padding: 3px 15px;
 }
 
-body.dark .searchBox{
+body.dark .searchBox {
   background: #112155 !important;
 }
 
@@ -190,7 +190,7 @@ body.dark .searchBox{
   color: #292929;
 }
 
-body.dark .searchBox input{
+body.dark .searchBox input {
   color: #fff;
 }
 
@@ -585,7 +585,7 @@ body.dark .main .sidebarWrapper .sidebar ul .submenu li a:hover {
   flex: 0 0 100%;
 }
 
-.main .content.toggle.fc-daygrid-body .fc-daygrid-body-unbalanced{
+.main .content.toggle.fc-daygrid-body .fc-daygrid-body-unbalanced {
   width: 1679px !important;
 }
 
@@ -702,7 +702,7 @@ body.dark .css-1mm5wr7-MuiChip-root {
   border-radius: 10px;
 }
 
-body.dark .card{
+body.dark .card {
   background: #112143 !important;
 }
 
@@ -733,11 +733,11 @@ body.dark .card{
   font-weight: 500;
 }
 
-body.dark .table thead tr{
+body.dark .table thead tr {
   border-color: #1b2b4d !important;
 }
 
-body.dark .table tbody tr{
+body.dark .table tbody tr {
   border-color: #1b2b4d !important;
 }
 
@@ -754,17 +754,17 @@ body.dark .table tbody td {
   margin: 0px 3px !important;
 }
 
-.Menu-programming{
+.Menu-programming {
   background: transparent !important;
 }
 
-.Menu-programming .Menu-programming-item button{
+.Menu-programming .Menu-programming-item button {
   min-width: 30px !important;
   width: 25px !important;
   height: 25px !important;
 }
 
-.Menu-programming .Menu-programming-item{
+.Menu-programming .Menu-programming-item {
   width: 45px !important;
   height: 35px !important;
   padding: 5px;
@@ -782,7 +782,7 @@ button.primary svg {
   color: rgb(24, 102, 237) !important;
 }
 
-button.primary{
+button.primary {
   background: rgb(24, 102, 237, 0.2) !important;
 }
 
@@ -790,12 +790,12 @@ button.secondary svg {
   color: rgb(155, 39, 176) !important;
 }
 
-button.secondary{
+button.secondary {
   background: rgb(155, 39, 176, 0.2) !important;
 
 }
 
-button.delete{
+button.delete {
   background: rgb(212, 47, 47, 0.2) !important;
 }
 
@@ -898,34 +898,35 @@ table.v-align td {
   transition: .4s;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: #007bff;
   border: 1px solid #007bff;
 }
 
-input:focus + .slider {
+input:focus+.slider {
   box-shadow: 0 0 1px #007bff;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(1.4em);
   background-color: #fff;
 }
 
-.modal-header{
+.modal-header {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
 }
 
-.modal-header .h5{
+.modal-header .h5 {
   font-family: "Open Sans", sans-serif !important;
   font-size: 18px;
 }
 
 
-.modal-dialog .modal-content .modal-body .input-group input, select{
+.modal-dialog .modal-content .modal-body .input-group input,
+select {
   height: 40px !important;
   width: 100%;
 }
@@ -934,11 +935,11 @@ input:checked + .slider:before {
   color: rgba(0, 0, 0, 0.637) !important;
 }
 
-.modal-dialog .modal-content .modal-body .input-group select option{
+.modal-dialog .modal-content .modal-body .input-group select option {
   color: rgba(0, 0, 0, 0.637) !important;
 }
 
-.Modal-buton svg{
+.Modal-buton svg {
   color: #fff;
   font-size: 17px;
   margin-right: 5px;
@@ -948,7 +949,7 @@ input:checked + .slider:before {
   color: rgba(0, 0, 0, 0.637);
 }
 
-body.dark .page-link{
+body.dark .page-link {
   background: #071638 !important;
   color: #fff !important;
   border-color: #071638 !important;
@@ -965,26 +966,26 @@ body.dark li.page-item.disabled {
   border-color: #1b2b4d !important;
 }
 
-.serviceStatus{
+.serviceStatus {
   padding: 1px;
   color: #49c239cc;
   font-size: 12px;
 }
 
-.serviceStatus.Inactive{
+.serviceStatus.Inactive {
   padding: 1px;
   color: #c23939cc;
   font-size: 12px;
 }
 
-.fc .fc-toolbar-title{
+.fc .fc-toolbar-title {
   font-family: "Open Sans", sans-serif !important;
   font-size: 24px;
   font-weight: 500;
   color: #403e57 !important;
 }
 
-body.dark .fc .fc-toolbar-title{
+body.dark .fc .fc-toolbar-title {
   color: #fff;
 }
 
@@ -1000,13 +1001,14 @@ body.dark .fc .fc-toolbar-title{
   margin: 2px;
 }
 
-.span-programming{
+.span-programming {
   color: #f1f1f1;
   font-size: 13px;
   font-family: "Open Sans", sans-serif !important;
 }
 
-.fc-daygrid-dot-event.fc-event-mirror, .fc-daygrid-dot-event:hover{
+.fc-daygrid-dot-event.fc-event-mirror,
+.fc-daygrid-dot-event:hover {
   background: rgb(54, 118, 245) !important;
   cursor: pointer;
 }
@@ -1019,23 +1021,23 @@ body.dark .fc .fc-toolbar-title{
   font-family: "Open Sans", sans-serif !important;
 }
 
-a{
+a {
   color: rgba(97, 97, 97, 0.758);
   text-decoration: none;
   font-weight: 600;
   font-family: "Open Sans", sans-serif !important;
 }
 
-.fc .fc-daygrid-day.fc-day-today{
+.fc .fc-daygrid-day.fc-day-today {
   background: rgba(54, 118, 245, 0.1);
 }
 
-.fc .fc-daygrid-day-top{
+.fc .fc-daygrid-day-top {
   justify-content: center;
 }
 
-.fc .fc-button-primary{
-  width: 50px  !important;
+.fc .fc-button-primary {
+  width: 50px !important;
   height: 40px !important;
   padding: 0px !important;
   background: rgb(54, 118, 245) !important;
@@ -1043,12 +1045,13 @@ a{
   margin: 0px !important;
 }
 
-.fc .fc-scrollgrid{
+.fc .fc-scrollgrid {
   border-radius: 10px;
 }
 
 .userStatus {
-  font-weight: normal; /* Elimina la negrilla */
+  font-weight: normal;
+  /* Elimina la negrilla */
 }
 
 .userStatus.active {
@@ -1070,34 +1073,35 @@ a{
 
 /* login */
 
-.css-6hp17o-MuiList-root-MuiMenu-list{
+.css-6hp17o-MuiList-root-MuiMenu-list {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
 }
 
-.card-detail{
+.card-detail {
   background: #fff;
   width: 100%;
   margin: 15px 0px;
   border-radius: 10px;
 }
 
-.colorTransparent{
+.colorTransparent {
   background: none !important;
 }
 
-.card-detail .row .bcg-w{
+.card-detail .row .bcg-w {
   background: #fff !important;
 }
 
-.card-detail .row .bcg-w .Title{
+.Tittle {
   font-family: "Open Sans", sans-serif !important;
   font-size: 18px;
-  font-weight: 500;
+  margin-left: 10px !important;
+  font-weight: 600 !important;
   color: #403e57 !important;
 }
 
-.cont-title{
+.cont-title {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1105,7 +1109,7 @@ a{
   padding: 3px !important;
 }
 
-.cont-title .Title{
+.cont-title .Title {
   font-family: "Open Sans", sans-serif !important;
   font-size: 20px;
   font-weight: 500;
@@ -1113,29 +1117,29 @@ a{
   margin: 10px;
 }
 
-.form{
+.form {
   width: 100%;
 }
 
-.table-responsive button{
+.table-responsive button {
   min-width: 30px !important;
   width: 25px !important;
   height: 25px !important;
   margin: 0px 3px !important;
 }
 
-.table-responsive .actions-quantity button{
+.table-responsive .actions-quantity button {
   min-width: 10px !important;
   margin: 0px 3px !important;
   border-radius: 50% !important;
   border: 1px solid #1866ee;
 }
 
-.table-responsive .actions-quantity button svg{
+.table-responsive .actions-quantity button svg {
   font-size: 20px !important;
 }
 
-.Monto-content .Monto{
+.Monto-content .Monto {
   font-family: "Open Sans", sans-serif !important;
   font-size: 13px;
   font-weight: 700;
@@ -1143,7 +1147,7 @@ a{
   margin: 5px;
 }
 
-.Monto-content .valor{
+.Monto-content .valor {
   font-family: "Open Sans", sans-serif !important;
   font-size: 15px;
   font-weight: 700;
@@ -1156,7 +1160,7 @@ a{
   font-size: 13px !important;
 }
 
-.table .table-light tr{
+.table .table-light tr {
   border: 1px solid rgba(0, 0, 0, 0.11) !important;
 
 }
@@ -1169,8 +1173,8 @@ a{
 }
 
 
-.product-search-results .product-item{
-  border-radius: 10px;  
+.product-search-results .product-item {
+  border-radius: 10px;
   height: 40px !important;
   margin: 3px;
   display: flex;
@@ -1183,19 +1187,19 @@ a{
   cursor: pointer;
 }
 
-.required::after{
+.required::after {
   content: '*';
   margin-left: 2px;
   color: red;
 }
 
-.Pdf-Modal{
+.Pdf-Modal {
   width: 100%;
   height: 100%;
   padding: 10px;
 }
 
-.loginSection{
+.loginSection {
   width: 100%;
   height: 100vh;
   padding: 35px 25px;
@@ -1203,7 +1207,7 @@ a{
   position: relative;
 }
 
-.loginPatern{
+.loginPatern {
   width: 100%;
   height: 100%;
   opacity: 0.1;
@@ -1214,13 +1218,13 @@ a{
   pointer-events: none;
 }
 
-.loginSection .loginBox{
+.loginSection .loginBox {
   width: 350px;
   height: auto;
   margin: auto;
 }
 
-.loginSection .loginBox .wrapper{
+.loginSection .loginBox .wrapper {
   width: 100%;
   height: auto;
   background: #f0f0f0;
@@ -1249,31 +1253,31 @@ a{
   color: #5e5d72;
 } */
 
-.loginSection .loginBox .wrapper .link{
+.loginSection .loginBox .wrapper .link {
   font-size: 14px;
   color: #5e5d72;
   font-weight: 600;
   text-decoration: #5e5d72;
 }
 
-.loginSection .loginBox .wrapper .link:hover{
+.loginSection .loginBox .wrapper .link:hover {
   color: #0858f7 !important;
   text-decoration: none;
 }
 
-.link{
+.link {
   color: #5e5d72;
   font-weight: 600;
   cursor: pointer;
 }
 
-.link.color{
+.link.color {
   color: #0858f7 !important;
   text-decoration: none;
   margin-left: 7px;
 }
 
-.loginSection .loginBox .wrapper .form-control{
+.loginSection .loginBox .wrapper .form-control {
   background: #fff !important;
   box-shadow: none !important;
   outline: none !important;
@@ -1284,15 +1288,15 @@ a{
   padding-left: 35px;
 }
 
-.loginSection .loginBox .wrapper .form-group.focus .icon svg{
+.loginSection .loginBox .wrapper .form-group.focus .icon svg {
   color: #0858f7 !important;
 }
 
-.loginSection .loginBox .wrapper .form-control:focus{
+.loginSection .loginBox .wrapper .form-control:focus {
   border: 1px solid #0858f7 !important;
 }
 
-.loginSection .loginBox .wrapper .form-group .icon{
+.loginSection .loginBox .wrapper .form-group .icon {
   position: absolute;
   top: 6px;
   left: 10px;
@@ -1300,51 +1304,51 @@ a{
   font-size: 20px;
 }
 
-.loginSection .loginBox .wrapper .form-group .icon svg{
+.loginSection .loginBox .wrapper .form-group .icon svg {
   color: rgb(95, 94, 115);
 }
 
-.toggleShowPassword{
+.toggleShowPassword {
   position: absolute;
   top: 8px;
   right: 9px;
   cursor: pointer;
 }
 
-.toggleShowPassword svg{
+.toggleShowPassword svg {
   font-size: 22px;
   color: rgb(95, 94, 115);
 }
 
-.loginWithGoogle{
+.loginWithGoogle {
   text-transform: capitalize !important;
   font-weight: bold !important;
 }
 
-.loginWithGoogle svg{
+.loginWithGoogle svg {
   font-size: 22px !important;
   margin: 0px 7px;
 }
 
-.p-zero{
+.p-zero {
   padding: 0px !important;
 }
 
-.p-right{
+.p-right {
   padding-right: 0px !important;
 }
 
-.Modal-height{
+.Modal-height {
   height: 300px !important;
 }
 
-.SignUpSection{
+.SignUpSection {
   background: #f1f1f1 !important;
-  padding: 0px 0px!important;
+  padding: 0px 0px !important;
   height: auto !important;
 }
 
-.SignUpSection .loginBox{
+.SignUpSection .loginBox {
   background: #e4e4e4 !important;
   position: relative;
   z-index: 100;
@@ -1354,18 +1358,18 @@ a{
   overflow: hidden;
 }
 
-.SignUpSection .loginBox .wrapper{
+.SignUpSection .loginBox .wrapper {
   border: 0px !important;
   background: transparent !important;
   padding-top: 10px !important;
 }
 
-.SignUpSection .part1{
+.SignUpSection .part1 {
   padding-left: 100px !important;
 }
 
 
-.SignUpSection .part1 h1{
+.SignUpSection .part1 h1 {
   font-size: 40px;
   font-weight: bold;
 }
