@@ -19,6 +19,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import logo from '../../assets/images/logo-light.png';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
+import { FaShoppingBag } from 'react-icons/fa';
 
 const Ordermy = () => {
   const navigate = useNavigate();
@@ -32,30 +33,32 @@ const Ordermy = () => {
   const [userId, setUserId] = useState(null);
   const [orders, setOrders] = useState([]);
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     checkLoginStatus();
     context.setIsHideSidebarAndHeader(true);
     context.setThemeMode(false);
+    fetchProducts();
   }, []);
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isLoggedIn && userId) {
       fetchOrders();
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, userId]);
 
   const checkLoginStatus = () => {
     const token = localStorage.getItem('jwtToken');
     const storedEmail = localStorage.getItem('userName');
     const idRole = localStorage.getItem('roleId');
-    const userId = localStorage.getItem('userId');
+    const storedUserId = localStorage.getItem('userId'); // Capturamos el ID del usuario logueado
 
-    if (token && storedEmail && idRole && userId) {
+    if (token && storedEmail && idRole && storedUserId) {
       setIsLoggedIn(true);
       setUserEmail(storedEmail);
       setUserRole(idRole);
-      setUserId(userId);
+      setUserId(parseInt(storedUserId, 10)); // Aseguramos que el userId sea un número
     } else {
       setIsLoggedIn(false);
       setUserEmail('');
@@ -65,7 +68,9 @@ const Ordermy = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 1); // Ajuste para mostrar la fecha correcta
+    return date.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -83,12 +88,23 @@ const Ordermy = () => {
     switch (status.toLowerCase()) {
       case 'pendiente':
         return '#fbbf24';
-      case 'completado':
-        return '#22c55e';
-      case 'cancelado':
-        return '#ef4444';
+      case 'completada':
+        return '#22c55e';  // Verde para completado
+      case 'cancelada':
+        return '#ef4444';  // Rojo para cancelada
       default:
         return '#3b82f6';
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:1056/api/products');
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Error al cargar los productos');
     }
   };
 
@@ -96,12 +112,41 @@ const Ordermy = () => {
     try {
       const response = await fetch('http://localhost:1056/api/orders');
       const data = await response.json();
-      setOrders(data);
+
+      // Filtra los pedidos donde `id_usuario` coincide con el `userId` almacenado
+      const filteredOrders = data
+        .filter(order => String(order.id_usuario) === String(userId))
+        .map(order => ({
+          id: order.id,
+          Billnumber: order.Billnumber,
+          OrderDate: order.OrderDate,
+          registrationDate: order.registrationDate,
+          total_price: order.total_price,
+          status: order.status,
+          id_usuario: order.id_usuario,
+          Token_Expiration: order.Token_Expiration,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
+          OrderDetails: order.OrderDetails.map(detail => ({
+            id: detail.id,
+            quantity: detail.quantity,
+            unitPrice: detail.unitPrice,
+            total_price: detail.total_price,
+            id_producto: detail.id_producto,
+            id_order: detail.id_order,
+            createdAt: detail.createdAt,
+            updatedAt: detail.updatedAt,
+          })),
+        }));
+
+      setOrders(filteredOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Error al cargar los pedidos');
     }
   };
+
+
 
   const handleLogin = () => {
     navigate('/login');
@@ -124,10 +169,11 @@ const Ordermy = () => {
     localStorage.removeItem('jwtToken');
     localStorage.removeItem('roleId');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('userId'); // Removemos el userId al cerrar sesión
     setIsLoggedIn(false);
     setUserEmail('');
     handleMenuClose();
-    toast.error('Sesion cerrada', {
+    toast.error('Sesión cerrada', {
       position: "top-right",
       autoClose: 1000,
       hideProgressBar: false,
@@ -145,6 +191,11 @@ const Ordermy = () => {
 
   const getUserInitial = () => {
     return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
+  };
+
+  const getProductName = (id) => {
+    const selectedProduct = products.find(product => product.id === id);
+    return selectedProduct ? selectedProduct.Product_Name : `Producto ${id}`;
   };
 
   return (
@@ -179,7 +230,7 @@ const Ordermy = () => {
                   {userRole === '1' || userRole === '2' ? (
                     <MenuItem onClick={handledashboard}><GrUserAdmin /> Administrar</MenuItem>
                   ) : (
-                    <MenuItem>Carrito</MenuItem>
+                    <MenuItem><FaShoppingBag /> Carrito</MenuItem>
                   )}
                   <MenuItem onClick={handleLogout}><GiExitDoor /> Cerrar Sesión</MenuItem>
                 </Menu>
@@ -191,85 +242,82 @@ const Ordermy = () => {
         </div>
       </header>
 
-      <div className="container mt-4">
-        <h1>Mis Pedidos</h1>
+      <div className="container mt-5">
+        <h1 className="text-center mb-4" style={{ color: '#b89b58' }}>Mis Pedidos</h1>
         {isLoggedIn ? (
-          <>
-            <p>Bienvenido, {userEmail}</p>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>N° Pedido</TableCell>
-                    <TableCell>Fecha</TableCell>
-                    <TableCell>Total</TableCell>
-                    <TableCell>Estado</TableCell>
-                    <TableCell>Detalles</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {orders.map((order) => (
-                    <React.Fragment key={order.id}>
+          <TableContainer component={Paper} className="rounded-lg shadow-lg">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>N° Pedido</TableCell>
+                  <TableCell>Fecha</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>Estado</TableCell>
+                  <TableCell>Detalles</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {orders.map((order) => (
+                  <React.Fragment key={order.id}>
+                    <TableRow>
+                      <TableCell>{order.Billnumber}</TableCell>
+                      <TableCell>{formatDate(order.OrderDate)}</TableCell>
+                      <TableCell>{formatCurrency(order.total_price)}</TableCell>
+                      <TableCell>
+                        <span style={{
+                          backgroundColor: getStatusColor(order.status),
+                          color: 'white',
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          fontSize: '0.875rem'
+                        }}>
+                          {order.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                        >
+                          Ver Detalles
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                    {expandedOrder === order.id && (
                       <TableRow>
-                        <TableCell>{order.Billnumber}</TableCell>
-                        <TableCell>{formatDate(order.OrderDate)}</TableCell>
-                        <TableCell>{formatCurrency(order.total_price)}</TableCell>
-                        <TableCell>
-                          <span style={{ 
-                            backgroundColor: getStatusColor(order.status),
-                            color: 'white',
-                            padding: '4px 8px',
-                            borderRadius: '12px',
-                            fontSize: '0.875rem'
-                          }}>
-                            {order.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                            variant="text"
-                          >
-                            {expandedOrder === order.id ? 'Ocultar' : 'Ver detalles'}
-                          </Button>
+                        <TableCell colSpan={5}>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Producto</TableCell>
+                                <TableCell>Cantidad</TableCell>
+                                <TableCell>Precio Unitario</TableCell>
+                                <TableCell>Precio Total</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {order.OrderDetails.map((item) => (
+                                <TableRow key={item.id}>
+                                  <TableCell>{getProductName(item.id_producto)}</TableCell>
+                                  <TableCell>{item.quantity}</TableCell>
+                                  <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
+                                  <TableCell>{formatCurrency(item.total_price)}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
                         </TableCell>
                       </TableRow>
-                      {expandedOrder === order.id && (
-                        <TableRow>
-                          <TableCell colSpan={5} style={{ padding: '0' }}>
-                            <div style={{ padding: '16px', backgroundColor: '#f8f9fa' }}>
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow>
-                                    <TableCell>Producto ID</TableCell>
-                                    <TableCell>Cantidad</TableCell>
-                                    <TableCell>Precio Unitario</TableCell>
-                                    <TableCell>Total</TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {order.OrderDetails.map((detail) => (
-                                    <TableRow key={detail.id}>
-                                      <TableCell>{detail.id_producto}</TableCell>
-                                      <TableCell>{detail.quantity}</TableCell>
-                                      <TableCell>{formatCurrency(detail.unitPrice)}</TableCell>
-                                      <TableCell>{formatCurrency(detail.total_price)}</TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </>
+                    )}
+
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         ) : (
-          <p>Por favor, inicia sesión para ver tus pedidos.</p>
+          <p className="text-center">Inicia sesión para ver tus pedidos.</p>
         )}
       </div>
     </>
