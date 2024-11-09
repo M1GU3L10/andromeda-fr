@@ -210,10 +210,18 @@ export default function Component() {
     setCart(prevCart => {
       const currentQuantity = prevCart[productId] || 0;
       if (currentQuantity + 1 > product.Stock) {
-        setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
-        setAlertSeverity('warning');
+        toast.warning(`Prodcuto agotado`, {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
         return prevCart;
       }
+      
 
       return {
         ...prevCart,
@@ -228,10 +236,18 @@ export default function Component() {
       if (currentQuantity <= 1) {
         const newCart = { ...prevCart };
         delete newCart[productId];
-        setAlertMessage('Producto eliminado del carrito');
-        setAlertSeverity('info');
+        toast.info('Producto eliminado del carrito', {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
         return newCart;
       }
+      
 
       return {
         ...prevCart,
@@ -433,7 +449,7 @@ export default function Component() {
               userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
             }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-            <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+            
             <IconButton onClick={() => setDrawerOpen(true)}>
               <Badge badgeContent={getTotalItems()} color="primary">
                 <AddShoppingCartIcon />

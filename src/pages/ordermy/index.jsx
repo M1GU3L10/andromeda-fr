@@ -52,13 +52,13 @@ const Ordermy = () => {
     const token = localStorage.getItem('jwtToken');
     const storedEmail = localStorage.getItem('userName');
     const idRole = localStorage.getItem('roleId');
-    const storedUserId = localStorage.getItem('userId'); // Capturamos el ID del usuario logueado
+    const storedUserId = localStorage.getItem('userId');
 
     if (token && storedEmail && idRole && storedUserId) {
       setIsLoggedIn(true);
       setUserEmail(storedEmail);
       setUserRole(idRole);
-      setUserId(parseInt(storedUserId, 10)); // Aseguramos que el userId sea un número
+      setUserId(parseInt(storedUserId, 10));
     } else {
       setIsLoggedIn(false);
       setUserEmail('');
@@ -69,7 +69,7 @@ const Ordermy = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    date.setDate(date.getDate() + 1); // Ajuste para mostrar la fecha correcta
+    date.setDate(date.getDate() + 1);
     return date.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
@@ -89,9 +89,9 @@ const Ordermy = () => {
       case 'pendiente':
         return '#fbbf24';
       case 'completada':
-        return '#22c55e';  // Verde para completado
+        return '#22c55e';
       case 'cancelada':
-        return '#ef4444';  // Rojo para cancelada
+        return '#ef4444';
       default:
         return '#3b82f6';
     }
@@ -113,7 +113,6 @@ const Ordermy = () => {
       const response = await fetch('http://localhost:1056/api/orders');
       const data = await response.json();
 
-      // Filtra los pedidos donde `id_usuario` coincide con el `userId` almacenado
       const filteredOrders = data
         .filter(order => String(order.id_usuario) === String(userId))
         .map(order => ({
@@ -146,8 +145,6 @@ const Ordermy = () => {
     }
   };
 
-
-
   const handleLogin = () => {
     navigate('/login');
   };
@@ -169,7 +166,7 @@ const Ordermy = () => {
     localStorage.removeItem('jwtToken');
     localStorage.removeItem('roleId');
     localStorage.removeItem('userEmail');
-    localStorage.removeItem('userId'); // Removemos el userId al cerrar sesión
+    localStorage.removeItem('userId');
     setIsLoggedIn(false);
     setUserEmail('');
     handleMenuClose();
@@ -208,9 +205,11 @@ const Ordermy = () => {
         <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
           <nav className='navBar-index'>
             <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-            <Link to='/appointmentView'>CITAS</Link>
+            {
+              userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
+            }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-            <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+            
           </nav>
           <div className="auth-buttons">
             {isLoggedIn && userEmail ? (
@@ -276,11 +275,11 @@ const Ordermy = () => {
                       </TableCell>
                       <TableCell>
                         <Button
-                          variant="contained"
-                          color="primary"
+                          variant="outlined"
+                          className="text-primary border-primary hover:bg-primary hover:text-white transition-colors duration-200"
                           onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
                         >
-                          Ver Detalles
+                          {expandedOrder === order.id ? 'Ocultar' : 'Ver Detalles'}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -310,7 +309,6 @@ const Ordermy = () => {
                         </TableCell>
                       </TableRow>
                     )}
-
                   </React.Fragment>
                 ))}
               </TableBody>
