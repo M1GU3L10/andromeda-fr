@@ -42,6 +42,19 @@ const Sidebar = () => {
     <>
       <div className="sidebar">
         <ul>
+        {
+            hasPermission('Perfil') && (
+              <li>
+                <Link to="/profile">
+                  <Button className={`w-100 ${activeTab === 0 ? 'active' : ''}`} onClick={() => isOpensubMenu(0)}>
+                    <span className='icon'><TbLayoutDashboardFilled /></span>
+                    <span className='sidebar-option'>Mi perfil</span>
+                    <span className='arrow'></span>
+                  </Button>
+                </Link>
+              </li>
+            )
+          }
           {
             hasPermission('Dashboard') && (
               <li>
