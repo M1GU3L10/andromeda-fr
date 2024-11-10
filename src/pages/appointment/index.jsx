@@ -293,13 +293,14 @@ const Appointment = () => {
             setIsMenuOpen(false);
         };
 
-        const handleEditClick = (appointmentId) => {
-            if (appointmentId) {
-                navigate(`/appointmentUpdate/${appointmentId}`);
+        const handleEditClick = () => {
+            if (info.event.id) {
+              navigate(`/appointmentUpdate/${info.event.id}`);
             } else {
-                console.error('No appointment selected');
+              console.error('No appointment selected');
             }
-        };
+            handleClose();
+          };
         
         
         //buscar el nmbre del id

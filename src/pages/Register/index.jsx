@@ -19,13 +19,15 @@ import withReactContent from 'sweetalert2-react-content';
 const MySwal = withReactContent(Swal);
 
 const Register = () => {
-
+    const url = 'http://localhost:1056/api/users';
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const [inputIndex, setInputIndex] = useState(null);
     const [isShowPassword, setIsShowPassword] = useState(false);
+    const [isShowConfirmePassword, setIsShowConfirmePassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmePassword, setConfirmePassword] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [roleId, setRoleId] = useState(3);
@@ -36,6 +38,7 @@ const Register = () => {
     const [phoneError, setPhoneError] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [confirmePasswordError, setConfirmePasswordError] = useState('');
 
     useEffect(() => {
         context.setIsHideSidebarAndHeader(true);
@@ -70,6 +73,10 @@ const Register = () => {
         return regex.test(value) ? '' : 'La contraseña debe tener al menos 8 caracteres, incluyendo letras y números';
     };
 
+    const validateConfirmePassword = (value) => {
+        return password === value ? '' : 'Las contraseñas deben de concidir';
+    };
+
     const handleNameChange = (e) => {
         const nameValue = e.target.value;
         setName(nameValue);
@@ -94,11 +101,50 @@ const Register = () => {
         setPasswordError(validatePassword(passwordValue));
     };
 
+    const handleConfirmePasswordChange = (e) => {
+        const confirmePasswordValue = e.target.value;
+        setConfirmePassword(confirmePasswordValue);
+        setConfirmePasswordError(validateConfirmePassword(confirmePasswordValue));
+    };
+
+    const checkExistingEmail = async (email) => {
+        try {
+          const response = await axios.get(`${url}/check-email/${email}`);
+          return response.data.exists;
+        } catch (error) {
+          console.error('Error checking email:', error);
+          return false;
+        }
+      };
+    
+      const checkExistingPhone = async (phone) => {
+        try {
+          const response = await axios.get(`${url}/check-phone/${phone}`);
+          return response.data.exists;
+        } catch (error) {
+          console.error('Error checking phone:', error);
+          return false;
+        }
+      };
+
     const handleRegister = async (e) => {
         e.preventDefault();
 
-        if (nameError || phoneError || emailError || passwordError) {
+        const emailExists = await checkExistingEmail(email.trim());
+        const phoneExists = await checkExistingPhone(phone.trim());
+
+        if (nameError || phoneError || emailError || passwordError || confirmePasswordError) {
             setErrorMessage('Corrija los errores antes de enviar.');
+            return;
+        } 
+
+        if(emailExists){
+            setErrorMessage('El correo electrónico ya está registrado', 'warning');
+            return;
+        }
+        
+        if(phoneExists){
+            setErrorMessage('El número de teléfono ya está registrado', 'warning');
             return;
         }
 
@@ -220,6 +266,23 @@ const Register = () => {
                                             {isShowPassword ? <IoMdEyeOff /> : <IoMdEye />}
                                         </span>
                                         {passwordError && <div className="invalid-feedback">{passwordError}</div>}
+                                    </div>
+                                    <div className={`form-group mb-3 position-relative ${inputIndex === 4 && 'focus'}`}>
+                                        <span className='icon'><RiLockPasswordFill /></span>
+                                        <input
+                                            type={isShowConfirmePassword ? 'text' : 'password'}
+                                            className={`form-control ${confirmePasswordError ? 'is-invalid' : ''}`}
+                                            placeholder='Confirme su contraseña'
+                                            value={confirmePassword}
+                                            onChange={handleConfirmePasswordChange}
+                                            onFocus={() => focusInput(3)}
+                                            onBlur={() => setInputIndex(null)}
+                                            required
+                                        />
+                                        <span className='toggleShowPassword' onClick={() => setIsShowConfirmePassword(!isShowConfirmePassword)}>
+                                            {isShowConfirmePassword ? <IoMdEyeOff /> : <IoMdEye />}
+                                        </span>
+                                        {confirmePasswordError && <div className="invalid-feedback">{confirmePasswordError}</div>}
                                     </div>
 
                                     {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}

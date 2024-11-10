@@ -32,6 +32,7 @@ import Index from './pages/index';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Profile from './pages/profile'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
@@ -99,6 +100,11 @@ function App() {
                 <Route path="/resetPassword" element={<PermissionCheck requiredPermission="public"><ResetPassword /></PermissionCheck>} />
                 <Route path="/" element={<Navigate to="/index" replace />} />
 
+                <Route path="/profile" element={
+                  <PermissionCheck requiredPermission="Perfil">
+                    <Profile />
+                  </PermissionCheck>
+                } />
                 <Route path="/dashboard" element={
                   <PermissionCheck requiredPermission="Dashboard">
                     <Dashboard />
