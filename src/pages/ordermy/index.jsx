@@ -12,20 +12,19 @@ import {
   Paper,
   Avatar,
   Menu,
-  MenuItem
+  MenuItem,
+  TablePagination
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import logo from '../../assets/images/logo-light.png';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
-import { FaShoppingBag } from 'react-icons/fa';
-// Añade estas importaciones junto con las otras al inicio del archivo
-import { FaEye, FaEyeSlash } from 'react-icons/fa';  // Para los íconos de ojo
-import { MdCancel } from 'react-icons/md';     
-import Swal from 'sweetalert2';      // Para el ícono de cancelar
+import { FaShoppingBag, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { MdCancel } from 'react-icons/md';
+import Swal from 'sweetalert2';
 
-const Ordermy = () => {
+export default function Component() {
   const navigate = useNavigate();
   const context = useContext(MyContext);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,6 +37,8 @@ const Ordermy = () => {
   const [orders, setOrders] = useState([]);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     checkLoginStatus();
@@ -199,22 +200,18 @@ const Ordermy = () => {
     return selectedProduct ? selectedProduct.Product_Name : `Producto ${id}`;
   };
 
-
-  
   const handleCancelOrder = async (orderId) => {
-    // Mostrar SweetAlert para confirmar
     const result = await Swal.fire({
       title: '¿Estás seguro?',
       text: "Esta acción cancelará el pedido y no podrá deshacerse.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#28a745', // Verde para el botón de confirmación
-      cancelButtonColor: '#d33',  // Azul para el botón de cancelar
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#d33',
       confirmButtonText: 'Sí, cancelar',
       cancelButtonText: 'No, conservar',
     });
   
-    // Si el usuario confirma, procede con la cancelación
     if (result.isConfirmed) {
       try {
         const response = await fetch(`http://localhost:1056/api/orders/${orderId}`, {
@@ -227,7 +224,7 @@ const Ordermy = () => {
   
         if (response.ok) {
           toast.success('Pedido cancelado exitosamente');
-          fetchOrders(); // Refresca los pedidos después de la cancelación
+          fetchOrders();
         } else {
           throw new Error('Failed to cancel order');
         }
@@ -237,7 +234,15 @@ const Ordermy = () => {
       }
     }
   };
-  
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   return (
     <>
@@ -253,7 +258,6 @@ const Ordermy = () => {
               userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
             }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-
           </nav>
           <div className="auth-buttons">
             {isLoggedIn && userEmail ? (
@@ -300,7 +304,7 @@ const Ordermy = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orders.map((order) => (
+                {orders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((order) => (
                   <React.Fragment key={order.id}>
                     <TableRow>
                       <TableCell>{order.Billnumber}</TableCell>
@@ -337,32 +341,15 @@ const Ordermy = () => {
                             )}
                           </Button>
 
-                          {order.status.toLowerCase() !== 'cancelada' && (
-                        <Button
-                        variant="outlined"
-                        onClick={() => handleCancelOrder(order.id)}
-                        style={{
-                          minWidth: '130px',
-                          backgroundColor: '#ef4444', // Color de fondo inicial (rojo)
-                          border: '2px solid #ef4444', // Borde rojo
-                          color: 'white', // Color de texto inicial (blanco)
-                          borderRadius: '9999px', // Borde redondeado
-                          padding: '0.25rem 1rem', // Espaciado interno
-                          fontWeight: '500', // Fuente seminegrita
-                          
-                          
-                          
-                          gap: '0.5rem', // Espacio entre ícono y texto
-                          transition: 'color 0.3s, background-color 0.3s', // Transición solo para color
-                        }}
-                    
-                     
-                      >
-                        <MdCancel style={{ fontSize: '1.25rem' }} /> {/* Ícono */}
-                        <span>Cancelar</span>
-                      </Button>
-                      
-
+                          {order.status.toLowerCase() === 'pendiente' && (
+                            <Button
+                              variant="outlined"
+                              onClick={() => handleCancelOrder(order.id)}
+                              className="min-w-[130px] bg-white border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-full py-1 px-4 font-medium flex items-center justify-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
+                            >
+                              <MdCancel className="text-lg" />
+                              <span>Cancelar</span>
+                            </Button>
                           )}
                         </div>
                       </TableCell>
@@ -397,6 +384,18 @@ const Ordermy = () => {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              rowsPerPageOptions={[7, 10, 25]}
+              component="div"
+              count={orders.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              labelRowsPerPage="Filas por página"
+              labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
+              }
+            />
           </TableContainer>
         ) : (
           <p className="text-center">Inicia sesión para ver tus pedidos.</p>
@@ -404,6 +403,4 @@ const Ordermy = () => {
       </div>
     </>
   );
-};
-
-export default Ordermy;
+}
