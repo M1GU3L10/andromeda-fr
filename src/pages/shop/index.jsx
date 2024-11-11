@@ -210,7 +210,7 @@ export default function Component() {
     setCart(prevCart => {
       const currentQuantity = prevCart[productId] || 0;
       if (currentQuantity + 1 > product.Stock) {
-        toast.warning(`Prodcuto agotado`, {
+        toast.warning(`Producto agotado`, {
           position: "top-right",
           autoClose: 2000,
           hideProgressBar: false,
