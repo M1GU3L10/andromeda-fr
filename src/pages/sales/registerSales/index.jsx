@@ -275,7 +275,8 @@ export default function Component() {
   return (
     <div className="right-content w-100">
       <div className="row d-flex align-items-center w-100">
-        <div className="spacing d-flex align-items-center">
+        {/* Breadcrumbs section remains the same */}
+        <div className='spacing d-flex align-items-center'>
           <div className='col-sm-5'>
             <span className='Title'>Registrar Ventas</span>
           </div>
@@ -287,10 +288,12 @@ export default function Component() {
             </Breadcrumbs>
           </div>
         </div>
+
         <div className='card border-0 p-3 d-flex colorTransparent'>
           <div className='row'>
-            <div className='col-sm-7'>
-              <div className='card-detail shadow border-0'>
+            {/* Products Card */}
+            <div className='col-sm-6'>
+              <div className='card-detail shadow border-0 mb-4'>
                 <div className='row p-3'>
                   <div className='bcg-w col-sm-7 d-flex align-items-center'>
                     <div className="position-relative d-flex align-items-center">
@@ -309,6 +312,7 @@ export default function Component() {
                       />
                     </div>
                   </div>
+                  {/* Product search results */}
                   <div className='d-flex aline-items-center justify-content-end'>
                     <div className="product-search-results">
                       {searchTerm && filteredProducts.map(product => (
@@ -323,8 +327,9 @@ export default function Component() {
                     </div>
                   </div>
                 </div>
+                {/* Products table */}
                 <div className='table-responsive mt-3 p-3'>
-                  <table className='table table-bordered table-hover v-align table-striped '>
+                  <table className='table table-bordered table-hover v-align table-striped'>
                     <thead className='table-light'>
                       <tr>
                         <th>Producto</th>
@@ -355,12 +360,20 @@ export default function Component() {
                     </tbody>
                   </table>
                 </div>
-                <div className='bcg-w col-sm-7 d-flex align-items-center'>
+                <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
+                  <span className='Monto'>Total:</span>
+                  <span className='valor'>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                </div>
+              </div>
+
+              {/* Services Card */}
+              <div className='card-detail shadow border-0 mb-4'>
+                <div className='bcg-w col-sm-12 p-3'>
                   <div className="position-relative d-flex align-items-center">
-                    <span className='Tittle'>¿Deseas agregar un servicio?</span>
+                    <span className='Tittle'>Servicios</span>
                   </div>
                 </div>
-                <div className='table-responsive mt-3 w-80 p-3'>
+                <div className='table-responsive p-3'>
                   <table className='table table-bordered table-hover v-align table-striped'>
                     <thead className='table-light'>
                       <tr>
@@ -403,8 +416,7 @@ export default function Component() {
                       ))}
                     </tbody>
                   </table>
-
-                  <div className="d-flex justify-content-start mt-4 mb-3 px-3">
+                  <div className="d-flex justify-content-start mt-2 px-3">
                     <Button
                       onClick={handleServiceAdd}
                       style={{
@@ -423,20 +435,18 @@ export default function Component() {
                     </Button>
                   </div>
                 </div>
-                <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                  <span className='Monto'>Total:</span>
-                  <span className='valor'>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
-                </div>
               </div>
             </div>
-            <div className='col-sm-5'>
-              <div className='card-detail shadow border-0'>
+
+            {/* Sale Info Card */}
+            <div className='col-sm-6'>
+              <div className='card-detail shadow border-0 mb-4'>
                 <div className="cont-title w-100">
                   <span className='Title'>Info de venta</span>
                 </div>
                 <div className='d-flex align-items-center'>
                   <div className="d-flex align-items-center w-100 p-4">
-                    <Form className='form' onSubmit={handleSubmit}>
+                    <Form className='form w-100'>
                       <Form.Group as={Row} className="mb-3">
                         <Col sm="6">
                           <Form.Label className='required'># Factura</Form.Label>
@@ -478,6 +488,19 @@ export default function Component() {
                           {errors.id_usuario}
                         </Form.Control.Feedback>
                       </Form.Group>
+                    </Form>
+                  </div>
+                </div>
+              </div>
+
+              {/* Appointment Time Card */}
+              <div className='card-detail shadow border-0 mb-4'>
+                <div className="cont-title w-100">
+                  <span className='Title'>Horario de cita</span>
+                </div>
+                <div className='d-flex align-items-center'>
+                  <div className="d-flex align-items-center w-100 p-4">
+                    <Form className='form w-100'>
                       <Form.Group as={Row} className="mb-3">
                         <Col sm="6">
                           <Form.Label>Hora inicio</Form.Label>
@@ -498,17 +521,30 @@ export default function Component() {
                           />
                         </Col>
                       </Form.Group>
-                      <Form.Group className='d-flex align-items-center justify-content-end'>
-                        <Button variant="secondary" className='btn-red' id='btn-red' href="/Sales">
-                          Cerrar
-                        </Button>
-                        <Button variant="primary" type="submit" className='btn-sucess'>
-                          Guardar
-                        </Button>
-                      </Form.Group>
                     </Form>
                   </div>
                 </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className='d-flex justify-content-end gap-2 mt-4'>
+                <Button 
+                  variant="secondary" 
+                  className='btn-red' 
+                  id='btn-red' 
+                  href="/Sales"
+                  style={{ minWidth: '100px' }}
+                >
+                  Cerrar
+                </Button>
+                <Button 
+                  variant="primary" 
+                  className='btn-sucess' 
+                  onClick={handleSubmit}
+                  style={{ minWidth: '100px' }}
+                >
+                  Guardar
+                </Button>
               </div>
             </div>
           </div>
