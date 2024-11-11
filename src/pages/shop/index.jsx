@@ -269,33 +269,33 @@ export default function Component() {
       // history.push('/login');
       return;
     }
-
+  
     if (Object.keys(cart).length === 0) {
       Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
       return;
     }
-
+  
     const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
       quantity: quantity,
       id_producto: parseInt(productId)
     }));
-
+  
     const invalidProducts = orderDetails.filter(detail => {
       const product = products.find(p => p.id === detail.id_producto);
       return !product || product.Stock < detail.quantity || detail.quantity <= 0;
     });
-
+  
     if (invalidProducts.length > 0) {
       Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
       return;
     }
-
+  
     const total = orderDetails.reduce((acc, detail) => {
       const product = products.find(p => p.id === detail.id_producto);
       return acc + (product.Price * detail.quantity);
     }, 0);
     const formattedTotal = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(total);
-
+  
     const confirmation = await Swal.fire({
       title: 'Confirmar Pedido',
       html: `
@@ -307,25 +307,25 @@ export default function Component() {
       confirmButtonText: 'Sí, confirmar',
       cancelButtonText: 'Cancelar'
     });
-
+  
     if (!confirmation.isConfirmed) {
       return;
     }
-
+  
     let orderCreated = false;
     let orderData;
     let expirationDateString;
-
+  
     try {
       const now = new Date();
       const orderDateTime = now.toISOString().split('T');
       const orderDate = orderDateTime[0];
       const orderTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-
+  
       const expirationDate = new Date(now);
       expirationDate.setDate(expirationDate.getDate() + 3);
       expirationDateString = expirationDate.toLocaleDateString('es-ES');
-
+  
       orderData = {
         Billnumber: `ORD${Date.now()}`,
         OrderDate: orderDate,
@@ -335,9 +335,9 @@ export default function Component() {
         id_usuario: userId,
         orderDetails: orderDetails
       };
-
+  
       const response = await axios.post('http://localhost:1056/api/orders', orderData);
-
+  
       if (response.status === 201) {
         orderCreated = true;
         clearCart();
@@ -354,16 +354,23 @@ export default function Component() {
           title: '¡Pedido creado exitosamente!',
           html: `
             <div class="order-confirmation">
-              
-             
               <p>Fecha de vencimiento del pedido (en caso de no ser cancelado): ${expirationDateString}</p>
               <p>Total a pagar: <strong>${formattedTotal} COP</strong></p>
             </div>
           `,
           icon: 'success'
+        }).then(() => {
+          // Actualizar el estado del componente
+          refreshComponent();
         });
       }
     }
+  };
+  
+  const refreshComponent = () => {
+    // Actualizar los estados relevantes
+    setCart({});
+    fetchProducts(); // Asumiendo que esta función obtiene los productos actualizados
   };
 
   const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);

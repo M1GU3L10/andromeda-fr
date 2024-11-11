@@ -20,6 +20,10 @@ import logo from '../../assets/images/logo-light.png';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
 import { FaShoppingBag } from 'react-icons/fa';
+// Añade estas importaciones junto con las otras al inicio del archivo
+import { FaEye, FaEyeSlash } from 'react-icons/fa';  // Para los íconos de ojo
+import { MdCancel } from 'react-icons/md';     
+import Swal from 'sweetalert2';      // Para el ícono de cancelar
 
 const Ordermy = () => {
   const navigate = useNavigate();
@@ -195,6 +199,46 @@ const Ordermy = () => {
     return selectedProduct ? selectedProduct.Product_Name : `Producto ${id}`;
   };
 
+
+  
+  const handleCancelOrder = async (orderId) => {
+    // Mostrar SweetAlert para confirmar
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Esta acción cancelará el pedido y no podrá deshacerse.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745', // Verde para el botón de confirmación
+      cancelButtonColor: '#d33',  // Azul para el botón de cancelar
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No, conservar',
+    });
+  
+    // Si el usuario confirma, procede con la cancelación
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`http://localhost:1056/api/orders/${orderId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'Cancelada' }),
+        });
+  
+        if (response.ok) {
+          toast.success('Pedido cancelado exitosamente');
+          fetchOrders(); // Refresca los pedidos después de la cancelación
+        } else {
+          throw new Error('Failed to cancel order');
+        }
+      } catch (error) {
+        console.error('Error al cancelar el pedido:', error);
+        toast.error('Error al cancelar el pedido');
+      }
+    }
+  };
+  
+
   return (
     <>
       <header className="header-index1">
@@ -209,7 +253,7 @@ const Ordermy = () => {
               userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
             }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-            
+
           </nav>
           <div className="auth-buttons">
             {isLoggedIn && userEmail ? (
@@ -252,7 +296,7 @@ const Ordermy = () => {
                   <TableCell>Fecha</TableCell>
                   <TableCell>Total</TableCell>
                   <TableCell>Estado</TableCell>
-                  <TableCell>Detalles</TableCell>
+                  <TableCell>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -274,13 +318,53 @@ const Ordermy = () => {
                         </span>
                       </TableCell>
                       <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outlined"
+                            onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                            className="min-w-[130px] bg-white border-2 border-[#b89b58] text-[#b89b58] hover:bg-[#b89b58] hover:text-white rounded-full py-1 px-4 font-medium flex items-center justify-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
+                          >
+                            {expandedOrder === order.id ? (
+                              <>
+                                <FaEyeSlash className="text-lg" />
+                                <span>Ocultar</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaEye className="text-lg" />
+                                <span>Ver Detalles</span>
+                              </>
+                            )}
+                          </Button>
+
+                          {order.status.toLowerCase() !== 'cancelada' && (
                         <Button
-                          variant="outlined"
-                          className="text-primary border-primary hover:bg-primary hover:text-white transition-colors duration-200"
-                          onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                        >
-                          {expandedOrder === order.id ? 'Ocultar' : 'Ver Detalles'}
-                        </Button>
+                        variant="outlined"
+                        onClick={() => handleCancelOrder(order.id)}
+                        style={{
+                          minWidth: '130px',
+                          backgroundColor: '#ef4444', // Color de fondo inicial (rojo)
+                          border: '2px solid #ef4444', // Borde rojo
+                          color: 'white', // Color de texto inicial (blanco)
+                          borderRadius: '9999px', // Borde redondeado
+                          padding: '0.25rem 1rem', // Espaciado interno
+                          fontWeight: '500', // Fuente seminegrita
+                          
+                          
+                          
+                          gap: '0.5rem', // Espacio entre ícono y texto
+                          transition: 'color 0.3s, background-color 0.3s', // Transición solo para color
+                        }}
+                    
+                     
+                      >
+                        <MdCancel style={{ fontSize: '1.25rem' }} /> {/* Ícono */}
+                        <span>Cancelar</span>
+                      </Button>
+                      
+
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                     {expandedOrder === order.id && (
