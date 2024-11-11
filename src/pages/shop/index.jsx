@@ -509,10 +509,6 @@ export default function Component() {
           </div>
         </div>
       </header >
-
-
-
-      <br /><br /><br />
       <main className="container mx-auto mt-8 shop-container" >
         <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
 

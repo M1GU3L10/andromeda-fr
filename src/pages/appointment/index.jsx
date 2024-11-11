@@ -316,9 +316,6 @@ const Appointment = () => {
             return response.data.name;  // Devuelve el nombre del empleado
         };
         
-        
-        
-
         //
 
         const handleViewClick = async () => {
@@ -348,10 +345,6 @@ const Appointment = () => {
             handleClose();
         };
 
-        // const handleDeleteClick = () => {
-        //     deleteProgramming(info.event.id, info.event.title);
-        //     handleClose();
-        // };
 
         return (
             <div
@@ -397,60 +390,10 @@ const Appointment = () => {
                         </Button>
                     </MenuItem>
 
-
-                    {/* <MenuItem className='Menu-programming-item' onClick={handleDeleteClick}>
-                        <Button color='error' className='delete'>
-                            <IoTrashSharp />
-                        </Button>
-                    </MenuItem> */}
                 </Menu>
             </div>
         );
     };
-
-
-    // const handleEdit = (event) => {
-    //     // Extraer los valores del evento
-    //     const { id, extendedProps, start, end } = event;
-
-    //     const startDate = start ? new Date(start) : new Date();
-    //     //si viene vacio enddate se asignara un valor mayor por una hora a start si quiere se puede quitar
-    //     const endDate = end ? new Date(end) : new Date(startDate.getTime() + 3600000);
-
-    //     const formatTime = (date) => {
-    //         return date.toTimeString().slice(0, 5);
-    //     };
-
-    //     const formatDate = (date) => {
-    //         return date.toISOString().split('T')[0];
-    //     };
-
-       
-    //     setId(id || '');
-    //     setInit_Time(formatTime(startDate));
-    //     setFinish_Time(formatTime(endDate));
-    //     setDate(formatDate(startDate));
-    //     setClienteid(clienteid);
-
-
-    //     setTitle('Editar Programación');
-    //     setOperation(2);  // Indicar que es una operación de edición
-
-    //     setShowModal(true);
-    // };
-
-    // const openModal = (op, date = null, id = '', start = '', end = '', userid = '') => {
-    //     setId(id);
-    //     setInit_Time(start ? start.slice(0, 5) : '');
-    //     setFinish_Time(end ? end.slice(0, 5) : '');
-    //     setDate(date ? date.toISOString().split('T')[0] : '');
-    //     setClienteid(userid ? userid.toString() : '');
-    //     setOperation(op);
-
-    //     setTitle(op === 1 ? 'Registrar Programación' : 'Editar Programación');
-    //     setShowModal(true);
-    // }
-
     const handleClose = () => setShowModal(false);
 
     const validateStartTime = (value) => {
@@ -505,115 +448,12 @@ const Appointment = () => {
         setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
     };
 
-    // const handleInputChange = (e) => {
-    //     const { name, value } = e.target;
-    //     handleValidation(name, value);
-
-    //     switch (name) {
-    //         case 'startTime':
-    //             setStartTime(value);
-    //             break;
-    //         case 'endTime':
-    //             setEndTime(value);
-    //             break;
-    //         case 'date':
-    //             setDay(value);
-    //             break;
-    //         case 'userId':
-    //             setUserid(value)
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // };
-
     const handleBlur = (e) => {
         const { name } = e.target;
         setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
         handleValidation(name, e.target.value);
     };
 
-    // const validar = async () => {
-
-    //     if (errors.startTime || !startTime.trim()) {
-    //         show_alerta(errors.startTime || 'Por favor, Seleccione una hora de inicio.', 'warning');
-    //         return;
-    //     }
-
-    //     if (errors.endTime || !endTime.trim()) {
-    //         show_alerta(errors.endTime || 'Por favor, Seleccione una hora de fin.', 'warning');
-    //         return;
-    //     }
-
-    //     if (errors.day || !day.trim()) {
-    //         show_alerta(errors.day || 'Por favor, Seleccione un dia.', 'warning');
-    //         return;
-    //     }
-
-    //     if (errors.userid || !userid.trim()) {
-    //         show_alerta(errors.userid || 'Por favor, Seleccione un usuario.', 'warning');
-    //         return;
-    //     }
-
-    //     const isValidStartTime = !validateEndTime(startTime);
-    //     const isValidEndTime = !validateEndTime(endTime);
-    //     const isValidDate = !validateDate(day);
-    //     const isValidUser = !validateUserId(userid);
-
-    //     if (!isValidStartTime) show_alerta(errors.startTime, 'warning');
-    //     else if (!isValidEndTime) show_alerta(errors.endTime, 'warning');
-    //     else if (!isValidDate) show_alerta(errors.day, 'warning');
-    //     else if (!isValidUser) show_alerta(errors.userid, 'warning');
-    //     else {
-    //         const parametros = {
-    //             id: id,
-    //             startTime: `${startTime}:00`,
-    //             endTime: `${endTime}:00`,
-    //             day: day,
-    //             userId: userid,
-    //         };
-
-    //         const isUpdate = operation === 2;
-    //         const metodo = isUpdate ? 'PUT' : 'POST';
-    //         enviarSolicitud(metodo, parametros);
-    //     }
-    // };
-
-    // const enviarSolicitud = async (metodo, parametros) => {
-    //     const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${urlAppointment}/${parametros.id}` : urlAppointment;
-    //     try {
-    //         await axios({ method: metodo, url: urlWithId, data: parametros });
-    //         show_alerta('Operación exitosa', 'success');
-    //         if (metodo === 'PUT' || metodo === 'POST') {
-    //             document.getElementById('btnCerrar').click();
-    //         }
-    //         getProgramming();
-    //         console.log(parametros);
-    //     } catch (error) {
-    //         show_alerta('Error en la solicitud', 'error');
-    //         console.log(error);
-    //         console.log(parametros);
-    //     }
-    // };
-
-    // const deleteProgramming = async (id, userid) => {
-    //     const Myswal = withReactContent(Swal);
-    //     Myswal.fire({
-    //         title: 'Estas seguro que desea eliminar la programacion del empleado ' + userid + '?',
-    //         icon: 'question',
-    //         text: 'No se podrá dar marcha atras',
-    //         showCancelButton: true,
-    //         confirmButtonText: 'Si, eliminar',
-    //         cancelButtonText: 'Cancelar'
-    //     }).then((result) => {
-    //         if (result.isConfirmed) {
-    //             setId(id);
-    //             enviarSolicitud('DELETE', { id: id })
-    //         } else {
-    //             show_alerta('La programacion no fue eliminado', 'info')
-    //         }
-    //     })
-    // }
 
     return (
         <div className="right-content w-100">
@@ -688,102 +528,6 @@ const Appointment = () => {
                     </div>
                 </div>
             </div>
-            {/* <Modal show={showModal} onHide={handleClose}>
-                <Modal.Header>
-                    <Modal.Title>{title}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Row className="mb-3">
-                            <Col sm="6">
-                                <Form.Group className="mb-3">
-                                    <Form.Label className='required'>Hora de inicio</Form.Label>
-                                    <Form.Control
-                                        type="time"
-                                        id="startTime"
-                                        name="startTime"
-                                        placeholder="Inicio"
-                                        value={startTime}
-                                        onChange={handleInputChange}
-                                        isInvalid={!!errors.startTime}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.startTime}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
-                            </Col>
-                            <Col sm="6">
-                                <Form.Group className="mb-3">
-                                    <Form.Label className='required'>Hora de fin</Form.Label>
-                                    <Form.Control
-                                        type="time"
-                                        id="endTime"
-                                        name="endTime"
-                                        placeholder="Fin"
-                                        value={endTime}
-                                        onChange={handleInputChange}
-                                        isInvalid={!!errors.endTime}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.endTime}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
-                        <Row className="mb-3">
-                            <Col sm="6">
-                                <Form.Group className="mb-3">
-                                    <Form.Label className='required'>Día</Form.Label>
-                                    <Form.Control
-                                        type="date"
-                                        id="date"
-                                        name="date"
-                                        placeholder="Fecha"
-                                        value={day}
-                                        onChange={handleInputChange}
-                                        isInvalid={!!errors.date}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.date}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
-                            </Col>
-                            <Col sm="6">
-                                <Form.Group className="mb-3">
-                                    <Form.Label className='required'>Usuario</Form.Label>
-                                    <Form.Select
-                                        id='userId'
-                                        name="userId"
-                                        value={userid}
-                                        onChange={handleInputChange}
-                                        isInvalid={!!errors.userid}
-                                    >
-                                        <option value="">Seleccionar usuario</option>
-                                        {FiltrarUsers().map(user => (
-                                            <option key={user.id} value={user.id}>{user.name}</option>
-                                        ))}
-                                    </Form.Select>
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.userid}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button
-                        variant="primary"
-                        className='btn-sucess'
-                        onClick={() => validar()}>
-                        Guardar
-                    </Button>
-                    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                        Cerrar
-                    </Button>
-                </Modal.Footer>
-            </Modal>  */}
             <Modal show={showDetailModal} onHide={handleCloseDetailModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalles de la cita</Modal.Title>
