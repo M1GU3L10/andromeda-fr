@@ -138,14 +138,7 @@ const Header = () => {
                                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                 >
-                                    {userRole === '1' || userRole === '2' ? (
-                                        <MenuItem onClick={handleAdminDashboard}>
-                                            <ListItemIcon>
-                                                <BsShieldFillExclamation />
-                                            </ListItemIcon>
-                                            Administrar
-                                        </MenuItem>
-                                    ) : null}
+                                  
                                      <MenuItem onClick={handleGoToHome}>
                                         <ListItemIcon>
                                             <BsHouseFill />

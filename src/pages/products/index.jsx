@@ -8,715 +8,647 @@ import { GiHairStrands } from "react-icons/gi";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye, FaPencilAlt } from "react-icons/fa";
-import { IoTrashSharp, IoSearch } from "react-icons/io5";
+import { IoTrashSharp, IoSearch, IoCart } from "react-icons/io5";
+import { MdOutlineSave } from "react-icons/md";
 import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
-import { alpha } from '@mui/material/styles';
-import { blue } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { Modal, Form } from 'react-bootstrap';
-import { IoCart } from "react-icons/io5";
+import { Modal, Form, Col, Row } from 'react-bootstrap';
+import Pagination from '../../components/pagination/index';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'light' ?
-        theme.palette.grey[100] : theme.palette.grey[800],
-    height: theme.spacing(3),
-    color: theme.palette.text.primary,
-    fontWeight: theme.typography.fontWeightRegular,
-    '&:hover, &:focus': {
-        backgroundColor: emphasize(theme.palette.mode === 'light' ?
-            theme.palette.grey[100] : theme.palette.grey[800], 0.06),
-    },
-    '&:active': {
-        boxShadow: theme.shadows[1],
-        backgroundColor: emphasize(theme.palette.mode === 'light' ?
-            theme.palette.grey[100] : theme.palette.grey[800], 0.12),
-    },
-}));
-
-const BlueSwitch = styled(Switch)(({ theme }) => ({
-    '& .MuiSwitch-switchBase.Mui-checked': {
-        color: blue[600],
-        '&:hover': {
-            backgroundColor: alpha(blue[600],
-                theme.palette.action.hoverOpacity),
-        },
-    },
-    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-        backgroundColor: blue[600],
-    },
+  backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
+  height: theme.spacing(3),
+  color: theme.palette.text.primary,
+  fontWeight: theme.typography.fontWeightRegular,
+  '&:hover, &:focus': {
+    backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.06),
+  },
+  '&:active': {
+    boxShadow: theme.shadows[1],
+    backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.12),
+  },
 }));
 
 const Products = () => {
-    const [operation, setOperation] = useState(1);
-    const [title, setTitle] = useState('');
-    const [viewData, setViewData] = useState({});
-    const [formData, setFormData] = useState({
-        id: '',
-        Product_Name: '',
-        Price: '',
-        Category_Id: '',
-        Image: null,
-        Stock: '',
-        status: 'A',
-    });
-    const [imagePreviewUrl, setImagePreviewUrl] = useState('');
-    const [productData, setProductData] = useState([]);
+  const [productData, setProductData] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [formData, setFormData] = useState({
+    id: '',
+    Product_Name: '',
+    Price: '',
+    Category_Id: '',
+    Image: null,
+    Stock: '',
+    status: 'A',
+  });
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+  const [operation, setOperation] = useState(1);
+  const [title, setTitle] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [formErrors, setFormErrors] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(1000);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showModal, setShowModal] = useState(false);
-    const [showDetailModal, setShowDetailModal] = useState(false);
+  useEffect(() => {
+    fetchCategories();
+    fetchProductData();
+  }, []);
 
-    useEffect(() => {
-        fetchCategories();
-        fetchProductData();
-    }, []);
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:1056/api/categories');
+      setCategories(response.data);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      show_alerta('Error al cargar las categorías', 'error');
+    }
+  };
 
-    const fetchCategories = async () => {
-        try {
-            const response = await axios.get('http://localhost:1056/api/categories');
-            setCategories(response.data);
-        } catch (err) {
-            console.error('Error fetching categories:', err);
-            show_alerta('Error al cargar las categorías', 'error');
-        }
-    };
+  const fetchProductData = async () => {
+    try {
+      const response = await axios.get('http://localhost:1056/api/products');
+      setProductData(response.data);
+    } catch (err) {
+      show_alerta('Error al cargar los productos', 'error');
+    }
+  };
 
-    const fetchProductData = async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get('http://localhost:1056/api/products');
-            setProductData(response.data);
-            setLoading(false);
-        } catch (err) {
-            setError('Error al cargar los productos');
-            setLoading(false);
-            show_alerta('Error al cargar los productos', 'error');
-        }
-    };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    let updatedValue = value;
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    const handleClose = () => {
-        setShowModal(false);
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        let updatedValue = value;
-
-        if (name === 'Price') {
-            updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
-        }
-
-        setFormData(prevData => ({
-            ...prevData,
-            [name]: updatedValue
-        }));
-    };
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-            if (!allowedTypes.includes(file.type)) {
-                show_alerta('Tipo de archivo no permitido. Use JPEG, PNG o GIF.', 'error');
-                return;
-            }
-
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            if (file.size > maxSize) {
-                show_alerta('El archivo es demasiado grande. Máximo 5MB permitido.', 'error');
-                return;
-            }
-
-            setFormData({ ...formData, Image: file });
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreviewUrl(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const validateForm = () => {
-        const errors = {};
-
-        if (!formData.Product_Name || formData.Product_Name.trim() === '') {
-            errors.Product_Name = 'El nombre del producto es obligatorio';
-        }
-
-        if (!formData.Price || isNaN(formData.Price) || parseFloat(formData.Price) <= 0) {
-            errors.Price = 'El precio debe ser un número mayor a cero';
-        }
-
-        if (!formData.Category_Id || isNaN(formData.Category_Id)) {
-            errors.Category_Id = 'Debe seleccionar una categoría válida';
-        }
-
-        if (formData.Stock !== '' && (isNaN(formData.Stock) || parseInt(formData.Stock) < 0)) {
-            errors.Stock = 'El stock debe ser un número entero no negativo';
-        }
-
-        return errors;
-    };
-
-    const handleUpdate = async () => {
-        const errors = validateForm()
-        if (Object.keys(errors).length > 0) {
-            setFormErrors(errors)
-            return
-        }
-
-        const formDataToSend = new FormData();
-        formDataToSend.append('Product_Name', formData.Product_Name.trim());
-        formDataToSend.append('Price', formData.Price);
-        formDataToSend.append('Category_Id', formData.Category_Id);
-        formDataToSend.append('status', formData.status);
-        formDataToSend.append('Stock', formData.Stock);
-
-        if (formData.Image instanceof File) {
-            formDataToSend.append('Image', formData.Image);
-        }
-
-        try {
-            const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`,
-                formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            if (response.status === 200 || response.status === 204) {
-                handleClose();
-                await fetchProductData();
-                show_alerta('Producto actualizado exitosamente', 'success');
-            } else {
-                throw new Error('Respuesta inesperada del servidor');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            if (error.response) {
-                show_alerta(`Actualizado correctamente`, 'success');
-                await fetchProductData();
-                handleClose();
-            } else if (error.request) {
-                show_alerta('No se pudo conectar con el servidor', 'error');
-            } else {
-                show_alerta(`Error al procesar la solicitud: ${error.message}`, 'error');
-            }
-        }
-    };
-
-    const handleSubmit = async () => {
-        const errors = validateForm()
-        if (Object.keys(errors).length > 0) {
-            setFormErrors(errors)
-            return
-        }
-
-        const formDataToSend = new FormData();
-        formDataToSend.append('Product_Name', formData.Product_Name.trim());
-        formDataToSend.append('Price', formData.Price);
-        formDataToSend.append('Category_Id', formData.Category_Id);
-        formDataToSend.append('status', formData.status);
-        formDataToSend.append('Stock', formData.Stock);
-        if (formData.Image) {
-            formDataToSend.append('Image', formData.Image);
-        }
-
-        try {
-            const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-
-            if (response.status === 200 || response.status === 201) {
-                handleClose()
-                fetchProductData()
-                show_alerta('Producto agregado exitosamente', 'success')
-            } else {
-                throw new Error('Respuesta inesperada del servidor')
-            }
-        } catch (error) {
-            console.error('Error:', error)
-            if (error.response) {
-                show_alerta(`Error del servidor: ${error.response.data.message || 'Error desconocido'}`, 'error')
-            } else if (error.request) {
-                show_alerta('No se pudo conectar con el servidor', 'error')
-            } else {
-                show_alerta(`Error al procesar la solicitud: ${error.message}`, 'error')
-            }
-        }
+    if (name === 'Price') {
+      updatedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
     }
 
-    const openModal = (op, id, Product_Name, Price, Category_Id, Image, Stock, status) => {
-        setOperation(op);
-        setFormData({
-            id,
-            Product_Name: Product_Name || '',
-            Price: Price || '',
-            Category_Id: Category_Id || '',
-            Image: null,
-            Stock: Stock || '',
-            status: status || 'A',
-        });
-        setImagePreviewUrl(Image || '');
-        setFormErrors({});
-        setTitle(op === 1 ? 'Registrar Producto' : 'Editar Producto');
-        setShowModal(true);
-    };
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: updatedValue
+    }));
 
-    const handleDelete = async (id, name) => {
-        const MySwal = withReactContent(Swal);
-        MySwal.fire({
-            title: `¿Estás seguro que deseas eliminar el producto ${name}?`,
-            icon: 'question',
-            text: 'No se podrá dar marcha atrás',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    await axios.delete(`http://localhost:1056/api/products/${id}`);
-                    fetchProductData();
-                    show_alerta('Producto eliminado exitosamente', 'success');
-                } catch (err) {
-                    console.error('Error deleting product:', err);
-                    show_alerta('Error al eliminar el producto', 'error');
-                }
-            } else {
-                show_alerta('El producto NO fue eliminado', 'info');
-            }
-        });
-    };
+    handleValidation(name, updatedValue);
+  };
 
-    const handleSwitchChange = async (productId, checked) => {
-        const productToUpdate = productData.find(product => product.id === productId);
-        const MySwal = withReactContent(Swal);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        show_alerta('Tipo de archivo no permitido. Use JPEG, PNG o GIF.', 'error');
+        return;
+      }
 
-        const result = await MySwal.fire({
-            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el producto "${productToUpdate.Product_Name}"?`,
-            icon: 'question',
-            text: 'Esta acción puede afectar la disponibilidad del producto.',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, confirmar',
-            cancelButtonText: 'Cancelar'
-        });
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        show_alerta('El archivo es demasiado grande. Máximo 5MB permitido.', 'error');
+        return;
+      }
 
-        if (result.isConfirmed) {
-            const newStatus = checked ? 'A' : 'I';
-            try {
-                MySwal.fire({
-                    title: 'Actualizando...',
-                    text: 'Por favor espere mientras se actualiza el estado del producto.',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    willOpen: () => {
-                        MySwal.showLoading();
-                    },
-                });
+      setFormData({ ...formData, Image: file });
 
-                console.log(`Intentando actualizar producto ${productId} a estado ${newStatus}`);
-                const response = await axios.put(`http://localhost:1056/api/products/${productId}/status`, {
-                    status: newStatus
-                });
-                console.log('Respuesta del servidor:', response);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-                if (response.status === 200) {
-                    setProductData(prevData =>
-                        prevData.map(product =>
-                            product.id === productId ? {
-                                ...product,
-                                status: newStatus
-                            } : product
-                        )
-                    );
-                    MySwal.fire({
-                        title: 'Éxito',
-                        text: 'Estado del producto actualizado exitosamente',
-                        icon: 'success',
-                    });
-                } else {
-                    throw new Error('Respuesta inesperada del servidor');
-                }
-            } catch (error) {
-                console.error('Error completo:', error);
-                if (error.response) {
-                    console.error('Detalles de la respuesta:', error.response);
-                    MySwal.fire({
-                        title: 'Error',
-                        text: `Error al actualizar el estado del producto: ${error.response.data.message || 'Error desconocido'}`,
-                        icon: 'error',
-                    });
-                } else if (error.request) {
-                    MySwal.fire({
-                        title: 'Error de conexión',
-                        text: 'No se pudo conectar con el servidor. Por favor, verifica tu conexión a internet e inténtalo de nuevo.',
-                        icon: 'error',
-                    });
-                }
-            }
-        } else {
-            MySwal.fire({
-                title: 'Cancelado',
-                text: 'Estado del producto no  cambiado',
-                icon: 'info',
-            });
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.Product_Name || formData.Product_Name.trim() === '') {
+      newErrors.Product_Name = 'El nombre del producto es obligatorio';
+    }
+
+    if (!formData.Price || isNaN(formData.Price) || parseFloat(formData.Price) <= 0) {
+      newErrors.Price = 'El precio debe ser un número mayor a cero';
+    }
+
+    if (!formData.Category_Id || isNaN(formData.Category_Id)) {
+      newErrors.Category_Id = 'Debe seleccionar una categoría válida';
+    }
+
+    if (formData.Stock !== '' && (isNaN(formData.Stock) || parseInt(formData.Stock) < 0)) {
+      newErrors.Stock = 'El stock debe ser un número entero no negativo';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleValidation = (name, value) => {
+    let error = '';
+    switch (name) {
+      case 'Product_Name':
+        error = value.trim() === '' ? 'El nombre del producto es obligatorio' : '';
+        break;
+      case 'Price':
+        error = !value || isNaN(value) || parseFloat(value) <= 0 ? 'El precio debe ser un número mayor a cero' : '';
+        break;
+      case 'Category_Id':
+        error = !value || isNaN(value) ? 'Debe seleccionar una categoría válida' : '';
+        break;
+      case 'Stock':
+        error = value !== '' && (isNaN(value) || parseInt(value) < 0) ? 'El stock debe ser un número entero no negativo' : '';
+        break;
+      default:
+        break;
+    }
+    setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
+    handleValidation(name, formData[name]);
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('Product_Name', formData.Product_Name.trim());
+    formDataToSend.append('Price', formData.Price);
+    formDataToSend.append('Category_Id', formData.Category_Id);
+    formDataToSend.append('status', formData.status);
+    formDataToSend.append('Stock', formData.Stock);
+    if (formData.Image) {
+      formDataToSend.append('Image', formData.Image);
+    }
+
+    try {
+      const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-    };
+      });
 
-    const handlePageChange = useCallback((pageNumber) => 
-        setCurrentPage(pageNumber), []);
+      if (response.status === 200 || response.status === 201) {
+        handleClose();
+        fetchProductData();
+        show_alerta('Producto agregado exitosamente', 'success');
+      } else {
+        throw new Error('Respuesta inesperada del servidor');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      show_alerta('Error al agregar el producto', 'error');
+    }
+  };
 
-    const handleSearchChange = useCallback((event) => {
-        setSearchTerm(event.target.value);
-        setCurrentPage(1);
-    }, []);
+  const handleUpdate = async () => {
+    if (!validateForm()) {
+      return;
+    }
 
-    const filteredItems = productData.filter((product) =>
-        product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const formDataToSend = new FormData();
+    formDataToSend.append('Product_Name', formData.Product_Name.trim());
+    formDataToSend.append('Price', formData.Price);
+    formDataToSend.append('Category_Id', formData.Category_Id);
+    formDataToSend.append('status', formData.status);
+    formDataToSend.append('Stock', formData.Stock);
 
-    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+    if (formData.Image instanceof File) {
+      formDataToSend.append('Image', formData.Image);
+    }
 
-    const handleViewDetails = (product) => {
-        setViewData(product);
-        setShowDetailModal(true);
-    };
+    try {
+      const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`,
+        formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
-    const handleCloseDetail = () => {
-        setShowDetailModal(false);
-    };
+      if (response.status === 200 || response.status === 204) {
+        handleClose();
+        await fetchProductData();
+        show_alerta('Producto actualizado exitosamente', 'success');
+      } else {
+        throw new Error('Respuesta inesperada del servidor');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      show_alerta('Error al actualizar el producto', 'error');
+    }
+  };
 
-    const handlePlaceOrder = async (productId, quantity, userId) => {
+  const openModal = (op, id, Product_Name, Price, Category_Id, Image, Stock, status) => {
+    setOperation(op);
+    setFormData({
+      id,
+      Product_Name: Product_Name || '',
+      Price: Price || '',
+      Category_Id: Category_Id || '',
+      Image: null,
+      Stock: Stock || '',
+      status: status || 'A',
+    });
+    setImagePreviewUrl(Image || '');
+    setErrors({});
+    setTouched({});
+    setTitle(op === 1 ? 'Registrar Producto' : 'Editar Producto');
+    setShowModal(true);
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
+    setFormData({
+      id: '',
+      Product_Name: '',
+      Price: '',
+      Category_Id: '',
+      Image: null,
+      Stock: '',
+      status: 'A',
+    });
+    setErrors({});
+    setTouched({});
+    setImagePreviewUrl('');
+  };
+
+  const handleDelete = async (id, name) => {
+    const MySwal = withReactContent(Swal);
+    MySwal.fire({
+      title: `¿Estás seguro que deseas eliminar el producto ${name}?`,
+      icon: 'question',
+      text: 'No se podrá dar marcha atrás',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
         try {
-            const product = productData.find(p => p.id === productId);
-            if (!product) {
-                throw new Error('Producto no encontrado');
-            }
-
-            if (product.Stock < quantity) {
-                show_alerta('No hay suficiente stock para este pedido', 'error');
-                return;
-            }
-
-            const now = new Date();
-            const orderData = {
-                Order_Date: now.toISOString().split('T')[0],
-                Order_Time: now.toTimeString().split(' ')[0],
-                Total_Amount: (product.Price * quantity).toFixed(2),
-                Status: 'En proceso',
-                User_Id: userId,
-                Token_Expiration: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString()
-            };
-
-            // Create the order
-            const orderResponse = await axios.post('http://localhost:1056/api/orders', orderData);
-
-            if (orderResponse.status === 200 || orderResponse.status === 201) {
-                // Update the product stock
-                const updatedProduct = {
-                    ...product,
-                    Stock: product.Stock - quantity
-                };
-
-                const productResponse = await axios.put(`http://localhost:1056/api/products/${productId}`, updatedProduct);
-
-                if (productResponse.status === 200) {
-                    // Update the local state
-                    setProductData(prevData =>
-                        prevData.map(p =>
-                            p.id === productId ? updatedProduct : p
-                        )
-                    );
-                    show_alerta('Pedido realizado con éxito y stock actualizado', 'success');
-                } else {
-                    throw new Error('Error al actualizar el stock del producto');
-                }
-            } else {
-                throw new Error('Error al crear el pedido');
-            }
-        } catch (error) {
-            console.error('Error al realizar el pedido:', error);
-            show_alerta('Error al realizar el pedido', 'error');
+          await axios.delete(`http://localhost:1056/api/products/${id}`);
+          fetchProductData();
+          show_alerta('Producto eliminado exitosamente', 'success');
+        } catch (err) {
+          console.error('Error deleting product:', err);
+          show_alerta('Error al eliminar el producto', 'error');
         }
-    };
+      } else {
+        show_alerta('El producto NO fue eliminado', 'info');
+      }
+    });
+  };
 
-    return (
-        <div className="right-content w-100">
-            <div className="row d-flex align-items-center w-100">
-                <div className="spacing d-flex align-items-center">
-                    <div className='col-sm-5'>
-                        <span className='Title'>Gestión de Productos</span>
-                    </div>
-                    <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
-                        <div role="presentation">
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <StyledBreadcrumb
-                                    component="a"
-                                    href="#"
-                                    label="Home"
-                                    icon={<HomeIcon fontSize="small" />}
-                                />
-                                 <StyledBreadcrumb
-                                        component="a"
-                                        href="#"
-                                        label="Ingresos"
-                                        icon={<IoCart fontSize="small" />}
-                                    />
-                                <StyledBreadcrumb
-                                    component="a"
-                                    href="#"
-                                    label="Productos"
-                                    icon={<GiHairStrands fontSize="small" />} />
-                            </Breadcrumbs>
-                        </div>
-                    </div>
-                </div>
-                <div className='card shadow border-0 p-3'>
-                    <div className='row '>
-                        <div className='col-sm-5 d-flex align-items-center'>
-                            <Button className='btn-register'
-                                onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill
-                                />Registrar</Button>
-                        </div>
-                        <div className='col-sm-7 d-flex align-items-center justify-content-end'>
-                            <div className="searchBox position-relative d-flex align-items-center">
-                                <IoSearch className="mr-2" />
-                                <input value={searchTerm}
-                                    onChange={handleSearchChange} type="text" placeholder='Buscar...'
-                                    className='form-control' />
-                            </div>
-                        </div>
-                    </div>
+  const handleSwitchChange = async (productId, checked) => {
+    const productToUpdate = productData.find(product => product.id === productId);
+    const MySwal = withReactContent(Swal);
 
-                    <div className='table-responsive mt-3'>
-                        <table className='table table-bordered table-hover v-align table-striped'>
-                            <thead className='table-primary'>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nombre</th>
-                                    <th>Precio</th>
-                                    <th>Categoría</th>
-                                    <th>Stock</th>
-                                    <th>Imagen</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
+    const result = await MySwal.fire({
+      title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el producto "${productToUpdate.Product_Name}"?`,
+      icon: 'question',
+      text: 'Esta acción puede afectar la disponibilidad del producto.',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar'
+    });
 
-                            <tbody>
-                                {currentItems.length > 0 ? (
-                                    currentItems.map((product, i) => (
-                                        <tr key={product.id}>
-                                            <td>{(i + 1) + (currentPage - 1) * itemsPerPage}</td>
-                                            <td>{product.Product_Name}</td>
-                                            <td>{new Intl.NumberFormat('es-CO', {
-                                                style: 'currency', currency: 'COP'
-                                            }).format(product.Price)}</td>
-                                            <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</td>
-                                            <td>{product.Stock}</td>
-                                            <td>
-                                                {product.Image ? (
-                                                    <img
-                                                        src={product.Image}
-                                                        alt={product.Product_Name}
-                                                        style={{
-                                                            width: '50px', height: '50px', objectFit: 'cover'
-                                                        }}
-                                                    />
-                                                ) : 'No'}
-                                            </td>
-                                            <td><span
-                                                className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>
-                                                {product.status === 'A' ? 'Activo' : 'Inactivo'}
-                                            </span></td>
-                                            <td>
-                                                <div className='actions d-flex align-items-center'>
-                                                    <BlueSwitch
-                                                        checked={product.status === 'A'}
-                                                        onChange={(e) => handleSwitchChange(product.id, e.target.checked)}
-                                                    />
-                                                    <Button
-                                                        color='primary' className='primary' onClick={() =>
-                                                            handleViewDetails(product)}><FaEye /></Button>
-                                                    {product.status === 'A' && (
-                                                        <>
-                                                            <Button
-                                                                color="secondary" className='secondary' onClick={() => openModal(2,
-                                                                    product.id, product.Product_Name, product.Price, product.Category_Id,
-                                                                    product.Image, product.Stock, product.status)}><FaPencilAlt
-                                                                /></Button>
-                                                            <Button
-                                                                color='error' className='delete' onClick={() =>
-                                                                    handleDelete(product.id, product.Product_Name)}><IoTrashSharp
-                                                                /></Button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8}
-                                            className='text-center'>No hay Productos disponibles</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    if (result.isConfirmed) {
+      const newStatus = checked ? 'A' : 'I';
+      try {
+        MySwal.fire({
+          title: 'Actualizando...',
+          text: 'Por favor espere mientras se actualiza el estado del producto.',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          willOpen: () => {
+            MySwal.showLoading();
+          },
+        });
 
-            <Modal show={showModal} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>{title}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Nombre del Producto</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="Product_Name"
-                                value={formData.Product_Name}
-                                onChange={handleInputChange}
-                                isInvalid={!!formErrors.Product_Name}
-                                pattern=".*\S.*"
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {formErrors.Product_Name}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+        const response = await axios.put(`http://localhost:1056/api/products/${productId}/status`, {
+          status: newStatus
+        });
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Precio</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="Price"
-                                value={formData.Price}
-                                onChange={handleInputChange}
-                                isInvalid={!!formErrors.Price}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {formErrors.Price}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+        if (response.status === 200) {
+          setProductData(prevData =>
+            prevData.map(product =>
+              product.id === productId ? {
+                ...product,
+                status: newStatus
+              } : product
+            )
+          );
+          MySwal.fire({
+            title: 'Éxito',
+            text: 'Estado del producto actualizado exitosamente',
+            icon: 'success',
+          });
+        } else {
+          throw new Error('Respuesta inesperada del servidor');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        MySwal.fire({
+          title: 'Error',
+          text: 'Error al actualizar el estado del producto',
+          icon: 'error',
+        });
+      }
+    } else {
+      MySwal.fire({
+        title: 'Cancelado',
+        text: 'Estado del producto no cambiado',
+        icon: 'info',
+      });
+    }
+  };
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Categoría</Form.Label>
-                            <Form.Select
-                                name="Category_Id"
-                                value={formData.Category_Id}
-                                onChange={handleInputChange}
-                                isInvalid={!!formErrors.Category_Id}
-                            >
-                                <option value="">Seleccione una categoría</option>
-                                {categories.map(category => (
-                                    <option key={category.id}
-                                        value={category.id}>{category.name}</option>
-                                ))}
-                            </Form.Select>
-                            <Form.Control.Feedback type="invalid">
-                                {formErrors.Category_Id}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+  const handleSearchChange = useCallback((event) => {
+    setSearch(event.target.value);
+    setCurrentPage(1);
+  }, []);
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Stock</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="Stock"
-                                value={formData.Stock}
-                                onChange={handleInputChange}
-                                isInvalid={!!formErrors.Stock}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {formErrors.Stock}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+  const filteredItems = productData.filter((product) =>
+    product.Product_Name.toLowerCase().includes(search.toLowerCase())
+  );
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Imagen</Form.Label>
-                            <Form.Control
-                                type="file"
-                                onChange={handleFileChange}
-                            />
-                            {imagePreviewUrl && (
-                                <img src={imagePreviewUrl}
-                                    alt="Preview" style={{ maxWidth: '100%', marginTop: '10px' }} />
-                            )}
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}
-                        id='btnCerrar' className='btn-red'>
-                        Cerrar
-                    </Button>
-                    <Button variant="primary" onClick={operation === 1
-                        ? handleSubmit : handleUpdate} className='btn-sucess'>
-                        Guardar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
-            <Modal show={showDetailModal} onHide={handleCloseDetail}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Detalles del Producto</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p><strong>Nombre:</strong> {viewData.Product_Name}</p>
-                    <p><strong>Precio:</strong> {new
-                        Intl.NumberFormat('es-CO', {
-                            style: 'currency', currency: 'COP'
-                        }).format(viewData.Price)}</p>
-                    <p><strong>Categoría:</strong>
-                        {categories.find(cat => cat.id === viewData.Category_Id)?.name ||
-                            'N/A'}</p>
-                    <p><strong>Stock:</strong> {viewData.Stock}</p>
-                    <p><strong>Estado:</strong> {viewData.status ===
-                        'A' ? 'Activo' : 'Inactivo'}</p>
-                    {viewData.Image ? (
-                        <img
-                            src={viewData.Image}
-                            alt={viewData.Product_Name}
-                            style={{ maxWidth: '100%', marginTop: '10px' }}
-                        />
-                    ) : (
-                        <p><strong>Imagen:</strong> No disponible</p>
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseDetail}>
-                        Cerrar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+  const handleViewDetails = (product) => {
+    Swal.fire({
+      title: 'Detalles del Producto',
+      html: `
+        <div class="text-left">
+          <p><strong>Nombre:</strong> ${product.Product_Name}</p>
+          <p><strong>Precio:</strong> ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</p>
+          <p><strong>Categoría:</strong> ${categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</p>
+          <p><strong>Stock:</strong> ${product.Stock}</p>
+          <p><strong>Estado:</strong> ${product.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+          ${product.Image ? `<img src="${product.Image}" alt="${product.Product_Name}" style="max-width: 100%; margin-top: 10px;">` : '<p><strong>Imagen:</strong> No disponible</p>'}
         </div>
-    );
+      `,
+      icon: 'info',
+      confirmButtonText: 'Cerrar'
+    });
+  };
+
+  return (
+    <div className="right-content w-100">
+      <div className="row d-flex align-items-center w-100">
+        <div className="spacing d-flex align-items-center">
+          <div className='col-sm-5'>
+            <span className='Title'>Gestión de Productos</span>
+          </div>
+          <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
+            <div role="presentation">
+              <Breadcrumbs aria-label="breadcrumb">
+                <StyledBreadcrumb
+                  component="a"
+                  href="#"
+                  label="Home"
+                  icon={<HomeIcon fontSize="small" />}
+                />
+                <StyledBreadcrumb
+                  component="a"
+                  href="#"
+                  label="Ingresos"
+                  icon={<IoCart fontSize="small" />}
+                />
+                <StyledBreadcrumb
+                  component="a"
+                  href="#"
+                  label="Productos"
+                  icon={<GiHairStrands fontSize="small" />} />
+              </Breadcrumbs>
+            </div>
+          </div>
+        </div>
+        <div className='card shadow border-0 p-3'>
+          <div className='row'>
+            <div className='col-sm-5 d-flex align-items-center'>
+              <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
+                <BsPlusSquareFill />Registrar
+              </Button>
+            </div>
+            <div className='col-sm-7 d-flex align-items-center justify-content-end'>
+              <div className="searchBox position-relative d-flex align-items-center">
+                <IoSearch className="mr-2" />
+                <input
+                  value={search}
+                  onChange={handleSearchChange}
+                  type="text"
+                  placeholder='Buscar...'
+                  className='form-control'
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className='table-responsive mt-3'>
+            <table className='table table-bordered table-hover v-align table-striped'>
+              <thead className='table-primary'>
+                <tr>
+                  <th>#</th>
+                  <th>Nombre</th>
+                  <th>Precio</th>
+                  <th>Categoría</th>
+                  <th>Stock</th>
+                  <th>Imagen</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length > 0 ? (
+                  currentItems.map((product, i) => (
+                    <tr key={product.id}>
+                      <td>{(i + 1) + (currentPage - 1) * itemsPerPage}</td>
+                      <td>{product.Product_Name}</td>
+                      <td>{new Intl.NumberFormat('es-CO', {
+                        style: 'currency', currency: 'COP'
+                      }).format(product.Price)}</td>
+                      <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</td>
+                      <td>{product.Stock}</td>
+                      <td>
+                        {product.Image ? (
+                          <img
+                            src={product.Image}
+                            alt={product.Product_Name}
+                            style={{
+                              width: '50px', height: '50px', objectFit: 'cover'
+                            }}
+                          />
+                        ) : 'No'}
+                      </td>
+                      <td>
+                        <span className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>
+                          {product.status === 'A' ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className='actions d-flex align-items-center'>
+                          <Switch
+                            checked={product.status === 'A'}
+                            onChange={(e) => handleSwitchChange(product.id, e.target.checked)}
+                          />
+                          <Button
+                            color='primary'
+                            className='primary'
+                            onClick={() => handleViewDetails(product)}
+                          >
+                            <FaEye />
+                          </Button>
+                          {product.status === 'A' && (
+                            <>
+                              <Button
+                                color="secondary"
+                                className='secondary'
+                                onClick={() => openModal(2, product.id, product.Product_Name, product.Price, product.Category_Id,
+                                  product.Image, product.Stock, product.status)}
+                              >
+                                <FaPencilAlt />
+                              </Button>
+                              <Button
+                                color='error'
+                                className='delete'
+                                onClick={() => handleDelete(product.id, product.Product_Name)}
+                              >
+                                <IoTrashSharp />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className='text-center'>No hay Productos disponibles</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {currentItems.length > 0 && (
+            <div className="d-flex table-footer">
+              <Pagination
+                setCurrentPages={setCurrentPage}
+                currentPages={currentPage}
+                nPages={Math.ceil(filteredItems.length / itemsPerPage)}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Modal show={showModal} onHide={handleClose}>
+        <Modal.Header>
+          <Modal.Title>{title}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Row className="mb-3">
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Nombre del Producto</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="Product_Name"
+                    value={formData.Product_Name}
+                    placeholder="Nombre del Producto"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.Product_Name && !!errors.Product_Name}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.Product_Name}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Precio</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="Price"
+                    value={formData.Price}
+                    placeholder="Precio"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.Price && !!errors.Price}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.Price}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row className="mb-3">
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Categoría</Form.Label>
+                  <Form.Select
+                    name="Category_Id"
+                    value={formData.Category_Id}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.Category_Id && !!errors.Category_Id}
+                  >
+                    <option value="">Seleccione una categoría</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.id}>{category.name}</option>
+                    ))}
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.Category_Id}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Stock</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="Stock"
+                    value={formData.Stock}
+                    placeholder="Stock"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.Stock && !!errors.Stock}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.Stock}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Imagen</Form.Label>
+              <Form.Control
+                type="file"
+                onChange={handleFileChange}
+              />
+              {imagePreviewUrl && (
+                <img src={imagePreviewUrl} alt="Preview" style={{ maxWidth: '100%', marginTop: '10px' }} />
+              )}
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate} className='btn-sucess'>
+            <MdOutlineSave /> Guardar
+          </Button>
+          <Button variant="secondary" onClick={handleClose} className='btn-red'>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
 };
 
 export default Products;

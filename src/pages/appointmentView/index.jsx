@@ -195,7 +195,7 @@ const Index = () => {
                        userRole == 1 ||userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
                     }
                         <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-                        <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+                        
                     </nav>
 
                     <div className="auth-buttons">

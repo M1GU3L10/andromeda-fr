@@ -2,26 +2,8 @@ import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App';
 import logo from '../../assets/images/logo-light.png';
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import RemoveIcon from '@mui/icons-material/Remove';
-import CloseIcon from '@mui/icons-material/Close';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Logout from '@mui/icons-material/Logout';
-import IconButton from '@mui/material/IconButton';
-import ReactPaginate from 'react-paginate';
-
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-import { GrUserAdmin } from "react-icons/gr";
-import { GiExitDoor } from "react-icons/gi";
-import axios from 'axios';
 import {
+  Button,
   TextField,
   Drawer,
   List,
@@ -40,9 +22,30 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  Select,
+  FormControl,
+  InputLabel,
+  Menu,
+  MenuItem,
+  IconButton
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import RemoveIcon from '@mui/icons-material/Remove';
+import CloseIcon from '@mui/icons-material/Close';
 import { ShoppingCart, Search } from '@mui/icons-material';
+import LogoutIcon from '@mui/icons-material/Logout';
+import ReactPaginate from 'react-paginate';
+
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import { GrUserAdmin } from "react-icons/gr";
+import { GiExitDoor } from "react-icons/gi";
+import axios from 'axios';
 import Swal from 'sweetalert2';
 import './shop.css';
 
@@ -50,6 +53,7 @@ export default function Component() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]); // Added state for filtered products
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -57,8 +61,6 @@ export default function Component() {
   const [alertSeverity, setAlertSeverity] = useState('info');
   const [cart, setCart] = useState({});
   const [total, setTotal] = useState(0);
-
-
 
   const [userId, setUserId] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -79,6 +81,10 @@ export default function Component() {
   const open = Boolean(anchorEl);
   const ITEMS_PER_PAGE = 5;
 
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categoryMenuAnchorEl, setCategoryMenuAnchorEl] = useState(null);
+
   useEffect(() => {
     calculateTotal();
   }, [cart, products]);
@@ -87,6 +93,7 @@ export default function Component() {
     context.setIsHideSidebarAndHeader(true);
     fetchProducts();
     checkLoginStatus();
+    fetchCategories();
   }, [context]);
 
   const checkLoginStatus = () => {
@@ -95,20 +102,16 @@ export default function Component() {
     const idRole = localStorage.getItem('roleId');
     const userId = localStorage.getItem('userId');
 
-
-
     if (token && storedEmail && idRole && userId) {
       setIsLoggedIn(true);
       setUserEmail(storedEmail);
       setUserRole(idRole);
       setUserId(userId);
-
     } else {
       setIsLoggedIn(false);
       setUserEmail('');
       setUserRole('');
       setUserId(null);
-
     }
   };
 
@@ -116,7 +119,7 @@ export default function Component() {
     checkLoginStatus();
 
     if (isLoggedIn) {
-
+      // Additional logic for logged-in users if needed
     } else {
       setUserRole(null);
     }
@@ -138,12 +141,23 @@ export default function Component() {
     try {
       const response = await axios.get('http://localhost:1056/api/products');
       const activeProducts = response.data.filter(product => product.status === 'A');
+      console.log('Fetched products:', activeProducts); // Add this line
       setProducts(activeProducts);
+      setFilteredProducts(activeProducts); // Update filteredProducts
     } catch (err) {
       setError('Error al cargar los productos. Por favor, intente más tarde.');
       console.error('Error fetching products:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:1056/api/categories');
+      setCategories(response.data);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
     }
   };
 
@@ -164,7 +178,6 @@ export default function Component() {
       const currentQuantity = prevCart[product.id] || 0;
 
       if (currentQuantity + 1 > product.Stock) {
-        // Usamos un estado para activar el mensaje de alerta
         toast.error(`¡Producto agotado! `, {
           position: "top-right",
           autoClose: 2000,
@@ -183,21 +196,11 @@ export default function Component() {
         [product.id]: currentQuantity + 1
       };
     });
-
-
-
-
-
-
-
   };
-
-
 
   const handleShowOrders = () => {
     navigate('/ordermy');
   };
-
 
   const handlePageChange = ({ selected }) => {
     setCurrentPage(selected);
@@ -210,11 +213,18 @@ export default function Component() {
     setCart(prevCart => {
       const currentQuantity = prevCart[productId] || 0;
       if (currentQuantity + 1 > product.Stock) {
-        setAlertMessage(`No puedes agregar más de ${product.Stock} unidades de este producto.`);
-        setAlertSeverity('warning');
+        toast.warning(`Producto agotado`, {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
         return prevCart;
       }
-
+      
       return {
         ...prevCart,
         [productId]: currentQuantity + 1
@@ -228,11 +238,18 @@ export default function Component() {
       if (currentQuantity <= 1) {
         const newCart = { ...prevCart };
         delete newCart[productId];
-        setAlertMessage('Producto eliminado del carrito');
-        setAlertSeverity('info');
+        toast.info('Producto eliminado del carrito', {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
         return newCart;
       }
-
+      
       return {
         ...prevCart,
         [productId]: currentQuantity - 1
@@ -242,44 +259,40 @@ export default function Component() {
 
   const clearCart = () => {
     setCart({});
-
   };
 
   const handleCheckout = async () => {
-    // Primero, verifica si el usuario está autenticado
     if (!isLoggedIn) {
       Swal.fire('Error', 'Debes iniciar sesión para realizar un pedido.', 'error');
-      // Aquí podrías redirigir al usuario a la página de inicio de sesión
-      // history.push('/login');
       return;
     }
-
+  
     if (Object.keys(cart).length === 0) {
       Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
       return;
     }
-
+  
     const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
       quantity: quantity,
       id_producto: parseInt(productId)
     }));
-
+  
     const invalidProducts = orderDetails.filter(detail => {
       const product = products.find(p => p.id === detail.id_producto);
       return !product || product.Stock < detail.quantity || detail.quantity <= 0;
     });
-
+  
     if (invalidProducts.length > 0) {
       Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
       return;
     }
-
+  
     const total = orderDetails.reduce((acc, detail) => {
       const product = products.find(p => p.id === detail.id_producto);
       return acc + (product.Price * detail.quantity);
     }, 0);
     const formattedTotal = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(total);
-
+  
     const confirmation = await Swal.fire({
       title: 'Confirmar Pedido',
       html: `
@@ -291,25 +304,25 @@ export default function Component() {
       confirmButtonText: 'Sí, confirmar',
       cancelButtonText: 'Cancelar'
     });
-
+  
     if (!confirmation.isConfirmed) {
       return;
     }
-
+  
     let orderCreated = false;
     let orderData;
     let expirationDateString;
-
+  
     try {
       const now = new Date();
       const orderDateTime = now.toISOString().split('T');
       const orderDate = orderDateTime[0];
       const orderTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-
+  
       const expirationDate = new Date(now);
       expirationDate.setDate(expirationDate.getDate() + 3);
       expirationDateString = expirationDate.toLocaleDateString('es-ES');
-
+  
       orderData = {
         Billnumber: `ORD${Date.now()}`,
         OrderDate: orderDate,
@@ -319,9 +332,9 @@ export default function Component() {
         id_usuario: userId,
         orderDetails: orderDetails
       };
-
+  
       const response = await axios.post('http://localhost:1056/api/orders', orderData);
-
+  
       if (response.status === 201) {
         orderCreated = true;
         clearCart();
@@ -338,28 +351,35 @@ export default function Component() {
           title: '¡Pedido creado exitosamente!',
           html: `
             <div class="order-confirmation">
-              
-             
               <p>Fecha de vencimiento del pedido (en caso de no ser cancelado): ${expirationDateString}</p>
               <p>Total a pagar: <strong>${formattedTotal} COP</strong></p>
             </div>
           `,
           icon: 'success'
+        }).then(() => {
+          refreshComponent();
         });
       }
     }
   };
+  
+  const refreshComponent = () => {
+    setCart({});
+    fetchProducts();
+  };
 
   const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
-  const filteredProducts = products.filter(product => {
-    const productName = product.Product_Name || '';
-    const productDescription = product.Description || '';
-    return (
-      productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      productDescription.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleSearchChange = (e) => { // Updated search function
+    const searchTerm = e.target.value.toLowerCase();
+    setSearchTerm(searchTerm);
+    const filtered = products.filter(product =>
+      (selectedCategory === '' || product.Category_Id === parseInt(selectedCategory)) &&
+      (product.Product_Name.toLowerCase().includes(searchTerm) ||
+       (product.Description && product.Description.toLowerCase().includes(searchTerm)))
     );
-  });
+    setFilteredProducts(filtered);
+  };
 
   const handleLogin = () => navigate('/login');
   const handleAdministrar = () => {
@@ -370,7 +390,6 @@ export default function Component() {
       Swal.fire('Error', 'No tienes permisos para acceder a la sección de administración.', 'error');
     }
   };
-
 
   const handledashboard = () => {
     context.setIsHideSidebarAndHeader(false);
@@ -407,16 +426,32 @@ export default function Component() {
   const getUserInitial = () => {
     return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
   };
+
   const toggleNav = () => {
     setIsNavOpen(!isNavOpen);
   };
-
-
 
   const scrollToServices = () => {
     if (servicesRef.current) {
       servicesRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleCategoryClick = (event) => {
+    setCategoryMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleCategoryClose = () => {
+    setCategoryMenuAnchorEl(null);
+  };
+
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCategory(categoryId);
+    const filteredProducts = products.filter(product =>
+      categoryId === '' || product.Category_Id === parseInt(categoryId)
+    );
+    setFilteredProducts(filteredProducts);
+    handleCategoryClose();
   };
 
   return (
@@ -433,7 +468,7 @@ export default function Component() {
               userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
             }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-            <Link to='/contact' onClick={() => setIsNavOpen(false)}>CONTACTO</Link>
+            
             <IconButton onClick={() => setDrawerOpen(true)}>
               <Badge badgeContent={getTotalItems()} color="primary">
                 <AddShoppingCartIcon />
@@ -452,16 +487,13 @@ export default function Component() {
                       sx={{
                         width: 32,
                         height: 32,
-                        backgroundColor: '#b89b58 '// Aplica el color aleatorio
+                        backgroundColor: '#b89b58'
                       }}
                     >
                       {getUserInitial()}
                     </Avatar>
-
                   }
-
                 >
-
                   {userEmail}
                 </Button>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
@@ -469,14 +501,11 @@ export default function Component() {
                     <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
                   ) : (
                     <MenuItem onClick={() => setDrawerOpen(true)}>
-
                       <Badge badgeContent={getTotalItems()} color="primary">
                         <AddShoppingCartIcon />
                       </Badge>
-
                       Carrito
                     </MenuItem>
-
                   )}
                   <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
                 </Menu>
@@ -492,17 +521,37 @@ export default function Component() {
             )}
           </div>
         </div>
-      </header >
-      <main className="container mx-auto mt-8 shop-container" >
+      </header>
+      <main className="container mx-auto mt-8 shop-container">
         <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
 
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Buscar productos"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="search-and-filter">
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Buscar productos"
+              value={searchTerm}
+              onChange={handleSearchChange} // Updated onChange handler
+            />
+          </div>
+          <Button
+            onClick={handleCategoryClick}
+            variant="outlined"
+          >
+            Categorías
+          </Button>
+          <Menu
+            anchorEl={categoryMenuAnchorEl}
+            open={Boolean(categoryMenuAnchorEl)}
+            onClose={handleCategoryClose}
+          >
+            <MenuItem onClick={() => handleCategorySelect('')}>Todas las categorías</MenuItem>
+            {categories.map((category) => (
+              <MenuItem key={category.id} onClick={() => handleCategorySelect(category.id.toString())}>
+                {category.name}
+              </MenuItem>
+            ))}
+          </Menu>
         </div>
 
         {loading ? (
@@ -518,8 +567,8 @@ export default function Component() {
           </div>
         ) : (
           <div className="product-grid">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
+            {filteredProducts.length > 0 ? ( // Use filteredProducts
+              filteredProducts.map((product) => ( // Use filteredProducts
                 <div key={product.id} className="product-card">
                   <img
                     src={product.Image}
@@ -548,10 +597,6 @@ export default function Component() {
                       </span>
                     </div>
                   </Button>
-
-
-
-
                 </div>
               ))
             ) : (
@@ -560,15 +605,21 @@ export default function Component() {
                   No se encontraron productos
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  No hay productos que coincidan con tu búsqueda "{searchTerm}"
+                  {selectedCategory
+                    ? "No hay productos en esta categoría"
+                    : `No hay productos que coincidan con tu búsqueda "${searchTerm}"`}
                 </Typography>
                 <Button
                   variant="outlined"
                   color="primary"
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory('');
+                    setFilteredProducts(products);
+                  }}
                   className="mt-4"
                 >
-                  Limpiar búsqueda
+                  Mostrar todos los productos
                 </Button>
               </div>
             )}

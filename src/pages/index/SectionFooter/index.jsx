@@ -14,10 +14,7 @@ const SectionFooter = () => {
                     <div className="col-sm-4 p-5 text-center columna-footer">
                         <h4 className="title-footer">Contáctenos</h4>
                         <div>
-                            <span><FaWhatsapp /> Whatsapp:3197437259</span>
-                        </div>
-                        <div>
-                            <span><PiPhoneIncoming /> telefono:3197437259</span>
+                            <span><FaWhatsapp /> Whatsapp:3143161922</span>
                         </div>
                     </div>
                     <div className="col-sm-4 p-5 text-center columna-footer">
@@ -32,10 +29,10 @@ const SectionFooter = () => {
                     <div className="col-sm-4 p-5 text-center columna-footer">
                         <h4 className="title-footer">Horas</h4>
                         <div>
-                            <span><IoTimeOutline />Lunes a Sabado: 7am - 9:15pm</span>
+                            <span><IoTimeOutline />Lunes a Domingo: 7am - 9:15pm</span>
                         </div>
                         <div>
-                            <span>Domingo: Cerrado</span>
+                            <span>Lunes: Cerrado</span>
                         </div>
                     </div>
                 </div>

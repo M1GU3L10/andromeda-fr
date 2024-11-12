@@ -8,11 +8,11 @@ import HomeIcon from '@mui/icons-material/Home'
 import { GiShoppingCart } from 'react-icons/gi'
 import { BsPlusSquareFill } from 'react-icons/bs'
 import { FaEye, FaPencilAlt, FaMoneyBillWave } from 'react-icons/fa'
-import { IoTrashSharp, IoSearch } from 'react-icons/io5'
+import { IoTrashSharp, IoSearch, IoCart } from 'react-icons/io5'
 import { MdOutlineSave } from 'react-icons/md'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
-import { Modal, Form } from 'react-bootstrap'
+import { Modal, Form, Col, Row } from 'react-bootstrap'
 import Pagination from '../../components/pagination'
 
 const API_URL = 'http://localhost:1056/api'
@@ -214,19 +214,18 @@ const Orders = () => {
 
   const handleSubmit = async () => {
     if (validateForm()) {
-      let success = false; // Variable para rastrear si la operación fue exitosa
+      let success = false
       try {
         const orderData = {
           ...formValues,
           total_price: parseFloat(formValues.total_price),
           id_usuario: parseInt(formValues.id_usuario),
-        };
+        }
 
-        let response;
+        let response
         if (operation === 1) {
-          // Crear una nueva orden
-          response = await axios.post(`${API_URL}/orders`, orderData);
-          const orderId = response.data.id;
+          response = await axios.post(`${API_URL}/orders`, orderData)
+          const orderId = response.data.id
           const orderDetails = formValues.orderDetails.map((detail) => ({
             ...detail,
             id_order: orderId,
@@ -234,12 +233,11 @@ const Orders = () => {
             unitPrice: parseFloat(detail.unitPrice),
             total_price: parseFloat(detail.total_price),
             id_producto: parseInt(detail.id_producto),
-          }));
+          }))
 
-          await axios.post(`${API_URL}/order-details`, orderDetails);
+          await axios.post(`${API_URL}/order-details`, orderDetails)
         } else {
-          // Actualizar una orden existente
-          await axios.put(`${API_URL}/orders/${formValues.id}`, orderData);
+          await axios.put(`${API_URL}/orders/${formValues.id}`, orderData)
           const orderDetails = formValues.orderDetails.map((detail) => ({
             ...detail,
             id_order: formValues.id,
@@ -247,35 +245,26 @@ const Orders = () => {
             unitPrice: parseFloat(detail.unitPrice),
             total_price: parseFloat(detail.total_price),
             id_producto: parseInt(detail.id_producto),
-          }));
+          }))
 
-          await axios.post(`${API_URL}/order-details`, orderDetails);
+          await axios.post(`${API_URL}/order-details`, orderDetails)
         }
 
-        success = true; // Indica que la operación fue exitosa
-      } catch (error) {
-        console.log('La orden se guardó exitosamente');
-        showAlert('¡Orden guardada exitosamente!', 'success');
-
+        success = true
+      } catch (success) {
+        
+        showAlert('Orden guardada exitosamente', 'success')
       } finally {
-        // Ocultar el modal, recargar la tabla y mostrar la alerta de éxito si no hubo errores
-        setShowModal(false);
-        await fetchOrders();
+        setShowModal(false)
+        await fetchOrders()
         if (success) {
-          showAlert('Orden guardada exitosamente', 'success');
+          showAlert('Orden guardada exitosamente', 'success')
         }
       }
     } else {
-      showAlert('Por favor, completa todos los campos requeridos', 'warning');
+      showAlert('Por favor, completa todos los campos requeridos', 'warning')
     }
-  };
-
-
-
-
-
-
-
+  }
 
   const deleteOrder = (id, billNumber) => {
     const MySwal = withReactContent(Swal)
@@ -417,7 +406,11 @@ const Orders = () => {
                     <td>{order.Billnumber}</td>
                     <td>{new Date(order.OrderDate).toLocaleDateString()}</td>
                     <td>{order.total_price}</td>
-                    <td>{order.status}</td>
+                    <td>
+                      <span className={`orderStatus ${order.status === 'Completada' ? '' : 'Inactive'}`}>
+                        {order.status}
+                      </span>
+                    </td>
                     <td>{userNames[order.id_usuario] || 'Cargando...'}</td>
                     <td>
                       <div className='actions d-flex align-items-center'>
@@ -450,107 +443,131 @@ const Orders = () => {
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group className='pb-2'>
-              <Form.Label className='required'>Número de Factura</Form.Label>
-              <Form.Control
-                type="text"
-                name="Billnumber"
-                value={formValues.Billnumber}
-                onChange={handleInputChange}
-                disabled
-              />
-            </Form.Group>
-            <Form.Group className='pb-2'>
-              <Form.Label className='required'>Fecha de Orden</Form.Label>
-              <Form.Control
-                type="date"
-                name="OrderDate"
-                value={formValues.OrderDate}
-                onChange={handleInputChange}
-              />
-              {errors.OrderDate && <span className="text-danger">{errors.OrderDate}</span>}
-            </Form.Group>
-            <Form.Group className='pb-2'>
-              <Form.Label className='required'>Estado</Form.Label>
-              <Form.Select
-                name="status"
-                value={formValues.status}
-                onChange={handleInputChange}
-              >
-                <option value="">Seleccione un estado</option>
-                {statusOptions.map((status, index) => (
-                  <option key={index} value={status}>{status}</option>
-                ))}
-              </Form.Select>
-              {errors.status && <span className="text-danger">{errors.status}</span>}
-            </Form.Group>
-            <Form.Group className='pb-2'>
-              <Form.Label className='required'>Usuario</Form.Label>
-              <Form.Select
-                name="id_usuario"
-                value={formValues.id_usuario}
-                onChange={handleInputChange}
-              >
-                <option value="">Seleccione un usuario</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>{user.name}</option>
-                ))}
-              </Form.Select>
-              {errors.id_usuario && <span className="text-danger">{errors.id_usuario}</span>}
-            </Form.Group>
-            <div>
+            <Row className="mb-3">
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Número de Factura</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="Billnumber"
+                    value={formValues.Billnumber}
+                    onChange={handleInputChange}
+                    disabled
+                  />
+                </Form.Group>
+              </Col>
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Fecha de Orden</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="OrderDate"
+                    value={formValues.OrderDate}
+                    onChange={handleInputChange}
+                  />
+                  {errors.OrderDate && <Form.Text className="text-danger">{errors.OrderDate}</Form.Text>}
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Estado</Form.Label>
+                  <Form.Select
+                    name="status"
+                    value={formValues.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Seleccione un estado</option>
+                    {statusOptions.map((status, index) => (
+                      <option key={index} value={status}>{status}</option>
+                    ))}
+                  </Form.Select>
+                  {errors.status && <Form.Text className="text-danger">{errors.status}</Form.Text>}
+                </Form.Group>
+              </Col>
+              <Col sm="6">
+                <Form.Group>
+                  <Form.Label className='required'>Usuario</Form.Label>
+                  <Form.Select
+                    name="id_usuario"
+                    value={formValues.id_usuario}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Seleccione un usuario</option>
+                    {users.map(user => (
+                      <option key={user.id} value={user.id}>{user.name}</option>
+                    ))}
+                  </Form.Select>
+                  {errors.id_usuario && <Form.Text className="text-danger">{errors.id_usuario}</Form.Text>}
+                </Form.Group>
+              </Col>
+            </Row>
+            <div className="mb-3">
               <h5>Detalles de la Orden</h5>
-              {errors.orderDetails && <span className="text-danger">{errors.orderDetails}</span>}
+              {errors.orderDetails && <Form.Text className="text-danger d-block mb-2">{errors.orderDetails}</Form.Text>}
               {formValues.orderDetails.map((detail, index) => (
-                <div key={index} className="mb-3">
-                  <Form.Group className='pb-2'>
-                    <Form.Label className='required'>Producto</Form.Label>
-                    <Form.Select
-                      value={detail.id_producto || ""}
-                      onChange={(e) => handleProductChange(index, e.target.value)}
-                    >
-                      <option value="">Seleccione un producto</option>
-                      {products.map(product => (
-                        <option key={product.id} value={product.id}>
-                          {product.Product_Name}
-                        </option>
-                      ))}
-                    </Form.Select>
-                    {errors[`product_${index}`] && <span className="text-danger">{errors[`product_${index}`]}</span>}
-                  </Form.Group>
-                  <Form.Group className='pb-2'>
-                    <Form.Label>Cantidad</Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={detail.quantity}
-                      onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
-                    />
-                    {errors[`quantity_${index}`] && <span className="text-danger">{errors[`quantity_${index}`]}</span>}
-                  </Form.Group>
-                  <Form.Group className='pb-2'>
-                    <Form.Label>Precio Unitario</Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={detail.unitPrice}
-                      onChange={(e) => handleDetailChange(index, 'unitPrice', e.target.value)}
-                      disabled
-                    />
-                    {errors[`unitPrice_${index}`] && <span className="text-danger">{errors[`unitPrice_${index}`]}</span>}
-                  </Form.Group>
-                  <Form.Group className='pb-2'>
-                    <Form.Label>Total</Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={detail.total_price}
-                      disabled
-                    />
-                  </Form.Group>
+                <div key={index} className="mb-3 p-3 border rounded">
+                  <Row className="mb-3">
+                    <Col sm="6">
+                      <Form.Group>
+                        <Form.Label className='required'>Producto</Form.Label>
+                        <Form.Select
+                          value={detail.id_producto || ""}
+                          onChange={(e) => handleProductChange(index, e.target.value)}
+                        >
+                          <option value="">Seleccione un producto</option>
+                          {products.map(product => (
+                            <option key={product.id} value={product.id}>
+                              {product.Product_Name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                        {errors[`product_${index}`] && <Form.Text className="text-danger">{errors[`product_${index}`]}</Form.Text>}
+                      </Form.Group>
+                    </Col>
+                    <Col sm="6">
+                      <Form.Group>
+                        <Form.Label>Cantidad</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={detail.quantity}
+                          onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
+                        />
+                        {errors[`quantity_${index}`] && <Form.Text className="text-danger">{errors[`quantity_${index}`]}</Form.Text>}
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  <Row className="mb-3">
+                    <Col sm="6">
+                      <Form.Group>
+                        <Form.Label>Precio Unitario</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={detail.unitPrice}
+                          onChange={(e) => handleDetailChange(index, 'unitPrice', e.target.value)}
+                          disabled
+                        />
+                        {errors[`unitPrice_${index}`] && <Form.Text className="text-danger">{errors[`unitPrice_${index}`]}</Form.Text>}
+                      </Form.Group>
+                    </Col>
+                    <Col sm="6">
+                      <Form.Group>
+                        <Form.Label>Total</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={detail.total_price}
+                          disabled
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
                   <Button variant="danger" onClick={() => handleRemoveDetail(index)}>Eliminar</Button>
                 </div>
               ))}
               <Button variant="secondary" onClick={handleAddDetail}>Agregar detalle</Button>
             </div>
-            <Form.Group className='pb-2 mt-3'>
+            <Form.Group className='mb-3'>
               <Form.Label>Monto Total</Form.Label>
               <Form.Control
                 type="number"
