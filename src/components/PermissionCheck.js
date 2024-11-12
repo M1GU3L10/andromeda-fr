@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Circles } from 'react-loader-spinner';
+import logo from '../assets/images/logo.png'; // Asegúrate de la ruta
 
 const PermissionContext = createContext([]);
 
@@ -16,8 +17,11 @@ export const PermissionProvider = ({ children }) => {
     const fetchPermissions = async () => {
       const roleId = localStorage.getItem('roleId');
       console.log('roleId from localStorage:', roleId);
-      // Lista de rutas públicas
-      const publicRoutes = ['/login', '/register', '/forgotPassword', '/resetPassword', '/index', '/shop', '/registerview','/appointmentView','/ordermy'];
+
+      const publicRoutes = [
+        '/login', '/register', '/forgotPassword', '/resetPassword', '/index', 
+        '/shop', '/registerview', '/appointmentView', '/ordermy'
+      ];
 
       if (!roleId && !publicRoutes.includes(location.pathname)) {
         console.error('No roleId found in localStorage');
@@ -54,17 +58,16 @@ export const PermissionProvider = ({ children }) => {
   }, [location]);
 
   if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <Circles
-        height="80"
-        width="80"
-        color="#4fa94d"
-        ariaLabel="loading-indicator"
-      />
-     <div>
-      <span>
-        CARGANDO...</span></div> 
-    </div>;
+    return (
+      <div style={styles.loadingContainer}>
+       
+        <img src={logo} alt="Logo" style={styles.logo} />
+        <div style={styles.textContainer}>
+          <span style={styles.loadingText}>CARGANDO...</span>
+          <span style={styles.slogan}>Estilo y calidad en cada corte</span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -83,4 +86,37 @@ export const PermissionCheck = ({ requiredPermission, children }) => {
   }
 
   return null;
+};
+
+const styles = {
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    backgroundColor: '#f3f0ec',
+  },
+  logo: {
+    width: '120px', // Ajusta el tamaño según tus necesidades
+    height: '120px',
+    margin: '20px 0',
+    animation: 'spin 2s linear infinite',
+  },
+  textContainer: {
+    textAlign: 'center',
+    marginTop: '10px',
+  },
+  loadingText: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#6b3a1e',
+    fontFamily: '"Courier New", Courier, monospace',
+  },
+  slogan: {
+    fontSize: '16px',
+    color: '#3e3e3e',
+    fontStyle: 'italic',
+    fontFamily: 'serif',
+  },
 };
