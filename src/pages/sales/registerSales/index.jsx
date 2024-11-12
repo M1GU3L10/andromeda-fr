@@ -131,7 +131,8 @@ export default function Component() {
   };
 
   const updateSaleDetails = () => {
-    const details = selectedProducts.map(product => ({
+    // Combine product details
+    const productDetails = selectedProducts.map(product => ({
       quantity: product.quantity,
       unitPrice: product.Price,
       total_price: product.Price * product.quantity,
@@ -139,10 +140,22 @@ export default function Component() {
       empleadoId: null,
       serviceId: null
     }));
+
+    // Get existing service details
+    const serviceDetails = saleInfo.saleDetails.filter(detail =>
+      detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId !== null)
+    );
+
+    // Combine both types of details
+    const allDetails = [...productDetails, ...serviceDetails];
+
+    // Calculate total price
+    const totalPrice = allDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
+
     setSaleInfo(prevState => ({
       ...prevState,
-      saleDetails: details,
-      total_price: details.reduce((sum, item) => sum + item.total_price, 0)
+      saleDetails: allDetails,
+      total_price: totalPrice
     }));
   };
 
@@ -236,40 +249,106 @@ export default function Component() {
   };
 
   const handleServiceAdd = () => {
-    setSaleInfo(prevState => ({
-      ...prevState,
-      saleDetails: [
-        ...prevState.saleDetails,
-        { quantity: 1, unitPrice: 0, total_price: 0, id_producto: null, empleadoId: null, serviceId: null }
-      ]
-    }));
+    setSaleInfo(prevState => {
+      const serviceDetails = prevState.saleDetails.filter(detail =>
+        detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
+      );
+
+      const newServiceDetail = {
+        quantity: 1,
+        unitPrice: 0,
+        total_price: 0,
+        id_producto: null,
+        empleadoId: null,
+        serviceId: null
+      };
+
+      const updatedServiceDetails = [...serviceDetails, newServiceDetail];
+
+      // Combine with product details
+      const productDetails = selectedProducts.map(product => ({
+        quantity: product.quantity,
+        unitPrice: product.Price,
+        total_price: product.Price * product.quantity,
+        id_producto: product.id,
+        empleadoId: null,
+        serviceId: null
+      }));
+
+      return {
+        ...prevState,
+        saleDetails: [...productDetails, ...updatedServiceDetails]
+      };
+    });
   };
 
   const handleServiceChange = (index, field, value) => {
     setSaleInfo(prevState => {
-      const newDetails = [...prevState.saleDetails];
-      newDetails[index] = { ...newDetails[index], [field]: value };
-      if (field === 'serviceId') {
-        const service = services.find(s => s.id === parseInt(value));
-        if (service) {
-          newDetails[index].unitPrice = service.price;
-          newDetails[index].total_price = service.price * newDetails[index].quantity;
+      const serviceDetails = prevState.saleDetails.filter(detail =>
+        detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
+      );
+
+      if (serviceDetails[index]) {
+        serviceDetails[index] = { ...serviceDetails[index], [field]: value };
+
+        if (field === 'serviceId') {
+          const service = services.find(s => s.id === parseInt(value));
+          if (service) {
+            serviceDetails[index].unitPrice = service.price;
+            serviceDetails[index].total_price = service.price;
+            serviceDetails[index].quantity = 1;
+          }
         }
       }
+
+      // Combine with product details
+      const productDetails = selectedProducts.map(product => ({
+        quantity: product.quantity,
+        unitPrice: product.Price,
+        total_price: product.Price * product.quantity,
+        id_producto: product.id,
+        empleadoId: null,
+        serviceId: null
+      }));
+
+      const allDetails = [...productDetails, ...serviceDetails];
+      const totalPrice = allDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
+
       return {
         ...prevState,
-        saleDetails: newDetails,
-        total_price: newDetails.reduce((sum, item) => sum + item.total_price, 0)
+        saleDetails: allDetails,
+        total_price: totalPrice
       };
     });
   };
 
   const handleServiceRemove = (index) => {
-    setSaleInfo(prevState => ({
-      ...prevState,
-      saleDetails: prevState.saleDetails.filter((_, i) => i !== index),
-      total_price: prevState.saleDetails.reduce((sum, item, i) => i !== index ? sum + item.total_price : sum, 0)
-    }));
+    setSaleInfo(prevState => {
+      const serviceDetails = prevState.saleDetails.filter(detail =>
+        detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
+      );
+
+      const updatedServiceDetails = serviceDetails.filter((_, i) => i !== index);
+
+      // Combine with product details
+      const productDetails = selectedProducts.map(product => ({
+        quantity: product.quantity,
+        unitPrice: product.Price,
+        total_price: product.Price * product.quantity,
+        id_producto: product.id,
+        empleadoId: null,
+        serviceId: null
+      }));
+
+      const allDetails = [...productDetails, ...updatedServiceDetails];
+      const totalPrice = allDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
+
+      return {
+        ...prevState,
+        saleDetails: allDetails,
+        total_price: totalPrice
+      };
+    });
   };
 
   return (
