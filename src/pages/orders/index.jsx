@@ -54,6 +54,7 @@ const Orders = () => {
   const [ordersPerPage] = useState(8)
   const [showModal, setShowModal] = useState(false)
   const [errors, setErrors] = useState({})
+ 
 
   const statusOptions = ['Completada', 'Cancelada', 'Pendiente']
 
@@ -78,7 +79,9 @@ const Orders = () => {
       console.error('Error al obtener productos y usuarios:', error)
     }
   }, [])
-
+  useEffect(() => {
+    fetchOrders().then(setOrders);
+  }, []);
   const fetchUserNames = useCallback(async () => {
     try {
       const response = await axios.get(`${API_URL}/users`)
@@ -101,10 +104,10 @@ const Orders = () => {
   const generateBillNumber = () => {
     return `FAC-${Date.now()}`
   }
-
   const openModal = (op, order = null) => {
-    setOperation(op)
-    setTitle(op === 1 ? 'Registrar orden' : 'Editar orden')
+    setOperation(op);
+    setTitle(op === 1 ? 'Registrar orden' : 'Editar orden');
+  
     if (op === 1) {
       setFormValues({
         id: '',
@@ -116,17 +119,24 @@ const Orders = () => {
         id_usuario: '',
         Token_Expiration: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
         orderDetails: []
-      })
+      });
     } else {
-      setFormValues({
-        ...order,
-        id_usuario: order.id_usuario.toString(),
-        orderDetails: order.OrderDetails || []
-      })
+      setFormValues(
+        order
+        ? {
+            status: order.status,
+            id_usuario: order.id_usuario.toString()
+          }
+        : {
+            status: '',
+            id_usuario: ''
+          }
+      );
     }
-    setShowModal(true)
-    setErrors({})
-  }
+  
+    setShowModal(true);
+    setErrors({});
+  };
 
   const handleClose = () => {
     setShowModal(false)
