@@ -1139,19 +1139,20 @@ a {
   font-size: 20px !important;
 }
 
-.Monto-content .Monto {
-  font-family: "Open Sans", sans-serif !important;
-  font-size: 13px;
-  font-weight: 700;
-  color: #403e57 !important;
-  margin: 5px;
-}
-
 .Monto-content .valor {
   font-family: "Open Sans", sans-serif !important;
   font-size: 15px;
   font-weight: 700;
   color: #403e57 !important;
+  padding-bottom: 35px !important;
+}
+
+.footer-total{
+  width: 100% !important;
+}
+
+.padding-monto{
+  padding: 0px 200px 0px 40px !important;
 }
 
 .table .table-light th {

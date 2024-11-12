@@ -361,8 +361,7 @@ export default function Component() {
                   </table>
                 </div>
                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                  <span className='Monto'>Total:</span>
-                  <span className='valor'>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                  <span className='valor'>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
                 </div>
               </div>
 
@@ -434,6 +433,9 @@ export default function Component() {
                       <FaPlus />
                     </Button>
                   </div>
+                </div>
+                <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
+                  <span className='valor'>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
                 </div>
               </div>
             </div>
@@ -525,27 +527,38 @@ export default function Component() {
                   </div>
                 </div>
               </div>
+              <div className='spacing d-flex align-items-center footer-total'>
+                <div className="row">
+                  <div className="col-sm-6 d-flex align-items-center justify-content-start padding-monto">
+                    <div className='Monto-content'>
+                      <span className='valor'>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                    </div>
+                  </div>
+                  <div className="col-sm-5 d-flex align-items-center justify-content-end">
+                    <div className='d-flex align-items-center justify-content-end'>
+                      <Button
+                        variant="secondary"
+                        className='btn-red'
+                        id='btn-red'
+                        href="/Sales"
+                        style={{ minWidth: '100px' }}
+                      >
+                        Cerrar
+                      </Button>
+                      <Button
+                        variant="primary"
+                        className='btn-sucess'
+                        onClick={handleSubmit}
+                        style={{ minWidth: '100px' }}
+                      >
+                        Guardar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Action Buttons */}
-              <div className='d-flex justify-content-end gap-2 mt-4'>
-                <Button 
-                  variant="secondary" 
-                  className='btn-red' 
-                  id='btn-red' 
-                  href="/Sales"
-                  style={{ minWidth: '100px' }}
-                >
-                  Cerrar
-                </Button>
-                <Button 
-                  variant="primary" 
-                  className='btn-sucess' 
-                  onClick={handleSubmit}
-                  style={{ minWidth: '100px' }}
-                >
-                  Guardar
-                </Button>
-              </div>
             </div>
           </div>
         </div>
