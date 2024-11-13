@@ -32,12 +32,7 @@ const Index = () => {
                     <p>
                         La barbería es el lugar donde puedes conseguir un corte de pelo de alta calidad de barberos certificados, que no sólo son profesionales, sino también maestros con talento.
                     </p>
-                    <Button
-                        variant="outlined"
-                        className="read-more-btn"
-                    >
-                        VER MAS
-                    </Button>
+               
                 </div>
             </section>
 
