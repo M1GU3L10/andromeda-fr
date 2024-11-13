@@ -31,7 +31,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   },
 }))
 
-const Orders = () => {
+export default function Orders() {
   const [orders, setOrders] = useState([])
   const [products, setProducts] = useState([])
   const [users, setUsers] = useState([])
@@ -47,12 +47,15 @@ const Orders = () => {
     Token_Expiration: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     orderDetails: []
   })
-  const [operation, setOperation] = useState(1)
-  const [title, setTitle] = useState('')
+  const [editValues, setEditValues] = useState({
+    id: '',
+    status: ''
+  })
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [ordersPerPage] = useState(8)
-  const [showModal, setShowModal] = useState(false)
+  const [showRegisterModal, setShowRegisterModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [errors, setErrors] = useState({})
 
   const statusOptions = ['Completada', 'Cancelada', 'Pendiente']
@@ -102,40 +105,49 @@ const Orders = () => {
     return `FAC-${Date.now()}`
   }
 
-  const openModal = (op, order = null) => {
-    setOperation(op)
-    setTitle(op === 1 ? 'Registrar orden' : 'Editar orden')
-    if (op === 1) {
-      setFormValues({
-        id: '',
-        Billnumber: generateBillNumber(),
-        OrderDate: new Date().toISOString().split('T')[0],
-        registrationDate: new Date().toISOString().split('T')[0],
-        total_price: '',
-        status: '',
-        id_usuario: '',
-        Token_Expiration: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        orderDetails: []
-      })
-    } else {
-      setFormValues({
-        ...order,
-        id_usuario: order.id_usuario.toString(),
-        orderDetails: order.OrderDetails || []
-      })
-    }
-    setShowModal(true)
+  const openRegisterModal = () => {
+    setFormValues({
+      id: '',
+      Billnumber: generateBillNumber(),
+      OrderDate: new Date().toISOString().split('T')[0],
+      registrationDate: new Date().toISOString().split('T')[0],
+      total_price: '',
+      status: '',
+      id_usuario: '',
+      Token_Expiration: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      orderDetails: []
+    })
+    setShowRegisterModal(true)
     setErrors({})
   }
 
-  const handleClose = () => {
-    setShowModal(false)
+  const openEditModal = (order) => {
+    setEditValues({
+      id: order.id,
+      status: order.status
+    })
+    setShowEditModal(true)
+    setErrors({})
+  }
+
+  const handleCloseRegisterModal = () => {
+    setShowRegisterModal(false)
+    setErrors({})
+  }
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false)
     setErrors({})
   }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormValues(prevValues => ({ ...prevValues, [name]: value }))
+  }
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target
+    setEditValues(prevValues => ({ ...prevValues, [name]: value }))
   }
 
   const handleDetailChange = (index, field, value) => {
@@ -196,7 +208,7 @@ const Orders = () => {
     calculateTotalPrice()
   }, [formValues.orderDetails, calculateTotalPrice])
 
-  const validateForm = () => {
+  const validateRegisterForm = () => {
     const newErrors = {}
     if (!formValues.Billnumber) newErrors.Billnumber = 'El número de factura es requerido'
     if (!formValues.OrderDate) newErrors.OrderDate = 'La fecha de orden es requerida'
@@ -212,9 +224,15 @@ const Orders = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async () => {
-    if (validateForm()) {
-      let success = false
+  const validateEditForm = () => {
+    const newErrors = {}
+    if (!editValues.status) newErrors.status = 'El estado es requerido'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleRegisterSubmit = async () => {
+    if (validateRegisterForm()) {
       try {
         const orderData = {
           ...formValues,
@@ -222,47 +240,43 @@ const Orders = () => {
           id_usuario: parseInt(formValues.id_usuario),
         }
 
-        let response
-        if (operation === 1) {
-          response = await axios.post(`${API_URL}/orders`, orderData)
-          const orderId = response.data.id
-          const orderDetails = formValues.orderDetails.map((detail) => ({
-            ...detail,
-            id_order: orderId,
-            quantity: parseInt(detail.quantity),
-            unitPrice: parseFloat(detail.unitPrice),
-            total_price: parseFloat(detail.total_price),
-            id_producto: parseInt(detail.id_producto),
-          }))
+        const response = await axios.post(`${API_URL}/orders`, orderData)
+        const orderId = response.data.id
+        const orderDetails = formValues.orderDetails.map((detail) => ({
+          ...detail,
+          id_order: orderId,
+          quantity: parseInt(detail.quantity),
+          unitPrice: parseFloat(detail.unitPrice),
+          total_price: parseFloat(detail.total_price),
+          id_producto: parseInt(detail.id_producto),
+        }))
 
-          await axios.post(`${API_URL}/order-details`, orderDetails)
-        } else {
-          await axios.put(`${API_URL}/orders/${formValues.id}`, orderData)
-          const orderDetails = formValues.orderDetails.map((detail) => ({
-            ...detail,
-            id_order: formValues.id,
-            quantity: parseInt(detail.quantity),
-            unitPrice: parseFloat(detail.unitPrice),
-            total_price: parseFloat(detail.total_price),
-            id_producto: parseInt(detail.id_producto),
-          }))
-
-          await axios.post(`${API_URL}/order-details`, orderDetails)
-        }
-
-        success = true
-      } catch (success) {
+        await axios.post(`${API_URL}/order-details`, orderDetails)
         
-        showAlert('Orden guardada exitosamente', 'success')
-      } finally {
-        setShowModal(false)
+        showAlert('Orden registrada exitosamente', 'success')
+        setShowRegisterModal(false)
         await fetchOrders()
-        if (success) {
-          showAlert('Orden guardada exitosamente', 'success')
-        }
+      } catch (error) {
+        showAlert('Error al registrar la orden', 'error')
       }
     } else {
       showAlert('Por favor, completa todos los campos requeridos', 'warning')
+    }
+  }
+
+  const handleEditSubmit = async () => {
+    if (validateEditForm()) {
+      try {
+        await axios.put(`${API_URL}/orders/${editValues.id}`, { status: editValues.status })
+        
+        showAlert('Estado de la orden actualizado exitosamente', 'success')
+        setShowEditModal(false)
+        await fetchOrders()
+      } catch (error) {
+        showAlert('Error al actualizar el estado de la orden', 'error')
+      }
+    } else {
+      showAlert('Por favor, selecciona un estado', 'warning')
     }
   }
 
@@ -377,7 +391,7 @@ const Orders = () => {
         <div className='card shadow border-0 p-3'>
           <div className='row'>
             <div className='col-sm-5 d-flex align-items-center'>
-              <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
+              <Button className='btn-register' onClick={openRegisterModal} variant="contained"><BsPlusSquareFill />Registrar</Button>
             </div>
             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
               <div className="searchBox position-relative d-flex align-items-center">
@@ -415,7 +429,7 @@ const Orders = () => {
                     <td>
                       <div className='actions d-flex align-items-center'>
                         <Button color='primary' className='primary' onClick={() => handleViewDetails(order)}><FaEye /></Button>
-                        <Button color="secondary" className='secondary' onClick={() => openModal(2, order)}><FaPencilAlt /></Button>
+                        <Button color="secondary" className='secondary' onClick={() => openEditModal(order)}><FaPencilAlt /></Button>
                         <Button color='error' className='delete' onClick={() => deleteOrder(order.id, order.Billnumber)}><IoTrashSharp /></Button>
                       </div>
                     </td>
@@ -437,9 +451,11 @@ const Orders = () => {
           </div>
         </div>
       </div>
-      <Modal show={showModal} onHide={handleClose}>
+
+      {/* Register Modal */}
+      <Modal show={showRegisterModal} onHide={handleCloseRegisterModal}>
         <Modal.Header closeButton>
-          <Modal.Title>{title}</Modal.Title>
+          <Modal.Title>Registrar orden</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -579,10 +595,43 @@ const Orders = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleSubmit} className='btn-sucess'>
+          <Button variant="primary" onClick={handleRegisterSubmit} className='btn-sucess'>
             <MdOutlineSave /> Guardar
           </Button>
-          <Button variant="secondary" onClick={handleClose} className='btn-red'>
+          <Button variant="secondary" onClick={handleCloseRegisterModal} className='btn-red'>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal show={showEditModal} onHide={handleCloseEditModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Editar estado de la orden</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label className='required'>Estado</Form.Label>
+              <Form.Select
+                name="status"
+                value={editValues.status}
+                onChange={handleEditInputChange}
+              >
+                <option value="">Seleccione un estado</option>
+                {statusOptions.map((status, index) => (
+                  <option key={index} value={status}>{status}</option>
+                ))}
+              </Form.Select>
+              {errors.status && <Form.Text className="text-danger">{errors.status}</Form.Text>}
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleEditSubmit} className='btn-sucess'>
+            <MdOutlineSave /> Guardar
+          </Button>
+          <Button variant="secondary" onClick={handleCloseEditModal} className='btn-red'>
             Cerrar
           </Button>
         </Modal.Footer>
@@ -590,5 +639,3 @@ const Orders = () => {
     </div>
   )
 }
-
-export default Orders

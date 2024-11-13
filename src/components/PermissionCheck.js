@@ -60,7 +60,7 @@ export const PermissionProvider = ({ children }) => {
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
-       
+        
         <img src={logo} alt="Logo" style={styles.logo} />
         <div style={styles.textContainer}>
           <span style={styles.loadingText}>CARGANDO...</span>
