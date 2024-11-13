@@ -185,26 +185,17 @@ const Dashboard = () => {
                                                 cx="50%"
                                                 cy="50%"
                                                 outerRadius={120}
-                                                label={({ name }) => (
-                                                    <text
-                                                        x="50%"
-                                                        y="50%"
-                                                        textAnchor="middle"
-                                                        dominantBaseline="middle"
-                                                        style={{ fill: 'black', fontSize: '14px', fontWeight: 'bold' }}
-                                                    >
-                                                        {name}
-                                                    </text>
-                                                )}
+                                                label
                                             >
-                                                <Cell key="completada" fill="#00ff00" />  {/* Verde para Citas Completadas */}
-                                                <Cell key="cancelada" fill="#ff0000" />  {/* Rojo para Citas Canceladas */}
-                                                <Cell key="pendiente" fill="#ffff00" />  {/* Amarillo para Citas Pendientes */}
+                                                <Cell key="completada" fill="#006400" />  {/* Verde Oscuro para Citas Completadas */}
+
+                                                <Cell key="cancelada" fill="#00008b" />  {/* Azul Oscuro para Citas Canceladas */}
+
+                                                <Cell key="pendiente" fill="#808080" />  
                                             </Pie>
                                             <Tooltip />
                                             <Legend />
                                         </PieChart>
-
                                     </div>
                                 </div>
                             </div>
