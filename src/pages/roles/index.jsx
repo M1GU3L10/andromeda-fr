@@ -63,6 +63,23 @@ const Roles = () => {
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
+    const [selectAll, setSelectAll] = useState(false);
+
+
+    const handleSelectAll = () => {
+        setSelectAll(!selectAll);
+        if (!selectAll) {
+            setSelectedPermissions(permissions.map(p => p.id));
+        } else {
+            setSelectedPermissions([]);
+        }
+    };
+
+    useEffect(() => {
+        if (selectAll) {
+            setSelectedPermissions(permissions.map(p => p.id));
+        }
+    }, [selectAll, permissions]);
 
 
     const [errors, setErrors] = useState({
@@ -525,17 +542,22 @@ const Roles = () => {
                             </Form.Group>
                             <Form.Group>
                                 <Form.Label>Permisos</Form.Label>
+                                <div>
+                                    <Button onClick={handleSelectAll} variant="outline-primary" size="sm" className="mb-2">
+                                        {selectAll ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                                    </Button>
+                                </div>
                                 {permissions.map(permission => (
                                     <div key={permission.id}>
-                                        <input
+                                        <Form.Check
                                             type="checkbox"
+                                            id={`permission-${permission.id}`}
+                                            label={permission.name}
                                             checked={selectedPermissions.includes(permission.id)}
                                             onChange={() => handleCheckboxChange(permission.id)}
                                         />
-                                        <label>{permission.name}</label>
                                     </div>
                                 ))}
-
                             </Form.Group>
                         </Form>
                     </Modal.Body>
@@ -544,7 +566,8 @@ const Roles = () => {
                             Guardar
                         </Button>
                         <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                            Cerrar                        </Button>
+                            Cerrar
+                        </Button>
                     </Modal.Footer>
                 </Modal>
                 <Modal show={showDetailModal} onHide={handleCloseDetail}>
