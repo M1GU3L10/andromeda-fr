@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'; // Para el gráfico de líneas
-import { PieChart, Pie } from 'recharts'; // Para el gráfico circular (torta)
-import { BarChart, Bar } from 'recharts'; // Para el gráfico de barras
+import {
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+    PieChart, Pie, Cell,
+    BarChart, Bar
+} from 'recharts';
 import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
 import { IoCart } from "react-icons/io5";
+
+const appointmentsData = [
+    { status: 'completada', value: 10 },
+    { status: 'cancelada', value: 5 },
+    { status: 'pendiente', value: 8 },
+];
+
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
         theme.palette.mode === 'light'
@@ -30,13 +39,12 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 const Dashboard = () => {
     const [sales, setSales] = useState([]);
     const [products, setProducts] = useState([]);
-    const [appointments, setAppointments] = useState([]);
+    const [appointments, setAppointments] = useState(appointmentsData);
     const [shopping, setShopping] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch sales data
                 const salesResponse = await fetch('http://localhost:1056/api/sales');
                 const salesData = await salesResponse.json();
                 const formattedSales = salesData.map(sale => ({
@@ -46,7 +54,6 @@ const Dashboard = () => {
                 }));
                 setSales(formattedSales);
 
-                // Fetch products data
                 const productsResponse = await fetch('http://localhost:1056/api/products');
                 const productsData = await productsResponse.json();
                 const formattedProducts = productsData.map(product => ({
@@ -56,17 +63,14 @@ const Dashboard = () => {
                 }));
                 setProducts(formattedProducts);
 
-                // Fetch appointments data
                 const appointmentsResponse = await fetch('http://localhost:1056/api/appointment');
                 const appointmentsData = await appointmentsResponse.json();
                 const formattedAppointments = appointmentsData.map(appointment => ({
-                    date: appointment.Date,
-                    total: parseFloat(appointment.Total),
-                    status: appointment.status
+                    status: appointment.status,
+                    value: 1
                 }));
                 setAppointments(formattedAppointments);
 
-                // Fetch shopping data
                 const shoppingResponse = await fetch('http://localhost:1056/api/shopping');
                 const shoppingData = await shoppingResponse.json();
                 const formattedShopping = shoppingData.map(shop => ({
@@ -143,14 +147,13 @@ const Dashboard = () => {
                                             <YAxis />
                                             <Tooltip />
                                             <Legend />
-                                            <Bar dataKey="stock" fill="#82ca9d" name="Stock" barSize={15} />  {/* Ajusta el barSize para hacer las barras más finas */}
-                                            <Bar dataKey="price" fill="#ffc658" name="Precio" barSize={15} />  {/* Ajusta el barSize para hacer las barras más finas */}
+                                            <Bar dataKey="stock" fill="#82ca9d" name="Stock" barSize={15} />
+                                            <Bar dataKey="price" fill="#ffc658" name="Precio" barSize={15} />
                                         </BarChart>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
 
                         {/* Appointments Chart */}
                         <div className="col-md-6 mb-4">
@@ -158,25 +161,23 @@ const Dashboard = () => {
                                 <div className="card-body">
                                     <h5 className="card-title mb-3">Citas</h5>
                                     <div className="chart-container">
-                                        <LineChart width={500} height={300} data={appointments}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="date" />
-                                            <YAxis />
+                                        <PieChart width={500} height={300}>
+                                            <Pie
+                                                data={appointments}
+                                                dataKey="value"
+                                                nameKey="status"
+                                                cx="50%"
+                                                cy="50%"
+                                                outerRadius={120}
+                                                label
+                                            >
+                                                <Cell key="completada" fill="#0000ff" />
+                                                <Cell key="cancelada" fill="#ff0000" />
+                                                <Cell key="pendiente" fill="#ffff00" />
+                                            </Pie>
                                             <Tooltip />
                                             <Legend />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="total"
-                                                stroke="#ff7300"
-                                                name="Precio total de la cita"
-                                            />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="cancelada" 
-                                                stroke="#ff0000"
-                                                name="Citas Canceladas"
-                                            />
-                                        </LineChart>
+                                        </PieChart>
                                     </div>
                                 </div>
                             </div>
@@ -188,24 +189,19 @@ const Dashboard = () => {
                                 <div className="card-body">
                                     <h5 className="card-title mb-3">Compras</h5>
                                     <div className="chart-container">
-                                        <PieChart width={500} height={300}>
-                                            <Pie
-                                                data={shopping}
-                                                dataKey="total"
-                                                nameKey="date"
-                                                cx="50%"
-                                                cy="50%"
-                                                outerRadius={120}
-                                                fill="#ff0000"
-                                                label
-                                            />
+                                        <LineChart width={500} height={300} data={shopping}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="date" />
+                                            <YAxis />
                                             <Tooltip />
                                             <Legend />
-                                        </PieChart>
+                                            <Line type="monotone" dataKey="total" stroke="#ff0000" name="Total Compras" />
+                                        </LineChart>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
 
                     </div>
                 </div>
