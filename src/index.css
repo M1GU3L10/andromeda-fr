@@ -574,6 +574,11 @@ header .logo-index span {
     margin-top: 10px;
 }
 
+/*********************************/
+/*********FOOTER PRODUCT*********/
+/*********************************/
+
+
 .content-footer {
     background: #fff;
 }
@@ -669,4 +674,12 @@ header .logo-index span {
 
 .submit-button:hover {
     background-color: #0056b3;
+}
+
+/*********************************/
+/*********SECTION PRODUCT*********/
+/*********************************/
+
+.error-container{
+    
 }

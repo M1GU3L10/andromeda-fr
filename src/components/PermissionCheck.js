@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { Circles } from 'react-loader-spinner';
-import logo from '../assets/images/logo.png'; // Asegúrate de la ruta
+import logo from '../assets/images/logo.png';
 
 const PermissionContext = createContext([]);
 
@@ -20,11 +20,11 @@ export const PermissionProvider = ({ children }) => {
 
       const publicRoutes = [
         '/login', '/register', '/forgotPassword', '/resetPassword', '/index', 
-        '/shop', '/registerview', '/appointmentView', '/ordermy' , '/profileview'
+        '/shop', '/registerview', '/appointmentView', '/ordermy', '/profileview', '/404'
       ];
 
+      // Si no hay roleId y no es una ruta pública, redirigir a login
       if (!roleId && !publicRoutes.includes(location.pathname)) {
-        console.error('No roleId found in localStorage');
         setLoading(false);
         setPermissions([]);
         return;
@@ -46,9 +46,10 @@ export const PermissionProvider = ({ children }) => {
         ).map(p => p.name);
 
         console.log('User permissions:', permissionNames);
-        setPermissions(permissionNames);
+        setPermissions([...permissionNames, `role_${roleId}`]); // Agregamos el rol como un permiso
       } catch (error) {
         console.error('Error fetching permissions:', error);
+        setPermissions([]);
       } finally {
         setLoading(false);
       }
@@ -60,7 +61,6 @@ export const PermissionProvider = ({ children }) => {
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
-        
         <img src={logo} alt="Logo" style={styles.logo} />
         <div style={styles.textContainer}>
           <span style={styles.loadingText}>CARGANDO...</span>
@@ -79,13 +79,25 @@ export const PermissionProvider = ({ children }) => {
 
 export const PermissionCheck = ({ requiredPermission, children }) => {
   const permissions = usePermissions();
+  const location = useLocation();
   console.log(`PermissionCheck - Required: ${requiredPermission} Available:`, permissions);
 
-  if (permissions.includes(requiredPermission) || permissions.includes('public')) {
-    return <>{children}</>;
+  // Si es una ruta no válida y el usuario está autenticado, redirigir a Error404
+  if (!permissions.includes(requiredPermission) && !permissions.includes('public')) {
+    // Si el usuario está autenticado (tiene permisos pero no el requerido)
+    if (permissions.length > 0) {
+      return <Navigate to="/404" replace />;
+    }
+    // Si el usuario no está autenticado
+    return <Navigate to="/login" replace />;
   }
 
-  return null;
+  // Verificar acceso al dashboard para rol 3
+  if (requiredPermission === 'Dashboard' && permissions.includes('role_3')) {
+    return <Navigate to="/404" replace />;
+  }
+
+  return <>{children}</>;
 };
 
 const styles = {
@@ -98,7 +110,7 @@ const styles = {
     backgroundColor: '#f3f0ec',
   },
   logo: {
-    width: '120px', // Ajusta el tamaño según tus necesidades
+    width: '120px',
     height: '120px',
     margin: '20px 0',
     animation: 'spin 2s linear infinite',
