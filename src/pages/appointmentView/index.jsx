@@ -10,6 +10,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
+import { GrUser } from 'react-icons/gr';
 import axios from 'axios';
 import { Form } from 'react-bootstrap';
 
@@ -219,13 +220,22 @@ const Index = () => {
                                     {userEmail}
                                 </Button>
                                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
-                                    {userRole == 1 || userRole == 2 ? (
-                                        <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
-                                    ) : (
-                                        <MenuItem>Carrito</MenuItem>
-                                    )}
-                                    <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
-                                </Menu>
+                                {userRole == 1 || userRole == 2 ? (
+                                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
+                                        <GrUserAdmin /> Administrar
+                                    </MenuItem>
+                                ) : (
+                                    <MenuItem></MenuItem>
+                                )}
+                                  <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
+                                    <GrUser /> Mi perfil
+                                </MenuItem>
+                                <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
+                                    <GiExitDoor /> Cerrar Sesión
+                                </MenuItem>
+                                {/* Usamos MenuItem para mantener el mismo estilo */}
+                              
+                            </Menu>
                             </div>
                         ) : (
                             <Button

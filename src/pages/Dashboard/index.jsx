@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'; // Para el gráfico de líneas
+import { PieChart, Pie } from 'recharts'; // Para el gráfico circular (torta)
+import { BarChart, Bar } from 'recharts'; // Para el gráfico de barras
 import { emphasize, styled } from '@mui/material/styles';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Chip from '@mui/material/Chip';
 import HomeIcon from '@mui/icons-material/Home';
 import { IoCart } from "react-icons/io5";
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
         theme.palette.mode === 'light'
@@ -136,19 +137,20 @@ const Dashboard = () => {
                                 <div className="card-body">
                                     <h5 className="card-title mb-3">Inventario de Productos</h5>
                                     <div className="chart-container">
-                                        <LineChart width={500} height={300} data={products}>
+                                        <BarChart width={500} height={300} data={products}>
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis dataKey="name" />
                                             <YAxis />
                                             <Tooltip />
                                             <Legend />
-                                            <Line type="monotone" dataKey="stock" stroke="#82ca9d" name="Stock" />
-                                            <Line type="monotone" dataKey="price" stroke="#ffc658" name="Precio" />
-                                        </LineChart>
+                                            <Bar dataKey="stock" fill="#82ca9d" name="Stock" barSize={15} />  {/* Ajusta el barSize para hacer las barras más finas */}
+                                            <Bar dataKey="price" fill="#ffc658" name="Precio" barSize={15} />  {/* Ajusta el barSize para hacer las barras más finas */}
+                                        </BarChart>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
 
                         {/* Appointments Chart */}
                         <div className="col-md-6 mb-4">
@@ -162,7 +164,18 @@ const Dashboard = () => {
                                             <YAxis />
                                             <Tooltip />
                                             <Legend />
-                                            <Line type="monotone" dataKey="total" stroke="#ff7300" name="Total Citas" />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="total"
+                                                stroke="#ff7300"
+                                                name="Precio total de la cita"
+                                            />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="cancelada" 
+                                                stroke="#ff0000"
+                                                name="Citas Canceladas"
+                                            />
                                         </LineChart>
                                     </div>
                                 </div>
@@ -175,18 +188,25 @@ const Dashboard = () => {
                                 <div className="card-body">
                                     <h5 className="card-title mb-3">Compras</h5>
                                     <div className="chart-container">
-                                        <LineChart width={500} height={300} data={shopping}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="date" />
-                                            <YAxis />
+                                        <PieChart width={500} height={300}>
+                                            <Pie
+                                                data={shopping}
+                                                dataKey="total"
+                                                nameKey="date"
+                                                cx="50%"
+                                                cy="50%"
+                                                outerRadius={120}
+                                                fill="#ff0000"
+                                                label
+                                            />
                                             <Tooltip />
                                             <Legend />
-                                            <Line type="monotone" dataKey="total" stroke="#ff0000" name="Total Compras" />
-                                        </LineChart>
+                                        </PieChart>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>

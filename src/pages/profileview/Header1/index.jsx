@@ -5,9 +5,8 @@ import logo from '../../../assets/images/logo-light.png';
 import { Avatar, Menu, MenuItem, Button } from '@mui/material';
 import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
-import { GiExitDoor } from "react-icons/gi";
 import { GrUser } from 'react-icons/gr';
-
+import { GiExitDoor } from "react-icons/gi";
 
 const Header = ({ scrollToServices, scrollToContact }) => {
     const context = useContext(MyContext);
@@ -94,7 +93,7 @@ const Header = ({ scrollToServices, scrollToContact }) => {
     };
 
     return (
-        <header className={`header-index ${isScrolled ? 'abajo' : ''}`}>
+        <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
             <Link to={'/'} className='d-flex align-items-center logo-index'>
                 <img src={logo} alt="Logo" />
                 <span className='ml-2'>Barberia Orion</span>
@@ -102,12 +101,12 @@ const Header = ({ scrollToServices, scrollToContact }) => {
             <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
                 <nav className='navBar-index'>
                     <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-                    <Link to='#' onClick={scrollToServices}>SERVICIOS</Link>
+                    
                     {
-                        userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
+                       userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
                     }
-                    <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-                    <Link to='#' onClick={scrollToContact}>CONTACTO</Link>
+                  <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+                    
                 </nav>
                 <div className="auth-buttons">
                     {isLoggedIn && userEmail ? (
@@ -146,9 +145,6 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                                 {/* Usamos MenuItem para mantener el mismo estilo */}
                               
                             </Menu>
-
-
-
                         </div>
                     ) : (
                         <Button
