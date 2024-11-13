@@ -6,6 +6,8 @@ import { Avatar, Menu, MenuItem, Button } from '@mui/material';
 import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
+import { GrUser } from 'react-icons/gr';
+
 
 const Header = ({ scrollToServices, scrollToContact }) => {
     const context = useContext(MyContext);
@@ -102,9 +104,9 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                     <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
                     <Link to='#' onClick={scrollToServices}>SERVICIOS</Link>
                     {
-                       userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
+                        userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
                     }
-                  <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+                    <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
                     <Link to='#' onClick={scrollToContact}>CONTACTO</Link>
                 </nav>
                 <div className="auth-buttons">
@@ -129,14 +131,23 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                             </Button>
                             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
                                 {userRole == 1 || userRole == 2 ? (
-                                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
+                                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
+                                        <GrUserAdmin /> Administrar
+                                    </MenuItem>
                                 ) : (
                                     <MenuItem>Carrito</MenuItem>
                                 )}
-                                <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
-                                <Link to='/profileview' onClick={() => setIsNavOpen(false)}>Mi perfil</Link>
-                                
+                                <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
+                                    <GiExitDoor /> Cerrar Sesión
+                                </MenuItem>
+                                {/* Usamos MenuItem para mantener el mismo estilo */}
+                                <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
+                                    <GrUser /> Mi perfil
+                                </MenuItem>
                             </Menu>
+
+
+
                         </div>
                     ) : (
                         <Button
