@@ -37,6 +37,7 @@ import Profile from './pages/profile'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
+import Error404 from './pages/404'
 
 export const MyContext = createContext();
 
@@ -50,7 +51,9 @@ function App() {
     const token = localStorage.getItem('jwtToken');
     if (token) {
       setIsLogin(true);
-      setIsHideSidebarAndHeader(false);
+      if (!window.location.pathname.includes('/404')) {
+        setIsHideSidebarAndHeader(false);
+      }
     } else {
       setIsLogin(false);
       setIsHideSidebarAndHeader(true);
@@ -101,6 +104,14 @@ function App() {
                 <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
                 <Route path="/resetPassword" element={<PermissionCheck requiredPermission="public"><ResetPassword /></PermissionCheck>} />
                 <Route path="/" element={<Navigate to="/index" replace />} />
+
+                <Route path="/404" element={
+                  <PermissionCheck requiredPermission="public">
+                    <Error404 />
+                  </PermissionCheck>
+                } />
+                <Route path="*" element={<Navigate to="/404" replace />} />
+
 
                 <Route path="/profile" element={
                   <PermissionCheck requiredPermission="Perfil">
@@ -188,7 +199,7 @@ function App() {
                   </PermissionCheck>
                 } />
                 <Route
-                   path="/ordermy" element={
+                  path="/ordermy" element={
                     <PermissionCheck requiredPermission="public">
                       <Ordermy />
                     </PermissionCheck>
@@ -208,7 +219,7 @@ function App() {
                     <Roles />
                   </PermissionCheck>
                 } />
-             
+
                 <Route path="/absences" element={
                   <PermissionCheck requiredPermission="Ausencias">
                     <Absences />
