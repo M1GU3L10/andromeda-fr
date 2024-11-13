@@ -29,6 +29,7 @@ import Ordermy from './pages/ordermy';
 import Login from './pages/Login';
 import Shop from './pages/shop';
 import Index from './pages/index';
+import Profileview from './pages/profileview';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -96,6 +97,7 @@ function App() {
                 <Route path="/RegisterView" element={<PermissionCheck requiredPermission="public"><RegisterView /></PermissionCheck>} />
                 <Route path="/index" element={<PermissionCheck requiredPermission="public"><Index /></PermissionCheck>} />
                 <Route path="/register" element={<PermissionCheck requiredPermission="public"><Register /></PermissionCheck>} />
+                <Route path="/profileview" element={<PermissionCheck requiredPermission="public">< Profileview /></PermissionCheck>} />
                 <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
                 <Route path="/resetPassword" element={<PermissionCheck requiredPermission="public"><ResetPassword /></PermissionCheck>} />
                 <Route path="/" element={<Navigate to="/index" replace />} />
@@ -206,6 +208,7 @@ function App() {
                     <Roles />
                   </PermissionCheck>
                 } />
+             
                 <Route path="/absences" element={
                   <PermissionCheck requiredPermission="Ausencias">
                     <Absences />
