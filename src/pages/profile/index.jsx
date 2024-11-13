@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Box, Container, Grid } from '@mui/material';
+import { Form, Button, Card, Container, Row, Col, Spinner } from 'react-bootstrap';
+import Swal from 'sweetalert2';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function EnhancedProfileEditor() {
   const url = 'http://localhost:1056/api/users';
@@ -92,7 +83,12 @@ export default function EnhancedProfileEditor() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (Object.values(errors).some(error => error !== '')) {
-      showAlert('¡Advertencia!', 'Por favor, corrija los errores en el formulario', 'warning');
+      Swal.fire({
+        title: '¡Advertencia!',
+        text: 'Por favor, corrija los errores en el formulario',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
       return;
     }
 
@@ -111,14 +107,24 @@ export default function EnhancedProfileEditor() {
       const phoneExists = await checkExistingPhone(dataToUpdate.phone.trim());
 
       if (emailExists && dataToUpdate.email !== userData.email) {
-        showAlert('¡Advertencia!', 'El correo electrónico ya está registrado', 'warning');
+        Swal.fire({
+          title: '¡Advertencia!',
+          text: 'El correo electrónico ya está registrado',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
         setIsSubmitting(false);
         setLoading(false);
         return;
       }
 
       if (phoneExists && dataToUpdate.phone !== userData.phone) {
-        showAlert('¡Advertencia!', 'El número de teléfono ya está registrado', 'warning');
+        Swal.fire({
+          title: '¡Advertencia!',
+          text: 'El número de teléfono ya está registrado',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
         setIsSubmitting(false);
         setLoading(false);
         return;
@@ -134,28 +140,43 @@ export default function EnhancedProfileEditor() {
       });
 
       if (response.ok) {
-        showAlert('¡Éxito!', 'Perfil actualizado exitosamente', 'success');
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Perfil actualizado exitosamente',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
+        });
         if (password) {
           setPassword('');
           setShowPassword(false);
         }
-        fetchUserData(userData.id);
+      } else {
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Perfil actualizado exitosamente',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
+        });
       }
     } catch (err) {
-      showAlert('¡Error!', 'Error al actualizar el perfil', 'error');
+      Swal.fire({
+        title: '¡Error!',
+        text: 'Error al actualizar el perfil',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setIsSubmitting(false);
       setLoading(false);
     }
-  };
-
-  const showAlert = (title, message, severity) => {
-    return (
-      <Alert severity={severity}>
-        <AlertTitle>{title}</AlertTitle>
-        {message}
-      </Alert>
-    );
   };
 
   const checkExistingEmail = async (email) => {
@@ -181,8 +202,8 @@ export default function EnhancedProfileEditor() {
   };
 
   const validateName = (value) => {
-    const regex = /^[A-Za-z\s]+$/;
-    return regex.test(value) ? '' : 'El nombre solo debe contener letras';
+    const regex = /^[A-Za-z\s]{3,}$/;
+    return regex.test(value) ? '' : 'El nombre debe contener al menos 3 letras';
   };
 
   const validateEmail = (value) => {
@@ -230,146 +251,142 @@ export default function EnhancedProfileEditor() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
-      </Box>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+        <Spinner animation="border" />
+      </div>
     );
   }
 
   if (!isLoggedIn) {
     return (
-      <Box textAlign="center" mt={8}>
+      <div className="text-center mt-5">
         <h2>Acceso Denegado</h2>
         <p>{error}</p>
-      </Box>
+      </div>
     );
   }
- 
+
   return (
-    <Container maxWidth="md" sx={{ py: 8 }}> {/* Aumentado el padding vertical */}
-      <Card elevation={3}>
-        <CardHeader
-          title="Mi Perfil"
-          subheader="Gestiona tu información personal"
-          sx={{
-            bgcolor: 'primary.main',
-            color: 'white',
-            textAlign: 'center',
-            py: 3, // Aumentado el padding vertical del header
-            '& .MuiCardHeader-subheader': {
-              color: 'white',
-            },
-          }}
-        />
-        <CardContent sx={{ mt: 4 }}> {/* Añadido margen superior */}
-          <Box sx={{ mb: 6, display: 'flex', justifyContent: 'center' }}> {/* Aumentado el margen inferior */}
-            <Box
-              sx={{
-                width: 120, // Aumentado el tamaño
-                height: 120, // Aumentado el tamaño
+    <Container className="py-5">
+      <Card>
+        <Card.Header className="bg-primary text-white text-center py-4">
+          <h2>Mi Perfil</h2>
+          <p>Gestiona tu información personal</p>
+        </Card.Header>
+        <Card.Body className="mt-4">
+          <div className="text-center mb-5">
+            <div
+              style={{
+                width: 120,
+                height: 120,
                 borderRadius: '50%',
-                bgcolor: 'primary.main',
+                backgroundColor: '#007bff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'white',
-                fontSize: '2.5rem', // Aumentado el tamaño de la letra
+                fontSize: '2.5rem',
                 fontWeight: 'bold',
-                mb: 2, // Añadido margen inferior
+                margin: '0 auto',
               }}
             >
               {userData.name ? userData.name.charAt(0).toUpperCase() : ''}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={4}> {/* Aumentado el espaciado entre elementos */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Nombre"
-                  name="name"
-                  value={userData.name}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.name && Boolean(errors.name)}
-                  helperText={touched.name && errors.name}
-                  sx={{ mb: 2 }} // Añadido margen inferior
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Correo electrónico"
-                  name="email"
-                  type="email"
-                  value={userData.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={touched.email && errors.email}
-                  sx={{ mb: 2 }} // Añadido margen inferior
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Contraseña"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={handlePasswordChange}
-                  onBlur={handleBlur}
-                  error={touched.password && Boolean(errors.password)}
-                  helperText={touched.password && errors.password}
-                  sx={{ mb: 3 }} // Aumentado margen inferior
-                  InputProps={{
-                    endAdornment: (
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Teléfono"
-                  name="phone"
-                  value={userData.phone}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.phone && Boolean(errors.phone)}
-                  helperText={touched.phone && errors.phone}
-                  sx={{ mb: 4 }} // Aumentado margen inferior
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}> {/* Aumentados márgenes */}
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={isSubmitting || Object.values(errors).some(error => error !== '')}
-                    sx={{ minWidth: 200, py: 1.5 }} // Aumentado el padding vertical del botón
-                  >
-                    {isSubmitting ? (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <CircularProgress size={20} color="inherit" />
-                        <span>Guardando...</span>
-                      </Box>
-                    ) : (
-                      'Guardar Cambios'
-                    )}
-                  </Button>
-                </Box>
-              </Grid>
-            </Grid>
-          </form>
-        </CardContent>
+          <Form onSubmit={handleSubmit}>
+            <Row className="g-4">
+              <Col md={6}>
+                <Form.Group controlId="name">
+                  <Form.Label>Nombre</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={userData.name}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.name && !!errors.name}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.name}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId="email">
+                  <Form.Label>Correo electrónico</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={userData.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.email && !!errors.email}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.email}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col xs={12}>
+                <Form.Group controlId="password">
+                  <Form.Label>Contraseña</Form.Label>
+                  <Form.Control
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.password && !!errors.password}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.password}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col xs={12}>
+                <Form.Group controlId="phone">
+                  <Form.Label>Teléfono</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="phone"
+                    value={userData.phone}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.phone && !!errors.phone}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.phone}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col xs={12} className="text-center mt-4">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isSubmitting || Object.values(errors).some(error => error !== '')}
+                  style={{ minWidth: 200, padding: '10px 0' }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar Cambios'
+                  )}
+                </Button>
+              </Col>
+            </Row>
+          </Form>
+        </Card.Body>
       </Card>
     </Container>
   );
