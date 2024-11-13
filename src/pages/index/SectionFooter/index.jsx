@@ -45,29 +45,7 @@ const SectionFooter = () => {
                     </div>
                 </div>
             </div>
-            <div className="contact-form-container">
-                <div className="form-footer">
-                    <h4 className="text-center description-footer">
-                        Nos encantaría saber acerca de su experiencia. Por favor, siéntase libre de contactar a los administradores con cualquier pregunta o solicitud.
-                    </h4>
-                </div>
-                <form className="contact-form">
-                    <div className="row w-100">
-                        <div className="col-sm-6">
-                            <label htmlFor="email">Correo Electrónico</label>
-                            <input type="email" id="email" name="email" placeholder="Tu correo electrónico" required />
-                        </div>
-                        <div className="col-sm-6">
-                            <label htmlFor="subject">Asunto</label>
-                            <input type="text" id="subject" name="subject" placeholder="Asunto de tu mensaje" required />
-                        </div>
-                    </div>
-                    <label htmlFor="message">Mensaje</label>
-                    <textarea id="message" name="message" rows="4" placeholder="Escribe tu mensaje aquí..." required></textarea>
-
-                    <button type="submit" className="submit-button">Enviar Mensaje</button>
-                </form>
-            </div>
+          
         </>
     )
 }

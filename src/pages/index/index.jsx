@@ -54,6 +54,7 @@ const Index = () => {
                 <div className='w-100'>
                     <ProductSection />
                 </div>
+                
             </section>
             <div ref={contactRef}>
                 <SectionFooter />
