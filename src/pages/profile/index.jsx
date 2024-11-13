@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Button, CircularProgress, Input, IconButton, Card, CardHeader, CardContent, Typography, Alert, AlertTitle } from '@mui/material';  // Importa Alert y AlertTitle aquí
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import axios from 'axios'; // Asegúrate de importar axios
-import bcrypt from 'bcryptjs'; // Asegúrate de importar bcrypt
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { Box, Container, Grid } from '@mui/material';
 
 export default function EnhancedProfileEditor() {
   const url = 'http://localhost:1056/api/users';
@@ -56,8 +64,9 @@ export default function EnhancedProfileEditor() {
   const fetchUserData = async (userId) => {
     setLoading(true);
     try {
-      const response = await axios.get(`${url}/${userId}`);
-      setUserData(response.data);
+      const response = await fetch(`${url}/${userId}`);
+      const data = await response.json();
+      setUserData(data);
       setError('');
     } catch (err) {
       setError('Error al cargar los datos del perfil');
@@ -95,9 +104,7 @@ export default function EnhancedProfileEditor() {
     try {
       const dataToUpdate = { ...userData };
       if (password) {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        dataToUpdate.password = hashedPassword;
+        dataToUpdate.password = password;
       }
 
       const emailExists = await checkExistingEmail(dataToUpdate.email.trim());
@@ -117,8 +124,16 @@ export default function EnhancedProfileEditor() {
         return;
       }
 
-      const response = await axios.put(`${url}/${userData.id}`, dataToUpdate);
-      if (response.status === 200) {
+      const response = await fetch(`${url}/${userData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+        },
+        body: JSON.stringify(dataToUpdate),
+      });
+
+      if (response.ok) {
         showAlert('¡Éxito!', 'Perfil actualizado exitosamente', 'success');
         if (password) {
           setPassword('');
@@ -134,9 +149,9 @@ export default function EnhancedProfileEditor() {
     }
   };
 
-  const showAlert = (title, message, type) => {
+  const showAlert = (title, message, severity) => {
     return (
-      <Alert variant={type === 'error' ? 'destructive' : type}>
+      <Alert severity={severity}>
         <AlertTitle>{title}</AlertTitle>
         {message}
       </Alert>
@@ -145,8 +160,9 @@ export default function EnhancedProfileEditor() {
 
   const checkExistingEmail = async (email) => {
     try {
-      const response = await axios.get(`${url}/check-email/${email}`);
-      return response.data.exists;
+      const response = await fetch(`${url}/check-email/${email}`);
+      const data = await response.json();
+      return data.exists;
     } catch (error) {
       console.error('Error checking email:', error);
       return false;
@@ -155,8 +171,9 @@ export default function EnhancedProfileEditor() {
 
   const checkExistingPhone = async (phone) => {
     try {
-      const response = await axios.get(`${url}/check-phone/${phone}`);
-      return response.data.exists;
+      const response = await fetch(`${url}/check-phone/${phone}`);
+      const data = await response.json();
+      return data.exists;
     } catch (error) {
       console.error('Error checking phone:', error);
       return false;
@@ -213,123 +230,141 @@ export default function EnhancedProfileEditor() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <CircularProgress className="w-8 h-8 animate-spin" />
-      </div>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (!isLoggedIn) {
     return (
-      <div className="text-center mt-8">
-        <h2 className="text-2xl font-bold mb-4">Acceso Denegado</h2>
+      <Box textAlign="center" mt={8}>
+        <h2>Acceso Denegado</h2>
         <p>{error}</p>
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
-      <Card className="bg-white shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-t-lg">
-          <Typography className="text-2xl font-bold text-center">Mi Perfil</Typography>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="flex justify-center items-center p-4 bg-white shadow-md">
-            <div className="flex items-center space-x-4">
-              {/* Avatar con iniciales, estilo círculo */}
-              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                <span>{userData.name ? userData.name.charAt(0).toUpperCase() : ''}</span>
-              </div>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Card elevation={3}>
+        <CardHeader
+          title="Mi Perfil"
+          subheader="Gestiona tu información personal"
+          sx={{
+            bgcolor: 'primary.main',
+            color: 'white',
+            textAlign: 'center',
+            '& .MuiCardHeader-subheader': {
+              color: 'white',
+            },
+          }}
+        />
+        <CardContent>
+          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+            <Box
+              sx={{
+                width: 100,
+                height: 100,
+                borderRadius: '50%',
+                bgcolor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '2rem',
+                fontWeight: 'bold',
+              }}
+            >
+              {userData.name ? userData.name.charAt(0).toUpperCase() : ''}
+            </Box>
+          </Box>
 
-              <div>
-                <h2 className="text-lg font-semibold">{userData.name}</h2>
-                <p className="text-sm text-gray-500">{userData.role}</p> {/* Esto es opcional para mostrar el rol */}
-              </div>
-            </div>
-          </div>
-
-
-
-
-
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Nombre</label>
-                <Input
-                  type="text"
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Nombre"
                   name="name"
                   value={userData.name}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  fullWidth
-                  error={touched.name && errors.name !== ''}
+                  error={touched.name && Boolean(errors.name)}
                   helperText={touched.name && errors.name}
                 />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Correo electrónico</label>
-                <Input
-                  type="email"
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Correo electrónico"
                   name="email"
+                  type="email"
                   value={userData.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  fullWidth
-                  error={touched.email && errors.email !== ''}
+                  error={touched.email && Boolean(errors.email)}
                   helperText={touched.email && errors.email}
                 />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Contraseña</label>
-              <div className="flex items-center">
-                <Input
-                  type={showPassword ? 'text' : 'password'}
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Contraseña"
                   name="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={handlePasswordChange}
                   onBlur={handleBlur}
-                  fullWidth
-                  error={touched.password && errors.password !== ''}
+                  error={touched.password && Boolean(errors.password)}
                   helperText={touched.password && errors.password}
+                  InputProps={{
+                    endAdornment: (
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    ),
+                  }}
                 />
-                <IconButton onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </IconButton>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Teléfono</label>
-              <Input
-                type="text"
-                name="phone"
-                value={userData.phone}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                fullWidth
-                error={touched.phone && errors.phone !== ''}
-                helperText={touched.phone && errors.phone}
-              />
-            </div>
-
-            <div className="text-center">
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={isSubmitting || Object.values(errors).some(error => error !== '')}
-              >
-                {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
-              </Button>
-            </div>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Teléfono"
+                  name="phone"
+                  value={userData.phone}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.phone && Boolean(errors.phone)}
+                  helperText={touched.phone && errors.phone}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={isSubmitting || Object.values(errors).some(error => error !== '')}
+                    sx={{ minWidth: 200 }}
+                  >
+                    {isSubmitting ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CircularProgress size={20} color="inherit" />
+                        <span>Guardando...</span>
+                      </Box>
+                    ) : (
+                      'Guardar Cambios'
+                    )}
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
           </form>
         </CardContent>
       </Card>
-    </div>
+    </Container>
   );
 }
