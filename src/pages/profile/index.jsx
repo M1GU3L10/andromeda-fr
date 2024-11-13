@@ -244,9 +244,9 @@ export default function EnhancedProfileEditor() {
       </Box>
     );
   }
-
+ 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: 8 }}> {/* Aumentado el padding vertical */}
       <Card elevation={3}>
         <CardHeader
           title="Mi Perfil"
@@ -255,25 +255,27 @@ export default function EnhancedProfileEditor() {
             bgcolor: 'primary.main',
             color: 'white',
             textAlign: 'center',
+            py: 3, // Aumentado el padding vertical del header
             '& .MuiCardHeader-subheader': {
               color: 'white',
             },
           }}
         />
-        <CardContent>
-          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+        <CardContent sx={{ mt: 4 }}> {/* Añadido margen superior */}
+          <Box sx={{ mb: 6, display: 'flex', justifyContent: 'center' }}> {/* Aumentado el margen inferior */}
             <Box
               sx={{
-                width: 100,
-                height: 100,
+                width: 120, // Aumentado el tamaño
+                height: 120, // Aumentado el tamaño
                 borderRadius: '50%',
                 bgcolor: 'primary.main',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'white',
-                fontSize: '2rem',
+                fontSize: '2.5rem', // Aumentado el tamaño de la letra
                 fontWeight: 'bold',
+                mb: 2, // Añadido margen inferior
               }}
             >
               {userData.name ? userData.name.charAt(0).toUpperCase() : ''}
@@ -281,7 +283,7 @@ export default function EnhancedProfileEditor() {
           </Box>
 
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
+            <Grid container spacing={4}> {/* Aumentado el espaciado entre elementos */}
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
@@ -292,6 +294,7 @@ export default function EnhancedProfileEditor() {
                   onBlur={handleBlur}
                   error={touched.name && Boolean(errors.name)}
                   helperText={touched.name && errors.name}
+                  sx={{ mb: 2 }} // Añadido margen inferior
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -305,6 +308,7 @@ export default function EnhancedProfileEditor() {
                   onBlur={handleBlur}
                   error={touched.email && Boolean(errors.email)}
                   helperText={touched.email && errors.email}
+                  sx={{ mb: 2 }} // Añadido margen inferior
                 />
               </Grid>
               <Grid item xs={12}>
@@ -318,6 +322,7 @@ export default function EnhancedProfileEditor() {
                   onBlur={handleBlur}
                   error={touched.password && Boolean(errors.password)}
                   helperText={touched.password && errors.password}
+                  sx={{ mb: 3 }} // Aumentado margen inferior
                   InputProps={{
                     endAdornment: (
                       <IconButton
@@ -340,15 +345,16 @@ export default function EnhancedProfileEditor() {
                   onBlur={handleBlur}
                   error={touched.phone && Boolean(errors.phone)}
                   helperText={touched.phone && errors.phone}
+                  sx={{ mb: 4 }} // Aumentado margen inferior
                 />
               </Grid>
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}> {/* Aumentados márgenes */}
                   <Button
                     type="submit"
                     variant="contained"
                     disabled={isSubmitting || Object.values(errors).some(error => error !== '')}
-                    sx={{ minWidth: 200 }}
+                    sx={{ minWidth: 200, py: 1.5 }} // Aumentado el padding vertical del botón
                   >
                     {isSubmitting ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
