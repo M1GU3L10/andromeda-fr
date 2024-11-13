@@ -42,6 +42,22 @@ const Dashboard = () => {
     const [appointments, setAppointments] = useState(appointmentsData);
     const [shopping, setShopping] = useState([]);
 
+    // Group and sum appointments by status
+    const groupedAppointments = [
+        {
+            status: 'Completada',
+            value: appointments.filter(app => app.status === 'completada').reduce((acc, app) => acc + app.value, 0),
+        },
+        {
+            status: 'Cancelada',
+            value: appointments.filter(app => app.status === 'cancelada').reduce((acc, app) => acc + app.value, 0),
+        },
+        {
+            status: 'Pendiente',
+            value: appointments.filter(app => app.status === 'pendiente').reduce((acc, app) => acc + app.value, 0),
+        }
+    ];
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -163,21 +179,32 @@ const Dashboard = () => {
                                     <div className="chart-container">
                                         <PieChart width={500} height={300}>
                                             <Pie
-                                                data={appointments}
+                                                data={groupedAppointments}
                                                 dataKey="value"
                                                 nameKey="status"
                                                 cx="50%"
                                                 cy="50%"
                                                 outerRadius={120}
-                                                label
+                                                label={({ name }) => (
+                                                    <text
+                                                        x="50%"
+                                                        y="50%"
+                                                        textAnchor="middle"
+                                                        dominantBaseline="middle"
+                                                        style={{ fill: 'black', fontSize: '14px', fontWeight: 'bold' }}
+                                                    >
+                                                        {name}
+                                                    </text>
+                                                )}
                                             >
-                                                <Cell key="completada" fill="#0000ff" />
-                                                <Cell key="cancelada" fill="#ff0000" />
-                                                <Cell key="pendiente" fill="#ffff00" />
+                                                <Cell key="completada" fill="#00ff00" />  {/* Verde para Citas Completadas */}
+                                                <Cell key="cancelada" fill="#ff0000" />  {/* Rojo para Citas Canceladas */}
+                                                <Cell key="pendiente" fill="#ffff00" />  {/* Amarillo para Citas Pendientes */}
                                             </Pie>
                                             <Tooltip />
                                             <Legend />
                                         </PieChart>
+
                                     </div>
                                 </div>
                             </div>
@@ -201,7 +228,6 @@ const Dashboard = () => {
                                 </div>
                             </div>
                         </div>
-
 
                     </div>
                 </div>
