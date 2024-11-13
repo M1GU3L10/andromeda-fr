@@ -189,7 +189,8 @@ const Dashboard = () => {
                                             >
                                                 <Cell key="completada" fill="#006400" />  {/* Verde Oscuro para Citas Completadas */}
 
-                                                <Cell key="cancelada" fill="#00008b" />  {/* Azul Oscuro para Citas Canceladas */}
+                                                <Cell key="cancelada" fill="#FF0000" />  {/* Rojo para Citas Canceladas */}
+
 
                                                 <Cell key="pendiente" fill="#808080" />  
                                             </Pie>
