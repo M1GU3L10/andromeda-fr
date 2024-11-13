@@ -43,19 +43,7 @@ const Sidebar = () => {
     <>
       <div className="sidebar">
         <ul>
-        {
-            hasPermission('Perfil') && (
-              <li>
-                <Link to="/profile">
-                  <Button className={`w-100 ${activeTab === 0 ? 'active' : ''}`} onClick={() => isOpensubMenu(0)}>
-                  <span className='icon'><BsFillPersonVcardFill /></span>
-                    <span className='sidebar-option'>Mi perfil</span>
-                    <span className='arrow'></span>
-                  </Button>
-                </Link>
-              </li>
-            )
-          }
+ 
           {
             hasPermission('Dashboard') && (
               <li>
@@ -72,9 +60,9 @@ const Sidebar = () => {
           {
             hasPermission('Dashboard') && (
               <li>
-              <Link to="/">
+              <Link to="/profile">
                 <Button className={`w-100 ${activeTab === 1 ? 'active' : ''}`} onClick={() => isOpensubMenu(1)}>
-                  <span className='icon'><FaCircleUser /></span>
+                  <span className='icon'><BsFillPersonVcardFill /></span>
                   <span className='sidebar-option'>Mi perfil</span>
                   <span className='arrow'></span>
                 </Button>
