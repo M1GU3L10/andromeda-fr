@@ -70,7 +70,6 @@ const EventComponent = ({ info, setAppointmentId,props }) => {
         console.log("Eliminar evento:", info.event);
         handleClose();
     };
-
     return (
         <div
             className='programming-content'
