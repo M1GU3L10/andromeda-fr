@@ -211,7 +211,7 @@ export default function Component() {
       confirmButtonText: 'Sí, cancelar',
       cancelButtonText: 'No, conservar',
     });
-  
+
     if (result.isConfirmed) {
       try {
         const response = await fetch(`http://localhost:1056/api/orders/${orderId}`, {
@@ -221,7 +221,7 @@ export default function Component() {
           },
           body: JSON.stringify({ status: 'Cancelada' }),
         });
-  
+
         if (response.ok) {
           toast.success('Pedido cancelado exitosamente');
           fetchOrders();
@@ -273,13 +273,22 @@ export default function Component() {
                 >
                   {userEmail}
                 </Button>
-                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-                  {userRole === '1' || userRole === '2' ? (
-                    <MenuItem onClick={handledashboard}><GrUserAdmin /> Administrar</MenuItem>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
+                  {userRole == 1 || userRole == 2 ? (
+                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
+                      <GrUserAdmin /> Administrar
+                    </MenuItem>
                   ) : (
-                    <MenuItem><FaShoppingBag /> Carrito</MenuItem>
+                    <MenuItem></MenuItem>
                   )}
-                  <MenuItem onClick={handleLogout}><GiExitDoor /> Cerrar Sesión</MenuItem>
+                  <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
+                    <GrUser /> Mi perfil
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
+                    <GiExitDoor /> Cerrar Sesión
+                  </MenuItem>
+                  {/* Usamos MenuItem para mantener el mismo estilo */}
+
                 </Menu>
               </div>
             ) : (

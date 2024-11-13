@@ -135,15 +135,16 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                                         <GrUserAdmin /> Administrar
                                     </MenuItem>
                                 ) : (
-                                    <MenuItem>Carrito</MenuItem>
+                                    <MenuItem></MenuItem>
                                 )}
+                                  <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
+                                    <GrUser /> Mi perfil
+                                </MenuItem>
                                 <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
                                     <GiExitDoor /> Cerrar Sesión
                                 </MenuItem>
                                 {/* Usamos MenuItem para mantener el mismo estilo */}
-                                <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
-                                    <GrUser /> Mi perfil
-                                </MenuItem>
+                              
                             </Menu>
 
 

@@ -5,6 +5,7 @@ import logo from '../../../assets/images/logo-light.png';
 import { Avatar, Menu, MenuItem, Button } from '@mui/material';
 import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
+import { GrUser } from 'react-icons/gr';
 import { GiExitDoor } from "react-icons/gi";
 
 const Header = ({ scrollToServices, scrollToContact }) => {
@@ -129,13 +130,20 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                             </Button>
                             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
                                 {userRole == 1 || userRole == 2 ? (
-                                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'><GrUserAdmin />Administrar</MenuItem>
+                                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
+                                        <GrUserAdmin /> Administrar
+                                    </MenuItem>
                                 ) : (
-                                    <MenuItem>Carrito</MenuItem>
+                                    <MenuItem></MenuItem>
                                 )}
-                                <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
-                                <Link to='/profileview' onClick={() => setIsNavOpen(false)}>Mi perfil</Link>
-                                
+                                  <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
+                                    <GrUser /> Mi perfil
+                                </MenuItem>
+                                <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
+                                    <GiExitDoor /> Cerrar Sesión
+                                </MenuItem>
+                                {/* Usamos MenuItem para mantener el mismo estilo */}
+                              
                             </Menu>
                         </div>
                     ) : (
