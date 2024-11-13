@@ -134,6 +134,8 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                                     <MenuItem>Carrito</MenuItem>
                                 )}
                                 <MenuItem onClick={handleLogout} className='menu-item-landingPage'><GiExitDoor />Cerrar Sesión</MenuItem>
+                                <Link to='/profileview' onClick={() => setIsNavOpen(false)}>Mi perfil</Link>
+                                
                             </Menu>
                         </div>
                     ) : (
