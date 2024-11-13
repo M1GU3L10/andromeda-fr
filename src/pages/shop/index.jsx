@@ -39,6 +39,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { ShoppingCart, Search } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ReactPaginate from 'react-paginate';
+import { Scissors } from 'lucide-react';
 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -224,7 +225,7 @@ export default function Component() {
         });
         return prevCart;
       }
-      
+
       return {
         ...prevCart,
         [productId]: currentQuantity + 1
@@ -249,7 +250,7 @@ export default function Component() {
         });
         return newCart;
       }
-      
+
       return {
         ...prevCart,
         [productId]: currentQuantity - 1
@@ -266,33 +267,33 @@ export default function Component() {
       Swal.fire('Error', 'Debes iniciar sesión para realizar un pedido.', 'error');
       return;
     }
-  
+
     if (Object.keys(cart).length === 0) {
       Swal.fire('Error', 'Debes seleccionar al menos un producto antes de realizar el pedido.', 'error');
       return;
     }
-  
+
     const orderDetails = Object.entries(cart).map(([productId, quantity]) => ({
       quantity: quantity,
       id_producto: parseInt(productId)
     }));
-  
+
     const invalidProducts = orderDetails.filter(detail => {
       const product = products.find(p => p.id === detail.id_producto);
       return !product || product.Stock < detail.quantity || detail.quantity <= 0;
     });
-  
+
     if (invalidProducts.length > 0) {
       Swal.fire('Error', 'Hay productos en el carrito que no cumplen con los requisitos. Asegúrate de que la cantidad sea mayor a 0 y que haya suficiente stock.', 'error');
       return;
     }
-  
+
     const total = orderDetails.reduce((acc, detail) => {
       const product = products.find(p => p.id === detail.id_producto);
       return acc + (product.Price * detail.quantity);
     }, 0);
     const formattedTotal = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(total);
-  
+
     const confirmation = await Swal.fire({
       title: 'Confirmar Pedido',
       html: `
@@ -304,25 +305,25 @@ export default function Component() {
       confirmButtonText: 'Sí, confirmar',
       cancelButtonText: 'Cancelar'
     });
-  
+
     if (!confirmation.isConfirmed) {
       return;
     }
-  
+
     let orderCreated = false;
     let orderData;
     let expirationDateString;
-  
+
     try {
       const now = new Date();
       const orderDateTime = now.toISOString().split('T');
       const orderDate = orderDateTime[0];
       const orderTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  
+
       const expirationDate = new Date(now);
       expirationDate.setDate(expirationDate.getDate() + 3);
       expirationDateString = expirationDate.toLocaleDateString('es-ES');
-  
+
       orderData = {
         Billnumber: `ORD${Date.now()}`,
         OrderDate: orderDate,
@@ -332,9 +333,9 @@ export default function Component() {
         id_usuario: userId,
         orderDetails: orderDetails
       };
-  
+
       const response = await axios.post('http://localhost:1056/api/orders', orderData);
-  
+
       if (response.status === 201) {
         orderCreated = true;
         clearCart();
@@ -362,7 +363,7 @@ export default function Component() {
       }
     }
   };
-  
+
   const refreshComponent = () => {
     setCart({});
     fetchProducts();
@@ -376,7 +377,7 @@ export default function Component() {
     const filtered = products.filter(product =>
       (selectedCategory === '' || product.Category_Id === parseInt(selectedCategory)) &&
       (product.Product_Name.toLowerCase().includes(searchTerm) ||
-       (product.Description && product.Description.toLowerCase().includes(searchTerm)))
+        (product.Description && product.Description.toLowerCase().includes(searchTerm)))
     );
     setFilteredProducts(filtered);
   };
@@ -468,7 +469,7 @@ export default function Component() {
               userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
             }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-            
+
             <IconButton onClick={() => setDrawerOpen(true)}>
               <Badge badgeContent={getTotalItems()} color="primary">
                 <AddShoppingCartIcon />
@@ -531,28 +532,39 @@ export default function Component() {
               type="text"
               placeholder="Buscar productos"
               value={searchTerm}
-              onChange={handleSearchChange} // Updated onChange handler
+              onChange={handleSearchChange}
             />
           </div>
           <Button
             onClick={handleCategoryClick}
-            variant="outlined"
+            className="bg-amber-700 hover:bg-amber-800 text-black font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center space-x-2"
           >
-            Categorías
+            <Scissors className="w-5 h-5 text-black" />
+            <span>Categorías</span>
           </Button>
+
           <Menu
             anchorEl={categoryMenuAnchorEl}
             open={Boolean(categoryMenuAnchorEl)}
             onClose={handleCategoryClose}
+            PaperProps={{
+              style: {
+                backgroundColor: '#0000', // Fondo gris claro para el menú
+                color: 'black',             // Texto negro para contraste
+              },
+            }}
+
+
           >
-            <MenuItem onClick={() => handleCategorySelect('')}>Todas las categorías</MenuItem>
+            <MenuItem onClick={() => handleCategorySelect('')} className="hover:bg-amber-600">Todas las categorías</MenuItem>
             {categories.map((category) => (
-              <MenuItem key={category.id} onClick={() => handleCategorySelect(category.id.toString())}>
+              <MenuItem key={category.id} onClick={() => handleCategorySelect(category.id.toString())} className="hover:bg-amber-600">
                 {category.name}
               </MenuItem>
             ))}
           </Menu>
         </div>
+
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
