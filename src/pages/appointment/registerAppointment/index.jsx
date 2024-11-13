@@ -14,6 +14,8 @@ import { Form, Col, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { BsCalendar2DateFill } from 'react-icons/bs';
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -52,6 +54,8 @@ export default function Component() {
   const [errors, setErrors] = useState({});
   const urlServices = 'http://localhost:1056/api/services';
   const urlUsers = 'http://localhost:1056/api/users';
+  const [subtotalProducts, setSubtotalProducts] = useState(0);
+  const [subtotalServices, setSubtotalServices] = useState(0);
 
   useEffect(() => {
     getUsers();
@@ -99,18 +103,22 @@ export default function Component() {
         show_alerta(`No hay suficiente stock para ${product.Product_Name}`, 'error');
         return;
       }
-      setSelectedProducts(selectedProducts.map(p =>
+      const updatedProducts = selectedProducts.map(p =>
         p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
-      ));
+      );
+      setSelectedProducts(updatedProducts);
+      calculateTotals(updatedProducts, saleInfo.saleDetails);
     } else {
-      setSelectedProducts([...selectedProducts, { ...product, quantity: 1 }]);
+      const updatedProducts = [...selectedProducts, { ...product, quantity: 1 }];
+      setSelectedProducts(updatedProducts);
+      calculateTotals(updatedProducts, saleInfo.saleDetails);
     }
-    updateSaleDetails();
   };
 
   const removeProduct = (productId) => {
-    setSelectedProducts(selectedProducts.filter(p => p.id !== productId));
-    updateSaleDetails();
+    const updatedProducts = selectedProducts.filter(p => p.id !== productId);
+    setSelectedProducts(updatedProducts);
+    calculateTotals(updatedProducts, saleInfo.saleDetails);
   };
 
   const updateQuantity = (productId, change) => {
@@ -127,11 +135,12 @@ export default function Component() {
       return p;
     });
     setSelectedProducts(updatedProducts);
-    updateSaleDetails();
+    calculateTotals(updatedProducts, saleInfo.saleDetails);
   };
 
-  const updateSaleDetails = () => {
-    const details = selectedProducts.map(product => ({
+  const calculateTotals = (currentProducts, currentSaleDetails) => {
+    // Calculate products subtotal
+    const productDetails = currentProducts.map(product => ({
       quantity: product.quantity,
       unitPrice: product.Price,
       total_price: product.Price * product.quantity,
@@ -139,10 +148,30 @@ export default function Component() {
       empleadoId: null,
       serviceId: null
     }));
+
+    const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
+
+    // Get service details
+    const serviceDetails = currentSaleDetails.filter(detail =>
+      detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
+    );
+
+    const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
+      if (detail.serviceId) {
+        const service = services.find(s => s.id === parseInt(detail.serviceId));
+        return sum + (service ? service.price : 0);
+      }
+      return sum;
+    }, 0);
+
+    // Update all totals at once
+    setSubtotalProducts(productsSubtotal);
+    setSubtotalServices(servicesSubtotal);
+
     setSaleInfo(prevState => ({
       ...prevState,
-      saleDetails: details,
-      total_price: details.reduce((sum, item) => sum + item.total_price, 0)
+      saleDetails: [...productDetails, ...serviceDetails],
+      total_price: productsSubtotal + servicesSubtotal
     }));
   };
 
@@ -236,61 +265,156 @@ export default function Component() {
   };
 
   const handleServiceAdd = () => {
-    setSaleInfo(prevState => ({
-      ...prevState,
-      saleDetails: [
-        ...prevState.saleDetails,
-        { quantity: 1, unitPrice: 0, total_price: 0, id_producto: null, empleadoId: null, serviceId: null }
-      ]
-    }));
+    setSaleInfo(prevState => {
+      const serviceDetails = prevState.saleDetails.filter(detail =>
+        detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
+      );
+
+      const newServiceDetail = {
+        quantity: 1,
+        unitPrice: 0,
+        total_price: 0,
+        id_producto: null,
+        empleadoId: null,
+        serviceId: null
+      };
+
+      const updatedServiceDetails = [...serviceDetails, newServiceDetail];
+
+      // Combine with product details
+      const productDetails = selectedProducts.map(product => ({
+        quantity: product.quantity,
+        unitPrice: product.Price,
+        total_price: product.Price * product.quantity,
+        id_producto: product.id,
+        empleadoId: null,
+        serviceId: null
+      }));
+
+      return {
+        ...prevState,
+        saleDetails: [...productDetails, ...updatedServiceDetails]
+      };
+    });
   };
 
   const handleServiceChange = (index, field, value) => {
     setSaleInfo(prevState => {
-      const newDetails = [...prevState.saleDetails];
-      newDetails[index] = { ...newDetails[index], [field]: value };
-      if (field === 'serviceId') {
-        const service = services.find(s => s.id === parseInt(value));
-        if (service) {
-          newDetails[index].unitPrice = service.price;
-          newDetails[index].total_price = service.price * newDetails[index].quantity;
+      const serviceDetails = prevState.saleDetails.filter(detail =>
+        detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
+      );
+
+      if (serviceDetails[index]) {
+        serviceDetails[index] = { ...serviceDetails[index], [field]: value };
+
+        if (field === 'serviceId') {
+          const service = services.find(s => s.id === parseInt(value));
+          if (service) {
+            serviceDetails[index].unitPrice = service.price;
+            serviceDetails[index].total_price = service.price;
+            serviceDetails[index].quantity = 1;
+          }
         }
       }
+
+      const productDetails = selectedProducts.map(product => ({
+        quantity: product.quantity,
+        unitPrice: product.Price,
+        total_price: product.Price * product.quantity,
+        id_producto: product.id,
+        empleadoId: null,
+        serviceId: null
+      }));
+
+      const allDetails = [...productDetails, ...serviceDetails];
+
+      // Calculate subtotals
+      const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
+      const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
+        if (detail.serviceId) {
+          const service = services.find(s => s.id === parseInt(detail.serviceId));
+          return sum + (service ? service.price : 0);
+        }
+        return sum;
+      }, 0);
+
+      setSubtotalProducts(productsSubtotal);
+      setSubtotalServices(servicesSubtotal);
+
       return {
         ...prevState,
-        saleDetails: newDetails,
-        total_price: newDetails.reduce((sum, item) => sum + item.total_price, 0)
+        saleDetails: allDetails,
+        total_price: productsSubtotal + servicesSubtotal
       };
     });
   };
 
   const handleServiceRemove = (index) => {
-    setSaleInfo(prevState => ({
-      ...prevState,
-      saleDetails: prevState.saleDetails.filter((_, i) => i !== index),
-      total_price: prevState.saleDetails.reduce((sum, item, i) => i !== index ? sum + item.total_price : sum, 0)
-    }));
+    setSaleInfo(prevState => {
+      const serviceDetails = prevState.saleDetails.filter(detail =>
+        detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
+      );
+
+      const updatedServiceDetails = serviceDetails.filter((_, i) => i !== index);
+
+      // Combine with product details
+      const productDetails = selectedProducts.map(product => ({
+        quantity: product.quantity,
+        unitPrice: product.Price,
+        total_price: product.Price * product.quantity,
+        id_producto: product.id,
+        empleadoId: null,
+        serviceId: null
+      }));
+
+      const allDetails = [...productDetails, ...updatedServiceDetails];
+      const totalPrice = allDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
+
+      return {
+        ...prevState,
+        saleDetails: allDetails,
+        total_price: totalPrice
+      };
+    });
   };
 
   return (
     <div className="right-content w-100">
       <div className="row d-flex align-items-center w-100">
-        <div className="spacing d-flex align-items-center">
+        {/* Breadcrumbs section remains the same */}
+        <div className='spacing d-flex align-items-center'>
           <div className='col-sm-5'>
-            <span className='Title'>Registrar Ventas</span>
+            <span className='Title'>Registrar Cita</span>
           </div>
           <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
             <Breadcrumbs aria-label="breadcrumb">
-              <StyledBreadcrumb component="a" href="#" label="Home" icon={<HomeIcon fontSize="small" />} />
-              <StyledBreadcrumb component="a" href="#" label="Salidas" icon={<FaMoneyBillWave fontSize="small" />} />
-              <StyledBreadcrumb component="a" href="#" label="Ventas" icon={<FcSalesPerformance fontSize="small" />} />
+              <StyledBreadcrumb
+                component="a"
+                href="#"
+                label="Home"
+                icon={<HomeIcon fontSize="small" />}
+              />
+              <StyledBreadcrumb
+                component="a"
+                href="#"
+                label="Salidas"
+                icon={<FaMoneyBillWave fontSize="small" />}
+              />
+              <StyledBreadcrumb
+                component="a"
+                href="#"
+                label="Citas"
+                icon={<BsCalendar2DateFill fontSize="small" />}
+              />
             </Breadcrumbs>
           </div>
         </div>
+
         <div className='card border-0 p-3 d-flex colorTransparent'>
           <div className='row'>
-            <div className='col-sm-7'>
-              <div className='card-detail shadow border-0'>
+            {/* Products Card */}
+            <div className='col-sm-6'>
+              <div className='card-detail shadow border-0 mb-4'>
                 <div className='row p-3'>
                   <div className='bcg-w col-sm-7 d-flex align-items-center'>
                     <div className="position-relative d-flex align-items-center">
@@ -309,6 +433,7 @@ export default function Component() {
                       />
                     </div>
                   </div>
+                  {/* Product search results */}
                   <div className='d-flex aline-items-center justify-content-end'>
                     <div className="product-search-results">
                       {searchTerm && filteredProducts.map(product => (
@@ -323,8 +448,9 @@ export default function Component() {
                     </div>
                   </div>
                 </div>
+                {/* Products table */}
                 <div className='table-responsive mt-3 p-3'>
-                  <table className='table table-bordered table-hover v-align table-striped '>
+                  <table className='table table-bordered table-hover v-align table-striped'>
                     <thead className='table-light'>
                       <tr>
                         <th>Producto</th>
@@ -355,12 +481,19 @@ export default function Component() {
                     </tbody>
                   </table>
                 </div>
-                <div className='bcg-w col-sm-7 d-flex align-items-center'>
+                <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
+                  <span className='valor'>Subtotal Productos: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</span>
+                </div>
+              </div>
+
+              {/* Services Card */}
+              <div className='card-detail shadow border-0 mb-4'>
+                <div className='bcg-w col-sm-12 p-3'>
                   <div className="position-relative d-flex align-items-center">
-                    <span className='Tittle'>¿Deseas agregar un servicio?</span>
+                    <span className='Tittle'>Servicios</span>
                   </div>
                 </div>
-                <div className='table-responsive mt-3 w-80 p-3'>
+                <div className='table-responsive p-3'>
                   <table className='table table-bordered table-hover v-align table-striped'>
                     <thead className='table-light'>
                       <tr>
@@ -403,8 +536,7 @@ export default function Component() {
                       ))}
                     </tbody>
                   </table>
-
-                  <div className="d-flex justify-content-start mt-4 mb-3 px-3">
+                  <div className="d-flex justify-content-start mt-2 px-3">
                     <Button
                       onClick={handleServiceAdd}
                       style={{
@@ -424,19 +556,20 @@ export default function Component() {
                   </div>
                 </div>
                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                  <span className='Monto'>Total:</span>
-                  <span className='valor'>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                  <span className='valor'>Subtotal Servicios: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}</span>
                 </div>
               </div>
             </div>
-            <div className='col-sm-5'>
-              <div className='card-detail shadow border-0'>
+
+            {/* Sale Info Card */}
+            <div className='col-sm-6'>
+              <div className='card-detail shadow border-0 mb-4'>
                 <div className="cont-title w-100">
                   <span className='Title'>Info de venta</span>
                 </div>
                 <div className='d-flex align-items-center'>
                   <div className="d-flex align-items-center w-100 p-4">
-                    <Form className='form' onSubmit={handleSubmit}>
+                    <Form className='form w-100'>
                       <Form.Group as={Row} className="mb-3">
                         <Col sm="6">
                           <Form.Label className='required'># Factura</Form.Label>
@@ -478,6 +611,19 @@ export default function Component() {
                           {errors.id_usuario}
                         </Form.Control.Feedback>
                       </Form.Group>
+                    </Form>
+                  </div>
+                </div>
+              </div>
+
+              {/* Appointment Time Card */}
+              <div className='card-detail shadow border-0 mb-4'>
+                <div className="cont-title w-100">
+                  <span className='Title'>Horario de cita</span>
+                </div>
+                <div className='d-flex align-items-center'>
+                  <div className="d-flex align-items-center w-100 p-4">
+                    <Form className='form w-100'>
                       <Form.Group as={Row} className="mb-3">
                         <Col sm="6">
                           <Form.Label>Hora inicio</Form.Label>
@@ -498,18 +644,42 @@ export default function Component() {
                           />
                         </Col>
                       </Form.Group>
-                      <Form.Group className='d-flex align-items-center justify-content-end'>
-                        <Button variant="secondary" className='btn-red' id='btn-red' href="/Sales">
-                          Cerrar
-                        </Button>
-                        <Button variant="primary" type="submit" className='btn-sucess'>
-                          Guardar
-                        </Button>
-                      </Form.Group>
                     </Form>
                   </div>
                 </div>
               </div>
+              <div className='spacing d-flex align-items-center footer-total'>
+                <div className="row">
+                  <div className="col-sm-6 d-flex align-items-center justify-content-start padding-monto">
+                    <div className='Monto-content'>
+                      <span className='valor'>Total General: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                    </div>
+                  </div>
+                  <div className="col-sm-5 d-flex align-items-center justify-content-end">
+                    <div className='d-flex align-items-center justify-content-end'>
+                      <Button
+                        variant="secondary"
+                        className='btn-red'
+                        id='btn-red'
+                        href="/Sales"
+                        style={{ minWidth: '100px' }}
+                      >
+                        Cerrar
+                      </Button>
+                      <Button
+                        variant="primary"
+                        className='btn-sucess'
+                        onClick={handleSubmit}
+                        style={{ minWidth: '100px' }}
+                      >
+                        Guardar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
             </div>
           </div>
         </div>
