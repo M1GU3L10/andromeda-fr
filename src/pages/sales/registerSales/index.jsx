@@ -175,10 +175,24 @@ export default function Component() {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setSaleInfo(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setSaleInfo(prevState => {
+      // Si el campo que cambia es SaleDate, actualizamos también la fecha de la cita
+      if (name === 'SaleDate') {
+        return {
+          ...prevState,
+          [name]: value,
+          appointmentData: {
+            ...prevState.appointmentData,
+            Date: value // Sincronizamos la fecha de la cita con la fecha de venta
+          }
+        };
+      }
+      // Para otros campos, mantenemos el comportamiento original
+      return {
+        ...prevState,
+        [name]: value
+      };
+    });
     validateField(name, value);
   };
 
