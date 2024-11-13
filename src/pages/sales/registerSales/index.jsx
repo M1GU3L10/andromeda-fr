@@ -52,6 +52,8 @@ export default function Component() {
   const [errors, setErrors] = useState({});
   const urlServices = 'http://localhost:1056/api/services';
   const urlUsers = 'http://localhost:1056/api/users';
+  const [subtotalProducts, setSubtotalProducts] = useState(0);
+  const [subtotalServices, setSubtotalServices] = useState(0);
 
   useEffect(() => {
     getUsers();
@@ -99,18 +101,22 @@ export default function Component() {
         show_alerta(`No hay suficiente stock para ${product.Product_Name}`, 'error');
         return;
       }
-      setSelectedProducts(selectedProducts.map(p =>
+      const updatedProducts = selectedProducts.map(p =>
         p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
-      ));
+      );
+      setSelectedProducts(updatedProducts);
+      calculateTotals(updatedProducts, saleInfo.saleDetails);
     } else {
-      setSelectedProducts([...selectedProducts, { ...product, quantity: 1 }]);
+      const updatedProducts = [...selectedProducts, { ...product, quantity: 1 }];
+      setSelectedProducts(updatedProducts);
+      calculateTotals(updatedProducts, saleInfo.saleDetails);
     }
-    updateSaleDetails();
   };
 
   const removeProduct = (productId) => {
-    setSelectedProducts(selectedProducts.filter(p => p.id !== productId));
-    updateSaleDetails();
+    const updatedProducts = selectedProducts.filter(p => p.id !== productId);
+    setSelectedProducts(updatedProducts);
+    calculateTotals(updatedProducts, saleInfo.saleDetails);
   };
 
   const updateQuantity = (productId, change) => {
@@ -127,12 +133,12 @@ export default function Component() {
       return p;
     });
     setSelectedProducts(updatedProducts);
-    updateSaleDetails();
+    calculateTotals(updatedProducts, saleInfo.saleDetails);
   };
 
-  const updateSaleDetails = () => {
-    // Combine product details
-    const productDetails = selectedProducts.map(product => ({
+  const calculateTotals = (currentProducts, currentSaleDetails) => {
+    // Calculate products subtotal
+    const productDetails = currentProducts.map(product => ({
       quantity: product.quantity,
       unitPrice: product.Price,
       total_price: product.Price * product.quantity,
@@ -141,21 +147,29 @@ export default function Component() {
       serviceId: null
     }));
 
-    // Get existing service details
-    const serviceDetails = saleInfo.saleDetails.filter(detail =>
-      detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId !== null)
+    const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
+
+    // Get service details
+    const serviceDetails = currentSaleDetails.filter(detail =>
+      detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
     );
 
-    // Combine both types of details
-    const allDetails = [...productDetails, ...serviceDetails];
+    const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
+      if (detail.serviceId) {
+        const service = services.find(s => s.id === parseInt(detail.serviceId));
+        return sum + (service ? service.price : 0);
+      }
+      return sum;
+    }, 0);
 
-    // Calculate total price
-    const totalPrice = allDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
+    // Update all totals at once
+    setSubtotalProducts(productsSubtotal);
+    setSubtotalServices(servicesSubtotal);
 
     setSaleInfo(prevState => ({
       ...prevState,
-      saleDetails: allDetails,
-      total_price: totalPrice
+      saleDetails: [...productDetails, ...serviceDetails],
+      total_price: productsSubtotal + servicesSubtotal
     }));
   };
 
@@ -301,7 +315,6 @@ export default function Component() {
         }
       }
 
-      // Combine with product details
       const productDetails = selectedProducts.map(product => ({
         quantity: product.quantity,
         unitPrice: product.Price,
@@ -312,12 +325,24 @@ export default function Component() {
       }));
 
       const allDetails = [...productDetails, ...serviceDetails];
-      const totalPrice = allDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
+
+      // Calculate subtotals
+      const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
+      const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
+        if (detail.serviceId) {
+          const service = services.find(s => s.id === parseInt(detail.serviceId));
+          return sum + (service ? service.price : 0);
+        }
+        return sum;
+      }, 0);
+
+      setSubtotalProducts(productsSubtotal);
+      setSubtotalServices(servicesSubtotal);
 
       return {
         ...prevState,
         saleDetails: allDetails,
-        total_price: totalPrice
+        total_price: productsSubtotal + servicesSubtotal
       };
     });
   };
@@ -440,7 +465,7 @@ export default function Component() {
                   </table>
                 </div>
                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                  <span className='valor'>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                  <span className='valor'>Subtotal Productos: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</span>
                 </div>
               </div>
 
@@ -514,7 +539,7 @@ export default function Component() {
                   </div>
                 </div>
                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                  <span className='valor'>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                  <span className='valor'>Subtotal Servicios: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}</span>
                 </div>
               </div>
             </div>
@@ -610,7 +635,7 @@ export default function Component() {
                 <div className="row">
                   <div className="col-sm-6 d-flex align-items-center justify-content-start padding-monto">
                     <div className='Monto-content'>
-                      <span className='valor'>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
+                      <span className='valor'>Total General: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</span>
                     </div>
                   </div>
                   <div className="col-sm-5 d-flex align-items-center justify-content-end">
