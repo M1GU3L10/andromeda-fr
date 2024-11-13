@@ -20,7 +20,7 @@ export const PermissionProvider = ({ children }) => {
 
       const publicRoutes = [
         '/login', '/register', '/forgotPassword', '/resetPassword', '/index', 
-        '/shop', '/registerview', '/appointmentView', '/ordermy'
+        '/shop', '/registerview', '/appointmentView', '/ordermy' , '/profileview'
       ];
 
       if (!roleId && !publicRoutes.includes(location.pathname)) {
