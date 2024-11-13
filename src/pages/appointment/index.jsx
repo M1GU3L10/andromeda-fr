@@ -9,14 +9,10 @@ import axios from 'axios';
 import { MyContext } from '../../App';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { FaEye, FaPencilAlt } from "react-icons/fa";
-import { IoTrashSharp } from "react-icons/io5";
+import { FaEye } from "react-icons/fa";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Modal, Form, Col, Row } from 'react-bootstrap';
+import { Modal, Form } from 'react-bootstrap';
 import Button from '@mui/material/Button';
-import withReactContent from 'sweetalert2-react-content';
-import Swal from 'sweetalert2';
-import { show_alerta } from '../../assets/functions';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { FaMoneyBillWave } from 'react-icons/fa';
 import { BsCalendar2DateFill } from 'react-icons/bs';
@@ -38,92 +34,6 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
         },
     };
 });
-
-const EventComponent = ({ info, setAppointmentId,props }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const navigate = useNavigate(); // Define navigate con useNavigate
-    const appointmentId = props.appointmentId || null;
-
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-        setIsMenuOpen(true); // Abrir el menú
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-        setIsMenuOpen(false); // Cerrar el menú
-    };
-
-    const handleEditClick = () => {
-        handleEditClick(info.event);
-        handleClose();
-    };
-
-    const handleView = () => {
-        console.log("Ver detalles del evento:", info.event);
-        handleClose();
-    };
-
-    const handleDelete = () => {
-        console.log("Eliminar evento:", info.event);
-        handleClose();
-    };
-    return (
-        <div
-            className='programming-content'
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => {
-                setIsHovered(false);
-                if (!isMenuOpen) {
-                    handleClose(); // Cerrar el menú si no está abierto
-                }
-            }}
-            onClick={handleClick}  // Abrir el menú al hacer clic
-        >
-            {!isHovered ? (
-                <span className='span-programming'>{info.event.title}</span>
-            ) : (
-                <span className='span-programming'>{info.event.extendedProps.Init_Time}-{info.event.extendedProps.Finish_Time}</span>
-            )}
-
-            {/* Menu component */}
-            <Menu
-                className='Menu-programming'
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-                PaperProps={{
-                    onMouseEnter: () => setIsMenuOpen(true), // Mantener abierto cuando el mouse entra
-                    onMouseLeave: handleClose, // Cerrar cuando el mouse sale
-                    style: {
-                        maxHeight: 48 * 4.5,
-                    },
-                }}
-            >
-
-                <MenuItem className='Menu-programming-item' onClick={handleEditClick}>
-                    <Button color="secondary" className='secondary'>
-                        <FaPencilAlt />
-                    </Button>
-                </MenuItem>
-
-                <MenuItem className='Menu-programming-item' onClick={handleView}>
-                    <Button color="secondary" className='secondary'>
-                        <FaPencilAlt />
-                    </Button>
-                </MenuItem>
-                <MenuItem className='Menu-programming-item' onClick={handleDelete}>
-                    <Button color='error' className='delete'>
-                        <IoTrashSharp />
-                    </Button>
-                </MenuItem>
-            </Menu>
-        </div>
-    );
-};
 
 const Appointment = () => {
     const urlUsers = 'http://localhost:1056/api/users';
@@ -147,7 +57,17 @@ const Appointment = () => {
     const [detailData, setDetailData] = useState({});
     const [selectedView, setSelectedView] = useState('dayGridMonth');
     const [selectedEmployee, setSelectedEmployee] = useState('');
-    
+    const [userRole, setUserRole] = useState('');
+    const [userId, setUserId] = useState('');
+    const urlSales = 'http://localhost:1056/api/sales'; // Agregar URL de ventas
+
+
+    useEffect(() => {
+        const roleId = localStorage.getItem('roleId');
+        const currentUserId = localStorage.getItem('userId');
+        setUserRole(roleId);
+        setUserId(currentUserId);
+    }, []);
 
     const getUserName = (users, clienteId) => {
         const user = users.find(user => user.id === clienteId);
@@ -191,18 +111,31 @@ const Appointment = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [userResponse, programmingResponse] = await Promise.all([
+                const [userResponse, programmingResponse,
+salesResponse] = await Promise.all([
                     axios.get(urlUsers),
                     axios.get(urlAppointment),
+                    axios.get(urlSales)
                 ]);
 
                 const usersData = userResponse.data;
                 const programmingData = programmingResponse.data;
+                const salesData = salesResponse.data;
 
                 setUsers(usersData);
-                
-            
-                const transformedEvents = programmingData.map(event => ({
+
+                // Crear un mapa de appointmentId a empleadoId
+                const appointmentEmployeeMap = {};
+                salesData.forEach(sale => {
+                    sale.SaleDetails.forEach(detail => {
+                        if (detail.appointmentId && detail.empleadoId) {
+
+appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
+                        }
+                    });
+                });
+
+                let transformedEvents = programmingData.map(event => ({
                     id: event.id.toString(),
                     title: event.clienteId.toString(),
                     start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
@@ -214,11 +147,16 @@ const Appointment = () => {
                         Finish_Time: event.Finish_Time,
                         Date: event.Date,
                         time_appointment: event.time_appointment,
-                        DetailAppointments: event.DetailAppointments,
+                        empleadoId: appointmentEmployeeMap[event.id]
                     }
                 }));
-            
-                
+
+                // Filtrar eventos según el rol
+                if (userRole === '2') { // Rol de empleado
+                    transformedEvents = transformedEvents.filter(event =>
+                        event.extendedProps.empleadoId?.toString() === userId
+                    );
+                }
 
                 setEvents(transformedEvents);
             } catch (error) {
@@ -227,7 +165,7 @@ const Appointment = () => {
         };
 
         fetchData();
-    }, []);
+    }, [userRole, userId]);
 
     useEffect(() => {
         setTimeout(() => {
@@ -237,14 +175,25 @@ const Appointment = () => {
 
     const getProgramming = async () => {
         try {
-            const response = await axios.get(urlAppointment);
-            const programmingData = response.data;
-            if (!users.length) {
-                console.error('No users data available');
-                return;
-            }
-            
-            const transformedEvents = programmingData.map(event => ({
+            const [programmingResponse, salesResponse] = await Promise.all([
+                axios.get(urlAppointment),
+                axios.get(urlSales)
+            ]);
+
+            const programmingData = programmingResponse.data;
+            const salesData = salesResponse.data;
+
+            const appointmentEmployeeMap = {};
+            salesData.forEach(sale => {
+                sale.SaleDetails.forEach(detail => {
+                    if (detail.appointmentId && detail.empleadoId) {
+                        appointmentEmployeeMap[detail.appointmentId] =
+detail.empleadoId;
+                    }
+                });
+            });
+
+            let transformedEvents = programmingData.map(event => ({
                 id: event.id.toString(),
                 title: event.clienteId.toString(),
                 start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
@@ -256,16 +205,22 @@ const Appointment = () => {
                     Finish_Time: event.Finish_Time,
                     time_appointment: event.time_appointment,
                     Date: event.Date,
-                    DetailAppointments: event.DetailAppointments,
+                    empleadoId: appointmentEmployeeMap[event.id]
                 }
             }));
-                     
+
+            if (userRole === '2') {
+                transformedEvents = transformedEvents.filter(event =>
+                    event.extendedProps.empleadoId?.toString() === userId
+                );
+            }
+
             setEvents(transformedEvents);
         } catch (error) {
             console.error('Error fetching programming:', error);
         }
     };
-    
+
 
     const handleDateClick = (arg) => {
         navigate('/appointmentRegister', { state: { date: arg.dateStr } });
@@ -292,54 +247,45 @@ const Appointment = () => {
             setIsMenuOpen(false);
         };
 
-        const handleEditClick = () => {
-            if (info.event.id) {
-              navigate(`/appointmentUpdate/${info.event.id}`);
-            } else {
-              console.error('No appointment selected');
-            }
-            handleClose();
-          };
-        
-        
+
         //buscar el nmbre del id
 
         const getServiceById = async (id) => {
             // Suponiendo que tienes una API que devuelve un servicio por ID
             const response = await axios.get(`http://localhost:1056/api/services/${id}`);
-            return response.data.name; 
+            return response.data.name;
         };
-        
+
         const getEmployeeById = async (id) => {
             // Suponiendo que tienes una API que devuelve un empleado por ID
             const response = await axios.get(`http://localhost:1056/api/users/${id}`);
             return response.data.name;  // Devuelve el nombre del empleado
         };
-        
+
         //
 
         const handleViewClick = async () => {
             setAppointmentId(info.event.id);
-            const detailAppointment = info.event.extendedProps.DetailAppointments[0]; 
-            
+            const detailAppointment = info.event.extendedProps.DetailAppointments[0];
+
             const serviceName = await getServiceById(detailAppointment.serviceId);
             const employeeName = await getEmployeeById(detailAppointment.empleadoId);
             const userName = await getUserName(users, parseInt(info.event.title));
 
-            
+
 
             setDetailData({
                 title: userName || 'Cliente Desconocido',
                 start: info.event.Init_Time,  // Usar la combinación de fecha y hora
                 end: info.event.Finish_Time,
-                Date:info.event.extendedProps.Date,
-                status:info.event.extendedProps.status,
+                Date: info.event.extendedProps.Date,
+                status: info.event.extendedProps.status,
                 Init_Time: info.event.extendedProps.Init_Time,
                 Finish_Time: info.event.extendedProps.Finish_Time,
-                time_appointment:info.event.extendedProps.time_appointment,
-                Total:info.event.extendedProps.Total,
+                time_appointment: info.event.extendedProps.time_appointment,
+                Total: info.event.extendedProps.Total,
                 serviceName: serviceName || 'N/A',  // Almacena el nombre del servicio
-                employeeName: employeeName || 'N/A' 
+                employeeName: employeeName || 'N/A'
             });
             setShowDetailModal(true);
             handleClose();
@@ -360,9 +306,9 @@ const Appointment = () => {
                 onClick={handleClick}
             >
                 {!isHovered ? (
-                     <span className='span-programming'>{getUserName(users, parseInt(info.event.title))}</span>
+                    <span className='span-programming'>{getUserName(users, parseInt(info.event.title))}</span>
                 ) : (
-                    <span className='span-programming'>{info.event.extendedProps.Init_Time}-{info.event.extendedProps.Finish_Time}</span>
+                    <span className='span-programming'>{info.event.extendedProps.status}-{info.event.extendedProps.Finish_Time}</span>
 
                 )}
 
@@ -384,12 +330,6 @@ const Appointment = () => {
                             <FaEye />
                         </Button>
                     </MenuItem>
-                    <MenuItem className='Menu-programming-item' onClick={() => handleEditClick(info.event.id)}>
-                        <Button color="secondary" className='secondary'>
-                            <FaPencilAlt />
-                        </Button>
-                    </MenuItem>
-
                 </Menu>
             </div>
         );
@@ -464,7 +404,7 @@ const Appointment = () => {
                     </div>
                     <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
                         <div role="presentation">
-                        <Breadcrumbs aria-label="breadcrumb">
+                            <Breadcrumbs aria-label="breadcrumb">
                                 <StyledBreadcrumb
                                     component="a"
                                     href="#"
@@ -500,15 +440,15 @@ const Appointment = () => {
                                 <option value="timeGridDay">Día</option>
                             </Form.Select>
                             <Form.Select
-                            value={selectedEmployee}
-                            onChange={handleEmployeeChange}
-                            style={{ width: 'auto', display: 'inline-block' }}
-                        >
-                            <option value="">Todos los clientes</option>
-                            {FiltrarUsers().map(user => (
-                                <option key={user.id} value={user.id.toString()}>{user.name}</option>
-                            ))}
-                        </Form.Select>
+                                value={selectedEmployee}
+                                onChange={handleEmployeeChange}
+                                style={{ width: 'auto', display: 'inline-block' }}
+                            >
+                                <option value="">Todos los clientes</option>
+                                {FiltrarUsers().map(user => (
+                                    <option key={user.id} value={user.id.toString()}>{user.name}</option>
+                                ))}
+                            </Form.Select>
                         </div>
                     </div>
                     <div className='table-responsive mt-3'>
@@ -537,8 +477,8 @@ const Appointment = () => {
                     <p><strong>Fecha:</strong> {detailData.Date}</p>
                     <p><strong>Hora de inicio:</strong> {detailData.Init_Time}</p>
                     <p><strong>Hora de fin:</strong> {detailData.Finish_Time}</p>
-                    <p><strong>Servicio:</strong> {detailData.serviceName}</p> 
-                    <p><strong>Empleado:</strong> {detailData.employeeName}</p> 
+                    <p><strong>Servicio:</strong> {detailData.serviceName}</p>
+                    <p><strong>Empleado:</strong> {detailData.employeeName}</p>
                     <p><strong>Tiempo de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
                     <p><strong>Total:</strong> {detailData.Total}</p>
                     <p><strong>Estado:</strong> {detailData.status}</p>
