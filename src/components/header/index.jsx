@@ -72,7 +72,7 @@ const Header = () => {
     };
 
     const handleGoToHome = () => {
-        navigate('../index');
+        navigate('/index');
     };
 
     const handleAdminDashboard = () => {
@@ -138,16 +138,13 @@ const Header = () => {
                                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                 >
-
-                                    <Link to={'/'}>
-                                        
-                                    <MenuItem onClick={handleGoToHome}>
-                                            <ListItemIcon>
-                                                <BsHouseFill />
-                                            </ListItemIcon>
-                                            Volver al inicio
-                                        </MenuItem>
-                                    </Link>
+                                  
+                                     <MenuItem onClick={handleGoToHome}>
+                                        <ListItemIcon>
+                                            <BsHouseFill />
+                                        </ListItemIcon>
+                                        Volver al inicio
+                                    </MenuItem>
                                     <MenuItem onClick={handleLogout}>
                                         <ListItemIcon>
                                             <Logout fontSize="small" />
