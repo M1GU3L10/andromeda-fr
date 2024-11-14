@@ -187,12 +187,12 @@ const Dashboard = () => {
                                                 outerRadius={120}
                                                 label
                                             >
-                                                <Cell key="completada" fill="#006400" />  {/* Verde Oscuro para Citas Completadas */}
+                                                <Cell key="completada" fill="#4C6EF5" />  {/* Azul Suave para Citas Completadas */}
 
-                                                <Cell key="cancelada" fill="#FF0000" />  {/* Rojo para Citas Canceladas */}
+                                                <Cell key="cancelada" fill="#F28B82" />  {/* Rojo Suave para Citas Canceladas */}
 
+                                                <Cell key="pendiente" fill="#B0BEC5" />  {/* Gris Suave para Citas Pendientes */}
 
-                                                <Cell key="pendiente" fill="#808080" />  
                                             </Pie>
                                             <Tooltip />
                                             <Legend />
