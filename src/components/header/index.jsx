@@ -140,7 +140,8 @@ const Header = () => {
                                 >
 
                                     <Link to={'/'}>
-                                        <MenuItem>
+                                        
+                                    <MenuItem onClick={handleGoToHome}>
                                             <ListItemIcon>
                                                 <BsHouseFill />
                                             </ListItemIcon>
