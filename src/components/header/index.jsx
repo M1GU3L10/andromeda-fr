@@ -138,13 +138,15 @@ const Header = () => {
                                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                 >
-                                  
-                                     <MenuItem onClick={handleGoToHome}>
-                                        <ListItemIcon>
-                                            <BsHouseFill />
-                                        </ListItemIcon>
-                                        Volver al inicio
-                                    </MenuItem>
+
+                                    <Link to={'/'}>
+                                        <MenuItem>
+                                            <ListItemIcon>
+                                                <BsHouseFill />
+                                            </ListItemIcon>
+                                            Volver al inicio
+                                        </MenuItem>
+                                    </Link>
                                     <MenuItem onClick={handleLogout}>
                                         <ListItemIcon>
                                             <Logout fontSize="small" />
