@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function EnhancedProfileEditor() {
   const url = 'http://localhost:1056/api/users';
+  const urlp = 'http://localhost:1056/api/users/profile';
   const [userData, setUserData] = useState({
     id: '',
     name: '',
@@ -130,7 +131,7 @@ export default function EnhancedProfileEditor() {
         return;
       }
 
-      const response = await fetch(`${url}/${userData.id}`, {
+      const response = await fetch(`${urlp}/${userData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

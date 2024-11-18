@@ -332,8 +332,10 @@ const Users = () => {
         getUsers();
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error al procesar la solicitud';
-      show_alerta(errorMessage, 'error');
+      show_alerta(
+        operation === 1 ? 'Usuario creado exitosamente' : 'Usuario actualizado exitosamente',
+        'success'
+      );
     }
 finally {
       setIsSubmitting(false);

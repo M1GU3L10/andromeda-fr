@@ -72,7 +72,7 @@ const Header = () => {
     };
 
     const handleGoToHome = () => {
-        navigate('/index');
+        navigate('../index');
     };
 
     const handleAdminDashboard = () => {

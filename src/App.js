@@ -98,14 +98,7 @@ function App() {
               <Routes>
                 <Route path="/login" element={<PermissionCheck requiredPermission="public"><Login /></PermissionCheck>} />
                 <Route path="/RegisterView" element={<PermissionCheck requiredPermission="public"><RegisterView /></PermissionCheck>} />
-                <Route
-                  path="/index"
-                  element={
-                    <PermissionCheck requiredPermission="public">
-                      <Index />
-                    </PermissionCheck>
-                  }
-                />
+                <Route path="/index" element={<PermissionCheck requiredPermission="public"><Index /></PermissionCheck>} />
                 <Route path="/register" element={<PermissionCheck requiredPermission="public"><Register /></PermissionCheck>} />
                 <Route path="/profileview" element={<PermissionCheck requiredPermission="public">< Profileview /></PermissionCheck>} />
                 <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
