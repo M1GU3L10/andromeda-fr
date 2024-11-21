@@ -3,6 +3,7 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App.js';
+
 import logo from '../../assets/images/logo-light.png';
 import { Avatar, Menu, MenuItem, Button } from '@mui/material';
 import { toast } from 'react-toastify';
@@ -58,12 +59,12 @@ export default function CalendarioBarberia() {
                 axios.get(urlUsers),
                 axios.get(urlAppointment),
             ]);
-    
+
             const usersData = userResponse.data;
             const programmingData = programmingResponse.data.filter(event => event.clienteId.toString() === localStorage.getItem('userId'));
-    
+
             setUsers(usersData);
-            
+
             const transformedEvents = programmingData.map(event => ({
                 id: event.id.toString(),
                 title: event.clienteId.toString(),
@@ -79,7 +80,7 @@ export default function CalendarioBarberia() {
                     DetailAppointments: event.DetailAppointments,
                 }
             }));
-    
+
             setEvents(transformedEvents);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -101,7 +102,7 @@ export default function CalendarioBarberia() {
             setUserRole('');
         }
     };
-    
+
     const handleLogin = () => {
         navigate('/login');
     };
@@ -114,6 +115,7 @@ export default function CalendarioBarberia() {
     const handleMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
+    
 
     const handleMenuClose = () => {
         setAnchorEl(null);
@@ -182,7 +184,7 @@ export default function CalendarioBarberia() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header Negro */}
+
             <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
                 <Link to={'/'} className='d-flex align-items-center logo-index'>
                     <img src={logo} alt="Logo" />
@@ -192,10 +194,10 @@ export default function CalendarioBarberia() {
                     <nav className='navBar-index'>
                         <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
                         {
-                       userRole == 1 ||userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
-                    }
+                            userRole == 1 || userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
+                        }
                         <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-                        
+
                     </nav>
 
                     <div className="auth-buttons">
@@ -219,22 +221,20 @@ export default function CalendarioBarberia() {
                                     {userEmail}
                                 </Button>
                                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
-                                {userRole == 1 || userRole == 2 ? (
-                                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
-                                        <GrUserAdmin /> Administrar
+                                    {userRole == 1 || userRole == 2 ? (
+                                        <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
+                                            <GrUserAdmin /> Administrar
+                                        </MenuItem>
+                                    ) : (
+                                        <MenuItem></MenuItem>
+                                    )}
+                                    <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
+                                        <GrUser /> Mi perfil
                                     </MenuItem>
-                                ) : (
-                                    <MenuItem></MenuItem>
-                                )}
-                                  <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
-                                    <GrUser /> Mi perfil
-                                </MenuItem>
-                                <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
-                                    <GiExitDoor /> Cerrar Sesión
-                                </MenuItem>
-                                {/* Usamos MenuItem para mantener el mismo estilo */}
-                              
-                            </Menu>
+                                    <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
+                                        <GiExitDoor /> Cerrar Sesión
+                                    </MenuItem>
+                                </Menu>
                             </div>
                         ) : (
                             <Button
@@ -248,142 +248,234 @@ export default function CalendarioBarberia() {
                     </div>
                 </div>
             </header>
-<br /><br /><br /><br /><br />
+            <br /><br /><br /><br /><br />
             {/* Contenedor Principal */}
             <div className="container mx-auto px-4 py-8">
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <table className="w-full">
-                        <thead>
-                            <tr>
-                                <th className="p-4 border-b">
-                                    <div className="flex justify-between items-center">
-                                        <Form.Select
-                                            value={selectedView}
-                                            onChange={(e) => handleViewChange(e.target.value)}
-                                            className="w-40 border border-gray-300 rounded-md shadow-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#b89b58] focus:border-transparent"
-                                        >
-                                            <option value="dayGridMonth">Mes</option>
-                                            <option value="timeGridWeek">Semana</option>
-                                            <option value="timeGridDay">Día</option>
-                                        </Form.Select>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td className="p-4">
-                                    <div className="calendar-container">
-                                        <FullCalendar
-                                            ref={calendarRef}
-                                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                                            initialView={selectedView}
-                                            events={events}
-                                            eventContent={(info) => <EventComponent info={info} />}
-                                            headerToolbar={{
-                                                left: 'prev,next today',
-                                                center: 'title',
-                                                right: ''
-                                            }}
-                                            locale={esLocale}
-                                            dateClick={handleDateClick}
-                                            height="auto"
-                                            contentHeight={600}
-                                        />
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div className="bg-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden border border-[#b89b58]/20">
+                    <div className="p-6">
+                        <Form.Select
+                            value={selectedView}
+                            onChange={(e) => handleViewChange(e.target.value)}
+                            className="w-40 bg-black text-white border border-[#b89b58] rounded-lg shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#b89b58] focus:border-transparent transition-all duration-200 cursor-pointer appearance-none hover:bg-[#b89b58]"
+                            style={{
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b89b58'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                                backgroundPosition: 'right 0.5rem center',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundSize: '1.5em 1.5em',
+                                paddingRight: '2.5rem',
+                            }}
+                        >
+                            <option value="dayGridMonth" className="bg-black text-white hover:bg-[#b89b58]">
+                                Mes
+                            </option>
+                            <option value="timeGridWeek" className="bg-black text-white hover:bg-[b89b58]">
+                                Semana
+                            </option>
+                            <option value="timeGridDay" className="bg-black text-white hover:bg-[#b89b58]">
+                                Día
+                            </option>
+                        </Form.Select>
+
+
+                    </div>
+                    <div className="calendar-container px-6 pb-6">
+                        <FullCalendar
+                            ref={calendarRef}
+                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                            initialView={selectedView}
+                            events={events}
+                            eventContent={(info) => <EventComponent info={info} />}
+                            headerToolbar={{
+                                left: 'prev,next today',
+                                center: 'title',
+                                right: ''
+                            }}
+                            locale={esLocale}
+                            dateClick={handleDateClick}
+                            height="auto"
+                            contentHeight={600}
+                        />
+                    </div>
                 </div>
             </div>
 
             <style jsx global>{`
-                .calendar-container {
-                    padding: 1rem;
-                }
-                
-                .fc {
-                    font-family: system-ui, -apple-system, sans-serif;
-                    max-width: 100%;
-                    background: white;
-                }
+  .calendar-container {
+    background: #1a1a1a;
+  }
 
-                .fc .fc-toolbar {
-                    padding: 1rem;
-                    margin-bottom: 0;
-                }
+  .fc {
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 100%;
+    background: #1a1a1a;
+    color: #fff;
+  }
+    
 
-                .fc .fc-toolbar-title {
-                    font-size: 1.5rem;
-                    font-weight: 600;
-                    color: #1a1a1a;
-                }
+  .fc .fc-toolbar {
+    padding: 1rem;
+    margin-bottom: 0;
+    background: #1a1a1a;
+  }
 
-                .fc .fc-button {
-                    background-color: #1a1a1a;
-                    border: none;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    padding: 0.5rem 1rem;
-                    font-weight: 500;
-                    transition: all 0.2s;
-                }
+  .fc .fc-toolbar-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #ffffff !important;
+    text-transform: capitalize;
+  }
 
-                .fc .fc-button:hover {
-                    background-color: #333;
-                    transform: translateY(-1px);
-                }
+  .fc .fc-button {
+    background-color: #2d2d2d !important;
+    border: 1px solid #b89b58 !important;
+    color: #b89b58 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
 
-                .fc .fc-button-primary:not(:disabled).fc-button-active,
-                .fc .fc-button-primary:not(:disabled):active {
-                    background-color: #b89b58;
-                }
+  .fc .fc-button:hover {
+    background-color: #b89b58 !important;
+    color: #1a1a1a !important;
+    transform: translateY(-1px);
+  }
 
-                .fc-theme-standard td, 
-                .fc-theme-standard th {
-                    border-color: #e5e7eb;
-                }
+  .fc .fc-button-primary:not(:disabled).fc-button-active,
+  .fc .fc-button-primary:not(:disabled):active {
+    background-color: #b89b58 !important;
+    color: #1a1a1a !important;
+    border-color: #b89b58 !important;
+  }
 
-                .fc-day-today {
-                    background-color: rgba(184, 155, 88, 0.1) !important;
-                }
+  .fc-theme-standard td,
+  .fc-theme-standard th {
+    border-color: #333333;
+  }
 
-                .programming-content {
-                    background-color: #b89b58;
-                    color: white;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 4px;
-                    font-size: 0.875rem;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }
+  .fc-theme-standard .fc-scrollgrid {
+    border-color: #333333;
+  }
 
-                .span-programming {
-                    display: block;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
+  .fc .fc-day {
+    background: #1a1a1a;
+    transition: background-color 0.2s ease;
+  }
 
-                .fc-day:hover {
-                    background-color: rgba(184, 155, 88, 0.05);
-                }
+  .fc .fc-day:hover {
+    background-color: #2d2d2d;
+  }
 
-                .fc-day-header {
-                    padding: 1rem !important;
-                    font-weight: 600;
-                }
+  .fc .fc-day-today {
+    background-color: rgba(184, 155, 88, 0.1) !important;
+  }
 
-                @media (max-width: 640px) {
-                    .fc .fc-toolbar {
-                        flex-direction: column;
-                        gap: 1rem;
-                    }
-                    
-                    .fc .fc-toolbar-title {
-                        font-size: 1.25rem;
-                    }
-                }
-            `}</style>
+  .fc .fc-day-today .fc-daygrid-day-number {
+    color: #b89b58;
+    font-weight: bold;
+  }
+
+  .fc .fc-daygrid-day-number {
+    color: #ffffff;
+    padding: 0.5rem;
+    transition: color 0.2s ease;
+  }
+
+  .fc .fc-daygrid-day:hover .fc-daygrid-day-number {
+    color: #b89b58;
+  }
+
+  .fc .fc-col-header-cell {
+    background: #2d2d2d;
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 1rem 0;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+  }
+
+  .programming-content {
+    
+    color: #1a1a1a;
+   
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+ 
+  }
+
+  .programming-content:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .span-programming {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fc-day-other {
+    background: #161616;
+  }
+
+  .fc-day-other .fc-daygrid-day-number {
+    color: #666666;
+  }
+
+  @media (max-width: 640px) {
+    .fc .fc-toolbar {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 1.25rem;
+    }
+
+    .fc .fc-button {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Time Grid Specific Styles */
+  .fc-timegrid-slot {
+    background: #1a1a1a;
+    border-color: #333333 !important;
+  }
+
+  .fc-timegrid-axis {
+    background: #2d2d2d;
+    color: #b89b58;
+  }
+
+  .fc .fc-timegrid-axis-cushion {
+    color: #b89b58;
+  }
+
+  .fc .fc-timegrid-slot-label-cushion {
+    color: #b89b58;
+  }
+
+  /* Week/Day View Specific */
+  .fc-timegrid-event {
+    background: #b89b58;
+    border: none;
+    padding: 0.25rem;
+  }
+
+  .fc-timegrid-now-indicator-line {
+    border-color: #b89b58;
+  }
+
+  .fc-timegrid-now-indicator-arrow {
+    border-color: #b89b58;
+    color: #b89b58;
+  }
+`}</style>
+
         </div>
     );
 }

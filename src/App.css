@@ -990,16 +990,17 @@ body.dark .fc .fc-toolbar-title {
 }
 
 .fc .fc-daygrid-event-harness {
-  background: rgb(54, 118, 245);
+  background: rgb(148, 146, 12);
   position: relative;
   color: #f1f1f1;
   border-radius: 10px;
   max-height: 25px;
   display: flex;
-  align-items: center;
+  align-items: center;  
   justify-content: center;
   margin: 2px;
 }
+
 
 .span-programming {
   color: #f1f1f1;
@@ -1009,7 +1010,7 @@ body.dark .fc .fc-toolbar-title {
 
 .fc-daygrid-dot-event.fc-event-mirror,
 .fc-daygrid-dot-event:hover {
-  background: rgb(54, 118, 245) !important;
+  background: rgb(148, 146, 12) !important;
   cursor: pointer;
 }
 
