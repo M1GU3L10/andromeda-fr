@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App.js';
@@ -10,13 +12,12 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
+import esLocale from '@fullcalendar/core/locales/es';
 import { GrUser } from 'react-icons/gr';
 import axios from 'axios';
 import { Form } from 'react-bootstrap';
 
-
-
-const Index = () => {
+export default function CalendarioBarberia() {
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const calendarRef = useRef(null);
@@ -101,8 +102,6 @@ const Index = () => {
         }
     };
     
-    
-
     const handleLogin = () => {
         navigate('/login');
     };
@@ -127,7 +126,7 @@ const Index = () => {
         setIsLoggedIn(false);
         setUserEmail('');
         handleMenuClose();
-        toast.error('Sesion cerrada', {
+        toast.error('Sesión cerrada', {
             position: "top-right",
             autoClose: 1000,
             hideProgressBar: false,
@@ -163,7 +162,6 @@ const Index = () => {
         return user ? user.name : 'Desconocido';
     };
 
-    // Event Component for the calendar
     const EventComponent = ({ info }) => {
         const [isHovered, setIsHovered] = useState(false);
 
@@ -183,8 +181,9 @@ const Index = () => {
     };
 
     return (
-        <>
-            <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header Negro */}
+          <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
                 <Link to={'/'} className='d-flex align-items-center logo-index'>
                     <img src={logo} alt="Logo" />
                     <span className='ml-2'>Barberia Orion</span>
@@ -250,37 +249,141 @@ const Index = () => {
                 </div>
             </header>
 
-                    <div className='d-flex justify-content-between align-items-center mb-3 mt-5 p-5'>
-                        <div>
-                            <Form.Select
-                                value={selectedView}
-                                onChange={(e) => handleViewChange(e.target.value)}
-                                style={{ width: 'auto', display: 'inline-block', marginRight: '10px' }}
-                            >
-                                <option value="dayGridMonth">Mes</option>
-                                <option value="timeGridWeek">Semana</option>
-                                <option value="timeGridDay">Día</option>
-                            </Form.Select>
-                        </div>
-                    </div>
-                    <div className='table-responsive mt-3 p-5'>
-                        <FullCalendar
-                            ref={calendarRef}
-                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                            initialView={selectedView}
-                            events={events}
-                            eventContent={(info) => <EventComponent info={info} />}
-                            headerToolbar={{
-                                left: 'prev,next today',
-                                center: 'title',
-                                right: ''
-                            }}
-                            dateClick={handleDateClick}
-                        />
-                    </div>
-            
-        </>
-    );
-};
+            {/* Contenedor Principal */}
+            <div className="container mx-auto px-4 py-8">
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <table className="w-full">
+                        <thead>
+                            <tr>
+                                <th className="p-4 border-b">
+                                    <div className="flex justify-between items-center">
+                                        <Form.Select
+                                            value={selectedView}
+                                            onChange={(e) => handleViewChange(e.target.value)}
+                                            className="w-40 border border-gray-300 rounded-md shadow-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#b89b58] focus:border-transparent"
+                                        >
+                                            <option value="dayGridMonth">Mes</option>
+                                            <option value="timeGridWeek">Semana</option>
+                                            <option value="timeGridDay">Día</option>
+                                        </Form.Select>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td className="p-4">
+                                    <div className="calendar-container">
+                                        <FullCalendar
+                                            ref={calendarRef}
+                                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                                            initialView={selectedView}
+                                            events={events}
+                                            eventContent={(info) => <EventComponent info={info} />}
+                                            headerToolbar={{
+                                                left: 'prev,next today',
+                                                center: 'title',
+                                                right: ''
+                                            }}
+                                            locale={esLocale}
+                                            dateClick={handleDateClick}
+                                            height="auto"
+                                            contentHeight={600}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-export default Index;
+            <style jsx global>{`
+                .calendar-container {
+                    padding: 1rem;
+                }
+                
+                .fc {
+                    font-family: system-ui, -apple-system, sans-serif;
+                    max-width: 100%;
+                    background: white;
+                }
+
+                .fc .fc-toolbar {
+                    padding: 1rem;
+                    margin-bottom: 0;
+                }
+
+                .fc .fc-toolbar-title {
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                    color: #1a1a1a;
+                }
+
+                .fc .fc-button {
+                    background-color: #1a1a1a;
+                    border: none;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    padding: 0.5rem 1rem;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                }
+
+                .fc .fc-button:hover {
+                    background-color: #333;
+                    transform: translateY(-1px);
+                }
+
+                .fc .fc-button-primary:not(:disabled).fc-button-active,
+                .fc .fc-button-primary:not(:disabled):active {
+                    background-color: #b89b58;
+                }
+
+                .fc-theme-standard td, 
+                .fc-theme-standard th {
+                    border-color: #e5e7eb;
+                }
+
+                .fc-day-today {
+                    background-color: rgba(184, 155, 88, 0.1) !important;
+                }
+
+                .programming-content {
+                    background-color: #b89b58;
+                    color: white;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 4px;
+                    font-size: 0.875rem;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+
+                .span-programming {
+                    display: block;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                .fc-day:hover {
+                    background-color: rgba(184, 155, 88, 0.05);
+                }
+
+                .fc-day-header {
+                    padding: 1rem !important;
+                    font-weight: 600;
+                }
+
+                @media (max-width: 640px) {
+                    .fc .fc-toolbar {
+                        flex-direction: column;
+                        gap: 1rem;
+                    }
+                    
+                    .fc .fc-toolbar-title {
+                        font-size: 1.25rem;
+                    }
+                }
+            `}</style>
+        </div>
+    );
+}
