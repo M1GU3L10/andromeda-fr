@@ -990,7 +990,9 @@ body.dark .fc .fc-toolbar-title {
 }
 
 .fc .fc-daygrid-event-harness {
-  background: rgb(148, 146, 12);
+  background: linear-gradient(135deg, rgba(204, 179, 89, 1) 0%, rgba(178, 151, 73, 1) 100%);
+
+
   position: relative;
   color: #f1f1f1;
   border-radius: 10px;
@@ -1010,7 +1012,8 @@ body.dark .fc .fc-toolbar-title {
 
 .fc-daygrid-dot-event.fc-event-mirror,
 .fc-daygrid-dot-event:hover {
-  background: rgb(148, 146, 12) !important;
+  background: linear-gradient(135deg, rgba(204, 179, 89, 1) 0%, rgba(178, 151, 73, 1) 100%);
+
   cursor: pointer;
 }
 
