@@ -696,28 +696,32 @@ export default function Dashboard() {
               <div
                 className="card h-100"
                 style={{
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                  borderRadius: '15px',
+                  overflow: 'hidden',
+                  background: 'linear-gradient(145deg, #ffffff, #e6e6e6)',
+                  boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                  e.currentTarget.style.boxShadow = '0 12px 20px rgba(50, 50, 93, 0.15), 0 4px 6px rgba(0, 0, 0, 0.12)';
+                  e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.3)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)';
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
                 }}
               >
-                <div className="card-body">
+                <div className="card-body" style={{ padding: '20px 25px' }}>
                   <h5
                     className="card-title mb-3"
                     style={{
-                      fontSize: '1.25rem',
-                      fontWeight: '600',
+                      fontSize: '1.5rem',
+                      fontWeight: '700',
                       color: '#333',
-                      borderBottom: '2px solid #4C6EF5',
-                      paddingBottom: '5px',
+                      borderBottom: '3px solid #4C6EF5',
+                      paddingBottom: '8px',
+                      marginBottom: '15px',
+                      letterSpacing: '0.5px',
                     }}
                   >
                     Citas
@@ -736,6 +740,12 @@ export default function Dashboard() {
                           paddingAngle={5}
                           label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                           isAnimationActive={true}
+                          onMouseEnter={(data, index, e) => {
+                            e.target.setAttribute('transform', 'scale(1.1)');
+                          }}
+                          onMouseLeave={(data, index, e) => {
+                            e.target.setAttribute('transform', 'scale(1)');
+                          }}
                         >
                           {groupedAppointments.map((entry, index) => (
                             <Cell
@@ -748,17 +758,17 @@ export default function Dashboard() {
                         </Pie>
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: '#f5f5f5',
+                            backgroundColor: '#ffffff',
                             border: '1px solid #ddd',
                             borderRadius: '10px',
-                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                           }}
                           labelStyle={{ fontWeight: 'bold', color: '#333' }}
                         />
                         <Legend
                           wrapperStyle={{
                             fontSize: '0.9rem',
-                            color: '#666',
+                            color: '#555',
                             textAlign: 'center',
                             marginTop: '10px',
                           }}
