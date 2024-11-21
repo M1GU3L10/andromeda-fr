@@ -14,6 +14,8 @@ import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image } from '
 import { renderToString } from 'react-dom/server'
 import Chart from 'chart.js/auto'
 
+
+
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor:
     theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -49,7 +51,7 @@ const chartToImage = async (chartConfig) => {
     canvas.width = 800
     canvas.height = 400
     const ctx = canvas.getContext('2d')
-    
+
     const tempDiv = document.createElement('div')
     tempDiv.style.width = '800px'
     tempDiv.style.height = '400px'
@@ -86,7 +88,7 @@ const DashboardPDF = ({ sales, products, appointments, shopping, chartImages }) 
   <Document>
     <Page size="A4" style={styles.page}>
       <Text style={styles.title}>Informe del Dashboard</Text>
-      
+
       <View style={styles.section}>
         <Text style={styles.subtitle}>Ventas</Text>
         {chartImages.salesChart && <Image style={styles.chart} src={chartImages.salesChart} />}
@@ -277,6 +279,104 @@ export default function Dashboard() {
   const [appointments, setAppointments] = useState([])
   const [shopping, setShopping] = useState([])
   const [chartImages, setChartImages] = useState({})
+  const [timeFilter, setTimeFilter] = useState('thisMonth');
+  const [filteredShopping, setFilteredShopping] = useState([]);
+  const [salesTimeFilter, setSalesTimeFilter] = useState('thisMonth');
+  const [filteredSales, setFilteredSales] = useState([]);
+
+  useEffect(() => {
+    // Función para filtrar ventas según el período seleccionado
+    const filterSales = () => {
+      const now = new Date();
+      let filteredData = sales;
+
+      switch (salesTimeFilter) {
+        case 'today':
+          filteredData = sales.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate.toDateString() === now.toDateString();
+          });
+          break;
+        case 'thisMonth':
+          filteredData = sales.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate.getMonth() === now.getMonth() &&
+              itemDate.getFullYear() === now.getFullYear();
+          });
+          break;
+        case 'lastMonth':
+          filteredData = sales.filter(item => {
+            const itemDate = new Date(item.date);
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            return itemDate >= lastMonth && itemDate < thisMonth;
+          });
+          break;
+        case 'thisYear':
+          filteredData = sales.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate.getFullYear() === now.getFullYear();
+          });
+          break;
+        case 'allTime':
+        default:
+          filteredData = sales;
+      }
+
+      setFilteredSales(filteredData);
+    };
+
+    if (sales.length > 0) {
+      filterSales();
+    }
+  }, [sales, salesTimeFilter]);
+  useEffect(() => {
+    // Función para filtrar compras según el período seleccionado
+    const filterShopping = () => {
+      const now = new Date();
+      let filteredData = shopping;
+
+      switch (timeFilter) {
+        case 'today':
+          filteredData = shopping.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate.toDateString() === now.toDateString();
+          });
+          break;
+        case 'thisMonth':
+          filteredData = shopping.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate.getMonth() === now.getMonth() &&
+              itemDate.getFullYear() === now.getFullYear();
+          });
+          break;
+        case 'lastMonth':
+          filteredData = shopping.filter(item => {
+            const itemDate = new Date(item.date);
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            return itemDate >= lastMonth && itemDate < thisMonth;
+          });
+          break;
+        case 'thisYear':
+          filteredData = shopping.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate.getFullYear() === now.getFullYear();
+          });
+          break;
+        case 'allTime':
+        default:
+          filteredData = shopping;
+      }
+
+      setFilteredShopping(filteredData);
+    };
+
+    if (shopping.length > 0) {
+      filterShopping();
+    }
+  }, [shopping, timeFilter]);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -390,22 +490,99 @@ export default function Dashboard() {
           <div className="row">
             {/* Sales Chart */}
             <div className="col-md-6 mb-4">
-              <div className="card h-100" style={{
-                borderRadius: '10px',
-                boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                transition: 'all 0.3s ease-in-out'
-              }}>
+              <div
+                className="card h-100"
+                style={{
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 12px 20px rgba(50, 50, 93, 0.15), 0 4px 6px rgba(0, 0, 0, 0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)';
+                }}
+              >
                 <div className="card-body">
-                  <h5 className="card-title mb-3">Ventas</h5>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h5
+                      className="card-title m-0"
+                      style={{
+                        fontSize: '1.25rem',
+                        fontWeight: '600',
+                        color: '#333',
+                        borderBottom: '2px solid #4C6EF5',
+                        paddingBottom: '5px',
+                      }}
+                    >
+                      Ventas
+                    </h5>
+                    <select
+                      className="form-select form-select-sm"
+                      style={{
+                        width: '160px',
+                        fontSize: '0.875rem',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f9f9f9',
+                        color: '#333',
+                        transition: 'border 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.border = '1px solid #4C6EF5')}
+                      onMouseLeave={(e) => (e.currentTarget.style.border = '1px solid #ddd')}
+                      value={salesTimeFilter}
+                      onChange={(e) => setSalesTimeFilter(e.target.value)}
+                    >
+                      <option value="today">Hoy</option>
+                      <option value="thisMonth">Este Mes</option>
+                      <option value="lastMonth">Último Mes</option>
+                      <option value="thisYear">Este Año</option>
+                      <option value="allTime">Todos los Tiempos</option>
+                    </select>
+                  </div>
                   <div className="chart-container">
                     <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={sales}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="total" stroke="#4C6EF5" strokeWidth={2} name="Total Ventas" />
+                      <LineChart data={filteredSales}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fill: '#666', fontSize: '0.9rem' }}
+                        />
+                        <YAxis
+                          tick={{ fill: '#666', fontSize: '0.9rem' }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#f5f5f5',
+                            border: '1px solid #ddd',
+                            borderRadius: '10px',
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                          }}
+                          labelStyle={{ fontWeight: 'bold', color: '#333' }}
+                        />
+                        <Legend
+                          wrapperStyle={{
+                            fontSize: '0.9rem',
+                            color: '#666',
+                            textAlign: 'center',
+                            marginTop: '10px',
+                          }}
+                          verticalAlign="bottom"
+                          height={36}
+                          iconType="circle"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="total"
+                          stroke="#4C6EF5"
+                          strokeWidth={2}
+                          name="Total Ventas"
+                          activeDot={{ r: 8, fill: '#4C6EF5', stroke: '#333', strokeWidth: 2 }}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -413,25 +590,76 @@ export default function Dashboard() {
               </div>
             </div>
 
+
             {/* Products Chart */}
             <div className="col-md-6 mb-4">
-              <div className="card h-100" style={{
-                borderRadius: '10px',
-                boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                transition: 'all 0.3s ease-in-out'
-              }}>
+              <div
+                className="card h-100"
+                style={{
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+                  overflow: 'hidden',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 15px 25px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)';
+                }}
+              >
                 <div className="card-body">
-                  <h5 className="card-title mb-3">Inventario de Productos</h5>
+                  <h5
+                    className="card-title mb-3"
+                    style={{
+                      fontSize: '1.5rem',
+                      fontWeight: '600',
+                      color: '#333',
+                      textAlign: 'center',
+                      borderBottom: '2px solid #82ca9d',
+                      paddingBottom: '10px',
+                    }}
+                  >
+                    Inventario de Productos
+                  </h5>
                   <div className="chart-container">
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={products}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="stock" fill="#82ca9d" name="Stock" />
-                        <Bar dataKey="price" fill="#ffc658" name="Precio" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+                        <XAxis dataKey="name" tick={{ fill: '#666', fontSize: '0.9rem' }} />
+                        <YAxis tick={{ fill: '#666', fontSize: '0.9rem' }} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#f4f4f4',
+                            borderRadius: '10px',
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                          }}
+                          labelStyle={{ color: '#333', fontWeight: 'bold' }}
+                        />
+                        <Legend
+                          wrapperStyle={{
+                            fontSize: '0.9rem',
+                            color: '#666',
+                            textAlign: 'center',
+                            marginTop: '10px',
+                          }}
+                        />
+                        <Bar
+                          dataKey="stock"
+                          fill="#82ca9d"
+                          name="Stock"
+                          animationBegin={300}
+                          animationDuration={800}
+                        />
+                        <Bar
+                          dataKey="price"
+                          fill="#ffc658"
+                          name="Precio"
+                          animationBegin={600}
+                          animationDuration={800}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -439,15 +667,38 @@ export default function Dashboard() {
               </div>
             </div>
 
+
             {/* Appointments Chart */}
             <div className="col-md-6 mb-4">
-              <div className="card h-100" style={{
-                borderRadius: '10px',
-                boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                transition: 'all 0.3s ease-in-out'
-              }}>
+              <div
+                className="card h-100"
+                style={{
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 12px 20px rgba(50, 50, 93, 0.15), 0 4px 6px rgba(0, 0, 0, 0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)';
+                }}
+              >
                 <div className="card-body">
-                  <h5 className="card-title mb-3">Citas</h5>
+                  <h5
+                    className="card-title mb-3"
+                    style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#333',
+                      borderBottom: '2px solid #4C6EF5',
+                      paddingBottom: '5px',
+                    }}
+                  >
+                    Citas
+                  </h5>
                   <div className="chart-container">
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
@@ -457,15 +708,41 @@ export default function Dashboard() {
                           nameKey="status"
                           cx="50%"
                           cy="50%"
-                          outerRadius={100}
-                          label
+                          outerRadius={110}
+                          innerRadius={60}
+                          paddingAngle={5}
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          isAnimationActive={true}
                         >
                           {groupedAppointments.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={['#4C6EF5', '#F28B82', '#B0BEC5'][index % 3]} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={['#4C6EF5', '#F28B82', '#B0BEC5'][index % 3]}
+                              stroke="#fff"
+                              strokeWidth={2}
+                            />
                           ))}
                         </Pie>
-                        <Tooltip />
-                        <Legend />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#f5f5f5',
+                            border: '1px solid #ddd',
+                            borderRadius: '10px',
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                          }}
+                          labelStyle={{ fontWeight: 'bold', color: '#333' }}
+                        />
+                        <Legend
+                          wrapperStyle={{
+                            fontSize: '0.9rem',
+                            color: '#666',
+                            textAlign: 'center',
+                            marginTop: '10px',
+                          }}
+                          verticalAlign="bottom"
+                          height={36}
+                          iconType="circle"
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -473,56 +750,158 @@ export default function Dashboard() {
               </div>
             </div>
 
+
             {/* Shopping Chart */}
             <div className="col-md-6 mb-4">
-              <div className="card h-100" style={{
-                borderRadius: '10px',
-                boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                transition: 'all 0.3s ease-in-out'
-              }}>
+              <div
+                className="card h-100"
+                style={{
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 12px 20px rgba(50, 50, 93, 0.15), 0 4px 6px rgba(0, 0, 0, 0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)';
+                }}
+              >
                 <div className="card-body">
-                  <h5 className="card-title mb-3">Compras</h5>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h5
+                      className="card-title m-0"
+                      style={{
+                        fontSize: '1.25rem',
+                        fontWeight: '600',
+                        color: '#333',
+                        borderBottom: '2px solid #F28B82',
+                        paddingBottom: '5px',
+                      }}
+                    >
+                      Compras
+                    </h5>
+                    <select
+                      className="form-select form-select-sm"
+                      style={{
+                        width: '150px',
+                        fontSize: '0.875rem',
+                        borderRadius: '8px',
+                        border: '1px solid #ddd',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                      }}
+                      value={timeFilter}
+                      onChange={(e) => setTimeFilter(e.target.value)}
+                    >
+                      <option value="today">Hoy</option>
+                      <option value="thisMonth">Este Mes</option>
+                      <option value="lastMonth">Último Mes</option>
+                      <option value="thisYear">Este Año</option>
+                      <option value="allTime">Todos los Tiempos</option>
+                    </select>
+                  </div>
                   <div className="chart-container">
                     <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={shopping}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="total" stroke="#F28B82" strokeWidth={2} name="Total Compras" />
+                      <LineChart data={filteredShopping}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 12, fill: '#666' }}
+                          tickLine={false}
+                          axisLine={{ stroke: '#ccc' }}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 12, fill: '#666' }}
+                          tickLine={false}
+                          axisLine={{ stroke: '#ccc' }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#fff',
+                            border: '1px solid #ddd',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                          }}
+                          labelStyle={{ fontWeight: 'bold', color: '#333' }}
+                        />
+                        <Legend
+                          wrapperStyle={{
+                            fontSize: '0.9rem',
+                            color: '#666',
+                            marginTop: '10px',
+                          }}
+                          verticalAlign="bottom"
+                          height={36}
+                          iconType="circle"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="total"
+                          stroke="#F28B82"
+                          strokeWidth={3}
+                          name="Total Compras"
+                          activeDot={{ r: 10, stroke: '#F28B82', strokeWidth: 2, fill: '#fff' }}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
               </div>
             </div>
+
           </div>
 
           {/* Generate Report Button */}
           <div className="row mt-4">
             <div className="col-12 d-flex justify-content-center">
-              <PDFDownloadLink 
-                document={<DashboardPDF sales={sales} products={products} appointments={groupedAppointments} shopping={shopping} chartImages={chartImages} />} 
+              <PDFDownloadLink
+                document={<DashboardPDF sales={sales} products={products} appointments={groupedAppointments} shopping={shopping} chartImages={chartImages} />}
                 fileName="dashboard-report.pdf"
               >
                 {({ blob, url, loading, error }) => (
-                  <button 
-                    className="btn btn-primary btn-lg"
-                    style={{
-                      backgroundColor: '#4C6EF5',
-                      border: 'none',
-                      padding: '10px 20px',
-                      borderRadius: '5px',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                      transition: 'all 0.15s ease'
-                    }}
-                    disabled={loading}
-                  >
-                    {loading ? 'Generando informe...' : 'Generar y Descargar Informe PDF'}
-                  </button>
+                <button
+                className="btn btn-primary btn-lg"
+                style={{
+                  backgroundColor: '#4C6EF5',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                  boxShadow: '0 4px 6px rgba(50, 50, 93, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1,
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow =
+                      '0 8px 12px rgba(50, 50, 93, 0.15), 0 4px 6px rgba(0, 0, 0, 0.12)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow =
+                      '0 4px 6px rgba(50, 50, 93, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)';
+                  }
+                }}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span>
+                    <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
+                    Generando informe...
+                  </span>
+                ) : (
+                  'Generar y Descargar Informe PDF'
+                )}
+              </button>
+              
                 )}
               </PDFDownloadLink>
             </div>
