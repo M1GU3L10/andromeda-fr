@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import axios from 'axios';
-import { Circles } from 'react-loader-spinner';
 import logo from '../assets/images/logo.png';
 
 const PermissionContext = createContext([]);
@@ -81,6 +80,11 @@ export const PermissionCheck = ({ requiredPermission, children }) => {
   const permissions = usePermissions();
   const location = useLocation();
   console.log(`PermissionCheck - Required: ${requiredPermission} Available:`, permissions);
+
+  // Ignorar automáticamente las rutas de índice
+  if (location.pathname.endsWith('/index')) {
+    return <>{children}</>;
+  }
 
   // Si es una ruta no válida y el usuario está autenticado, redirigir a Error404
   if (!permissions.includes(requiredPermission) && !permissions.includes('public')) {

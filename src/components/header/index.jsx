@@ -72,7 +72,7 @@ const Header = () => {
     };
 
     const handleGoToHome = () => {
-        navigate('../index');
+        navigate('/index');
     };
 
     const handleAdminDashboard = () => {
@@ -127,7 +127,6 @@ const Header = () => {
                                             <p className="text-sm" style={{ margin: '0' }}>No está logueado</p>
                                         )}
                                     </div>
-
                                 </Button>
                                 <Menu
                                     anchorEl={anchorEl}
@@ -138,8 +137,7 @@ const Header = () => {
                                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                 >
-                                  
-                                     <MenuItem onClick={handleGoToHome}>
+                                    <MenuItem onClick={handleGoToHome}>
                                         <ListItemIcon>
                                             <BsHouseFill />
                                         </ListItemIcon>
