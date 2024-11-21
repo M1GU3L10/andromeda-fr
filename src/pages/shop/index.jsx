@@ -602,18 +602,20 @@ export default function Component() {
                     Precio: {new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(product.Price)}
                   </Typography>
 
-                  <Button
-                    variant="contained"
-                    onClick={() => addToCart(product)}
-                    className="barber-add-cart-btn"
-                  >
-                    <div className="button-wrapper-barber">
-                      <span className="text-barber">AGREGAR</span>
-                      <span className="icon-button-barber">
-                        <AddShoppingCartIcon />
-                      </span>
-                    </div>
-                  </Button>
+                  {userRole === '3' && (
+                    <Button
+                      variant="contained"
+                      onClick={() => addToCart(product)}
+                      className="barber-add-cart-btn"
+                    >
+                      <div className="button-wrapper-barber">
+                        <span className="text-barber">AGREGAR</span>
+                        <span className="icon-button-barber">
+                          <AddShoppingCartIcon />
+                        </span>
+                      </div>
+                    </Button>
+                  )}
                 </div>
               ))
             ) : (

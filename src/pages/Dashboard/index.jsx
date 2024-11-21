@@ -596,18 +596,21 @@ export default function Dashboard() {
               <div
                 className="card h-100"
                 style={{
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+                  borderRadius: '16px',
+                  boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
                   overflow: 'hidden',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  background: '#f7f9fc',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                  e.currentTarget.style.boxShadow = '0 15px 25px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1)';
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                  e.currentTarget.style.boxShadow =
+                    '0 12px 25px rgba(0, 0, 0, 0.15)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow =
+                    '0 8px 20px rgba(0, 0, 0, 0.1)';
                 }}
               >
                 <div className="card-body">
@@ -616,10 +619,10 @@ export default function Dashboard() {
                     style={{
                       fontSize: '1.5rem',
                       fontWeight: '600',
-                      color: '#333',
+                      color: '#2c3e50',
                       textAlign: 'center',
-                      borderBottom: '2px solid #82ca9d',
-                      paddingBottom: '10px',
+                      borderBottom: '2px solid #95a5a6',
+                      paddingBottom: '12px',
                     }}
                   >
                     Inventario de Productos
@@ -627,38 +630,57 @@ export default function Dashboard() {
                   <div className="chart-container">
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={products}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-                        <XAxis dataKey="name" tick={{ fill: '#666', fontSize: '0.9rem' }} />
-                        <YAxis tick={{ fill: '#666', fontSize: '0.9rem' }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ecf0f1" />
+                        <XAxis
+                          dataKey="name"
+                          tick={{
+                            fill: '#7f8c8d',
+                            fontSize: '0.85rem',
+                          }}
+                        />
+                        <YAxis
+                          tick={{
+                            fill: '#7f8c8d',
+                            fontSize: '0.85rem',
+                          }}
+                          scale="log"
+                          domain={['auto', 'auto']}
+                        />
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: '#f4f4f4',
-                            borderRadius: '10px',
-                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                            fontSize: '0.85rem',
+                            color: '#2c3e50',
                           }}
-                          labelStyle={{ color: '#333', fontWeight: 'bold' }}
+                          labelStyle={{ fontWeight: 'bold', color: '#34495e' }}
                         />
                         <Legend
                           wrapperStyle={{
-                            fontSize: '0.9rem',
-                            color: '#666',
+                            fontSize: '0.85rem',
+                            color: '#7f8c8d',
                             textAlign: 'center',
                             marginTop: '10px',
                           }}
                         />
                         <Bar
                           dataKey="stock"
-                          fill="#82ca9d"
                           name="Stock"
+                          fill="#a29bfe"
                           animationBegin={300}
                           animationDuration={800}
+                          radius={[6, 6, 0, 0]}
+                          barSize={15}
                         />
                         <Bar
                           dataKey="price"
-                          fill="#ffc658"
                           name="Precio"
+                          fill="#55efc4"
                           animationBegin={600}
                           animationDuration={800}
+                          radius={[6, 6, 0, 0]}
+                          barSize={15}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -666,6 +688,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
 
 
             {/* Appointments Chart */}
@@ -861,47 +884,47 @@ export default function Dashboard() {
                 fileName="dashboard-report.pdf"
               >
                 {({ blob, url, loading, error }) => (
-                <button
-                className="btn btn-primary btn-lg"
-                style={{
-                  backgroundColor: '#4C6EF5',
-                  border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  color: '#fff',
-                  fontWeight: '600',
-                  fontSize: '1rem',
-                  boxShadow: '0 4px 6px rgba(50, 50, 93, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.7 : 1,
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  if (!loading) {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow =
-                      '0 8px 12px rgba(50, 50, 93, 0.15), 0 4px 6px rgba(0, 0, 0, 0.12)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!loading) {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow =
-                      '0 4px 6px rgba(50, 50, 93, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)';
-                  }
-                }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <span>
-                    <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
-                    Generando informe...
-                  </span>
-                ) : (
-                  'Generar y Descargar Informe PDF'
-                )}
-              </button>
-              
+                  <button
+                    className="btn btn-primary btn-lg"
+                    style={{
+                      backgroundColor: '#4C6EF5',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontWeight: '600',
+                      fontSize: '1rem',
+                      boxShadow: '0 4px 6px rgba(50, 50, 93, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      opacity: loading ? 0.7 : 1,
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!loading) {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow =
+                          '0 8px 12px rgba(50, 50, 93, 0.15), 0 4px 6px rgba(0, 0, 0, 0.12)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!loading) {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow =
+                          '0 4px 6px rgba(50, 50, 93, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)';
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span>
+                        <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
+                        Generando informe...
+                      </span>
+                    ) : (
+                      'Generar y Descargar Informe PDF'
+                    )}
+                  </button>
+
                 )}
               </PDFDownloadLink>
             </div>
