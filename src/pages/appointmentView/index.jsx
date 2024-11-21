@@ -183,7 +183,7 @@ export default function CalendarioBarberia() {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header Negro */}
-          <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
+            <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
                 <Link to={'/'} className='d-flex align-items-center logo-index'>
                     <img src={logo} alt="Logo" />
                     <span className='ml-2'>Barberia Orion</span>
@@ -248,7 +248,7 @@ export default function CalendarioBarberia() {
                     </div>
                 </div>
             </header>
-
+<br /><br /><br /><br /><br />
             {/* Contenedor Principal */}
             <div className="container mx-auto px-4 py-8">
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden">
