@@ -1,9 +1,10 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -14,7 +15,6 @@ import { Box, Container, Grid } from '@mui/material';
 import Header from './Header1';
 
 export default function EnhancedProfileEditor() {
-    // Todo el estado y funciones se mantienen exactamente igual
     const url = 'http://localhost:1056/api/users';
     const [userData, setUserData] = useState({
         id: '',
@@ -233,7 +233,7 @@ export default function EnhancedProfileEditor() {
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-                <CircularProgress />
+                <CircularProgress sx={{ color: '#FFD700' }} />
             </Box>
         );
     }
@@ -248,12 +248,11 @@ export default function EnhancedProfileEditor() {
     }
 
     return (
-        
         <>
             <Header />
 
-            <Container maxWidth="md" sx={{ py: 8 }}>
-                <Card elevation={3}>
+            <Container maxWidth="md" sx={{ py: 12 }}>
+                <Card elevation={3} sx={{ backgroundColor: 'white', borderRadius: '16px' }}>
                     <div className='d-flex align-items-center justify-content-center mt-5'>
                         <h2 className='tittle-landingPage'>Información Personal</h2>
                     </div>
@@ -278,6 +277,7 @@ export default function EnhancedProfileEditor() {
                                         onBlur={handleBlur}
                                         error={touched.name && Boolean(errors.name)}
                                         helperText={touched.name && errors.name}
+                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#FFD700' } } }}
                                     />
                                 </Grid>
                                 <Grid item xs={12} md={6}>
@@ -291,6 +291,7 @@ export default function EnhancedProfileEditor() {
                                         onBlur={handleBlur}
                                         error={touched.email && Boolean(errors.email)}
                                         helperText={touched.email && errors.email}
+                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#FFD700' } } }}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -304,6 +305,7 @@ export default function EnhancedProfileEditor() {
                                         onBlur={handleBlur}
                                         error={touched.password && Boolean(errors.password)}
                                         helperText={touched.password && errors.password}
+                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#FFD700' } } }}
                                         InputProps={{
                                             endAdornment: (
                                                 <IconButton
@@ -326,6 +328,7 @@ export default function EnhancedProfileEditor() {
                                         onBlur={handleBlur}
                                         error={touched.phone && Boolean(errors.phone)}
                                         helperText={touched.phone && errors.phone}
+                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#FFD700' } } }}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -354,39 +357,14 @@ export default function EnhancedProfileEditor() {
             </Container>
 
             <style jsx>{`
-        .zona1 {
-          min-height: 40vh;
-          background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          text-align: center;
-          padding: 2rem;
-        }
-
-        .hero-content {
-          max-width: 800px;
-          margin: 0 auto;
-        }
-
-        .hero-content h1 {
-          font-size: 2.5rem;
-          margin-bottom: 1rem;
-        }
-
-        .hero-content p {
-          font-size: 1.2rem;
-        }
-
         .tittle-landingPage {
-          color: #333;
+          color: #DAA520;
           font-size: 2rem;
           margin-bottom: 0.5rem;
         }
 
         .description-landingPage {
-          color: #666;
+          color: #B8860B;
           text-align: center;
           margin-bottom: 2rem;
           padding: 0 1rem;
@@ -396,21 +374,21 @@ export default function EnhancedProfileEditor() {
           width: 120px;
           height: 120px;
           border-radius: 50%;
-          background: linear-gradient(45deg, #1a237e, #311b92);
+          background: linear-gradient(45deg, #FFD700, #DAA520);
           display: flex;
           align-items: center;
           justify-content: center;
           color: white;
           font-size: 2.5rem;
           font-weight: bold;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+          box-shadow: 0 4px 20px rgba(218,165,32,0.4);
         }
 
         .btn-landing {
           min-width: 200px;
           padding: 1rem 2rem;
           border-radius: 8px;
-          background: linear-gradient(45deg, #1a237e, #311b92);
+          background: linear-gradient(45deg, #FFD700, #DAA520) !important;
           color: white;
           text-transform: none;
           font-size: 1.1rem;
@@ -418,8 +396,13 @@ export default function EnhancedProfileEditor() {
         }
 
         .btn-landing:hover {
-          background: linear-gradient(45deg, #311b92, #1a237e);
+          background: linear-gradient(45deg, #DAA520, #FFD700) !important;
           transform: translateY(-2px);
+        }
+
+        .btn-landing:disabled {
+          background: rgba(218,165,32,0.4) !important;
+          transform: none;
         }
       `}</style>
         </>

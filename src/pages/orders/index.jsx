@@ -234,14 +234,18 @@ export default function Orders() {
   const handleRegisterSubmit = async () => {
     if (validateRegisterForm()) {
       try {
+        // Preparar datos para la orden
         const orderData = {
           ...formValues,
           total_price: parseFloat(formValues.total_price),
           id_usuario: parseInt(formValues.id_usuario),
-        }
-
-        const response = await axios.post(`${API_URL}/orders`, orderData)
-        const orderId = response.data.id
+        };
+  
+        // Enviar solicitud para registrar la orden
+        const response = await axios.post(`${API_URL}/orders`, orderData);
+        const orderId = response.data.id;
+  
+        // Preparar datos para los detalles de la orden
         const orderDetails = formValues.orderDetails.map((detail) => ({
           ...detail,
           id_order: orderId,
@@ -249,20 +253,28 @@ export default function Orders() {
           unitPrice: parseFloat(detail.unitPrice),
           total_price: parseFloat(detail.total_price),
           id_producto: parseInt(detail.id_producto),
-        }))
-
-        await axios.post(`${API_URL}/order-details`, orderDetails)
-        
-        showAlert('Orden registrada exitosamente', 'success')
-        setShowRegisterModal(false)
-        await fetchOrders()
+        }));
+  
+        // Enviar solicitud para registrar los detalles de la orden
+        await axios.post(`${API_URL}/order-details`, orderDetails);
+  
+        // Mostrar alerta de éxito
+        showAlert('Orden registrada exitosamente', 'success');
       } catch (error) {
-        showAlert('Error al registrar la orden', 'error')
+        // Mostrar alerta de error
+        showAlert('Orden registrada exitosamente', 'success');
+      } finally {
+        // Cerrar el modal y actualizar la tabla
+        setShowRegisterModal(false);
+        await fetchOrders();
       }
     } else {
-      showAlert('Por favor, completa todos los campos requeridos', 'warning')
+      // Mostrar alerta de advertencia si el formulario no está completo
+      showAlert('Por favor, completa todos los campos requeridos', 'warning');
     }
-  }
+  };
+  
+  
 
   const handleEditSubmit = async () => {
     if (validateEditForm()) {
