@@ -56,12 +56,25 @@ export default function Component() {
   const urlUsers = 'http://localhost:1056/api/users';
   const [subtotalProducts, setSubtotalProducts] = useState(0);
   const [subtotalServices, setSubtotalServices] = useState(0);
+  const [absences, setAbsences] = useState([]);
+  const urlAbsences = 'http://localhost:1056/api/absences';
 
   useEffect(() => {
     getUsers();
     getProducts();
     getServices();
+    getAbsences();
   }, []);
+
+
+  const getAbsences = async () => {
+    try {
+      const response = await axios.get(urlAbsences);
+      setAbsences(response.data);
+    } catch (error) {
+      console.error("Error fetching absences:", error);
+    }
+  };
 
   const getUsers = async () => {
     const response = await axios.get(urlUsers);
@@ -238,22 +251,74 @@ export default function Component() {
     setErrors(newErrors);
   };
 
+  const validateEmployeeAvailability = () => {
+    const appointmentDate = saleInfo.appointmentData.Date;
+    const appointmentStart = saleInfo.appointmentData.Init_Time;
+    const appointmentEnd = saleInfo.appointmentData.Finish_Time;
+  
+    // Verificar cada servicio que tenga un empleado asignado
+    const serviceDetails = saleInfo.saleDetails.filter(detail => 
+      detail.serviceId !== null && detail.empleadoId !== null
+    );
+  
+    for (const detail of serviceDetails) {
+      const employee = users.find(user => user.id === parseInt(detail.empleadoId));
+      if (!employee) continue;
+  
+      // Buscar si hay alguna ausencia que se superponga
+      const hasAbsence = absences.some(absence => 
+        absence.userId === parseInt(detail.empleadoId) && 
+        absence.date === appointmentDate &&
+        absence.startTime <= appointmentEnd &&
+        absence.endTime >= appointmentStart
+      );
+  
+      if (hasAbsence) {
+        return {
+          isValid: false,
+          message: `El empleado ${employee.name} tiene una ausencia registrada para este horario`
+        };
+      }
+    }
+  
+    return { isValid: true };
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+  
     validateField('Billnumber', saleInfo.Billnumber);
     validateField('id_usuario', saleInfo.id_usuario);
-
+  
     if (errors.Billnumber || errors.id_usuario) {
       show_alerta('Por favor, corrija los errores antes de enviar', 'warning');
       return;
     }
-
+  
     if (saleInfo.saleDetails.length === 0) {
       show_alerta('Debe agregar al menos un producto o servicio al detalle de la venta', 'warning');
       return;
     }
-
+  
+    // Verificar la disponibilidad de los empleados antes de guardar
+    const { isValid, message } = validateEmployeeAvailability();
+    if (!isValid) {
+      show_alerta(message, 'error');
+      return;
+    }
+  
+    // Verificar que los servicios con empleados tengan horario asignado
+    const hasServicesWithEmployees = saleInfo.saleDetails.some(detail => 
+      detail.serviceId !== null && detail.empleadoId !== null
+    );
+  
+    if (hasServicesWithEmployees && 
+        (!saleInfo.appointmentData.Init_Time || 
+         !saleInfo.appointmentData.Finish_Time)) {
+      show_alerta('Debe especificar el horario de la cita para los servicios', 'warning');
+      return;
+    }
+  
     try {
       await axios.post('http://localhost:1056/api/sales', saleInfo);
       show_alerta('Venta registrada con éxito', 'success');
@@ -536,9 +601,34 @@ export default function Component() {
                               onChange={(e) => handleServiceChange(index, 'empleadoId', e.target.value)}
                             >
                               <option value="">Seleccionar empleado</option>
-                              {users.filter(user => user.roleId === 2).map(employee => (
-                                <option key={employee.id} value={employee.id}>{employee.name}</option>
-                              ))}
+                              {users
+                                .filter(user => {
+                                  // Primero verificamos si es un empleado (roleId === 2)
+                                  if (user.roleId !== 2) return false;
+
+                                  // Verificamos si hay alguna ausencia que se superponga con el horario de la cita
+                                  const appointmentDate = saleInfo.appointmentData.Date;
+                                  const appointmentStart = saleInfo.appointmentData.Init_Time;
+                                  const appointmentEnd = saleInfo.appointmentData.Finish_Time;
+
+                                  // Si no hay horario de cita seleccionado, mostramos todos los empleados
+                                  if (!appointmentDate || !appointmentStart || !appointmentEnd) return true;
+
+                                  // Buscamos si hay alguna ausencia que se superponga
+                                  const hasAbsence = absences.some(absence => {
+                                    return absence.userId === user.id &&
+                                      absence.date === appointmentDate &&
+                                      absence.startTime <= appointmentEnd &&
+                                      absence.endTime >= appointmentStart;
+                                  });
+
+                                  // Retornamos true si NO hay ausencia (para incluir al empleado)
+                                  return !hasAbsence;
+                                })
+                                .map(employee => (
+                                  <option key={employee.id} value={employee.id}>{employee.name}</option>
+                                ))
+                              }
                             </Form.Select>
                           </td>
                           <td>
