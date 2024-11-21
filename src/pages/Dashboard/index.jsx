@@ -861,22 +861,47 @@ export default function Dashboard() {
                 fileName="dashboard-report.pdf"
               >
                 {({ blob, url, loading, error }) => (
-                  <button
-                    className="btn btn-primary btn-lg"
-                    style={{
-                      backgroundColor: '#4C6EF5',
-                      border: 'none',
-                      padding: '10px 20px',
-                      borderRadius: '5px',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      boxShadow: '0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                      transition: 'all 0.15s ease'
-                    }}
-                    disabled={loading}
-                  >
-                    {loading ? 'Generando informe...' : 'Generar y Descargar Informe PDF'}
-                  </button>
+                <button
+                className="btn btn-primary btn-lg"
+                style={{
+                  backgroundColor: '#4C6EF5',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                  boxShadow: '0 4px 6px rgba(50, 50, 93, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1,
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow =
+                      '0 8px 12px rgba(50, 50, 93, 0.15), 0 4px 6px rgba(0, 0, 0, 0.12)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow =
+                      '0 4px 6px rgba(50, 50, 93, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)';
+                  }
+                }}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span>
+                    <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
+                    Generando informe...
+                  </span>
+                ) : (
+                  'Generar y Descargar Informe PDF'
+                )}
+              </button>
+              
                 )}
               </PDFDownloadLink>
             </div>
