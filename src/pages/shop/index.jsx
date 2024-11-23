@@ -694,7 +694,7 @@ export default function Component() {
                       <Avatar src={product.Image} alt={product.Product_Name} />
                     </ListItemAvatar>
                     <ListItemText
-                      primary={product.Product_Name}
+                      primary={<span className="product-name">{product.Product_Name}</span>}
                       secondary={
                         <span>
                           <span className="price-text">
