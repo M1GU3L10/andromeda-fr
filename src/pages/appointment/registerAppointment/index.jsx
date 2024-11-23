@@ -66,6 +66,11 @@ export default function Component() {
     getAbsences();
   }, []);
 
+  useEffect(() => {
+    // Generar un número aleatorio de 3 dígitos al cargar el componente
+    const randomNumber = Math.floor(100 + Math.random() * 900).toString(); // Número de 3 dígitos
+    setSaleInfo((prevState) => ({ ...prevState, Billnumber: randomNumber }));
+  }, []); 
 
   const getAbsences = async () => {
     try {
@@ -255,24 +260,24 @@ export default function Component() {
     const appointmentDate = saleInfo.appointmentData.Date;
     const appointmentStart = saleInfo.appointmentData.Init_Time;
     const appointmentEnd = saleInfo.appointmentData.Finish_Time;
-  
+
     // Verificar cada servicio que tenga un empleado asignado
-    const serviceDetails = saleInfo.saleDetails.filter(detail => 
+    const serviceDetails = saleInfo.saleDetails.filter(detail =>
       detail.serviceId !== null && detail.empleadoId !== null
     );
-  
+
     for (const detail of serviceDetails) {
       const employee = users.find(user => user.id === parseInt(detail.empleadoId));
       if (!employee) continue;
-  
+
       // Buscar si hay alguna ausencia que se superponga
-      const hasAbsence = absences.some(absence => 
-        absence.userId === parseInt(detail.empleadoId) && 
+      const hasAbsence = absences.some(absence =>
+        absence.userId === parseInt(detail.empleadoId) &&
         absence.date === appointmentDate &&
         absence.startTime <= appointmentEnd &&
         absence.endTime >= appointmentStart
       );
-  
+
       if (hasAbsence) {
         return {
           isValid: false,
@@ -280,45 +285,45 @@ export default function Component() {
         };
       }
     }
-  
+
     return { isValid: true };
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     validateField('Billnumber', saleInfo.Billnumber);
     validateField('id_usuario', saleInfo.id_usuario);
-  
+
     if (errors.Billnumber || errors.id_usuario) {
       show_alerta('Por favor, corrija los errores antes de enviar', 'warning');
       return;
     }
-  
+
     if (saleInfo.saleDetails.length === 0) {
       show_alerta('Debe agregar al menos un producto o servicio al detalle de la venta', 'warning');
       return;
     }
-  
+
     // Verificar la disponibilidad de los empleados antes de guardar
     const { isValid, message } = validateEmployeeAvailability();
     if (!isValid) {
       show_alerta(message, 'error');
       return;
     }
-  
+
     // Verificar que los servicios con empleados tengan horario asignado
-    const hasServicesWithEmployees = saleInfo.saleDetails.some(detail => 
+    const hasServicesWithEmployees = saleInfo.saleDetails.some(detail =>
       detail.serviceId !== null && detail.empleadoId !== null
     );
-  
-    if (hasServicesWithEmployees && 
-        (!saleInfo.appointmentData.Init_Time || 
-         !saleInfo.appointmentData.Finish_Time)) {
+
+    if (hasServicesWithEmployees &&
+      (!saleInfo.appointmentData.Init_Time ||
+        !saleInfo.appointmentData.Finish_Time)) {
       show_alerta('Debe especificar el horario de la cita para los servicios', 'warning');
       return;
     }
-  
+
     try {
       await axios.post('http://localhost:1056/api/sales', saleInfo);
       show_alerta('Venta registrada con éxito', 'success');
@@ -678,11 +683,11 @@ export default function Component() {
                         <Col sm="6">
                           <Form.Label className='required'># Combrobante</Form.Label>
                           <Form.Control
-                            type="text"
-                            name="Billnumber"
-                            value={saleInfo.Billnumber}
-                            onChange={handleInputChange}
-                            isInvalid={!!errors.Billnumber}
+                               type="text"
+                               name="Billnumber"
+                               value={saleInfo.Billnumber} // Muestra el valor generado
+                               isInvalid={false} // Sin errores
+                               disabled // Campo deshabilitado
                           />
                           <Form.Control.Feedback type="invalid">
                             {errors.Billnumber}

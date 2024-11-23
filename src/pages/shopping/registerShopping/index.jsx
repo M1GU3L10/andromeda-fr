@@ -16,7 +16,7 @@ import { IoTrashSharp } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -42,7 +42,7 @@ const RegisterShopping = () => {
     const urlShopping = 'http://localhost:1056/api/shopping';
     const urlSuppliers = 'http://localhost:1056/api/suppliers';
     const urlProducts = 'http://localhost:1056/api/products';
-    const navigate = useNavigate(); // Inicializa el hook de navegación
+    const navigate = useNavigate();
 
     const [suppliers, setSuppliers] = useState([]);
     const [products, setProducts] = useState([]);
@@ -58,6 +58,7 @@ const RegisterShopping = () => {
     useEffect(() => {
         getSuppliers();
         getProducts();
+        loadSavedData();
     }, []);
 
     const getSuppliers = async () => {
@@ -68,13 +69,13 @@ const RegisterShopping = () => {
             console.error('Error al obtener proveedores', error);
         }
     };
+
     useEffect(() => {
-        // Obtener la fecha actual en formato `YYYY-MM-DD`
         const today = new Date().toISOString().split("T")[0];
         setFormData((prevState) => ({ ...prevState, purchaseDate: today }));
-      }, []);
+    }, []);
+
     useEffect(() => {
-        // Generar un código aleatorio de 5 caracteres alfanuméricos
         const generateRandomCode = () => {
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             let code = "";
@@ -84,7 +85,6 @@ const RegisterShopping = () => {
             return code;
         };
 
-        // Establecer el valor del código aleatorio
         const randomCode = generateRandomCode();
         setFormData((prevState) => ({ ...prevState, code: randomCode }));
     }, []);
@@ -101,6 +101,7 @@ const RegisterShopping = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+        saveData({ ...formData, [name]: value }, shoppingDetails);
     };
 
     const handleProductSearch = (event) => {
@@ -108,36 +109,63 @@ const RegisterShopping = () => {
     };
 
     const filteredProducts = products.filter(product =>
-        product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase())
+        product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !shoppingDetails.some(item => item.product_id === product.id)
     );
 
     const addProductToDetails = (product) => {
-        const existingProduct = shoppingDetails.find(item => item.product_id === product.id);
-        if (existingProduct) {
-            updateQuantity(product.id, existingProduct.quantity + 1);
-        } else {
-            setShoppingDetails([...shoppingDetails, {
-                product_id: product.id,
-                Product_Name: product.Product_Name,
-                quantity: 1,
-                unitPrice: parseFloat(product.Price),
-                total_price: parseFloat(product.Price)
-            }]);
-        }
+        const newShoppingDetails = [...shoppingDetails, {
+            product_id: product.id,
+            Product_Name: product.Product_Name,
+            quantity: 1,
+            unitPrice: parseFloat(product.Price),
+            total_price: parseFloat(product.Price)
+        }];
+        setShoppingDetails(newShoppingDetails);
+        saveData(formData, newShoppingDetails);
+        setSearchTerm('');
     };
 
     const updateQuantity = (productId, newQuantity) => {
+        if (newQuantity > 50) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'La cantidad no puede ser mayor a 50.',
+            });
+            return;
+        }
         setShoppingDetails(shoppingDetails.map(item => {
             if (item.product_id === productId) {
-                const newTotalPrice = item.unitPrice * newQuantity;
-                return { ...item, quantity: newQuantity, total_price: newTotalPrice };
+                const validQuantity = Math.max(1, Math.min(50, newQuantity));
+                const newTotalPrice = item.unitPrice * validQuantity;
+                return { ...item, quantity: validQuantity, total_price: newTotalPrice };
             }
             return item;
         }));
     };
 
+    const handleUnitPriceChange = (productId, event) => {
+        const newUnitPrice = parseFloat(event.target.value) || 0;
+        setShoppingDetails(shoppingDetails.map(item => {
+            if (item.product_id === productId) {
+                const newTotalPrice = newUnitPrice * item.quantity;
+                return { ...item, unitPrice: newUnitPrice, total_price: newTotalPrice };
+            }
+            return item;
+        }));
+    };
+
+    const handleQuantityChange = (productId, event) => {
+        const newQuantity = parseInt(event.target.value) || 1;
+        updateQuantity(productId, newQuantity);
+    };
+
+
     const removeProduct = (productId) => {
-        setShoppingDetails(shoppingDetails.filter(item => item.product_id !== productId));
+        const updatedDetails = shoppingDetails.filter(item => item.product_id !== productId);
+        setShoppingDetails(updatedDetails);
+        saveData(formData, updatedDetails);
     };
 
     const calculateTotal = () => {
@@ -147,7 +175,6 @@ const RegisterShopping = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validación de campos
         if (!formData.code || !formData.purchaseDate || !formData.supplierId || shoppingDetails.length === 0) {
             Swal.fire({
                 icon: 'error',
@@ -170,11 +197,12 @@ const RegisterShopping = () => {
                 title: 'Éxito',
                 text: 'Compra registrada con éxito',
             }).then(() => {
-                navigate('/Shopping'); // Redirige a la tabla de compras
+                navigate('/Shopping');
             });
 
             setFormData({ code: '', purchaseDate: '', supplierId: '' });
             setShoppingDetails([]);
+            localStorage.removeItem('shoppingFormData');
         } catch (error) {
             console.error('Error al registrar la compra', error);
             Swal.fire({
@@ -182,6 +210,19 @@ const RegisterShopping = () => {
                 title: 'Error',
                 text: 'Error al registrar la compra',
             });
+        }
+    };
+
+    const saveData = (formData, shoppingDetails) => {
+        localStorage.setItem('shoppingFormData', JSON.stringify({ formData, shoppingDetails }));
+    };
+
+    const loadSavedData = () => {
+        const savedData = localStorage.getItem('shoppingFormData');
+        if (savedData) {
+            const { formData: savedFormData, shoppingDetails: savedShoppingDetails } = JSON.parse(savedData);
+            setFormData(savedFormData);
+            setShoppingDetails(savedShoppingDetails);
         }
     };
 
@@ -237,7 +278,6 @@ const RegisterShopping = () => {
                                             />
                                         </div>
                                     </div>
-                                    {/* Product search results */}
                                     <div className='d-flex aline-items-center justify-content-end'>
                                         <div className="product-search-results">
                                             {searchTerm && filteredProducts.map(product => (
@@ -264,14 +304,33 @@ const RegisterShopping = () => {
                                             {shoppingDetails.map((item) => (
                                                 <tr key={item.product_id}>
                                                     <td>{item.Product_Name}</td>
-                                                    <td>{item.quantity}</td>
-                                                    <td>{item.unitPrice}</td>
-                                                    <td>{item.total_price}</td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            value={item.quantity}
+                                                            onChange={(e) => handleQuantityChange(item.product_id, e)}
+                                                            min="1"
+                                                            max="50"
+                                                            className="form-control"
+                                                            style={{ width: '65px' }}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            value={item.unitPrice}
+                                                            onChange={(e) => handleUnitPriceChange(item.product_id, e)}
+                                                            className="form-control"
+                                                            style={{ width: '110px' }}
+                                                        />
+                                                    </td>
+                                                    <td>{item.total_price.toFixed(2)}</td>
                                                     <td>
                                                         <div className='d-flex align-items-center'>
                                                             <Button color='error' className='delete' onClick={() => removeProduct(item.product_id)}><IoTrashSharp /></Button>
                                                             <div className='actions-quantity'>
                                                                 <Button className='primary' onClick={() => updateQuantity(item.product_id, item.quantity + 1)}><FaPlus /></Button>
+                                                        
                                                                 <Button className='primary' onClick={() => updateQuantity(item.product_id, Math.max(1, item.quantity - 1))}><FaMinus /></Button>
                                                             </div>
                                                         </div>
@@ -284,7 +343,7 @@ const RegisterShopping = () => {
 
                                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
                                     <span className='Monto'>Total:</span>
-                                    <span className='valor'>${calculateTotal()}</span>
+                                    <span className='valor'>${calculateTotal().toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
@@ -300,21 +359,21 @@ const RegisterShopping = () => {
                                                 <Col sm="6">
                                                     <Form.Label>Codigo</Form.Label>
                                                     <Form.Control
-                                                         type="text"
-                                                         placeholder="Codigo"
-                                                         name="code"
-                                                         value={formData.code} 
-                                                         readOnly 
+                                                        type="text"
+                                                        placeholder="Codigo"
+                                                        name="code"
+                                                        value={formData.code}
+                                                        readOnly
                                                     />
                                                 </Col>
                                                 <Col sm="6">
                                                     <Form.Label>Fecha Compra</Form.Label>
                                                     <Form.Control
-                                                         type="date"
-                                                         placeholder="Fecha Compra"
-                                                         name="purchaseDate"
-                                                         value={formData.purchaseDate} 
-                                                         onChange={handleInputChange} 
+                                                        type="date"
+                                                        placeholder="Fecha Compra"
+                                                        name="purchaseDate"
+                                                        value={formData.purchaseDate}
+                                                        onChange={handleInputChange}
                                                     />
                                                 </Col>
                                             </Form.Group>
@@ -340,7 +399,6 @@ const RegisterShopping = () => {
                                                 <Button variant="primary" type="submit" className='btn-sucess'>
                                                     Guardar
                                                 </Button>
-
                                             </Form.Group>
                                         </Form>
                                     </div>
@@ -355,3 +413,4 @@ const RegisterShopping = () => {
 }
 
 export default RegisterShopping;
+
