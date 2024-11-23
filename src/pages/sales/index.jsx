@@ -210,7 +210,7 @@ const Sales = () => {
                                 <thead className='table-primary'>
                                     <tr>
                                         <th>#</th>
-                                        <th>Nmro factura</th>
+                                        <th>Nmro Combrobante</th>
                                         <th>Fecha venta</th>
                                         <th>Fecha registro</th>
                                         <th>MontoTotal</th>

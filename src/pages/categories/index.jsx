@@ -474,12 +474,13 @@
                             </Form>
                         </Modal.Body>
                         <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                                Cerrar
+                            </Button>
                             <Button variant="primary" onClick={validar} className='btn-sucess'>
                                 Guardar
                             </Button>
-                            <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                                Cerrar
-                            </Button>
+                            
                         </Modal.Footer>
                     </Modal>
                 </div>

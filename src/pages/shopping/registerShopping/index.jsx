@@ -48,7 +48,7 @@ const RegisterShopping = () => {
     const [products, setProducts] = useState([]);
     const [shoppingDetails, setShoppingDetails] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     const [formData, setFormData] = useState({
         code: '',
         purchaseDate: '',
@@ -68,6 +68,26 @@ const RegisterShopping = () => {
             console.error('Error al obtener proveedores', error);
         }
     };
+    useEffect(() => {
+        // Obtener la fecha actual en formato `YYYY-MM-DD`
+        const today = new Date().toISOString().split("T")[0];
+        setFormData((prevState) => ({ ...prevState, purchaseDate: today }));
+      }, []);
+    useEffect(() => {
+        // Generar un código aleatorio de 5 caracteres alfanuméricos
+        const generateRandomCode = () => {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let code = "";
+            for (let i = 0; i < 5; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        };
+
+        // Establecer el valor del código aleatorio
+        const randomCode = generateRandomCode();
+        setFormData((prevState) => ({ ...prevState, code: randomCode }));
+    }, []);
 
     const getProducts = async () => {
         try {
@@ -126,7 +146,7 @@ const RegisterShopping = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validación de campos
         if (!formData.code || !formData.purchaseDate || !formData.supplierId || shoppingDetails.length === 0) {
             Swal.fire({
@@ -152,7 +172,7 @@ const RegisterShopping = () => {
             }).then(() => {
                 navigate('/Shopping'); // Redirige a la tabla de compras
             });
-            
+
             setFormData({ code: '', purchaseDate: '', supplierId: '' });
             setShoppingDetails([]);
         } catch (error) {
@@ -228,7 +248,7 @@ const RegisterShopping = () => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className='table-responsive mt-3 p-3'>
                                     <table className='table table-bordered table-hover v-align table-striped'>
                                         <thead className='table-light'>
@@ -280,21 +300,21 @@ const RegisterShopping = () => {
                                                 <Col sm="6">
                                                     <Form.Label>Codigo</Form.Label>
                                                     <Form.Control
-                                                        type="text"
-                                                        placeholder="Codigo"
-                                                        name="code"
-                                                        value={formData.code}
-                                                        onChange={handleInputChange}
+                                                         type="text"
+                                                         placeholder="Codigo"
+                                                         name="code"
+                                                         value={formData.code} 
+                                                         readOnly 
                                                     />
                                                 </Col>
                                                 <Col sm="6">
                                                     <Form.Label>Fecha Compra</Form.Label>
                                                     <Form.Control
-                                                        type="date"
-                                                        placeholder="Fecha Compra"
-                                                        name="purchaseDate"
-                                                        value={formData.purchaseDate}
-                                                        onChange={handleInputChange}
+                                                         type="date"
+                                                         placeholder="Fecha Compra"
+                                                         name="purchaseDate"
+                                                         value={formData.purchaseDate} 
+                                                         onChange={handleInputChange} 
                                                     />
                                                 </Col>
                                             </Form.Group>
@@ -314,12 +334,13 @@ const RegisterShopping = () => {
                                                 </Form.Select>
                                             </Form.Group>
                                             <Form.Group className='d-flex align-items-center justify-content-end'>
-                                                <Button variant="primary" type="submit" className='btn-sucess'>
-                                                    Guardar
-                                                </Button>
                                                 <Button variant="secondary" className='btn-red' href="/Shopping">
                                                     Cerrar
                                                 </Button>
+                                                <Button variant="primary" type="submit" className='btn-sucess'>
+                                                    Guardar
+                                                </Button>
+
                                             </Form.Group>
                                         </Form>
                                     </div>

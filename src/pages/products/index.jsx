@@ -523,11 +523,9 @@ const Products = () => {
                       </td>
                     </tr>
                   ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className='text-center'>No hay Productos disponibles</td>
-                  </tr>
-                )}
+                ) : ('')
+                 
+                }
               </tbody>
             </table>
           </div>
@@ -639,12 +637,13 @@ const Products = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate} className='btn-sucess'>
-            <MdOutlineSave /> Guardar
-          </Button>
-          <Button variant="secondary" onClick={handleClose} className='btn-red'>
+        <Button variant="secondary" onClick={handleClose} className='btn-red'>
             Cerrar
           </Button>
+          <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate} className='btn-sucess'>
+             Guardar
+          </Button>
+         
         </Modal.Footer>
       </Modal>
     </div>
