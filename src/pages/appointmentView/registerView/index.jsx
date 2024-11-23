@@ -40,7 +40,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   };
 });
 
-export default function Component() {
+export default function AppointmentRegistration() {
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const [isScrolled, setIsScrolled] = useState(false);
@@ -74,6 +74,7 @@ export default function Component() {
         checkLoginStatus();
         getUsers();
         getServices();
+        console.log("Component mounted, fetching initial data");
 
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -97,6 +98,7 @@ export default function Component() {
         try {
             const response = await axios.get(urlUsers);
             setUsers(response.data);
+            console.log("Users fetched:", response.data);
         } catch (error) {
             console.error("Error fetching users:", error);
         }
@@ -106,6 +108,7 @@ export default function Component() {
         try {
             const response = await axios.get(urlServices);
             setServices(response.data);
+            console.log("Services fetched:", response.data);
         } catch (error) {
             console.error("Error fetching services:", error);
         }
@@ -153,6 +156,7 @@ export default function Component() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        console.log(`Input changed: ${name} = ${value}`);
         setFormData(prevData => ({
             ...prevData,
             [name]: value
@@ -168,6 +172,7 @@ export default function Component() {
     };
 
     const handleServiceAdd = () => {
+        console.log("Adding new service");
         setFormData(prevData => ({
             ...prevData,
             appointmentDetails: [
@@ -185,6 +190,7 @@ export default function Component() {
     };
 
     const handleDetailChange = (index, field, value) => {
+        console.log(`Detail changed: index=${index}, field=${field}, value=${value}`);
         setFormData(prevData => {
             const newDetails = [...prevData.appointmentDetails];
             if (newDetails[index]) {
@@ -225,26 +231,65 @@ export default function Component() {
         return Object.keys(newErrors).length === 0;
     };
 
+    const calculateFinishTime = (initTime, appointmentDetails) => {
+        const [hours, minutes] = initTime.split(':').map(Number);
+        let totalMinutes = hours * 60 + minutes;
+        
+        appointmentDetails.forEach(detail => {
+            const service = services.find(s => s.id === parseInt(detail.serviceId, 10));
+            if (service) {
+                totalMinutes += service.duration || 0;
+            }
+        });
+
+        const finishHours = Math.floor(totalMinutes / 60);
+        const finishMinutes = totalMinutes % 60;
+        return `${String(finishHours).padStart(2, '0')}:${String(finishMinutes).padStart(2, '0')}:00`;
+    };
+
+    const calculateTotalTime = (appointmentDetails) => {
+        return appointmentDetails.reduce((total, detail) => {
+            const service = services.find(s => s.id === parseInt(detail.serviceId, 10));
+            return total + (service ? service.duration : 0);
+        }, 0);
+    };
+
+    const calculateTotal = (appointmentDetails) => {
+        return appointmentDetails.reduce((total, detail) => {
+            const service = services.find(s => s.id === parseInt(detail.serviceId, 10));
+            return total + (service ? service.price : 0);
+        }, 0).toFixed(2);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("Form submitted", formData);
         if (!validateForm()) {
             return;
         }
 
         try {
+            const finishTime = calculateFinishTime(formData.Init_Time, formData.appointmentDetails);
+            const totalTime = calculateTotalTime(formData.appointmentDetails);
+            const totalPrice = calculateTotal(formData.appointmentDetails);
+
             const appointmentData = {
                 Init_Time: formData.Init_Time + ':00',
+                Finish_Time: finishTime,
                 Date: formData.Date,
+                Total: totalPrice,
+                time_appointment: totalTime,
                 status: 'pendiente',
-                clienteId: parseInt(formData.clienteId, 10),
+                clienteId: parseInt(localStorage.getItem('userId'), 10),
                 appointmentDetails: formData.appointmentDetails.map(detail => ({
                     serviceId: parseInt(detail.serviceId, 10),
                     empleadoId: parseInt(detail.empleadoId, 10)
                 }))
             };
 
+            console.log("Sending appointment data:", appointmentData);
             const response = await axios.post(urlAppointments, appointmentData);
-            console.log("Appointment registered:", response.data);
+            console.log("Appointment registered successfully:", response.data);
 
             MySwal.fire({
                 icon: 'success',
@@ -307,7 +352,7 @@ export default function Component() {
                                             <GrUserAdmin /> Administrar
                                         </MenuItem>
                                     ) : (
-                                        <MenuItem>Carrito</MenuItem>
+                                        <MenuItem></MenuItem>
                                     )}
                                     <MenuItem onClick={handleLogout} className="menu-item-landingPage">
                                         <GiExitDoor /> Cerrar Sesión
@@ -325,8 +370,6 @@ export default function Component() {
         
             <div className="right-content w-100">
                 <div className="row d-flex align-items-center w-100">
-                    
-        
                     <div className="card border-0 p-3 d-flex colorTransparent mt-3">
                         <div className="row">
                             <div className="col-sm-7">
@@ -336,7 +379,8 @@ export default function Component() {
                                             <span className="Title">Detalle de cita</span>
                                         </div>
                                         <div className="col-sm-5 d-flex align-items-center justify-content-end">
-                                            <div className="searchBox position-relative d-flex align-items-center">
+                                            <div className="searchBox position-relative d-flex align-items-center
+">
                                                 <IoSearch className="mr-2" />
                                                 <input type="text" placeholder="Buscar..." className="form-control" />
                                             </div>
@@ -407,7 +451,6 @@ export default function Component() {
         
                             <div className="col-sm-5">
                                 <div className="card-detail shadow border-0">
-                                    <span className="Title">Info de cita</span>
                                     <Form className="form p-4" onSubmit={handleSubmit}>
                                         <Form.Group as={Row} className="mb-3">
                                             <Col sm="12">
@@ -427,7 +470,7 @@ export default function Component() {
         
                                         <Form.Group as={Row} className="mb-3">
                                             <Col sm="12">
-                                                <Form.Label>Fecha</Form.Label>
+                                                <Form.Label>Día de reserva</Form.Label>
                                                 <Form.Control
                                                     type="date"
                                                     name="Date"
@@ -441,27 +484,7 @@ export default function Component() {
                                             </Col>
                                         </Form.Group>
         
-                                        <Form.Group as={Row} className="mb-3">
-                                            <Col sm="12">
-                                                <Form.Label>Cliente</Form.Label>
-                                                <Form.Select
-                                                    name="clienteId"
-                                                    value={formData.clienteId}
-                                                    onChange={handleInputChange}
-                                                    isInvalid={!!errors.clienteId}
-                                                >
-                                                    <option value="">Seleccionar cliente</option>
-                                                    {users.filter(user => user.roleId === 3).map(cliente => (
-                                                        <option key={cliente.id} value={cliente.id}>{cliente.name}</option>
-                                                    ))}
-                                                </Form.Select>
-                                                <Form.Control.Feedback type="invalid">
-                                                    {errors.clienteId}
-                                                </Form.Control.Feedback>
-                                            </Col>
-                                        </Form.Group>
-        
-                                        <Button type="submit" className="btn-register">
+                                        <Button type="submit" className="btn-sucess">
                                             Registrar
                                         </Button>
                                     </Form>
@@ -474,3 +497,4 @@ export default function Component() {
         </div>
     );
 }
+
