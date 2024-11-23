@@ -277,7 +277,8 @@ export default function EnhancedProfileEditor() {
                                         onBlur={handleBlur}
                                         error={touched.name && Boolean(errors.name)}
                                         helperText={touched.name && errors.name}
-                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#FFD700' } } }}
+                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#000000' } } }}
+
                                     />
                                 </Grid>
                                 <Grid item xs={12} md={6}>
@@ -291,7 +292,8 @@ export default function EnhancedProfileEditor() {
                                         onBlur={handleBlur}
                                         error={touched.email && Boolean(errors.email)}
                                         helperText={touched.email && errors.email}
-                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#FFD700' } } }}
+                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#000000' } } }}
+
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -305,7 +307,8 @@ export default function EnhancedProfileEditor() {
                                         onBlur={handleBlur}
                                         error={touched.password && Boolean(errors.password)}
                                         helperText={touched.password && errors.password}
-                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#FFD700' } } }}
+                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#000000' } } }}
+
                                         InputProps={{
                                             endAdornment: (
                                                 <IconButton
@@ -328,7 +331,8 @@ export default function EnhancedProfileEditor() {
                                         onBlur={handleBlur}
                                         error={touched.phone && Boolean(errors.phone)}
                                         helperText={touched.phone && errors.phone}
-                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#FFD700' } } }}
+                                        sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#000000' } } }}
+
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
