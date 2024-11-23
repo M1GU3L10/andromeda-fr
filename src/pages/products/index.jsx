@@ -471,16 +471,25 @@ const Products = () => {
                       }).format(product.Price)}</td>
                       <td>{categories.find(cat => cat.id === product.Category_Id)?.name || 'N/A'}</td>
                       <td>{product.Stock}</td>
-                      <td>
+                      <td className="p-2 text-center">
                         {product.Image ? (
-                          <img
-                            src={product.Image}
-                            alt={product.Product_Name}
-                            style={{
-                              width: '50px', height: '50px', objectFit: 'cover'
-                            }}
-                          />
-                        ) : 'No'}
+                          <div className="inline-block">
+                            <img
+                              src={product.Image}
+                              alt={product.Product_Name}
+                              className="w-[50px] h-[50px] object-cover rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-gray-100"
+                              style={{
+                                width: '50px',
+                                height: '50px',
+                                objectFit: 'cover'
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-[50px] h-[50px] inline-flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 border border-gray-100">
+                            <span className="text-sm">No</span>
+                          </div>
+                        )}
                       </td>
                       <td>
                         <span className={`productStatus ${product.status === 'A' ? '' : 'Inactive'}`}>
@@ -524,7 +533,7 @@ const Products = () => {
                     </tr>
                   ))
                 ) : ('')
-                 
+
                 }
               </tbody>
             </table>
@@ -637,13 +646,13 @@ const Products = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} className='btn-red'>
+          <Button variant="secondary" onClick={handleClose} className='btn-red'>
             Cerrar
           </Button>
           <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate} className='btn-sucess'>
-             Guardar
+            Guardar
           </Button>
-         
+
         </Modal.Footer>
       </Modal>
     </div>
