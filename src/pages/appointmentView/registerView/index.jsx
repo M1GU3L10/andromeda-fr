@@ -341,7 +341,7 @@ export default function Component() {
             ) {
                 return {
                     isValid: false,
-                    message: 'El horario seleccionado se superpone con una cita existente'
+                    message: 'El horario seleccionado ya esta ocupado por otra cita '
                 };
             }
         }
