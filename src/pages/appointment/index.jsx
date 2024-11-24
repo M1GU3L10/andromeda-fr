@@ -17,6 +17,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import { FaMoneyBillWave } from 'react-icons/fa';
 import { BsCalendar2DateFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
+import esLocale from "@fullcalendar/core/locales/es";
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800];
@@ -176,9 +177,9 @@ appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
 
     ///detalle venta
 
-    const getSaleDetailsByAppointmentId = async (appointmentId) => {
+    const getSaleDetailsByAppointmentId = async (id) => {
         try {
-          const response = await axios.get(`${urlSales}/SaleDetails/${appointmentId}`);
+          const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
           setSaleDetails(response.data);
         } catch (error) {
           console.error('Error fetching sale details:', error);
@@ -464,6 +465,8 @@ detail.empleadoId;
                             ref={calendarRef}
                             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                             initialView={selectedView}
+                            locale="es"
+                            locales={[esLocale]}
                             events={filteredEvents}
                             eventContent={(info) => <EventComponent info={info} setAppointmentId={setAppointmentId} />}
                             headerToolbar={{
@@ -485,31 +488,31 @@ detail.empleadoId;
             <h5 className="border-bottom pb-2">Appointment Information</h5>
             <div className="row">
               <div className="col-md-6">
-                <p><strong>Client:</strong> {detailData.title}</p>
-                <p><strong>Date:</strong> {detailData.Date}</p>
-                <p><strong>Start Time:</strong> {detailData.Init_Time}</p>
-                <p><strong>End Time:</strong> {detailData.Finish_Time}</p>
+                <p><strong>Cliente:</strong> {detailData.title}</p>
+                <p><strong>Fecha:</strong> {detailData.Date}</p>
+                <p><strong>Hora inicio:</strong> {detailData.Init_Time}</p>
+                <p><strong>Hora fin:</strong> {detailData.Finish_Time}</p>
               </div>
               <div className="col-md-6">
-                <p><strong>Appointment Duration:</strong> {detailData.time_appointment}<strong> Minutes</strong></p>
+                <p><strong>Duraciòn de la cita:</strong> {detailData.time_appointment}<strong> Minutes</strong></p>
                 <p><strong>Total:</strong> {detailData.Total}</p>
-                <p><strong>Status:</strong> {detailData.status}</p>
+                <p><strong>Estado:</strong> {detailData.status}</p>
               </div>
             </div>
           </div>
           <div className="mt-4">
-            <h5 className="border-bottom pb-2">Sale Details</h5>
+            <h5 className="border-bottom pb-2">Detalle de la venta</h5>
             {saleDetails.length > 0 ? (
               <div className="table-responsive">
                 <table className="table table-striped">
                   <thead>
                     <tr>
-                      <th>Type</th>
-                      <th>Name</th>
-                      <th>Quantity</th>
-                      <th>Unit Price</th>
+                      <th>Tipo</th>
+                      <th>Nombre</th>
+                      <th>Cantidad</th>
+                      <th>Precio unit</th>
                       <th>Total</th>
-                      <th>Employee</th>
+                      <th>Empleado</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -527,7 +530,7 @@ detail.empleadoId;
                 </table>
               </div>
             ) : (
-              <p className="text-muted">No sale details for this appointment.</p>
+              <p className="text-muted">No se encuentran productos en esta cita.</p>
             )}
           </div>
         </Modal.Body>
