@@ -342,8 +342,7 @@ const RegisterShopping = () => {
                                 </div>
 
                                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                                    <span className='Monto'>Total:</span>
-                                    <span className='valor'>${calculateTotal().toFixed(2)}</span>
+                                    <span className='valor'>Total: ${calculateTotal().toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>

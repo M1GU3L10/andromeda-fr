@@ -30,30 +30,63 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
 }));
 
 export default function Component() {
+  // Initialize state from localStorage or default values
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
-  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState(() => {
+    const saved = localStorage.getItem('selectedProducts');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [services, setServices] = useState([]);
-  const [saleInfo, setSaleInfo] = useState({
-    Billnumber: '',
-    SaleDate: new Date().toISOString().split('T')[0],
-    total_price: 0,
-    status: 'Pendiente',
-    id_usuario: '',
-    appointmentData: {
-      Init_Time: '',
-      Finish_Time: '',
-      Date: new Date().toISOString().split('T')[0],
-      time_appointment: 60
-    },
-    saleDetails: []
+  const [saleInfo, setSaleInfo] = useState(() => {
+    const saved = localStorage.getItem('saleInfo');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return {
+      Billnumber: '',
+      SaleDate: new Date().toISOString().split('T')[0],
+      total_price: 0,
+      status: 'Pendiente',
+      id_usuario: '',
+      appointmentData: {
+        Init_Time: '',
+        Finish_Time: '',
+        Date: new Date().toISOString().split('T')[0],
+        time_appointment: 60
+      },
+      saleDetails: []
+    };
   });
   const [errors, setErrors] = useState({});
   const urlServices = 'http://localhost:1056/api/services';
   const urlUsers = 'http://localhost:1056/api/users';
-  const [subtotalProducts, setSubtotalProducts] = useState(0);
-  const [subtotalServices, setSubtotalServices] = useState(0);
+  const [subtotalProducts, setSubtotalProducts] = useState(() => {
+    const saved = localStorage.getItem('subtotalProducts');
+    return saved ? parseFloat(saved) : 0;
+  });
+  const [subtotalServices, setSubtotalServices] = useState(() => {
+    const saved = localStorage.getItem('subtotalServices');
+    return saved ? parseFloat(saved) : 0;
+  });
+
+  // Save to localStorage whenever these values change
+  useEffect(() => {
+    localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+  }, [selectedProducts]);
+
+  useEffect(() => {
+    localStorage.setItem('saleInfo', JSON.stringify(saleInfo));
+  }, [saleInfo]);
+
+  useEffect(() => {
+    localStorage.setItem('subtotalProducts', subtotalProducts.toString());
+  }, [subtotalProducts]);
+
+  useEffect(() => {
+    localStorage.setItem('subtotalServices', subtotalServices.toString());
+  }, [subtotalServices]);
 
   useEffect(() => {
     getUsers();
@@ -137,7 +170,6 @@ export default function Component() {
   };
 
   const calculateTotals = (currentProducts, currentSaleDetails) => {
-    // Calculate products subtotal
     const productDetails = currentProducts.map(product => ({
       quantity: product.quantity,
       unitPrice: product.Price,
@@ -149,7 +181,6 @@ export default function Component() {
 
     const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
 
-    // Get service details
     const serviceDetails = currentSaleDetails.filter(detail =>
       detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
     );
@@ -162,7 +193,6 @@ export default function Component() {
       return sum;
     }, 0);
 
-    // Update all totals at once
     setSubtotalProducts(productsSubtotal);
     setSubtotalServices(servicesSubtotal);
 
@@ -172,26 +202,27 @@ export default function Component() {
       total_price: productsSubtotal + servicesSubtotal
     }));
   };
+
   useEffect(() => {
-    // Generar 3 números aleatorios
-    const randomBillNumber = Math.floor(100 + Math.random() * 900).toString();
-    setSaleInfo((prevState) => ({ ...prevState, Billnumber: randomBillNumber }));
+    if (!saleInfo.Billnumber) {
+      const randomBillNumber = Math.floor(100 + Math.random() * 900).toString();
+      setSaleInfo((prevState) => ({ ...prevState, Billnumber: randomBillNumber }));
+    }
   }, []);
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setSaleInfo(prevState => {
-      // Si el campo que cambia es SaleDate, actualizamos también la fecha de la cita
       if (name === 'SaleDate') {
         return {
           ...prevState,
           [name]: value,
           appointmentData: {
             ...prevState.appointmentData,
-            Date: value // Sincronizamos la fecha de la cita con la fecha de venta
+            Date: value
           }
         };
       }
-      // Para otros campos, mantenemos el comportamiento original
       return {
         ...prevState,
         [name]: value
@@ -259,6 +290,14 @@ export default function Component() {
     try {
       await axios.post('http://localhost:1056/api/sales', saleInfo);
       show_alerta('Venta registrada con éxito', 'success');
+
+      // Clear localStorage
+      localStorage.removeItem('selectedProducts');
+      localStorage.removeItem('saleInfo');
+      localStorage.removeItem('subtotalProducts');
+      localStorage.removeItem('subtotalServices');
+
+      // Reset state
       setSaleInfo({
         Billnumber: '',
         SaleDate: new Date().toISOString().split('T')[0],
@@ -274,6 +313,8 @@ export default function Component() {
         saleDetails: []
       });
       setSelectedProducts([]);
+      setSubtotalProducts(0);
+      setSubtotalServices(0);
     } catch (error) {
       console.error('Error al registrar la venta:', error);
       show_alerta('Error al registrar la venta', 'error');
@@ -297,7 +338,6 @@ export default function Component() {
 
       const updatedServiceDetails = [...serviceDetails, newServiceDetail];
 
-      // Combine with product details
       const productDetails = selectedProducts.map(product => ({
         quantity: product.quantity,
         unitPrice: product.Price,
@@ -344,7 +384,6 @@ export default function Component() {
 
       const allDetails = [...productDetails, ...serviceDetails];
 
-      // Calculate subtotals
       const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
       const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
         if (detail.serviceId) {
@@ -373,7 +412,6 @@ export default function Component() {
 
       const updatedServiceDetails = serviceDetails.filter((_, i) => i !== index);
 
-      // Combine with product details
       const productDetails = selectedProducts.map(product => ({
         quantity: product.quantity,
         unitPrice: product.Price,
@@ -577,9 +615,9 @@ export default function Component() {
                           <Form.Control
                             type="text"
                             name="Billnumber"
-                            value={saleInfo.Billnumber} 
+                            value={saleInfo.Billnumber}
                             isInvalid={!!errors.Billnumber}
-                            readOnly 
+                            readOnly
                           />
 
                           <Form.Control.Feedback type="invalid">
