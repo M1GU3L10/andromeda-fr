@@ -55,7 +55,6 @@ const Appointment = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
-    const [saleDetails, setSaleDetails] = useState([]);
     const [selectedView, setSelectedView] = useState('dayGridMonth');
     const [selectedEmployee, setSelectedEmployee] = useState('');
     const [userRole, setUserRole] = useState('');
@@ -174,18 +173,6 @@ appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
         }, 300);  // Agregar un pequeño retraso antes de disparar el evento resize
     }, [isToggleSidebar]);
 
-    ///detalle venta
-
-    const getSaleDetailsByAppointmentId = async (appointmentId) => {
-        try {
-          const response = await axios.get(`${urlSales}/SaleDetails/${appointmentId}`);
-          setSaleDetails(response.data);
-        } catch (error) {
-          console.error('Error fetching sale details:', error);
-          setSaleDetails([]);
-        }
-      };
-
     const getProgramming = async () => {
         try {
             const [programmingResponse, salesResponse] = await Promise.all([
@@ -294,7 +281,6 @@ detail.empleadoId;
                 time_appointment: info.event.extendedProps.time_appointment,
                 Total: info.event.extendedProps.Total
             });
-            await getSaleDetailsByAppointmentId(info.event.id);
             setShowDetailModal(true);
             handleClose();
         };
@@ -476,67 +462,23 @@ detail.empleadoId;
                     </div>
                 </div>
             </div>
-            <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Appointment and Sale Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="mb-4">
-            <h5 className="border-bottom pb-2">Appointment Information</h5>
-            <div className="row">
-              <div className="col-md-6">
-                <p><strong>Client:</strong> {detailData.title}</p>
-                <p><strong>Date:</strong> {detailData.Date}</p>
-                <p><strong>Start Time:</strong> {detailData.Init_Time}</p>
-                <p><strong>End Time:</strong> {detailData.Finish_Time}</p>
-              </div>
-              <div className="col-md-6">
-                <p><strong>Appointment Duration:</strong> {detailData.time_appointment}<strong> Minutes</strong></p>
-                <p><strong>Total:</strong> {detailData.Total}</p>
-                <p><strong>Status:</strong> {detailData.status}</p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4">
-            <h5 className="border-bottom pb-2">Sale Details</h5>
-            {saleDetails.length > 0 ? (
-              <div className="table-responsive">
-                <table className="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Name</th>
-                      <th>Quantity</th>
-                      <th>Unit Price</th>
-                      <th>Total</th>
-                      <th>Employee</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {saleDetails.map((detail, index) => (
-                      <tr key={index}>
-                        <td>{detail.type}</td>
-                        <td>{detail.productName}</td>
-                        <td>{detail.quantity}</td>
-                        <td>${detail.price.toLocaleString()}</td>
-                        <td>${detail.total.toLocaleString()}</td>
-                        <td>{detail.employeeName || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-muted">No sale details for this appointment.</p>
-            )}
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="outlined" onClick={() => setShowDetailModal(false)}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+            <Modal show={showDetailModal} onHide={handleCloseDetailModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Detalles de la cita</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p><strong>Cliente:</strong> {detailData.title}</p>
+                    <p><strong>Fecha:</strong> {detailData.Date}</p>
+                    <p><strong>Hora de inicio:</strong> {detailData.Init_Time}</p>
+                    <p><strong>Hora de fin:</strong> {detailData.Finish_Time}</p>
+                    <p><strong>Tiempo de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
+                    <p><strong>Total:</strong> {detailData.Total}</p>
+                    <p><strong>Estado:</strong> {detailData.status}</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetailModal}>Cerrar</Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };
