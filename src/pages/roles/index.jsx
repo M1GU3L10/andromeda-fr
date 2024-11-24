@@ -316,22 +316,37 @@ const Roles = () => {
 
     const asignarPrivilegios = async (roleId, privilegios) => {
         try {
-            // Obtener los PermissionRoles actuales para este rol
-            const permissionRolesResponse = await axios.get(`${urlPermissionsRoles}?roleId=${roleId}`);
-            const permissionRoles = permissionRolesResponse.data;
-
+            // Para cada permiso seleccionado
             for (const permissionId in privilegios) {
-                const permissionRole = permissionRoles.find(pr => pr.permissionId == permissionId);
+                // Obtener el PermissionRole más reciente para este rol y permiso
+                const permissionRolesResponse = await axios.get(`${urlPermissionsRoles}?roleId=${roleId}&permissionId=${permissionId}`);
+                const permissionRole = permissionRolesResponse.data[permissionRolesResponse.data.length - 1]; // Obtener el más reciente
+                
                 if (permissionRole) {
+                    // Para cada privilegio del permiso actual
                     for (const privilegeId in privilegios[permissionId]) {
+                        // Si el privilegio está seleccionado (true)
                         if (privilegios[permissionId][privilegeId]) {
-                            await axios.post(urlAssignPrivileges, {
-                                privilegeId: parseInt(privilegeId),
-                                permissionRoleId: permissionRole.id
-                            });
+                            try {
+                                // Crear la relación PrivilegePermissionRole
+                                await axios.post(urlPrivilegePermissionRoles, {
+                                    privilegeId: parseInt(privilegeId),
+                                    permissionRoleId: permissionRole.id
+                                });
+                            } catch (error) {
+                                if (error.response && error.response.status !== 409) { // Ignorar error si ya existe
+                                    throw error;
+                                }
+                            }
                         } else {
-                            // Si el privilegio no está seleccionado, lo eliminamos si existe
-                            await axios.delete(`${urlPrivilegePermissionRoles}/${permissionRole.id}/${privilegeId}`);
+                            // Si el privilegio no está seleccionado, intentar eliminarlo
+                            try {
+                                await axios.delete(`${urlPrivilegePermissionRoles}/${permissionRole.id}/${privilegeId}`);
+                            } catch (error) {
+                                if (error.response && error.response.status !== 404) { // Ignorar error si no existe
+                                    throw error;
+                                }
+                            }
                         }
                     }
                 }
