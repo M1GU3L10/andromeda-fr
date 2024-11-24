@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaMoneyBillWave } from "react-icons/fa";
-import { IoSearch } from "react-icons/io5";
+import { FaMoneyBillWave, FaPlus, FaMinus } from "react-icons/fa";
+import { IoSearch, IoTrashSharp } from "react-icons/io5";
 import Button from '@mui/material/Button';
-import { IoTrashSharp } from "react-icons/io5";
 import Header from './Header1';
-import { FaPlus, FaMinus } from "react-icons/fa6";
 import { Form, Col, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { show_alerta } from '../../../assets/functions';
@@ -41,6 +39,7 @@ export default function Component() {
     const urlAbsences = 'http://localhost:1056/api/absences';
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [appointments, setAppointments] = useState([]);
 
     useEffect(() => {
         checkLoginStatus();
@@ -67,7 +66,8 @@ export default function Component() {
                 getUsers(),
                 getProducts(),
                 getServices(),
-                getAbsences()
+                getAbsences(),
+                getAppointments()
             ]);
             setLoading(false);
         } catch (error) {
@@ -112,6 +112,15 @@ export default function Component() {
             setServices(response.data);
         } catch (error) {
             console.error("Error fetching services:", error);
+        }
+    };
+
+    const getAppointments = async () => {
+        try {
+            const response = await axios.get('http://localhost:1056/api/appointment');
+            setAppointments(response.data);
+        } catch (error) {
+            console.error("Error fetching appointments:", error);
         }
     };
 
@@ -238,11 +247,11 @@ export default function Component() {
         switch (fieldName) {
             case 'Billnumber':
                 if (value.length === 0) {
-                    newErrors.Billnumber = 'El número de Combrobante es requerido';
+                    newErrors.Billnumber = 'El número de Comprobante es requerido';
                 } else if (value.length !== 3) {
-                    newErrors.Billnumber = 'El número de Combrobante debe tener exactamente 3 dígitos';
+                    newErrors.Billnumber = 'El número de Comprobante debe tener exactamente 3 dígitos';
                 } else if (!/^\d+$/.test(value)) {
-                    newErrors.Billnumber = 'El número de Combrobante debe contener solo dígitos';
+                    newErrors.Billnumber = 'El número de Comprobante debe contener solo dígitos';
                 } else {
                     newErrors.Billnumber = '';
                 }
@@ -285,6 +294,61 @@ export default function Component() {
         return { isValid: true };
     };
 
+    const validateAppointmentTime = () => {
+        const now = new Date();
+        const appointmentDate = new Date(saleInfo.appointmentData.Date);
+        const appointmentTime = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
+        
+        if (appointmentDate.toDateString() === now.toDateString()) {
+            if (appointmentTime <= now) {
+                return {
+                    isValid: false,
+                    message: 'No se puede elegir una hora anterior a la actual para citas en el mismo día'
+                };
+            }
+        }
+
+        const startTime = parseInt(saleInfo.appointmentData.Init_Time.split(':')[0]);
+        if (startTime < 7 || startTime >= 21) {
+            return {
+                isValid: false,
+                message: 'Las citas solo se pueden agendar entre las 7:00 AM y las 9:00 PM'
+            };
+        }
+
+        if (appointmentDate.getDay() === 1) { // 1 represents Monday
+            return {
+                isValid: false,
+                message: 'No se pueden reservar citas para los lunes'
+            };
+        }
+
+        return { isValid: true };
+    };
+
+    const validateAppointmentAvailability = () => {
+        const newAppointmentStart = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
+        const newAppointmentEnd = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Finish_Time);
+
+        for (const appointment of appointments) {
+            const existingStart = new Date(appointment.Date + 'T' + appointment.Init_Time);
+            const existingEnd = new Date(appointment.Date + 'T' + appointment.Finish_Time);
+
+            if (
+                (newAppointmentStart >= existingStart && newAppointmentStart < existingEnd) ||
+                (newAppointmentEnd > existingStart && newAppointmentEnd <= existingEnd) ||
+                (newAppointmentStart <= existingStart && newAppointmentEnd >= existingEnd)
+            ) {
+                return {
+                    isValid: false,
+                    message: 'El horario seleccionado se superpone con una cita existente'
+                };
+            }
+        }
+
+        return { isValid: true };
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -296,18 +360,30 @@ export default function Component() {
         validateField('Billnumber', saleInfo.Billnumber);
 
         if (errors.Billnumber) {
-            show_alerta('Por favor, corrija los errores antes de enviar', 'warning');
+            show_alerta('Por favor, seleecione otro dia los lunes no estamos disponibles', 'warning');
             return;
         }
 
         if (saleInfo.saleDetails.length === 0) {
-            show_alerta('Debe agregar al menos un producto o servicio al detalle de la venta', 'warning');
+            show_alerta('Debe agregar al menos un servicio', 'warning');
             return;
         }
 
-        const { isValid, message } = validateEmployeeAvailability();
-        if (!isValid) {
-            show_alerta(message, 'error');
+        const { isValid: isEmployeeAvailable, message: employeeMessage } = validateEmployeeAvailability();
+        if (!isEmployeeAvailable) {
+            show_alerta(employeeMessage, 'error');
+            return;
+        }
+
+        const { isValid: isTimeValid, message: timeMessage } = validateAppointmentTime();
+        if (!isTimeValid) {
+            show_alerta(timeMessage, 'error');
+            return;
+        }
+
+        const { isValid: isAppointmentAvailable, message: appointmentMessage } = validateAppointmentAvailability();
+        if (!isAppointmentAvailable) {
+            show_alerta(appointmentMessage, 'error');
             return;
         }
 
@@ -324,12 +400,13 @@ export default function Component() {
 
         try {
             await axios.post('http://localhost:1056/api/sales', saleInfo);
-            show_alerta('Venta registrada con éxito', 'success');
+            show_alerta('Cita registrada con éxito', 'success');
             setSaleInfo({
                 Billnumber: '',
                 SaleDate: new Date().toISOString().split('T')[0],
                 total_price: 0,
-                status: 'Pendiente',
+                status: 
+'Pendiente',
                 id_usuario: saleInfo.id_usuario,
                 appointmentData: {
                     Init_Time: '',
@@ -420,7 +497,7 @@ export default function Component() {
                 id_producto: product.id,
                 empleadoId: null,
                 serviceId: null
-}));
+            }));
 
             const allDetails = [...productDetails, ...serviceDetails];
 
@@ -637,7 +714,7 @@ export default function Component() {
                                             variant="secondary"
                                             className='btn-red'
                                             id='btn-red'
-                                            href="/appointmentView"
+                                            href="/index"
                                             style={{ minWidth: '100px' }}
                                         >
                                             Cerrar
