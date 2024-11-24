@@ -159,7 +159,60 @@ export default function Component() {
         setSelectedProducts(updatedProducts);
         calculateTotals(updatedProducts, saleInfo.saleDetails);
     };
-    
+    const validateAppointmentTime = () => {
+        const now = new Date();
+        const appointmentDate = new Date(saleInfo.appointmentData.Date);
+        const appointmentTime = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
+        
+        if (appointmentDate.toDateString() === now.toDateString()) {
+            if (appointmentTime <= now) {
+                return {
+                    isValid: false,
+                    message: 'No se puede elegir una hora anterior a la actual para citas en el mismo día'
+                };
+            }
+        }
+
+        const startTime = parseInt(saleInfo.appointmentData.Init_Time.split(':')[0]);
+        if (startTime < 7 || startTime >= 21) {
+            return {
+                isValid: false,
+                message: 'Las citas solo se pueden agendar entre las 7:00 AM y las 9:00 PM'
+            };
+        }
+
+        if (appointmentDate.getDay() === 1) { // 1 represents Monday
+            return {
+                isValid: false,
+                message: 'No se pueden reservar citas para los lunes'
+            };
+        }
+
+        return { isValid: true };
+    };
+
+    const validateAppointmentAvailability = () => {
+        const newAppointmentStart = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
+        const newAppointmentEnd = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Finish_Time);
+
+        for (const appointment of appointments) {
+            const existingStart = new Date(appointment.Date + 'T' + appointment.Init_Time);
+            const existingEnd = new Date(appointment.Date + 'T' + appointment.Finish_Time);
+
+            if (
+                (newAppointmentStart >= existingStart && newAppointmentStart < existingEnd) ||
+                (newAppointmentEnd > existingStart && newAppointmentEnd <= existingEnd) ||
+                (newAppointmentStart <= existingStart && newAppointmentEnd >= existingEnd)
+            ) {
+                return {
+                    isValid: false,
+                    message: 'El horario seleccionado ya esta ocupado por otra cita '
+                };
+            }
+        }
+
+        return { isValid: true };
+    };
     const updateQuantity = (productId, change) => {
         const product = products.find(p => p.id === productId);
         const updatedProducts = selectedProducts.map(p => {
@@ -296,60 +349,8 @@ export default function Component() {
         return { isValid: true };
     };
 
-    const validateAppointmentTime = () => {
-        const now = new Date();
-        const appointmentDate = new Date(saleInfo.appointmentData.Date);
-        const appointmentTime = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
-
-        if (appointmentDate.toDateString() === now.toDateString()) {
-            if (appointmentTime <= now) {
-                return {
-                    isValid: false,
-                    message: 'No se puede elegir una hora anterior a la actual para citas en el mismo día'
-                };
-            }
-        }
-
-        const startTime = parseInt(saleInfo.appointmentData.Init_Time.split(':')[0]);
-        if (startTime < 7 || startTime >= 21) {
-            return {
-                isValid: false,
-                message: 'Las citas solo se pueden agendar entre las 7:00 AM y las 9:00 PM'
-            };
-        }
-
-        if (appointmentDate.getDay() === 1) { // 1 represents Monday
-            return {
-                isValid: false,
-                message: 'No se pueden reservar citas para los lunes'
-            };
-        }
-
-        return { isValid: true };
-    };
-
-    const validateAppointmentAvailability = () => {
-        const newAppointmentStart = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
-        const newAppointmentEnd = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Finish_Time);
-
-        for (const appointment of appointments) {
-            const existingStart = new Date(appointment.Date + 'T' + appointment.Init_Time);
-            const existingEnd = new Date(appointment.Date + 'T' + appointment.Finish_Time);
-
-            if (
-                (newAppointmentStart >= existingStart && newAppointmentStart < existingEnd) ||
-                (newAppointmentEnd > existingStart && newAppointmentEnd <= existingEnd) ||
-                (newAppointmentStart <= existingStart && newAppointmentEnd >= existingEnd)
-            ) {
-                return {
-                    isValid: false,
-                    message: 'El horario seleccionado ya esta ocupado por otra cita '
-                };
-            }
-        }
-
-        return { isValid: true };
-    };
+   
+   
 
     const handleSubmit = async (event) => {
         event.preventDefault();
