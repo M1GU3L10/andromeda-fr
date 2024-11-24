@@ -56,13 +56,16 @@ export default function Component() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]); // Added state for filtered products
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('info');
-  const [cart, setCart] = useState({});
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : {};
+  });
   const [total, setTotal] = useState(0);
 
   const [userId, setUserId] = useState(null);
@@ -98,6 +101,11 @@ export default function Component() {
     checkLoginStatus();
     fetchCategories();
   }, [context]);
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    calculateTotal();
+  }, [cart]);
 
   const checkLoginStatus = () => {
     const token = localStorage.getItem('jwtToken');
@@ -144,9 +152,9 @@ export default function Component() {
     try {
       const response = await axios.get('http://localhost:1056/api/products');
       const activeProducts = response.data.filter(product => product.status === 'A');
-      console.log('Fetched products:', activeProducts); // Add this line
+      console.log('Fetched products:', activeProducts);
       setProducts(activeProducts);
-      setFilteredProducts(activeProducts); // Update filteredProducts
+      setFilteredProducts(activeProducts);
     } catch (err) {
       setError('Error al cargar los productos. Por favor, intente más tarde.');
       console.error('Error fetching products:', err);
@@ -194,10 +202,12 @@ export default function Component() {
         return prevCart;
       }
 
-      return {
+      const newCart = {
         ...prevCart,
         [product.id]: currentQuantity + 1
       };
+      localStorage.setItem('cart', JSON.stringify(newCart));
+      return newCart;
     });
   };
 
@@ -228,10 +238,12 @@ export default function Component() {
         return prevCart;
       }
 
-      return {
+      const newCart = {
         ...prevCart,
         [productId]: currentQuantity + 1
       };
+      localStorage.setItem('cart', JSON.stringify(newCart));
+      return newCart;
     });
   };
 
@@ -250,18 +262,22 @@ export default function Component() {
           draggable: true,
           progress: undefined
         });
+        localStorage.setItem('cart', JSON.stringify(newCart));
         return newCart;
       }
 
-      return {
+      const newCart = {
         ...prevCart,
         [productId]: currentQuantity - 1
       };
+      localStorage.setItem('cart', JSON.stringify(newCart));
+      return newCart;
     });
   };
 
   const clearCart = () => {
     setCart({});
+    localStorage.removeItem('cart');
   };
 
   const handleCheckout = async () => {
@@ -373,7 +389,7 @@ export default function Component() {
 
   const getTotalItems = () => Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
-  const handleSearchChange = (e) => { // Updated search function
+  const handleSearchChange = (e) => {
     const searchTerm = e.target.value.toLowerCase();
     setSearchTerm(searchTerm);
     const filtered = products.filter(product =>
@@ -427,7 +443,8 @@ export default function Component() {
   };
 
   const getUserInitial = () => {
-    return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
+    return userEmail && userEmail.length > 
+0 ? userEmail[0].toUpperCase() : '?';
   };
 
   const toggleNav = () => {
@@ -510,7 +527,6 @@ export default function Component() {
                   <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
                     <GiExitDoor /> Cerrar Sesión
                   </MenuItem>
-                  {/* Usamos MenuItem para mantener el mismo estilo */}
                   <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
                     <GrUser /> Mi perfil
                   </MenuItem>
@@ -554,12 +570,10 @@ export default function Component() {
             onClose={handleCategoryClose}
             PaperProps={{
               style: {
-                backgroundColor: '#0000', // Fondo gris claro para el menú
-                color: 'black',             // Texto negro para contraste
+                backgroundColor: '#0000',
+                color: 'black',
               },
             }}
-
-
           >
             <MenuItem onClick={() => handleCategorySelect('')} className="hover:bg-amber-600">Todas las categorías</MenuItem>
             {categories.map((category) => (
@@ -569,7 +583,6 @@ export default function Component() {
             ))}
           </Menu>
         </div>
-
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -584,8 +597,8 @@ export default function Component() {
           </div>
         ) : (
           <div className="product-grid">
-            {filteredProducts.length > 0 ? ( // Use filteredProducts
-              filteredProducts.map((product) => ( // Use filteredProducts
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
                 <div key={product.id} className="product-card">
                   <img
                     src={product.Image}
@@ -602,18 +615,20 @@ export default function Component() {
                     Precio: {new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(product.Price)}
                   </Typography>
 
-                  <Button
-                    variant="contained"
-                    onClick={() => addToCart(product)}
-                    className="barber-add-cart-btn"
-                  >
-                    <div className="button-wrapper-barber">
-                      <span className="text-barber">AGREGAR</span>
-                      <span className="icon-button-barber">
-                        <AddShoppingCartIcon />
-                      </span>
-                    </div>
-                  </Button>
+                  {userRole === '3' && (
+                    <Button
+                      variant="contained"
+                      onClick={() => addToCart(product)}
+                      className="barber-add-cart-btn"
+                    >
+                      <div className="button-wrapper-barber">
+                        <span className="text-barber">AGREGAR</span>
+                        <span className="icon-button-barber">
+                          <AddShoppingCartIcon />
+                        </span>
+                      </div>
+                    </Button>
+                  )}
                 </div>
               ))
             ) : (
@@ -679,7 +694,7 @@ export default function Component() {
                       <Avatar src={product.Image} alt={product.Product_Name} />
                     </ListItemAvatar>
                     <ListItemText
-                      primary={product.Product_Name}
+                      primary={<span className="product-name">{product.Product_Name}</span>}
                       secondary={
                         <span>
                           <span className="price-text">
@@ -786,3 +801,4 @@ export default function Component() {
     </>
   );
 }
+

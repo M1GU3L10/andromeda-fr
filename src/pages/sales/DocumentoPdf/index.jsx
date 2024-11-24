@@ -123,7 +123,7 @@ const DocumentPdf = ({ sale }) => {
     return (
         <Document>
             <Page size="A6" style={styles.page}>
-                <Text style={styles.header}>Factura #{sale.Billnumber}</Text>
+                <Text style={styles.header}>Combrobante #{sale.Billnumber}</Text>
 
                 <View style={styles.infoContainer}>
                     <View style={styles.infoColumn}>

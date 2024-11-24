@@ -210,8 +210,8 @@ export default function Orders() {
 
   const validateRegisterForm = () => {
     const newErrors = {}
-    if (!formValues.Billnumber) newErrors.Billnumber = 'El número de factura es requerido'
-    if (!formValues.OrderDate) newErrors.OrderDate = 'La fecha de orden es requerida'
+    if (!formValues.Billnumber) newErrors.Billnumber = 'El número de Combrobante es requerido'
+    if (!formValues.OrderDate) newErrors.OrderDate = 'La fecha de pedido es requerida'
     if (!formValues.status) newErrors.status = 'El estado es requerido'
     if (!formValues.id_usuario) newErrors.id_usuario = 'El usuario es requerido'
     if (formValues.orderDetails.length === 0) newErrors.orderDetails = 'Debe agregar al menos un detalle'
@@ -259,10 +259,10 @@ export default function Orders() {
         await axios.post(`${API_URL}/order-details`, orderDetails);
   
         // Mostrar alerta de éxito
-        showAlert('Orden registrada exitosamente', 'success');
+        showAlert('Pedido registrada exitosamente', 'success');
       } catch (error) {
         // Mostrar alerta de error
-        showAlert('Orden registrada exitosamente', 'success');
+        showAlert('Pedido registrada exitosamente', 'success');
       } finally {
         // Cerrar el modal y actualizar la tabla
         setShowRegisterModal(false);
@@ -281,11 +281,11 @@ export default function Orders() {
       try {
         await axios.put(`${API_URL}/orders/${editValues.id}`, { status: editValues.status })
         
-        showAlert('Estado de la orden actualizado exitosamente', 'success')
+        showAlert('Estado de la pedido actualizado exitosamente', 'success')
         setShowEditModal(false)
         await fetchOrders()
       } catch (error) {
-        showAlert('Error al actualizar el estado de la orden', 'error')
+        showAlert('Error al actualizar el estado de la pedido', 'error')
       }
     } else {
       showAlert('Por favor, selecciona un estado', 'warning')
@@ -295,7 +295,7 @@ export default function Orders() {
   const deleteOrder = (id, billNumber) => {
     const MySwal = withReactContent(Swal)
     MySwal.fire({
-      title: `¿Estás seguro que deseas eliminar la orden ${billNumber}?`,
+      title: `¿Estás seguro que deseas eliminar la pedido ${billNumber}?`,
       icon: 'question',
       text: 'No se podrá dar marcha atrás',
       showCancelButton: true,
@@ -305,15 +305,15 @@ export default function Orders() {
       if (result.isConfirmed) {
         axios.delete(`${API_URL}/orders/${id}`)
           .then(() => {
-            showAlert('Orden eliminada correctamente', 'success')
+            showAlert('Pedido eliminada correctamente', 'success')
             fetchOrders()
           })
           .catch((error) => {
-            showAlert('Error al eliminar la orden', 'error')
+            showAlert('Error al eliminar la pedido', 'error')
             console.error('Error details:', error)
           })
       } else {
-        showAlert('La orden NO fue eliminada', 'info')
+        showAlert('La pedido NO fue eliminada', 'info')
       }
     })
   }
@@ -331,11 +331,11 @@ export default function Orders() {
     }).join('')
 
     Swal.fire({
-      title: 'Detalles de la Orden',
+      title: 'Detalles del pedido',
       html: `
         <div class="text-left">
-          <p><strong>Número de Factura:</strong> ${order.Billnumber}</p>
-          <p><strong>Fecha de Orden:</strong> ${new Date(order.OrderDate).toLocaleDateString()}</p>
+          <p><strong>Número de Combrobante:</strong> ${order.Billnumber}</p>
+          <p><strong>Fecha del pedido:</strong> ${new Date(order.OrderDate).toLocaleDateString()}</p>
           <p><strong>Monto Total:</strong> ${order.total_price}</p>
           <p><strong>Estado:</strong> ${order.status}</p>
           <p><strong>Usuario:</strong> ${userNames[order.id_usuario] || 'Desconocido'}</p>
@@ -417,8 +417,8 @@ export default function Orders() {
               <thead className='table-primary'>
                 <tr>
                   <th>#</th>
-                  <th>Número de Factura</th>
-                  <th>Fecha de Orden</th>
+                  <th>Número de Combrobante</th>
+                  <th>Fecha del pedido</th>
                   <th>Monto Total</th>
                   <th>Estado</th>
                   <th>Usuario</th>
@@ -467,14 +467,14 @@ export default function Orders() {
       {/* Register Modal */}
       <Modal show={showRegisterModal} onHide={handleCloseRegisterModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Registrar orden</Modal.Title>
+          <Modal.Title>Registrar pedido</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Row className="mb-3">
               <Col sm="6">
                 <Form.Group>
-                  <Form.Label className='required'>Número de Factura</Form.Label>
+                  <Form.Label className='required'>Número de Combrobante</Form.Label>
                   <Form.Control
                     type="text"
                     name="Billnumber"
@@ -486,7 +486,7 @@ export default function Orders() {
               </Col>
               <Col sm="6">
                 <Form.Group>
-                  <Form.Label className='required'>Fecha de Orden</Form.Label>
+                  <Form.Label className='required'>Fecha del pedido</Form.Label>
                   <Form.Control
                     type="date"
                     name="OrderDate"
@@ -532,7 +532,7 @@ export default function Orders() {
               </Col>
             </Row>
             <div className="mb-3">
-              <h5>Detalles de la Orden</h5>
+              <h5>Detalles del pedido</h5>
               {errors.orderDetails && <Form.Text className="text-danger d-block mb-2">{errors.orderDetails}</Form.Text>}
               {formValues.orderDetails.map((detail, index) => (
                 <div key={index} className="mb-3 p-3 border rounded">
@@ -607,19 +607,20 @@ export default function Orders() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleRegisterSubmit} className='btn-sucess'>
-            <MdOutlineSave /> Guardar
-          </Button>
-          <Button variant="secondary" onClick={handleCloseRegisterModal} className='btn-red'>
+        <Button variant="secondary" onClick={handleCloseRegisterModal} className='btn-red'>
             Cerrar
           </Button>
+          <Button variant="primary" onClick={handleRegisterSubmit} className='btn-sucess'>
+             Guardar
+          </Button>
+      
         </Modal.Footer>
       </Modal>
 
       {/* Edit Modal */}
       <Modal show={showEditModal} onHide={handleCloseEditModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Editar estado de la orden</Modal.Title>
+          <Modal.Title>Editar estado del pedido</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -640,12 +641,13 @@ export default function Orders() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleEditSubmit} className='btn-sucess'>
-            <MdOutlineSave /> Guardar
-          </Button>
-          <Button variant="secondary" onClick={handleCloseEditModal} className='btn-red'>
+        <Button variant="secondary" onClick={handleCloseEditModal} className='btn-red'>
             Cerrar
           </Button>
+          <Button variant="primary" onClick={handleEditSubmit} className='btn-sucess'>
+             Guardar
+          </Button>
+         
         </Modal.Footer>
       </Modal>
     </div>

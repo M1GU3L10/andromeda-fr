@@ -489,7 +489,7 @@ const Suppliers = () => {
                             Cerrar
                         </Button>
                         <Button variant="primary" className='btn-sucess' onClick={validar}>
-                            <MdOutlineSave /> Guardar
+                            Guardar
                         </Button>
                     </Modal.Footer>
                 </Modal>

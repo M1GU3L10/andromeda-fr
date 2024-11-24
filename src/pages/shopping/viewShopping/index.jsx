@@ -94,7 +94,7 @@ const ViewShopping = ({ shopping, suppliers, products }) => {
   return (
      <Document>
             <Page size="A6" style={styles.page}>
-                <Text style={styles.header}>Factura #{shopping.code}</Text>
+                <Text style={styles.header}>Combrobante #{shopping.code}</Text>
 
                 <View style={styles.infoContainer}>
                     <View style={styles.infoColumn}>
