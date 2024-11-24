@@ -44,16 +44,18 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 
 const Roles = () => {
-    const url = 'http://localhost:1056/api/roles';
+   const url = 'http://localhost:1056/api/roles';
     const urlPermissions = 'http://localhost:1056/api/permissions';
     const urlPermissionsRoles = 'http://localhost:1056/api/permissionsRole';
     const urlPrivileges = 'http://localhost:1056/api/privileges';
     const urlPrivilegePermissionRoles = 'http://localhost:1056/api/privilege-permission-roles';
+    const urlAssignPrivileges = 'http://localhost:1056/api/privileges/assign';
+
     const [services, setServices] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [selectedPermissions, setSelectedPermissions] = useState([]);
     const [permissionsRole, setPermissionsRole] = useState([]);
-    const [privileges, setPrivileges] = useState([]);
+    const [privileges, setPrivileges] = useState({});
     const [selectedPrivileges, setSelectedPrivileges] = useState({});
     const [id, setId] = useState('');
     const [name, setName] = useState('');
@@ -63,12 +65,64 @@ const Roles = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
-    const [value, setValue] = useState([]);
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
     const [selectAll, setSelectAll] = useState(false);
 
+    const [errors, setErrors] = useState({
+        name: '',
+    });
+
+    const [touched, setTouched] = useState({
+        name: false,
+    });
+
+    useEffect(() => {
+        getServices();
+        getPermissions();
+        getPermissionsRole();
+        getPrivileges();
+    }, []);
+
+    const getPrivileges = async () => {
+        try {
+            const response = await axios.get(urlPrivileges);
+            const groupedPrivileges = response.data.reduce((acc, privilege) => {
+                if (!acc[privilege.permissionId]) {
+                    acc[privilege.permissionId] = [];
+                }
+                acc[privilege.permissionId].push(privilege);
+                return acc;
+            }, {});
+            setPrivileges(groupedPrivileges);
+        } catch (error) {
+            console.error('Error al obtener los privilegios', error);
+        }
+    };
+
+    const getPermissions = async () => {
+        try {
+            const response = await axios.get(urlPermissions);
+            setPermissions(response.data);
+        } catch (error) {
+            console.error('Error al obtener los permisos', error);
+        }
+    };
+
+    const getPermissionsRole = async () => {
+        try {
+            const response = await axios.get(urlPermissionsRoles);
+            setPermissionsRole(response.data);
+        } catch (error) {
+            console.error('Error al obtener los permisosRole', error);
+        }
+    };
+
+    const getServices = async () => {
+        const response = await axios.get(url);
+        setServices(response.data);
+    };
 
     const handleSelectAll = () => {
         setSelectAll(!selectAll);
@@ -85,64 +139,6 @@ const Roles = () => {
         }
     }, [selectAll, permissions]);
 
-
-    const [errors, setErrors] = useState({
-        name: '',
-    });
-
-
-    const [touched, setTouched] = useState({
-        name: false,
-    });
-
-
-
-
-    useEffect(() => {
-        getServices();
-        getPermissions();
-        getPermissionsRole();
-        getPrivileges();
-    }, [])
-
-    const getPrivileges = async () => {
-        try {
-            const response = await axios.get(urlPrivileges);
-            setPrivileges(response.data);
-        } catch (error) {
-            console.error('Error al obtener los privilegios', error);
-        }
-    };
-
-    //Renderizar permisos
-    const getPermissions = async () => {
-        try {
-            const response = await axios.get(urlPermissions);
-            setPermissions(response.data);
-        } catch (error) {
-            console.error('Error al obtener los permisos', error);
-        }
-    };
-
-    // Obtener relación de permisos y roles
-    const getPermissionsRole = async () => {
-        try {
-            const response = await axios.get(urlPermissionsRoles);
-            setPermissionsRole(response.data);
-        } catch (error) {
-            console.error('Error al obtener los permisosRole', error);
-        }
-    };
-
-
-    //array que devuelve id
-    const getPermissionsForRoleId = (roleId) => {
-        const rolePermissions = permissionsRole.filter(pr => pr.roleId === roleId);
-        return rolePermissions.map(rp => rp.permissionId);
-    };
-
-    //
-
     const handleCheckboxChange = (permissionId) => {
         setSelectedPermissions(prevSelected => {
             if (prevSelected.includes(permissionId)) {
@@ -153,49 +149,6 @@ const Roles = () => {
         });
     };
 
-
-    //
-
-    // Obtener permisos por rol
-    const getPermissionsForRole = (roleId) => {
-        // Filtrar permisosRole por roleId
-        const rolePermissions = permissionsRole.filter(pr => pr.roleId === roleId);
-
-        // Mapear los permisosId a los nombres de permisos
-        return rolePermissions.map(rp => {
-            const permission = permissions.find(p => p.id === rp.permissionId);
-            return permission ? permission.name : '';
-        }).join(', ');
-    };
-
-    //
-
-    const getServices = async () => {
-        const response = await axios.get(url);
-        setServices(response.data);
-    }
-
-
-    const searcher = (e) => {
-        setSearch(e.target.value);
-        console.log(e.target.value)
-    }
-
-
-    const indexEnd = currentPages * dataQt;
-    const indexStart = indexEnd - dataQt;
-
-
-    const nPages = Math.ceil(services.length / dataQt);
-
-
-    let results = []
-    if (!search) {
-        results = services.slice(indexStart, indexEnd);
-    } else {
-        results = services.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
-    }
-
     const handlePrivilegeChange = (permissionId, privilegeId) => {
         setSelectedPrivileges(prevSelected => ({
             ...prevSelected,
@@ -205,7 +158,6 @@ const Roles = () => {
             }
         }));
     };
-
 
     const openModal = async (op, id, name, selectedPermissions = []) => {
         setId('');
@@ -223,16 +175,16 @@ const Roles = () => {
             setTitle('Editar rol');
             setId(id);
             setName(name);
-            setSelectedPermissions(getPermissionsForRoleId(id));
+            const rolePermissions = getPermissionsForRoleId(id);
+            setSelectedPermissions(rolePermissions);
 
-            // Fetch existing privileges for this role
             try {
                 const response = await axios.get(`${urlPrivilegePermissionRoles}?roleId=${id}`);
                 const existingPrivileges = response.data.reduce((acc, item) => {
-                    if (!acc[item.permissionId]) {
-                        acc[item.permissionId] = {};
+                    if (!acc[item.Permission.id]) {
+                        acc[item.Permission.id] = {};
                     }
-                    acc[item.permissionId][item.privilegeId] = true;
+                    acc[item.Permission.id][item.privilegeId] = true;
                     return acc;
                 }, {});
                 setSelectedPrivileges(existingPrivileges);
@@ -241,48 +193,31 @@ const Roles = () => {
             }
         }
         setShowModal(true);
-    }
-
+    };
 
     const handleClose = () => {
         setId('');
         setName('');
         setStatus('A');
-
-
-        setErrors({
-            name: '',
-        });
-        setTouched({
-            name: false,
-        });
-
-
+        setErrors({ name: '' });
+        setTouched({ name: false });
         setShowModal(false);
     };
-
-
-
 
     const validateName = (value) => {
         const regex = /^[A-Za-z\s]+$/;
         return regex.test(value) ? '' : 'El nombre solo debe contener letras';
     };
 
-
     const checkIfServiceExists = async (name) => {
         try {
-            const response = await axios.get(`${url}`, {
-                params: { name }
-            });
+            const response = await axios.get(`${url}`, { params: { name } });
             return response.data.some(service => service.name.trim().toLowerCase() === name.trim().toLowerCase());
         } catch (error) {
             console.error('Error al verificar la existencia del rol:', error);
             return false;
         }
     };
-
-
 
     const handleValidation = (name, value) => {
         let error = '';
@@ -296,12 +231,9 @@ const Roles = () => {
         setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
     };
 
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         handleValidation(name, value);
-
-
         switch (name) {
             case 'name':
                 setName(value);
@@ -311,13 +243,11 @@ const Roles = () => {
         }
     };
 
-
     const handleBlur = (e) => {
         const { name } = e.target;
         setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
         handleValidation(name, e.target.value);
     };
-
 
     const validar = async () => {
         if (errors.name || !name.trim()) {
@@ -327,7 +257,6 @@ const Roles = () => {
 
         if (operation === 1) {
             const serviceExists = await checkIfServiceExists(name.trim());
-
             if (serviceExists) {
                 show_alerta('El rol con este nombre ya existe. Por favor, elija otro nombre.', 'warning');
                 return;
@@ -336,8 +265,9 @@ const Roles = () => {
 
         const isValidName = !validateName(name);
 
-        if (!isValidName) show_alerta(errors.name, 'warning');
-        else {
+        if (!isValidName) {
+            show_alerta(errors.name, 'warning');
+        } else {
             const parametros = {
                 id: id,
                 name: name.trim(),
@@ -352,38 +282,25 @@ const Roles = () => {
         }
     };
 
-
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
         try {
-            const response = await axios({ method: metodo, url: urlWithId, data: parametros });
-    
-            // If it's a successful POST or PUT, update privileges
-            if ((metodo === 'POST' || metodo === 'PUT') && response.data && response.data.id) {
+            // Paso 1: Crear o actualizar el rol
+            const response = await axios({
+                method: metodo, url: urlWithId, data: {
+                    name: parametros.name,
+                    status: parametros.status,
+                    permissions: parametros.permissions // Enviamos los permisos junto con el rol
+                }
+            });
+
+            if (metodo === 'POST' || metodo === 'PUT') {
                 const roleId = response.data.id;
-    
-                // Delete existing privilege assignments for this role
-                await axios.delete(`${urlPrivilegePermissionRoles}?roleId=${roleId}`);
-    
-                // Create new privilege assignments
-                const privilegeAssignments = [];
-                for (const permissionId in parametros.privileges) {
-                    for (const privilegeId in parametros.privileges[permissionId]) {
-                        if (parametros.privileges[permissionId][privilegeId]) {
-                            privilegeAssignments.push({
-                                roleId: roleId,
-                                permissionId: parseInt(permissionId),
-                                privilegeId: parseInt(privilegeId)
-                            });
-                        }
-                    }
-                }
-    
-                if (privilegeAssignments.length > 0) {
-                    await axios.post(urlPrivilegePermissionRoles, privilegeAssignments);
-                }
+
+                // Paso 2: Asignar privilegios
+                await asignarPrivilegios(roleId, parametros.privileges);
             }
-    
+
             show_alerta('Operación exitosa', 'success');
             if (metodo === 'PUT' || metodo === 'POST') {
                 document.getElementById('btnCerrar').click();
@@ -393,31 +310,85 @@ const Roles = () => {
             getPermissionsRole();
         } catch (error) {
             show_alerta('Error en la solicitud', 'error');
-            console.log(error);
+            console.error(error);
         }
     };
 
+    const asignarPrivilegios = async (roleId, privilegios) => {
+        try {
+            // Obtener los PermissionRoles actuales para este rol
+            const permissionRolesResponse = await axios.get(`${urlPermissionsRoles}?roleId=${roleId}`);
+            const permissionRoles = permissionRolesResponse.data;
 
-    const handleCloseDetail = () => {
-        setShowModal(false);
-        setShowDetailModal(false);
+            for (const permissionId in privilegios) {
+                const permissionRole = permissionRoles.find(pr => pr.permissionId == permissionId);
+                if (permissionRole) {
+                    for (const privilegeId in privilegios[permissionId]) {
+                        if (privilegios[permissionId][privilegeId]) {
+                            await axios.post(urlAssignPrivileges, {
+                                privilegeId: parseInt(privilegeId),
+                                permissionRoleId: permissionRole.id
+                            });
+                        } else {
+                            // Si el privilegio no está seleccionado, lo eliminamos si existe
+                            await axios.delete(`${urlPrivilegePermissionRoles}/${permissionRole.id}/${privilegeId}`);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error al asignar privilegios:', error);
+            throw error;
+        }
     };
 
+    const getPermissionsForRoleId = (roleId) => {
+        return permissionsRole
+            .filter(pr => pr.roleId === roleId)
+            .map(rp => rp.permissionId);
+    };
+
+    const getPermissionsForRole = (roleId) => {
+        const rolePermissions = permissionsRole.filter(pr => pr.roleId === roleId);
+        return rolePermissions.map(rp => {
+            const permission = permissions.find(p => p.id === rp.permissionId);
+            return permission ? permission.name : '';
+        }).join(', ');
+    };
+
+    const searcher = (e) => {
+        setSearch(e.target.value);
+    };
+
+    const indexEnd = currentPages * dataQt;
+    const indexStart = indexEnd - dataQt;
+
+    const nPages = Math.ceil(services.length / dataQt);
+
+    let results = []
+    if (!search) {
+        results = services.slice(indexStart, indexEnd);
+    } else {
+        results = services.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
+    }
 
     const handleViewDetails = (service) => {
         setDetailData(service);
         setShowDetailModal(true);
     };
 
+    const handleCloseDetail = () => {
+        setShowDetailModal(false);
+    };
 
     const deleteService = async (id, name) => {
         const Myswal = withReactContent(Swal);
         Myswal.fire({
-            title: 'Estas seguro que desea eliminar el rol ' + name + '?',
+            title: `¿Estás seguro que deseas eliminar el rol ${name}?`,
             icon: 'question',
-            text: 'No se podrá dar marcha atras',
+            text: 'No se podrá dar marcha atrás',
             showCancelButton: true,
-            confirmButtonText: 'Si, eliminar',
+            confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -429,9 +400,7 @@ const Roles = () => {
         })
     }
 
-
     const handleSwitchChange = async (serviceId, checked) => {
-        // Encuentra el servicio que está siendo actualizado
         const serviceToUpdate = services.find(service => service.id === serviceId);
         const Myswal = withReactContent(Swal);
         Myswal.fire({
@@ -465,7 +434,6 @@ const Roles = () => {
                     }
                 }
             } else {
-                // Si el usuario cancela, restablece el switch a su estado original
                 setServices(services.map(service =>
                     service.id === serviceId ? { ...service, status: !checked ? 'A' : 'I' } : service
                 ));
@@ -474,13 +442,18 @@ const Roles = () => {
         });
     };
 
-
-
+    const show_alerta = (message, icon) => {
+        const Myswal = withReactContent(Swal);
+        Myswal.fire({
+            title: message,
+            icon: icon
+        });
+    };
 
     return (
         <>
             <div className="right-content w-100">
-                <div class="row d-flex align-items-center w-100">
+                <div className="row d-flex align-items-center w-100">
                     <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
                             <span className='Title'>Roles</span>
@@ -558,10 +531,7 @@ const Roles = () => {
                                         <tr>
                                             <td colSpan={7} className='text-center'>No hay roles disponibles</td>
                                         </tr>
-                                    )
-
-
-                                    }
+                                    )}
                                 </tbody>
                             </table>
                             {
@@ -615,9 +585,9 @@ const Roles = () => {
                                             checked={selectedPermissions.includes(permission.id)}
                                             onChange={() => handleCheckboxChange(permission.id)}
                                         />
-                                        {selectedPermissions.includes(permission.id) && (
+                                        {selectedPermissions.includes(permission.id) && privileges[permission.id] && (
                                             <div className="ml-4">
-                                                {privileges.map(privilege => (
+                                                {privileges[permission.id].map(privilege => (
                                                     <Form.Check
                                                         key={privilege.id}
                                                         type="checkbox"
@@ -661,5 +631,5 @@ const Roles = () => {
     );
 }
 
-
 export default Roles;
+

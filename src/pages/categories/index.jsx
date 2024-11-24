@@ -9,11 +9,11 @@ import { IoCart } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
-import axios from 'axios';
+import axios from 'axios'
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { show_alerta } from '../../assets/functions';
+import { show_alerta } from '../../assets/functions'
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Switch from '@mui/material/Switch';
@@ -22,11 +22,6 @@ import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { BsPlusSquareFill } from "react-icons/bs";
 
-const useUserPrivileges = () => {
-    // In a real application, this would come from your auth system
-    const privileges = JSON.parse(localStorage.getItem('userPrivileges') || '[]');
-    return privileges;
-};
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -58,23 +53,30 @@ const Categories = () => {
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [value, setValue] = useState([]);
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
-    const [errors, setErrors] = useState({ name: '', description: '' });
-    const [touched, setTouched] = useState({ name: false, description: false });
 
-    // Get user privileges
-    const userPrivileges = useUserPrivileges();
+    const [errors, setErrors] = useState({
+        name: '',
+        description: '',
+    });
+
+    const [touched, setTouched] = useState({
+        name: false,
+        description: false,
+    });
+
 
     useEffect(() => {
         getCategories();
-    }, []);
+    }, [])
 
     const getCategories = async () => {
         const response = await axios.get(url);
         setCategories(response.data);
-    };
+    }
 
     const searcher = (e) => {
         setSearch(e.target.value);
@@ -88,12 +90,12 @@ const Categories = () => {
 
     let results = []
     if (!search) {
-        results = categories.slice(indexStart, indexEnd);
-    } else {
+        results = categories.slice(indexStart,indexEnd);
+    } else{
         results = categories.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
     }
 
-    const openModal = (op, id, name, description) => {
+    const openModal = (op, id, name,description) => {
         setId('');
         setName('');
         setDescription('');
@@ -264,11 +266,11 @@ const Categories = () => {
         // Encuentra la categoría que está siendo actualizada
         const categoryToUpdate = categories.find(category => category.id === categoryId);
         const Myswal = withReactContent(Swal);
-
+    
         try {
             // Verificar si la categoría está asociada con algún producto
             const associationCheck = await axios.get(`${url}/check-association/${categoryId}`);
-
+            
             if (associationCheck.data.isAssociated) {
                 // Si la categoría está asociada, mostrar alerta y detener la ejecución
                 Myswal.fire({
@@ -279,7 +281,7 @@ const Categories = () => {
                 });
                 return; // Salir de la función si está asociada
             }
-
+    
             // Si no está asociada, continuar con la confirmación de activación/desactivación
             Myswal.fire({
                 title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} la categoría "${categoryToUpdate.name}"?`,
@@ -324,7 +326,7 @@ const Categories = () => {
             show_alerta('Error al verificar asociación de la categoría', 'error');
         }
     };
-
+    
 
     return (
         <>
@@ -362,11 +364,7 @@ const Categories = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                {userPrivileges.includes('crear categoria') && (
-                                    <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
-                                        <BsPlusSquareFill />Registrar
-                                    </Button>
-                                )}
+                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
@@ -387,13 +385,13 @@ const Categories = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {results.length > 0 ? (
+                                    { results.length > 0 ? (
                                         results.map((category, i) => (
                                             <tr key={category.id}>
                                                 <td>{(i + 1)}</td>
                                                 <td>{category.name}</td>
                                                 <td>{category.description}</td>
-                                                <td><span className={`serviceStatus ${category.status === 'A' ? '' : 'Inactive'}`}>{category.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
+                                                <td><span  className= {`serviceStatus ${category.status ===  'A' ? '' : 'Inactive'}`}>{category.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Switch
@@ -403,24 +401,8 @@ const Categories = () => {
                                                         {
                                                             category.status === 'A' && (
                                                                 <>
-                                                                    {userPrivileges.includes('editar categoria') && (
-                                                                        <Button
-                                                                            color="secondary"
-                                                                            className='secondary'
-                                                                            onClick={() => openModal(2, category.id, category.name, category.description)}
-                                                                        >
-                                                                            <FaPencilAlt />
-                                                                        </Button>
-                                                                    )}
-                                                                    {userPrivileges.includes('eliminar categoria') && (
-                                                                        <Button
-                                                                            color='error'
-                                                                            className='delete'
-                                                                            onClick={() => deleteCategory(category.id, category.name)}
-                                                                        >
-                                                                            <IoTrashSharp />
-                                                                        </Button>
-                                                                    )}
+                                                                    <Button color="secondary" className='secondary' onClick={() => openModal(2, category.id, category.name, category.description)}><FaPencilAlt /></Button>
+                                                                    <Button color='error' className='delete' onClick={() => deleteCategory(category.id, category.name)}><IoTrashSharp /></Button>
                                                                 </>
                                                             )
                                                         }
@@ -428,14 +410,14 @@ const Categories = () => {
                                                 </td>
                                             </tr>
                                         ))
-                                    ) : (
+                                    ): (
                                         <tr>
                                             <td colSpan={7} className='text-center'>
                                                 No hay categorias disponibles
                                             </td>
                                         </tr>
                                     )
-
+                                        
                                     }
                                 </tbody>
                             </table>
