@@ -481,11 +481,11 @@ detail.empleadoId;
             </div>
             <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Appointment and Sale Details</Modal.Title>
+          <Modal.Title>Detalle de la <i class="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="mb-4">
-            <h5 className="border-bottom pb-2">Appointment Information</h5>
+            <h5 className="border-bottom pb-2">Informaciòn de la cita</h5>
             <div className="row">
               <div className="col-md-6">
                 <p><strong>Cliente:</strong> {detailData.title}</p>
@@ -494,7 +494,7 @@ detail.empleadoId;
                 <p><strong>Hora fin:</strong> {detailData.Finish_Time}</p>
               </div>
               <div className="col-md-6">
-                <p><strong>Duraciòn de la cita:</strong> {detailData.time_appointment}<strong> Minutes</strong></p>
+                <p><strong>Duraciòn de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
                 <p><strong>Total:</strong> {detailData.Total}</p>
                 <p><strong>Estado:</strong> {detailData.status}</p>
               </div>
