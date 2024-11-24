@@ -1005,7 +1005,7 @@ body.dark .fc .fc-toolbar-title {
 
 
 .span-programming {
-  color: #f1f1f1;
+  color: #f1f1f1 !important;
   font-size: 13px;
   font-family: "Open Sans", sans-serif !important;
 }
@@ -1044,8 +1044,8 @@ a {
   width: 50px !important;
   height: 40px !important;
   padding: 0px !important;
-  background: rgb(54, 118, 245) !important;
-  border-color: rgb(54, 118, 245) !important;
+  background: rgb(204, 179, 89, 1) !important;
+  border-color: rgb(204, 179, 89, 1) !important;
   margin: 0px !important;
 }
 

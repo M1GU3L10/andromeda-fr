@@ -12,8 +12,6 @@ import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BsCalendar2DateFill } from 'react-icons/bs';
 
-
-
 export default function Component() {
     const [users, setUsers] = useState([]);
     const [products, setProducts] = useState([]);
@@ -41,17 +39,46 @@ export default function Component() {
     const [subtotalServices, setSubtotalServices] = useState(0);
     const [absences, setAbsences] = useState([]);
     const urlAbsences = 'http://localhost:1056/api/absences';
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getUsers();
-        getProducts();
-        getServices();
-        getAbsences();
+        checkLoginStatus();
     }, []);
 
+    const checkLoginStatus = () => {
+        const token = localStorage.getItem('jwtToken');
+        const userId = localStorage.getItem('userId');
+
+        if (token && userId) {
+            setIsLoggedIn(true);
+            setSaleInfo(prevState => ({ ...prevState, id_usuario: userId }));
+            fetchInitialData(userId);
+        } else {
+            setIsLoggedIn(false);
+            setLoading(false);
+            show_alerta('No has iniciado sesión. Por favor, inicia sesión para crear una cita.', 'warning');
+        }
+    };
+
+    const fetchInitialData = async (userId) => {
+        try {
+            await Promise.all([
+                getUsers(),
+                getProducts(),
+                getServices(),
+                getAbsences()
+            ]);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching initial data:', error);
+            setLoading(false);
+            show_alerta('Error al cargar los datos iniciales', 'error');
+        }
+    };
+
     useEffect(() => {
-        // Generar un número aleatorio de 3 dígitos al cargar el componente
-        const randomNumber = Math.floor(100 + Math.random() * 900).toString(); // Número de 3 dígitos
+        const randomNumber = Math.floor(100 + Math.random() * 900).toString();
         setSaleInfo((prevState) => ({ ...prevState, Billnumber: randomNumber }));
     }, []);
 
@@ -140,7 +167,6 @@ export default function Component() {
     };
 
     const calculateTotals = (currentProducts, currentSaleDetails) => {
-        // Calculate products subtotal
         const productDetails = currentProducts.map(product => ({
             quantity: product.quantity,
             unitPrice: product.Price,
@@ -152,7 +178,6 @@ export default function Component() {
 
         const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
 
-        // Get service details
         const serviceDetails = currentSaleDetails.filter(detail =>
             detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
         );
@@ -165,7 +190,6 @@ export default function Component() {
             return sum;
         }, 0);
 
-        // Update all totals at once
         setSubtotalProducts(productsSubtotal);
         setSubtotalServices(servicesSubtotal);
 
@@ -179,18 +203,16 @@ export default function Component() {
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setSaleInfo(prevState => {
-            // Si el campo que cambia es SaleDate, actualizamos también la fecha de la cita
             if (name === 'SaleDate') {
                 return {
                     ...prevState,
                     [name]: value,
                     appointmentData: {
                         ...prevState.appointmentData,
-                        Date: value // Sincronizamos la fecha de la cita con la fecha de venta
+                        Date: value
                     }
                 };
             }
-            // Para otros campos, mantenemos el comportamiento original
             return {
                 ...prevState,
                 [name]: value
@@ -225,13 +247,6 @@ export default function Component() {
                     newErrors.Billnumber = '';
                 }
                 break;
-            case 'id_usuario':
-                if (!value) {
-                    newErrors.id_usuario = 'Debe seleccionar un cliente';
-                } else {
-                    newErrors.id_usuario = '';
-                }
-                break;
             default:
                 break;
         }
@@ -244,7 +259,6 @@ export default function Component() {
         const appointmentStart = saleInfo.appointmentData.Init_Time;
         const appointmentEnd = saleInfo.appointmentData.Finish_Time;
 
-        // Verificar cada servicio que tenga un empleado asignado
         const serviceDetails = saleInfo.saleDetails.filter(detail =>
             detail.serviceId !== null && detail.empleadoId !== null
         );
@@ -253,7 +267,6 @@ export default function Component() {
             const employee = users.find(user => user.id === parseInt(detail.empleadoId));
             if (!employee) continue;
 
-            // Buscar si hay alguna ausencia que se superponga
             const hasAbsence = absences.some(absence =>
                 absence.userId === parseInt(detail.empleadoId) &&
                 absence.date === appointmentDate &&
@@ -275,10 +288,14 @@ export default function Component() {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        validateField('Billnumber', saleInfo.Billnumber);
-        validateField('id_usuario', saleInfo.id_usuario);
+        if (!isLoggedIn) {
+            show_alerta('Debes iniciar sesión para crear una cita', 'warning');
+            return;
+        }
 
-        if (errors.Billnumber || errors.id_usuario) {
+        validateField('Billnumber', saleInfo.Billnumber);
+
+        if (errors.Billnumber) {
             show_alerta('Por favor, corrija los errores antes de enviar', 'warning');
             return;
         }
@@ -288,14 +305,12 @@ export default function Component() {
             return;
         }
 
-        // Verificar la disponibilidad de los empleados antes de guardar
         const { isValid, message } = validateEmployeeAvailability();
         if (!isValid) {
             show_alerta(message, 'error');
             return;
         }
 
-        // Verificar que los servicios con empleados tengan horario asignado
         const hasServicesWithEmployees = saleInfo.saleDetails.some(detail =>
             detail.serviceId !== null && detail.empleadoId !== null
         );
@@ -315,7 +330,7 @@ export default function Component() {
                 SaleDate: new Date().toISOString().split('T')[0],
                 total_price: 0,
                 status: 'Pendiente',
-                id_usuario: '',
+                id_usuario: saleInfo.id_usuario,
                 appointmentData: {
                     Init_Time: '',
                     Finish_Time: '',
@@ -348,7 +363,6 @@ export default function Component() {
 
             const updatedServiceDetails = [...serviceDetails, newServiceDetail];
 
-            // Combine with product details
             const productDetails = selectedProducts.map(product => ({
                 quantity: product.quantity,
                 unitPrice: product.Price,
@@ -364,25 +378,19 @@ export default function Component() {
             };
         });
     };
+
     function generateBillNumber() {
-        // Genera un número aleatorio de 8 dígitos
         const randomBillNumber = Math.floor(10000000 + Math.random() * 90000000);
         console.log(`Número de comprobante generado: ${randomBillNumber}`);
         return randomBillNumber;
     }
 
     function processSaleInfo() {
-        // Genera el número de comprobante internamente
         const billNumber = generateBillNumber();
-
-        // Simula el procesamiento del número de comprobante
         console.log(`Procesando el número de comprobante: ${billNumber}`);
-
-        // Retorna el número generado
         return billNumber;
     }
 
-    // Ejemplo de uso
     const generatedBillNumber = processSaleInfo();
     console.log(`Número de comprobante final: ${generatedBillNumber}`);
 
@@ -412,11 +420,10 @@ export default function Component() {
                 id_producto: product.id,
                 empleadoId: null,
                 serviceId: null
-            }));
+}));
 
             const allDetails = [...productDetails, ...serviceDetails];
 
-            // Calculate subtotals
             const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
             const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
                 if (detail.serviceId) {
@@ -445,7 +452,6 @@ export default function Component() {
 
             const updatedServiceDetails = serviceDetails.filter((_, i) => i !== index);
 
-            // Combine with product details
             const productDetails = selectedProducts.map(product => ({
                 quantity: product.quantity,
                 unitPrice: product.Price,
@@ -466,18 +472,27 @@ export default function Component() {
         });
     };
 
-    
+    if (loading) {
+        return <div>Cargando...</div>;
+    }
+
+    if (!isLoggedIn) {
+        return (
+            <div>
+                <p>Debes iniciar sesión para crear una cita.</p>
+                {/* Add a login button or redirect to login page */}
+            </div>
+        );
+    }
+
     return (
         <>
             <Header />
             <br /><br /><br /><br />
             <div className='card border-0 p-3 d-flex colorTransparent mt-9'>
                 <div className='row'>
-                    {/* Products Card */}
                     <div className='col-sm-6'>
                         <div className='row p-3'></div>
-        
-                        {/* Services Card */}
                         <div className='card-detail shadow border-0 mb-9'>
                             <div className='bcg-w col-sm-12 p-3'>
                                 <div className="position-relative d-flex align-items-center">
@@ -571,10 +586,7 @@ export default function Component() {
                         </div>
                     </div>
         
-                    {/* Sale Info Card */}
                     <div className='col-sm-6'>
-        
-                        {/* Appointment Time Card */}
                         <div className='card-detail shadow border-0 mb-4'>
                             <div className="cont-title w-100">
                                 <span className='Title'>Reserva de cita</span>
@@ -610,24 +622,6 @@ export default function Component() {
                                                     onChange={handleInputChange}
                                                 />
                                             </Col>
-        
-                                        </Form.Group>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label className='required'>Cliente</Form.Label>
-                                            <Form.Select
-                                                name="id_usuario"
-                                                value={saleInfo.id_usuario}
-                                                onChange={handleInputChange}
-                                                isInvalid={!!errors.id_usuario}
-                                            >
-                                                <option value="">Seleccionar cliente</option>
-                                                {users.filter(user => user.roleId === 3).map(user => (
-                                                    <option key={user.id} value={user.id}>{user.name}</option>
-                                                ))}
-                                            </Form.Select>
-                                            <Form.Control.Feedback type="invalid">
-                                                {errors.id_usuario}
-                                            </Form.Control.Feedback>
                                         </Form.Group>
                                     </Form>
                                 </div>
@@ -636,7 +630,6 @@ export default function Component() {
                         <div className='spacing d-flex align-items-center footer-total'>
                             <div className="row">
                                 <div className="col-sm-6 d-flex align-items-center justify-content-start padding-monto">
-                                 
                                 </div>
                                 <div className="col-sm-5 d-flex align-items-center justify-content-end">
                                     <div className='d-flex align-items-center justify-content-end'>
@@ -666,5 +659,5 @@ export default function Component() {
             </div>
         </>
     );
-    
 }
+
