@@ -9,6 +9,8 @@ import Swal from 'sweetalert2';
 import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BsCalendar2DateFill } from 'react-icons/bs';
+import './styles.css';
+import { style } from '@mui/system';
 
 export default function Component() {
     const [users, setUsers] = useState([]);
@@ -157,7 +159,7 @@ export default function Component() {
         setSelectedProducts(updatedProducts);
         calculateTotals(updatedProducts, saleInfo.saleDetails);
     };
-
+    
     const updateQuantity = (productId, change) => {
         const product = products.find(p => p.id === productId);
         const updatedProducts = selectedProducts.map(p => {
@@ -298,7 +300,7 @@ export default function Component() {
         const now = new Date();
         const appointmentDate = new Date(saleInfo.appointmentData.Date);
         const appointmentTime = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
-        
+
         if (appointmentDate.toDateString() === now.toDateString()) {
             if (appointmentTime <= now) {
                 return {
@@ -405,8 +407,7 @@ export default function Component() {
                 Billnumber: '',
                 SaleDate: new Date().toISOString().split('T')[0],
                 total_price: 0,
-                status: 
-'Pendiente',
+                status: 'Pendiente',
                 id_usuario: saleInfo.id_usuario,
                 appointmentData: {
                     Init_Time: '',
@@ -486,6 +487,23 @@ export default function Component() {
                         serviceDetails[index].unitPrice = service.price;
                         serviceDetails[index].total_price = service.price;
                         serviceDetails[index].quantity = 1;
+
+                        // Automatically set the end time based on service duration
+                        const startTime = prevState.appointmentData.Init_Time;
+                        if (startTime) {
+                            const [hours, minutes] = startTime.split(':').map(Number);
+                            const endDate = new Date(2000, 0, 1, hours, minutes + service.time);
+                            const endTime = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+
+                            return {
+                                ...prevState,
+                                appointmentData: {
+                                    ...prevState.appointmentData,
+                                    Finish_Time: endTime
+                                },
+                                saleDetails: [...prevState.saleDetails.slice(0, index), serviceDetails[index], ...prevState.saleDetails.slice(index + 1)]
+                            };
+                        }
                     }
                 }
             }
@@ -549,6 +567,14 @@ export default function Component() {
         });
     };
 
+    const isTimeSlotOccupied = (date, time) => {
+        return appointments.some(appointment =>
+            appointment.Date === date &&
+            appointment.Init_Time <= time &&
+            appointment.Finish_Time > time
+        );
+    };
+
     if (loading) {
         return <div>Cargando...</div>;
     }
@@ -608,20 +634,20 @@ export default function Component() {
                                                         {users
                                                             .filter(user => {
                                                                 if (user.roleId !== 2) return false;
-    
+
                                                                 const appointmentDate = saleInfo.appointmentData.Date;
                                                                 const appointmentStart = saleInfo.appointmentData.Init_Time;
                                                                 const appointmentEnd = saleInfo.appointmentData.Finish_Time;
-    
+
                                                                 if (!appointmentDate || !appointmentStart || !appointmentEnd) return true;
-    
+
                                                                 const hasAbsence = absences.some(absence => {
                                                                     return absence.userId === user.id &&
                                                                         absence.date === appointmentDate &&
                                                                         absence.startTime <= appointmentEnd &&
                                                                         absence.endTime >= appointmentStart;
                                                                 });
-    
+
                                                                 return !hasAbsence;
                                                             })
                                                             .map(employee => (
@@ -662,7 +688,7 @@ export default function Component() {
                             </div>
                         </div>
                     </div>
-        
+
                     <div className='col-sm-6'>
                         <div className='card-detail shadow border-0 mb-4'>
                             <div className="cont-title w-100">
@@ -679,6 +705,8 @@ export default function Component() {
                                                     name="Init_Time"
                                                     value={saleInfo.appointmentData.Init_Time}
                                                     onChange={handleAppointmentChange}
+                                                    className={isTimeSlotOccupied(saleInfo.SaleDate, saleInfo.appointmentData.Init_Time) ? 'occupied-time-slot' : ''}
+                                                    disabled={isTimeSlotOccupied(saleInfo.SaleDate, saleInfo.appointmentData.Init_Time)}
                                                 />
                                             </Col>
                                             <Col sm="6">
@@ -688,6 +716,7 @@ export default function Component() {
                                                     name="Finish_Time"
                                                     value={saleInfo.appointmentData.Finish_Time}
                                                     onChange={handleAppointmentChange}
+                                                    readOnly
                                                 />
                                             </Col>
                                             <Col sm="6">
@@ -734,7 +763,10 @@ export default function Component() {
                     </div>
                 </div>
             </div>
+          
+
         </>
+
     );
 }
 
