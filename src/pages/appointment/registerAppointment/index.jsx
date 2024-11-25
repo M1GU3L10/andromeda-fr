@@ -14,8 +14,8 @@ import { Form, Col, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BsCalendar2DateFill } from 'react-icons/bs';
-
+import CustomTimeSelector from './CustomTimeSelector/CustomTimeSelector';
+import { Link, useNavigate } from 'react-router-dom';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -32,54 +32,71 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
 }));
 
 export default function Component() {
+  // Initialize state from localStorage or default values
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
-  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState(() => {
+    const saved = localStorage.getItem('selectedProducts');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedService, setSelectedService] = useState(null);
   const [services, setServices] = useState([]);
-  const [saleInfo, setSaleInfo] = useState({
-    Billnumber: '',
-    SaleDate: new Date().toISOString().split('T')[0],
-    total_price: 0,
-    status: 'Pendiente',
-    id_usuario: '',
-    appointmentData: {
-      Init_Time: '',
-      Finish_Time: '',
-      Date: new Date().toISOString().split('T')[0],
-      time_appointment: 60
-    },
-    saleDetails: []
+  const navigate = useNavigate();
+  const [saleInfo, setSaleInfo] = useState(() => {
+    const saved = localStorage.getItem('saleInfo');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return {
+      Billnumber: '',
+      SaleDate: new Date().toISOString().split('T')[0],
+      total_price: 0,
+      status: 'Pendiente',
+      id_usuario: '',
+      appointmentData: {
+        Init_Time: '',
+        Finish_Time: '',
+        Date: new Date().toISOString().split('T')[0],
+        time_appointment: 60
+      },
+      saleDetails: []
+    };
   });
   const [errors, setErrors] = useState({});
   const urlServices = 'http://localhost:1056/api/services';
   const urlUsers = 'http://localhost:1056/api/users';
-  const [subtotalProducts, setSubtotalProducts] = useState(0);
-  const [subtotalServices, setSubtotalServices] = useState(0);
-  const [absences, setAbsences] = useState([]);
-  const urlAbsences = 'http://localhost:1056/api/absences';
+  const [subtotalProducts, setSubtotalProducts] = useState(() => {
+    const saved = localStorage.getItem('subtotalProducts');
+    return saved ? parseFloat(saved) : 0;
+  });
+  const [subtotalServices, setSubtotalServices] = useState(() => {
+    const saved = localStorage.getItem('subtotalServices');
+    return saved ? parseFloat(saved) : 0;
+  });
+
+  // Save to localStorage whenever these values change
+  useEffect(() => {
+    localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+  }, [selectedProducts]);
+
+  useEffect(() => {
+    localStorage.setItem('saleInfo', JSON.stringify(saleInfo));
+  }, [saleInfo]);
+
+  useEffect(() => {
+    localStorage.setItem('subtotalProducts', subtotalProducts.toString());
+  }, [subtotalProducts]);
+
+  useEffect(() => {
+    localStorage.setItem('subtotalServices', subtotalServices.toString());
+  }, [subtotalServices]);
 
   useEffect(() => {
     getUsers();
     getProducts();
     getServices();
-    getAbsences();
   }, []);
-
-  useEffect(() => {
-    // Generar un número aleatorio de 3 dígitos al cargar el componente
-    const randomNumber = Math.floor(100 + Math.random() * 900).toString(); // Número de 3 dígitos
-    setSaleInfo((prevState) => ({ ...prevState, Billnumber: randomNumber }));
-  }, []); 
-
-  const getAbsences = async () => {
-    try {
-      const response = await axios.get(urlAbsences);
-      setAbsences(response.data);
-    } catch (error) {
-      console.error("Error fetching absences:", error);
-    }
-  };
 
   const getUsers = async () => {
     const response = await axios.get(urlUsers);
@@ -157,7 +174,6 @@ export default function Component() {
   };
 
   const calculateTotals = (currentProducts, currentSaleDetails) => {
-    // Calculate products subtotal
     const productDetails = currentProducts.map(product => ({
       quantity: product.quantity,
       unitPrice: product.Price,
@@ -169,7 +185,6 @@ export default function Component() {
 
     const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
 
-    // Get service details
     const serviceDetails = currentSaleDetails.filter(detail =>
       detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
     );
@@ -182,7 +197,6 @@ export default function Component() {
       return sum;
     }, 0);
 
-    // Update all totals at once
     setSubtotalProducts(productsSubtotal);
     setSubtotalServices(servicesSubtotal);
 
@@ -193,21 +207,26 @@ export default function Component() {
     }));
   };
 
+  useEffect(() => {
+    if (!saleInfo.Billnumber) {
+      const randomBillNumber = Math.floor(100 + Math.random() * 900).toString();
+      setSaleInfo((prevState) => ({ ...prevState, Billnumber: randomBillNumber }));
+    }
+  }, []);
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setSaleInfo(prevState => {
-      // Si el campo que cambia es SaleDate, actualizamos también la fecha de la cita
       if (name === 'SaleDate') {
         return {
           ...prevState,
           [name]: value,
           appointmentData: {
             ...prevState.appointmentData,
-            Date: value // Sincronizamos la fecha de la cita con la fecha de venta
+            Date: value
           }
         };
       }
-      // Para otros campos, mantenemos el comportamiento original
       return {
         ...prevState,
         [name]: value
@@ -218,13 +237,24 @@ export default function Component() {
 
   const handleAppointmentChange = (event) => {
     const { name, value } = event.target;
-    setSaleInfo(prevState => ({
-      ...prevState,
-      appointmentData: {
-        ...prevState.appointmentData,
-        [name]: value
+    setSaleInfo(prevState => {
+      const newState = {
+        ...prevState,
+        appointmentData: {
+          ...prevState.appointmentData,
+          [name]: value
+        }
+      };
+
+      if (name === 'Init_Time' && selectedService) {
+        const startTime = new Date(`2000-01-01T${value}`);
+        startTime.setMinutes(startTime.getMinutes() + selectedService.time);
+        const endTime = startTime.toTimeString().slice(0, 5);
+        newState.appointmentData.Finish_Time = endTime;
       }
-    }));
+
+      return newState;
+    });
   };
 
   const validateField = (fieldName, value) => {
@@ -256,39 +286,6 @@ export default function Component() {
     setErrors(newErrors);
   };
 
-  const validateEmployeeAvailability = () => {
-    const appointmentDate = saleInfo.appointmentData.Date;
-    const appointmentStart = saleInfo.appointmentData.Init_Time;
-    const appointmentEnd = saleInfo.appointmentData.Finish_Time;
-
-    // Verificar cada servicio que tenga un empleado asignado
-    const serviceDetails = saleInfo.saleDetails.filter(detail =>
-      detail.serviceId !== null && detail.empleadoId !== null
-    );
-
-    for (const detail of serviceDetails) {
-      const employee = users.find(user => user.id === parseInt(detail.empleadoId));
-      if (!employee) continue;
-
-      // Buscar si hay alguna ausencia que se superponga
-      const hasAbsence = absences.some(absence =>
-        absence.userId === parseInt(detail.empleadoId) &&
-        absence.date === appointmentDate &&
-        absence.startTime <= appointmentEnd &&
-        absence.endTime >= appointmentStart
-      );
-
-      if (hasAbsence) {
-        return {
-          isValid: false,
-          message: `El empleado ${employee.name} tiene una ausencia registrada para este horario`
-        };
-      }
-    }
-
-    return { isValid: true };
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -305,28 +302,17 @@ export default function Component() {
       return;
     }
 
-    // Verificar la disponibilidad de los empleados antes de guardar
-    const { isValid, message } = validateEmployeeAvailability();
-    if (!isValid) {
-      show_alerta(message, 'error');
-      return;
-    }
-
-    // Verificar que los servicios con empleados tengan horario asignado
-    const hasServicesWithEmployees = saleInfo.saleDetails.some(detail =>
-      detail.serviceId !== null && detail.empleadoId !== null
-    );
-
-    if (hasServicesWithEmployees &&
-      (!saleInfo.appointmentData.Init_Time ||
-        !saleInfo.appointmentData.Finish_Time)) {
-      show_alerta('Debe especificar el horario de la cita para los servicios', 'warning');
-      return;
-    }
-
     try {
       await axios.post('http://localhost:1056/api/sales', saleInfo);
       show_alerta('Venta registrada con éxito', 'success');
+
+      // Clear localStorage
+      localStorage.removeItem('selectedProducts');
+      localStorage.removeItem('saleInfo');
+      localStorage.removeItem('subtotalProducts');
+      localStorage.removeItem('subtotalServices');
+
+      // Reset state
       setSaleInfo({
         Billnumber: '',
         SaleDate: new Date().toISOString().split('T')[0],
@@ -342,6 +328,9 @@ export default function Component() {
         saleDetails: []
       });
       setSelectedProducts([]);
+      setSubtotalProducts(0);
+      setSubtotalServices(0);
+      navigate('/sales')
     } catch (error) {
       console.error('Error al registrar la venta:', error);
       show_alerta('Error al registrar la venta', 'error');
@@ -365,7 +354,6 @@ export default function Component() {
 
       const updatedServiceDetails = [...serviceDetails, newServiceDetail];
 
-      // Combine with product details
       const productDetails = selectedProducts.map(product => ({
         quantity: product.quantity,
         unitPrice: product.Price,
@@ -397,6 +385,33 @@ export default function Component() {
             serviceDetails[index].unitPrice = service.price;
             serviceDetails[index].total_price = service.price;
             serviceDetails[index].quantity = 1;
+            setSelectedService(service);
+
+            // Calculate total appointment time
+            const totalTime = serviceDetails.reduce((sum, detail) => {
+              if (detail.serviceId) {
+                const selectedService = services.find(s => s.id === parseInt(detail.serviceId));
+                return sum + (selectedService ? selectedService.time : 0);
+              }
+              return sum;
+            }, 0);
+
+            // Update appointment times
+            if (prevState.appointmentData.Init_Time) {
+              const startTime = new Date(`2000-01-01T${prevState.appointmentData.Init_Time}`);
+              const endTime = new Date(startTime.getTime() + totalTime * 60000);
+              const formattedEndTime = endTime.toTimeString().slice(0, 5);
+
+              return {
+                ...prevState,
+                appointmentData: {
+                  ...prevState.appointmentData,
+                  Finish_Time: formattedEndTime,
+                  time_appointment: totalTime
+                },
+                saleDetails: serviceDetails
+              };
+            }
           }
         }
       }
@@ -412,7 +427,6 @@ export default function Component() {
 
       const allDetails = [...productDetails, ...serviceDetails];
 
-      // Calculate subtotals
       const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
       const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
         if (detail.serviceId) {
@@ -441,7 +455,6 @@ export default function Component() {
 
       const updatedServiceDetails = serviceDetails.filter((_, i) => i !== index);
 
-      // Combine with product details
       const productDetails = selectedProducts.map(product => ({
         quantity: product.quantity,
         unitPrice: product.Price,
@@ -462,34 +475,27 @@ export default function Component() {
     });
   };
 
+  const NextRegister = () => {
+    localStorage.removeItem('selectedProducts');
+    localStorage.removeItem('saleInfo');
+    localStorage.removeItem('subtotalProducts');
+    localStorage.removeItem('subtotalServices');
+    navigate('/sales');
+  }
+
   return (
     <div className="right-content w-100">
       <div className="row d-flex align-items-center w-100">
         {/* Breadcrumbs section remains the same */}
         <div className='spacing d-flex align-items-center'>
           <div className='col-sm-5'>
-            <span className='Title'>Registrar Cita</span>
+            <span className='Title'>Registrar Ventas</span>
           </div>
           <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
             <Breadcrumbs aria-label="breadcrumb">
-              <StyledBreadcrumb
-                component="a"
-                href="#"
-                label="Home"
-                icon={<HomeIcon fontSize="small" />}
-              />
-              <StyledBreadcrumb
-                component="a"
-                href="#"
-                label="Salidas"
-                icon={<FaMoneyBillWave fontSize="small" />}
-              />
-              <StyledBreadcrumb
-                component="a"
-                href="#"
-                label="Citas"
-                icon={<BsCalendar2DateFill fontSize="small" />}
-              />
+              <StyledBreadcrumb component="a" href="#" label="Home" icon={<HomeIcon fontSize="small" />} />
+              <StyledBreadcrumb component="a" href="#" label="Salidas" icon={<FaMoneyBillWave fontSize="small" />} />
+              <StyledBreadcrumb component="a" href="#" label="Ventas" icon={<FcSalesPerformance fontSize="small" />} />
             </Breadcrumbs>
           </div>
         </div>
@@ -595,9 +601,14 @@ export default function Component() {
                               onChange={(e) => handleServiceChange(index, 'serviceId', e.target.value)}
                             >
                               <option value="">Seleccionar servicio</option>
-                              {services.map(service => (
-                                <option key={service.id} value={service.id}>{service.name}</option>
-                              ))}
+                              {services
+                                .filter(service => !saleInfo.saleDetails.some(
+                                  d => d.serviceId === service.id.toString() && d !== detail
+                                ))
+                                .map(service => (
+                                  <option key={service.id} value={service.id}>{service.name}</option>
+                                ))
+                              }
                             </Form.Select>
                           </td>
                           <td>
@@ -606,34 +617,9 @@ export default function Component() {
                               onChange={(e) => handleServiceChange(index, 'empleadoId', e.target.value)}
                             >
                               <option value="">Seleccionar empleado</option>
-                              {users
-                                .filter(user => {
-                                  // Primero verificamos si es un empleado (roleId === 2)
-                                  if (user.roleId !== 2) return false;
-
-                                  // Verificamos si hay alguna ausencia que se superponga con el horario de la cita
-                                  const appointmentDate = saleInfo.appointmentData.Date;
-                                  const appointmentStart = saleInfo.appointmentData.Init_Time;
-                                  const appointmentEnd = saleInfo.appointmentData.Finish_Time;
-
-                                  // Si no hay horario de cita seleccionado, mostramos todos los empleados
-                                  if (!appointmentDate || !appointmentStart || !appointmentEnd) return true;
-
-                                  // Buscamos si hay alguna ausencia que se superponga
-                                  const hasAbsence = absences.some(absence => {
-                                    return absence.userId === user.id &&
-                                      absence.date === appointmentDate &&
-                                      absence.startTime <= appointmentEnd &&
-                                      absence.endTime >= appointmentStart;
-                                  });
-
-                                  // Retornamos true si NO hay ausencia (para incluir al empleado)
-                                  return !hasAbsence;
-                                })
-                                .map(employee => (
-                                  <option key={employee.id} value={employee.id}>{employee.name}</option>
-                                ))
-                              }
+                              {users.filter(user => user.roleId === 2).map(employee => (
+                                <option key={employee.id} value={employee.id}>{employee.name}</option>
+                              ))}
                             </Form.Select>
                           </td>
                           <td>
@@ -683,12 +669,14 @@ export default function Component() {
                         <Col sm="6">
                           <Form.Label className='required'># Combrobante</Form.Label>
                           <Form.Control
-                               type="text"
-                               name="Billnumber"
-                               value={saleInfo.Billnumber} // Muestra el valor generado
-                               isInvalid={false} // Sin errores
-                               disabled // Campo deshabilitado
+                            type="text"
+                            name="Billnumber"
+                            value={saleInfo.Billnumber}
+                            isInvalid={!!errors.Billnumber}
+                            readOnly
+                            disabled
                           />
+
                           <Form.Control.Feedback type="invalid">
                             {errors.Billnumber}
                           </Form.Control.Feedback>
@@ -736,23 +724,31 @@ export default function Component() {
                       <Form.Group as={Row} className="mb-3">
                         <Col sm="6">
                           <Form.Label>Hora inicio</Form.Label>
-                          <Form.Control
-                            type="time"
+                          <CustomTimeSelector
                             name="Init_Time"
                             value={saleInfo.appointmentData.Init_Time}
-                            onChange={handleAppointmentChange}
+                            onChange={(time) => handleAppointmentChange({ target: { name: 'Init_Time', value: time } })}
                           />
                         </Col>
                         <Col sm="6">
                           <Form.Label>Hora fin</Form.Label>
-                          <Form.Control
-                            type="time"
+                          <CustomTimeSelector
                             name="Finish_Time"
                             value={saleInfo.appointmentData.Finish_Time}
-                            onChange={handleAppointmentChange}
+                            onChange={(time) => handleAppointmentChange({ target: { name: 'Finish_Time', value: time } })}
+                            disabled={true}
                           />
                         </Col>
                       </Form.Group>
+                      {selectedService && (
+                        <Form.Group as={Row} className="mb-3">
+                          <Col sm="12">
+                            <Form.Text>
+                              Duración del servicio: {selectedService.time} minutos
+                            </Form.Text>
+                          </Col>
+                        </Form.Group>
+                      )}
                     </Form>
                   </div>
                 </div>
@@ -770,7 +766,7 @@ export default function Component() {
                         variant="secondary"
                         className='btn-red'
                         id='btn-red'
-                        href="/Sales"
+                        onClick={()=>NextRegister()}
                         style={{ minWidth: '100px' }}
                       >
                         Cerrar

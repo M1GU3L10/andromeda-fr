@@ -14,6 +14,8 @@ import { Form, Col, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import CustomTimeSelector from './CustomTimeSelector/CustomTimeSelector';
+import { Link, useNavigate } from 'react-router-dom';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -38,7 +40,9 @@ export default function Component() {
     return saved ? JSON.parse(saved) : [];
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedService, setSelectedService] = useState(null);
   const [services, setServices] = useState([]);
+  const navigate = useNavigate();
   const [saleInfo, setSaleInfo] = useState(() => {
     const saved = localStorage.getItem('saleInfo');
     if (saved) {
@@ -233,13 +237,24 @@ export default function Component() {
 
   const handleAppointmentChange = (event) => {
     const { name, value } = event.target;
-    setSaleInfo(prevState => ({
-      ...prevState,
-      appointmentData: {
-        ...prevState.appointmentData,
-        [name]: value
+    setSaleInfo(prevState => {
+      const newState = {
+        ...prevState,
+        appointmentData: {
+          ...prevState.appointmentData,
+          [name]: value
+        }
+      };
+
+      if (name === 'Init_Time' && selectedService) {
+        const startTime = new Date(`2000-01-01T${value}`);
+        startTime.setMinutes(startTime.getMinutes() + selectedService.time);
+        const endTime = startTime.toTimeString().slice(0, 5);
+        newState.appointmentData.Finish_Time = endTime;
       }
-    }));
+
+      return newState;
+    });
   };
 
   const validateField = (fieldName, value) => {
@@ -315,6 +330,7 @@ export default function Component() {
       setSelectedProducts([]);
       setSubtotalProducts(0);
       setSubtotalServices(0);
+      navigate('/sales')
     } catch (error) {
       console.error('Error al registrar la venta:', error);
       show_alerta('Error al registrar la venta', 'error');
@@ -369,6 +385,33 @@ export default function Component() {
             serviceDetails[index].unitPrice = service.price;
             serviceDetails[index].total_price = service.price;
             serviceDetails[index].quantity = 1;
+            setSelectedService(service);
+
+            // Calculate total appointment time
+            const totalTime = serviceDetails.reduce((sum, detail) => {
+              if (detail.serviceId) {
+                const selectedService = services.find(s => s.id === parseInt(detail.serviceId));
+                return sum + (selectedService ? selectedService.time : 0);
+              }
+              return sum;
+            }, 0);
+
+            // Update appointment times
+            if (prevState.appointmentData.Init_Time) {
+              const startTime = new Date(`2000-01-01T${prevState.appointmentData.Init_Time}`);
+              const endTime = new Date(startTime.getTime() + totalTime * 60000);
+              const formattedEndTime = endTime.toTimeString().slice(0, 5);
+
+              return {
+                ...prevState,
+                appointmentData: {
+                  ...prevState.appointmentData,
+                  Finish_Time: formattedEndTime,
+                  time_appointment: totalTime
+                },
+                saleDetails: serviceDetails
+              };
+            }
           }
         }
       }
@@ -431,6 +474,14 @@ export default function Component() {
       };
     });
   };
+
+  const NextRegister = () => {
+    localStorage.removeItem('selectedProducts');
+    localStorage.removeItem('saleInfo');
+    localStorage.removeItem('subtotalProducts');
+    localStorage.removeItem('subtotalServices');
+    navigate('/sales');
+  }
 
   return (
     <div className="right-content w-100">
@@ -550,9 +601,14 @@ export default function Component() {
                               onChange={(e) => handleServiceChange(index, 'serviceId', e.target.value)}
                             >
                               <option value="">Seleccionar servicio</option>
-                              {services.map(service => (
-                                <option key={service.id} value={service.id}>{service.name}</option>
-                              ))}
+                              {services
+                                .filter(service => !saleInfo.saleDetails.some(
+                                  d => d.serviceId === service.id.toString() && d !== detail
+                                ))
+                                .map(service => (
+                                  <option key={service.id} value={service.id}>{service.name}</option>
+                                ))
+                              }
                             </Form.Select>
                           </td>
                           <td>
@@ -618,6 +674,7 @@ export default function Component() {
                             value={saleInfo.Billnumber}
                             isInvalid={!!errors.Billnumber}
                             readOnly
+                            disabled
                           />
 
                           <Form.Control.Feedback type="invalid">
@@ -667,23 +724,31 @@ export default function Component() {
                       <Form.Group as={Row} className="mb-3">
                         <Col sm="6">
                           <Form.Label>Hora inicio</Form.Label>
-                          <Form.Control
-                            type="time"
+                          <CustomTimeSelector
                             name="Init_Time"
                             value={saleInfo.appointmentData.Init_Time}
-                            onChange={handleAppointmentChange}
+                            onChange={(time) => handleAppointmentChange({ target: { name: 'Init_Time', value: time } })}
                           />
                         </Col>
                         <Col sm="6">
                           <Form.Label>Hora fin</Form.Label>
-                          <Form.Control
-                            type="time"
+                          <CustomTimeSelector
                             name="Finish_Time"
                             value={saleInfo.appointmentData.Finish_Time}
-                            onChange={handleAppointmentChange}
+                            onChange={(time) => handleAppointmentChange({ target: { name: 'Finish_Time', value: time } })}
+                            disabled={true}
                           />
                         </Col>
                       </Form.Group>
+                      {selectedService && (
+                        <Form.Group as={Row} className="mb-3">
+                          <Col sm="12">
+                            <Form.Text>
+                              Duración del servicio: {selectedService.time} minutos
+                            </Form.Text>
+                          </Col>
+                        </Form.Group>
+                      )}
                     </Form>
                   </div>
                 </div>
@@ -701,7 +766,7 @@ export default function Component() {
                         variant="secondary"
                         className='btn-red'
                         id='btn-red'
-                        href="/Sales"
+                        onClick={()=>NextRegister()}
                         style={{ minWidth: '100px' }}
                       >
                         Cerrar
