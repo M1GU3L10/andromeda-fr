@@ -124,9 +124,13 @@ export default function CalendarioBarberia({ info }) {
   };
 
 
-  const handleViewClick = async () => {
-    setAppointmentId(info.event.id);
+  const handleViewClick = async (info) => {
+    if (!info || !info.event) {
+      console.error('Event is undefined');
+      return;
+    }
 
+    setAppointmentId(info.event.id);
 
     const userName = await getUserName(users, parseInt(info.event.title));
 
@@ -141,10 +145,12 @@ export default function CalendarioBarberia({ info }) {
       time_appointment: info.event.extendedProps.time_appointment,
       Total: info.event.extendedProps.Total
     });
+
     await getSaleDetailsByAppointmentId(info.event.id);
     setShowDetailModal(true);
     handleClose();
   };
+
   const handleClose = () => {
     setAnchorEl(null);
     setIsMenuOpen(false);
@@ -486,13 +492,13 @@ export default function CalendarioBarberia({ info }) {
               locale="es"
               locales={[esLocale]}
               events={filteredEvents}
-              eventContent={(info) => (
-                <EventComponent info={info} setAppointmentId={setAppointmentId} />
-              )}
+              
+              eventContent={(info) => <EventComponent info={info} setAppointmentId={setAppointmentId} />}
+              
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',
-                right: ''
+                right: '',
               }}
               dateClick={handleDateClick}
             />
