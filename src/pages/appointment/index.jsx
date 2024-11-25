@@ -535,9 +535,9 @@ detail.empleadoId;
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="outlined" onClick={() => setShowDetailModal(false)}>
-            Close
-          </Button>
+        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                                Cerrar
+                            </Button>
         </Modal.Footer>
       </Modal>
         </div>

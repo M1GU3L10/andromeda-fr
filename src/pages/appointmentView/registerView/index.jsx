@@ -230,12 +230,7 @@ export default function Component() {
             };
         }
 
-        if (appointmentDate.getDay() === 1) { // 1 represents Monday
-            return {
-                isValid: false,
-                message: 'No se pueden reservar citas para los lunes'
-            };
-        }
+    
 
         return { isValid: true };
     };

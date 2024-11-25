@@ -16,6 +16,7 @@ import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Pagination from '../../components/pagination/index';
+import { usePermissions } from '../../components/PrivilegeCheck';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   const backgroundColor =
@@ -59,7 +60,9 @@ const Users = () => {
   const [currentPages, setCurrentPages] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const permissions = usePermissions();
 
+  
   const [errors, setErrors] = useState({
     name: '',
     email: '',
@@ -81,6 +84,10 @@ const Users = () => {
     getRoles();
   }, []);
 
+  const hasPermission = (permission) => {
+    return permissions.includes(permission);
+  };
+  
   const getRoles = async () => {
     try {
       const response = await axios.get(urlRoles);
@@ -468,9 +475,11 @@ finally {
           <div className='card shadow border-0 p-3'>
             <div className='row'>
               <div className='col-sm-5 d-flex align-items-center'>
+             
                 <Button className='btn-register' onClick={() => openModal(1)} variant="contained" color="primary">
                   <BsPlusSquareFill /> Registrar
                 </Button>
+      
               </div>
               <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                 <div className="searchBox position-relative d-flex align-items-center">
@@ -507,21 +516,28 @@ finally {
                       </td>
                       <td>
                         <div className='actions d-flex align-items-center'>
-                          <Switch
-                            checked={user.status === 'A'}
-                            onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
-                          />
-                          <Button color='primary' className='primary' onClick={() => handleViewDetails(user)}><FaEye /></Button>
-                          {user.status === 'A' && (
-                            <>
-                              <Button color="secondary" className='secondary' onClick={() => openModal(2, user)} >
-                                <FaPencilAlt />
-                              </Button>
-                              <Button color='error' className='delete' onClick={() => deleteUser(user.id, user.name)}>
-                                <IoTrashSharp />
-                              </Button>
-                            </>
-                          )}
+                        {hasPermission('Cambiar Estado') && (
+                        <Switch
+        checked={user.status === 'A'}
+        onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
+      />
+    )}
+     {
+            hasPermission('Ver') && (
+        <Button color="primary" className="primary" onClick={() => handleViewDetails(user)}>
+          <FaEye />
+        </Button>
+      )}
+      {user.status === 'A' && hasPermission('Editar') && (
+        <Button color="secondary" className="secondary" onClick={() => openModal(2, user)}>
+          <FaPencilAlt />
+        </Button>
+      )}
+      {user.status === 'A' && hasPermission('Eliminar') && (
+        <Button color="error" className="delete" onClick={() => deleteUser(user.id, user.name)}>
+          <IoTrashSharp />
+        </Button>
+      )}
                         </div>
                       </td>
                     </tr>

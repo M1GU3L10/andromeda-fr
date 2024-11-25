@@ -16,7 +16,9 @@ import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from '@fullcalendar/core/locales/es';
 import { GrUser } from 'react-icons/gr';
 import axios from 'axios';
-import { Form } from 'react-bootstrap';
+import { Modal, Form } from 'react-bootstrap';
+import { FaEye } from "react-icons/fa";
+
 
 export default function CalendarioBarberia() {
     const context = useContext(MyContext);
@@ -33,6 +35,7 @@ export default function CalendarioBarberia() {
     const [selectedView, setSelectedView] = useState('dayGridMonth');
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
+    const [showModal, setShowModal] = useState(false);
 
     const urlUsers = 'http://localhost:1056/api/users';
     const urlAppointment = 'http://localhost:1056/api/appointment';
@@ -52,6 +55,16 @@ export default function CalendarioBarberia() {
         checkLoginStatus();
         fetchData();
     }, [context]);
+
+     const getSaleDetailsByAppointmentId = async (id) => {
+        try {
+          const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
+          setSaleDetails(response.data);
+        } catch (error) {
+          console.error('Error fetching sale details:', error);
+          setSaleDetails([]);
+        }
+      };
 
     const fetchData = async () => {
         try {
@@ -101,6 +114,13 @@ export default function CalendarioBarberia() {
             setUserEmail('');
             setUserRole('');
         }
+    };
+
+
+
+    const handleClose = () => {
+        setAnchorEl(null);
+        setIsMenuOpen(false);
     };
 
     const handleLogin = () => {
@@ -296,8 +316,78 @@ export default function CalendarioBarberia() {
                             contentHeight={600}
                         />
                     </div>
+                    <MenuItem className='Menu-programming-item' onClick={handleViewClick}>
+                        <Button color='primary' className='primary'>
+                            <FaEye />
+                        </Button>
+                    </MenuItem>
+                    
                 </div>
+                <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Detalle de la <i class="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-4">
+            <h5 className="border-bottom pb-2">Informaciòn de la cita</h5>
+            <div className="row">
+              <div className="col-md-6">
+                <p><strong>Cliente:</strong> {detailData.title}</p>
+                <p><strong>Fecha:</strong> {detailData.Date}</p>
+                <p><strong>Hora inicio:</strong> {detailData.Init_Time}</p>
+                <p><strong>Hora fin:</strong> {detailData.Finish_Time}</p>
+              </div>
+              <div className="col-md-6">
+                <p><strong>Duraciòn de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
+                <p><strong>Total:</strong> {detailData.Total}</p>
+                <p><strong>Estado:</strong> {detailData.status}</p>
+              </div>
             </div>
+          </div>
+          <div className="mt-4">
+            <h5 className="border-bottom pb-2">Detalle de la venta</h5>
+            {saleDetails.length > 0 ? (
+              <div className="table-responsive">
+                <table className="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Nombre</th>
+                      <th>Cantidad</th>
+                      <th>Precio unit</th>
+                      <th>Total</th>
+                      <th>Empleado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {saleDetails.map((detail, index) => (
+                      <tr key={index}>
+                        <td>{detail.type}</td>
+                        <td>{detail.productName}</td>
+                        <td>{detail.quantity}</td>
+                        <td>${detail.price.toLocaleString()}</td>
+                        <td>${detail.total.toLocaleString()}</td>
+                        <td>{detail.employeeName || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted">No se encuentran productos en esta cita.</p>
+            )}
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                                Cerrar
+                            </Button>
+        </Modal.Footer>
+      </Modal>
+            </div>
+
+
+            
 
             <style jsx global>{`
   .calendar-container {
@@ -477,5 +567,9 @@ export default function CalendarioBarberia() {
 `}</style>
 
         </div>
+
+        
     );
+
+
 }
