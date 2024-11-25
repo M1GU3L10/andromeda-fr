@@ -3,9 +3,10 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App.js';
-
+import { Calendar, Clock, Users, CheckCircle2, DollarSign } from 'lucide-react';
 import logo from '../../assets/images/logo-light.png';
-import { Avatar, Menu, MenuItem, Button } from '@mui/material';
+import { Avatar, Menu, MenuItem, Button, Card } from '@mui/material';
+
 import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
@@ -17,6 +18,7 @@ import esLocale from '@fullcalendar/core/locales/es';
 import { GrUser } from 'react-icons/gr';
 import axios from 'axios';
 
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Form } from 'react-bootstrap';
 import { FaEye } from "react-icons/fa";
 
@@ -35,6 +37,7 @@ export default function CalendarioBarberia({ info }) {
   const { isToggleSidebar } = useContext(MyContext);
   const [userId, setUserId] = useState('');
   const [events, setEvents] = useState([]);
+
   const [users, setUsers] = useState([]);
   const [selectedView, setSelectedView] = useState('dayGridMonth');
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -276,6 +279,7 @@ export default function CalendarioBarberia({ info }) {
       window.dispatchEvent(new Event('resize'));
     }, 300);  // Agregar un pequeño retraso antes de disparar el evento resize
   }, [isToggleSidebar]);
+
   const handleEmployeeChange = (event) => {
     setSelectedEmployee(event.target.value);
   };
@@ -330,6 +334,17 @@ export default function CalendarioBarberia({ info }) {
     const [isHovered, setIsHovered] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isButtonVisible, setIsButtonVisible] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const handleEventClick = (eventInfo) => {
+      setSelectedEvent(eventInfo.event.id); // Guarda el ID del evento seleccionado
+    };
+
+    const handleViewClick = (info) => {
+      // Lógica para manejar el evento click en la cita
+      console.log("Cita seleccionada:", info.event);
+      setIsButtonVisible(true); // Mostrar el botón cuando se hace clic en una cita
+    };
     const handleClick = (event) => {
       setAnchorEl(event.currentTarget);
       setIsMenuOpen(true);
@@ -359,25 +374,7 @@ export default function CalendarioBarberia({ info }) {
 
         )}
 
-        <Menu
-          className='Menu-programming'
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-          PaperProps={{
-            onMouseEnter: () => setIsMenuOpen(true),
-            onMouseLeave: handleClose,
-            style: {
-              maxHeight: 48 * 4.5,
-            },
-          }}
-        >
-          <MenuItem className='Menu-programming-item' onClick={handleViewClick}>
-            <Button color='primary' className='primary'>
-              <FaEye />
-            </Button>
-          </MenuItem>
-        </Menu>
+
       </div>
     );
   };
@@ -451,135 +448,135 @@ export default function CalendarioBarberia({ info }) {
       <br /><br /><br /><br /><br />
       {/* Contenedor Principal */}
       <div className="container mx-auto px-4 py-8">
+        {/* Contenedor principal con márgenes y padding */}
         <div className="bg-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden border border-[#b89b58]/20">
+          {/* Estilo para una tarjeta oscura con bordes redondeados, sombra y borde dorado */}
           <div className="p-6">
+            {/* Contenedor para el selector de vistas */}
             <Form.Select
-              value={selectedView}
-              onChange={(e) => handleViewChange(e.target.value)}
+              value={selectedView} // Estado actual de la vista seleccionada
+              onChange={(e) => handleViewChange(e.target.value)} // Cambia la vista cuando se selecciona una opción
               className="w-40 bg-black text-white border border-[#b89b58] rounded-lg shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#b89b58] focus:border-transparent transition-all duration-200 cursor-pointer appearance-none hover:bg-[#b89b58]"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b89b58'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                backgroundPosition: 'right 0.5rem center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: '1.5em 1.5em',
-                paddingRight: '2.5rem',
+                backgroundPosition: "right 0.5rem center",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "1.5em 1.5em",
+                paddingRight: "2.5rem",
               }}
             >
+              {/* Opciones del selector */}
               <option value="dayGridMonth" className="bg-black text-white hover:bg-[#b89b58]">
                 Mes
               </option>
-              <option value="timeGridWeek" className="bg-black text-white hover:bg-[b89b58]">
+              <option value="timeGridWeek" className="bg-black text-white hover:bg-[#b89b58]">
                 Semana
               </option>
               <option value="timeGridDay" className="bg-black text-white hover:bg-[#b89b58]">
                 Día
               </option>
             </Form.Select>
-
-
           </div>
+
           <div className="table-responsive mt-3">
+            {/* Contenedor del calendario */}
             <FullCalendar
-              ref={calendarRef}
-              locale={esLocale}
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              events={filteredEvents}
-              initialView={selectedView}
-              dateClick={handleDateClick}
+              ref={calendarRef} // Referencia al calendario
+              locale={esLocale} // Configuración de idioma
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} // Plugins para vistas y eventos
+              events={filteredEvents} // Lista de eventos a mostrar
+              initialView={selectedView} // Vista inicial del calendario
+              dateClick={handleDateClick} // Lógica cuando se hace clic en una fecha
               eventClick={(info) => {
-                handleViewClick(info);  // Abre el modal con la información del evento
-                setShowDetailModal(true);  // Muestra el modal
+                handleViewClick(info); // Maneja el clic en un evento
+                setShowDetailModal(true); // Muestra el modal con detalles
               }}
-              locales={[esLocale]}
+              locales={[esLocale]} // Idiomas compatibles
               eventContent={(info) => <EventComponent info={info} setAppointmentId={setAppointmentId} />}
               headerToolbar={{
-                left: 'prev,next today',
-                center: 'title',
-                right: '',
+                left: "prev,next today",
+                center: "title",
+                right: "",
               }}
             />
           </div>
+        </div>
 
-          <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)}>
-            <Modal.Header closeButton>
-              <Modal.Title>Detalle de cita</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <h4>Cliente: {detailData.title}</h4>
-              <p>Fecha: {detailData.Date}</p>
-              <p>Hora: {detailData.Init_Time} - {detailData.Finish_Time}</p>
-              <p>Status: {detailData.status}</p>
-              <p>Total: {detailData.Total}</p>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
-                Cerrar
-              </Button>
-            </Modal.Footer>
-          </Modal>
-
-
-          <Menu
-            className='Menu-programming'
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-            PaperProps={{
-              onMouseEnter: () => setIsMenuOpen(true),
-              onMouseLeave: handleClose,
-              style: {
-                maxHeight: 48 * 4.5,
-              },
+        <MenuItem className="Menu-programming-item">
+          {/* Botón para ver más detalles */}
+          <Button
+            onClick={() => setShowDetailModal(true)} // Abre el modal
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              cursor: "pointer",
             }}
           >
-            <MenuItem className='Menu-programming-item' onClick={handleViewClick}>
-              <Button
-                onClick={handleViewClick}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <FaEye size={20} color="#b89b58" />
-              </Button>
+            <FaEye size={20} color="#b89b58" />
+          </Button>
+        </MenuItem>
 
-            </MenuItem>
-          </Menu>
-
-        </div>
-        <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} size="lg">
+        <Modal
+          show={showDetailModal} // Controla la visibilidad del modal
+          onHide={() => setShowDetailModal(false)} // Cierra el modal
+          size="lg"
+          backdrop="static"
+          keyboard={true}
+          centered
+          className="appointment-detail-modal"
+        >
           <Modal.Header closeButton>
-            <Modal.Title>Detalle de la <i class="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
+            <Modal.Title className="d-flex align-items-center text-gold">
+              <i className="fa fa-credit-card me-2" aria-hidden="true"></i>
+              Detalle de la Cita
+            </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="custom-modal-body">
+            {/* Detalles de la cita */}
             <div className="mb-4">
-              <h5 className="border-bottom pb-2">Informaciòn de la cita</h5>
+              <h5 className="border-bottom pb-2 text-gold">Información de la Cita</h5>
               <div className="row">
                 <div className="col-md-6">
-                  <p><strong>Cliente:</strong> {detailData.title}</p>
-                  <p><strong>Fecha:</strong> {detailData.Date}</p>
-                  <p><strong>Hora inicio:</strong> {detailData.Init_Time}</p>
-                  <p><strong>Hora fin:</strong> {detailData.Finish_Time}</p>
+                  <p>
+                    <strong>Cliente:</strong> {detailData.title}
+                  </p>
+                  <p>
+                    <strong>Fecha:</strong> {detailData.Date}
+                  </p>
+                  <p>
+                    <strong>Hora inicio:</strong> {detailData.Init_Time}
+                  </p>
+                  <p>
+                    <strong>Hora fin:</strong> {detailData.Finish_Time}
+                  </p>
                 </div>
                 <div className="col-md-6">
-                  <p><strong>Duraciòn de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
-                  <p><strong>Total:</strong> {detailData.Total}</p>
-                  <p><strong>Estado:</strong> {detailData.status}</p>
+                  <p>
+                    <strong>Duración de la cita:</strong> {detailData.time_appointment}
+                    <strong> Minutos</strong>
+                  </p>
+                  <p>
+                    <strong>Total:</strong> {detailData.Total}
+                  </p>
+                  <p>
+                    <strong>Estado:</strong> {detailData.status}
+                  </p>
                 </div>
               </div>
             </div>
+
+            {/* Detalle de la venta */}
             <div className="mt-4">
-              <h5 className="border-bottom pb-2">Detalle de la venta</h5>
+              <h5 className="border-bottom pb-2 text-gold">Detalle de la Venta</h5>
               {saleDetails.length > 0 ? (
                 <div className="table-responsive">
-                  <table className="table table-striped">
-                    <thead>
+                  <table className="table table-dark table-striped table-hover align-middle">
+                    <thead className="table-gold">
                       <tr>
                         <th>Tipo</th>
                         <th>Nombre</th>
                         <th>Cantidad</th>
-                        <th>Precio unit</th>
+                        <th>Precio Unitario</th>
                         <th>Total</th>
                         <th>Empleado</th>
                       </tr>
@@ -592,203 +589,247 @@ export default function CalendarioBarberia({ info }) {
                           <td>{detail.quantity}</td>
                           <td>${detail.price.toLocaleString()}</td>
                           <td>${detail.total.toLocaleString()}</td>
-                          <td>{detail.employeeName || '-'}</td>
+                          <td>{detail.employeeName || "-"}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <p className="text-muted">No se encuentran productos en esta cita.</p>
+                <p className="text-muted fst-italic">
+                  No se encuentran productos en esta cita.
+                </p>
               )}
             </div>
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-              Cerrar
-            </Button>
-          </Modal.Footer>
         </Modal>
       </div>
 
 
 
 
+
+
+
+
       <style jsx global>{`
-  .calendar-container {
-    background: #1a1a1a;
-  }
+ * {
+    box-sizing: border-box;
+}
 
-  .fc {
+.calendar-container {
+    position: relative;
+    background: #1a1a1a;
+    border-radius: 20px;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.2), 
+        inset 0 0 15px rgba(255, 255, 255, 0.05),
+        0 5px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    perspective: 1000px;
+    transition: all 0.4s ease;
+    transform: translateY(0);
+}
+
+.calendar-container:hover {
+    transform: translateY(-15px);
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.3), 
+        inset 0 0 20px rgba(255, 255, 255, 0.1),
+        0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.fc {
     font-family: system-ui, -apple-system, sans-serif;
-    max-width: 100%;
+    background: transparent;
+    color: #ffffff;
+}
+
+.fc .fc-toolbar {
+    padding: 1.5rem;
     background: #1a1a1a;
-    color: #fff;
-  }
-    
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
 
-  .fc .fc-toolbar {
-    padding: 1rem;
-    margin-bottom: 0;
-    background: #1a1a1a;
-  }
+.fc .fc-toolbar-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
 
-  .fc .fc-toolbar-title {
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: #ffffff !important;
-    text-transform: capitalize;
-  }
-
-  .fc .fc-button {
+.fc .fc-button {
     background-color: #2d2d2d !important;
     border: 1px solid #b89b58 !important;
     color: #b89b58 !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .fc .fc-button:hover {
-    background-color: #b89b58 !important;
-    color: #1a1a1a !important;
-    transform: translateY(-1px);
-  }
-
-  .fc .fc-button-primary:not(:disabled).fc-button-active,
-  .fc .fc-button-primary:not(:disabled):active {
-    background-color: #b89b58 !important;
-    color: #1a1a1a !important;
-    border-color: #b89b58 !important;
-  }
-
-  .fc-theme-standard td,
-  .fc-theme-standard th {
-    border-color: #333333;
-  }
-
-  .fc-theme-standard .fc-scrollgrid {
-    border-color: #333333;
-  }
-
-  .fc .fc-day {
-    background: #1a1a1a;
-    transition: background-color 0.2s ease;
-  }
-
-  .fc .fc-day:hover {
-    background-color: #2d2d2d;
-  }
-
-  .fc .fc-day-today {
-    background-color: rgba(184, 155, 88, 0.1) !important;
-  }
-
-  .fc .fc-day-today .fc-daygrid-day-number {
-    color: #b89b58;
-    font-weight: bold;
-  }
-
-  .fc .fc-daygrid-day-number {
-    color: #ffffff;
-    padding: 0.5rem;
-    transition: color 0.2s ease;
-  }
-
-  .fc .fc-daygrid-day:hover .fc-daygrid-day-number {
-    color: #b89b58;
-  }
-
-  .fc .fc-col-header-cell {
-    background: #2d2d2d;
-    color: #ffffff !important;
+    box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.1), 
+        inset 0 0 10px rgba(255, 255, 255, 0.05);
+    padding: 0.6rem 1.2rem;
     font-weight: 600;
-    padding: 1rem 0;
-    text-transform: uppercase;
-    font-size: 0.875rem;
-  }
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
 
-  .programming-content {
-    
-    color: #1a1a1a;
-   
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
- 
-  }
+.fc .fc-button:hover {
+    background-color: #b89b58 !important;
+    color: #1a1a1a !important;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 
+        0 6px 10px rgba(0, 0, 0, 0.2), 
+        inset 0 0 15px rgba(0, 0, 0, 0.1);
+}
 
-  .programming-content:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .span-programming {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .fc-day-other {
-    background: #161616;
-  }
-
-  .fc-day-other .fc-daygrid-day-number {
-    color: #666666;
-  }
-
-  @media (max-width: 640px) {
-    .fc .fc-toolbar {
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .fc .fc-toolbar-title {
-      font-size: 1.25rem;
-    }
-
-    .fc .fc-button {
-      padding: 0.375rem 0.75rem;
-      font-size: 0.875rem;
-    }
-  }
-
-  /* Time Grid Specific Styles */
-  .fc-timegrid-slot {
+.fc-theme-standard .fc-scrollgrid {
+    border-color: #333333;
     background: #1a1a1a;
-    border-color: #333333 !important;
-  }
+    border-radius: 15px;
+}
 
-  .fc-timegrid-axis {
+.fc .fc-day {
+    background: #1a1a1a;
+    transition: all 0.3s ease;
+}
+
+.fc .fc-day:hover,
+.fc .fc-day.fc-day-today:hover {
     background: #2d2d2d;
-    color: #b89b58;
-  }
+    transform: translateY(-5px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    position: relative;
+}
 
-  .fc .fc-timegrid-axis-cushion {
-    color: #b89b58;
-  }
+.fc .fc-day-today {
+    background: rgba(184, 155, 88, 0.1) !important;
+    border-radius: 10px;
+}
 
-  .fc .fc-timegrid-slot-label-cushion {
+.fc .fc-day-today .fc-daygrid-day-number {
     color: #b89b58;
-  }
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
-  /* Week/Day View Specific */
-  .fc-timegrid-event {
-    background: #b89b58;
+.fc .fc-daygrid-day-number {
+    color: #ffffff;
+    padding: 0.7rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.fc .fc-daygrid-day:hover .fc-daygrid-day-number {
+    color: #b89b58;
+}
+
+.fc .fc-col-header-cell {
+    background: #2d2d2d;
+    color: #fff !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.fc-day-other {
+    background: #161616;
+}
+
+.fc-day-other .fc-daygrid-day-number {
+    color: #666666;
+}
+
+@media (max-width: 640px) {
+    .calendar-container:hover {
+        transform: translateY(-10px);
+    }
+}
+
+/* Estilos específicos para este modal que no interferirán con otras modales */
+.appointment-detail-modal .modal-content {
+    background-color: #f4f4f4;
+    color: #333;
+    border-radius: 15px;
+    border: 2px solid #a38928;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.appointment-detail-modal .modal-header {
+    border-bottom: 2px solid #a38928;
+    background-color: #f9f9f9;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.appointment-detail-modal .modal-title {
+    color: #a38928;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.appointment-detail-modal .modal-title i {
+    margin-right: 10px;
+    color: #a38928;
+}
+
+.appointment-detail-modal .btn-close {
+    background-color: rgba(163, 137, 40, 0.1);
+    border-radius: 50%;
+    opacity: 0.7;
+}
+
+.appointment-detail-modal .btn-close:hover {
+    background-color: rgba(163, 137, 40, 0.2);
+    opacity: 1;
+}
+
+.appointment-detail-modal .modal-body {
+    background-color: #ffffff;
+    padding: 1.5rem;
+}
+
+.appointment-detail-modal h5 {
+    color: #a38928;
+    border-bottom-color: #a38928 !important;
+}
+
+.appointment-detail-modal .table {
+    background-color: #ffffff;
+    color: #333;
+}
+
+.appointment-detail-modal .table thead {
+    background-color: #f1f1f1;
+    color: #a38928;
+}
+
+.appointment-detail-modal .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(163, 137, 40, 0.05);
+}
+
+.appointment-detail-modal .table-hover tbody tr:hover {
+    background-color: rgba(163, 137, 40, 0.1);
+}
+
+.appointment-detail-modal .text-gold {
+    color: #a38928 !important;
+}
+.view-button {
+    background: none;
     border: none;
-    padding: 0.25rem;
-  }
+    color: gold;
+    cursor: pointer;
+}
 
-  .fc-timegrid-now-indicator-line {
-    border-color: #b89b58;
-  }
+.view-button:hover {
+    color: darkgoldenrod;
+}
 
-  .fc-timegrid-now-indicator-arrow {
-    border-color: #b89b58;
-    color: #b89b58;
-  }
 `}</style>
 
     </div>
