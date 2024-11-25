@@ -20,6 +20,7 @@ import Switch from '@mui/material/Switch';
 import { Modal, Form } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
+import { useUserPermissions } from '../../hooks/useUserPermissions';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
@@ -50,6 +51,7 @@ const Roles = () => {
     const urlPrivileges = 'http://localhost:1056/api/privileges';
     const urlPrivilegePermissionRoles = 'http://localhost:1056/api/privilege-permission-roles';
     const urlAssignPrivileges = 'http://localhost:1056/api/privileges/assign';
+    const { hasPrivilege } = useUserPermissions();
 
     const [services, setServices] = useState([]);
     const [permissions, setPermissions] = useState([]);
