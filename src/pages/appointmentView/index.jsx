@@ -258,16 +258,10 @@ export default function CalendarioBarberia({ info }) {
             Finish_Time: event.Finish_Time,
             Date: event.Date,
             time_appointment: event.time_appointment,
-            empleadoId: appointmentEmployeeMap[event.id]
+            empleadoId: appointmentEmployeeMap[event.id] || '',
+            DetailAppointments: event.DetailAppointments,
           }
         }));
-
-        // Filtrar eventos según el rol
-        if (userRole === '2') { // Rol de empleado
-          transformedEvents = transformedEvents.filter(event =>
-            event.extendedProps.empleadoId?.toString() === userId
-          );
-        }
 
         setEvents(transformedEvents);
       } catch (error) {
@@ -276,7 +270,7 @@ export default function CalendarioBarberia({ info }) {
     };
 
     fetchData();
-  }, [userRole, userId]);
+  }, []);
   useEffect(() => {
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
@@ -487,22 +481,43 @@ export default function CalendarioBarberia({ info }) {
           <div className="table-responsive mt-3">
             <FullCalendar
               ref={calendarRef}
+              locale={esLocale}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView={selectedView}
-              locale="es"
-              locales={[esLocale]}
               events={filteredEvents}
-              
+              initialView={selectedView}
+              dateClick={handleDateClick}
+              eventClick={(info) => {
+                handleViewClick(info);  // Abre el modal con la información del evento
+                setShowDetailModal(true);  // Muestra el modal
+              }}
+              locales={[esLocale]}
               eventContent={(info) => <EventComponent info={info} setAppointmentId={setAppointmentId} />}
-              
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',
                 right: '',
               }}
-              dateClick={handleDateClick}
             />
           </div>
+
+          <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)}>
+            <Modal.Header closeButton>
+              <Modal.Title>Detalle de cita</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <h4>Cliente: {detailData.title}</h4>
+              <p>Fecha: {detailData.Date}</p>
+              <p>Hora: {detailData.Init_Time} - {detailData.Finish_Time}</p>
+              <p>Status: {detailData.status}</p>
+              <p>Total: {detailData.Total}</p>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+                Cerrar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
 
           <Menu
             className='Menu-programming'
