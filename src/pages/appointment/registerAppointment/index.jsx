@@ -14,7 +14,7 @@ import { Form, Col, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import CustomTimeSelector from './CustomTimeSelector/CustomTimeSelector';
+import CustomTimeSelector from '../../sales/registerSales/CustomTimeSelector/CustomTimeSelector';
 import { Link, useNavigate } from 'react-router-dom';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
