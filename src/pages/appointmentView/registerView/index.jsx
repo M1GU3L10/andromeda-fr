@@ -22,6 +22,10 @@ export default function Component() {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [services, setServices] = useState([]);
+    const [minTime, setMinTime] = useState("07:00");
+    const [maxTime, setMaxTime] = useState("21:00");
+    const [timeSlots, setTimeSlots] = useState([]);
+
     const navigate = useNavigate();
     const [selectedService, setSelectedService] = useState(null);
     const [saleInfo, setSaleInfo] = useState({
@@ -38,6 +42,9 @@ export default function Component() {
         },
         saleDetails: []
     });
+    const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
+    const [occupiedSlots, setOccupiedSlots] = useState([]);
+
     const [errors, setErrors] = useState({});
     const urlServices = 'http://localhost:1056/api/services';
     const urlUsers = 'http://localhost:1056/api/users';
@@ -67,7 +74,40 @@ export default function Component() {
             show_alerta('No has iniciado sesión. Por favor, inicia sesión para crear una cita.', 'warning');
         }
     };
+    const generateTimeSlots = () => {
+        const slots = [];
+        const [minHour, minMinute] = minTime.split(':').map(Number);
+        const [maxHour, maxMinute] = maxTime.split(':').map(Number);
 
+        // Iteramos desde la hora mínima hasta la hora máxima
+        for (let hour = minHour; hour <= maxHour; hour++) {
+            // Si estamos en la última hora (maxHour), limitamos los minutos a los de maxTime
+            const startMinute = (hour === minHour) ? minMinute : 0;
+            const endMinute = (hour === maxHour) ? maxMinute : 59;
+
+            for (let minute = startMinute; minute <= endMinute; minute += 30) {
+                const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                if (timeString <= maxTime) {
+                    slots.push(timeString);
+                }
+            }
+        }
+        return slots;
+    };
+
+    const isSlotOccupied = (timeSlot) => {
+        return occupiedSlots?.some(slot => {
+            const slotStart = new Date(`${currentDate}T${slot.startTime}`);
+            const slotEnd = new Date(`${currentDate}T${slot.endTime}`);
+            const currentSlot = new Date(`${currentDate}T${timeSlot}`);
+            return currentSlot >= slotStart && currentSlot < slotEnd;
+        });
+    };
+    const isSlotInPast = (timeSlot) => {
+        const now = new Date();
+        const slotTime = new Date(`${currentDate}T${timeSlot}`);
+        return slotTime < now;
+    };
     const fetchInitialData = async (userId) => {
         try {
             await Promise.all([
@@ -140,7 +180,9 @@ export default function Component() {
         product.Product_Name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !selectedProducts.some(sp => sp.id === product.id)
     );
-
+    useEffect(() => {
+        setTimeSlots(generateTimeSlots());
+    }, [minTime, maxTime]);
     const addProduct = (product) => {
         const existingProduct = selectedProducts.find(p => p.id === product.id);
         if (existingProduct) {
@@ -391,7 +433,8 @@ export default function Component() {
 
         const { isValid: isAppointmentAvailable, message: appointmentMessage } = validateAppointmentAvailability();
         if (!isAppointmentAvailable) {
-            show_alerta(appointmentMessage, 'error');
+            show_alerta
+                (appointmentMessage, 'error');
             return;
         }
 
@@ -404,8 +447,6 @@ export default function Component() {
                 !saleInfo.appointmentData.Finish_Time)) {
             show_alerta('Debe especificar el horario de la cita para los servicios', 'warning');
             return;
-
-
         }
 
         try {
@@ -433,7 +474,6 @@ export default function Component() {
             console.error('Error al registrar la venta:', error);
             show_alerta('Error al registrar la venta', 'error');
         }
-
     };
 
     const handleServiceAdd = () => {
@@ -604,19 +644,20 @@ export default function Component() {
                 <div className='row'>
                     <div className='col-sm-6'>
                         <div className='row p-3'></div>
-                        <div className='card-detail shadow border-0 mb-9'>
-                            <div className='bcg-w col-sm-12 p-3'>
-                                <div className="position-relative d-flex align-items-center">
-                                    <span className='Tittle'>Servicios</span>
-                                </div>
+                        <div className='card-detail shadow-lg border-0 mb-4 rounded-lg'>
+                            <div className="cont-title w-100 bg-gradient-to-r from-blue-600 to-blue-800 p-4">
+                                <span className='Title text-white text-xl font-bold d-flex align-items-center'>
+                                    <i className="bi bi-scissors me-2"></i>
+                                    Servicios
+                                </span>
                             </div>
-                            <div className='table-responsive p-3'>
+                            <div className='table-responsive p-4'>
                                 <table className='table table-bordered table-hover v-align table-striped'>
-                                    <thead className='table-light'>
-                                        <tr>
-                                            <th>Servicio</th>
-                                            <th>Empleado</th>
-                                            <th>Acciones</th>
+                                    <thead className='bg-light'>
+                                        <tr className="text-dark">
+                                            <th className="fw-bold">Servicio</th>
+                                            <th className="fw-bold">Barbero</th>
+                                            <th className="fw-bold" style={{ width: '100px' }}>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -626,8 +667,9 @@ export default function Component() {
                                                     <Form.Select
                                                         value={detail.serviceId || ''}
                                                         onChange={(e) => handleServiceChange(index, 'serviceId', e.target.value)}
+                                                        className="form-select border rounded-lg shadow-sm"
                                                     >
-                                                        <option value="">Seleccionar servicio</option>
+                                                        <option value="">Seleccione un servicio</option>
                                                         {services.map(service => (
                                                             <option key={service.id} value={service.id}>{service.name}</option>
                                                         ))}
@@ -637,25 +679,22 @@ export default function Component() {
                                                     <Form.Select
                                                         value={detail.empleadoId || ''}
                                                         onChange={(e) => handleServiceChange(index, 'empleadoId', e.target.value)}
+                                                        className="form-select border rounded-lg shadow-sm"
                                                     >
-                                                        <option value="">Seleccionar empleado</option>
+                                                        <option value="">Seleccione el barbero</option>
                                                         {users
                                                             .filter(user => {
                                                                 if (user.roleId !== 2) return false;
-
                                                                 const appointmentDate = saleInfo.appointmentData.Date;
                                                                 const appointmentStart = saleInfo.appointmentData.Init_Time;
                                                                 const appointmentEnd = saleInfo.appointmentData.Finish_Time;
-
                                                                 if (!appointmentDate || !appointmentStart || !appointmentEnd) return true;
-
                                                                 const hasAbsence = absences.some(absence => {
                                                                     return absence.userId === user.id &&
                                                                         absence.date === appointmentDate &&
                                                                         absence.startTime <= appointmentEnd &&
                                                                         absence.endTime >= appointmentStart;
                                                                 });
-
                                                                 return !hasAbsence;
                                                             })
                                                             .map(employee => (
@@ -664,79 +703,121 @@ export default function Component() {
                                                     </Form.Select>
                                                 </td>
                                                 <td>
-                                                    <div className='d-flex align-items-center'>
-                                                        <Button color='error' className='delete' onClick={() => handleServiceRemove(index)}><IoTrashSharp /></Button>
+                                                    <div className='d-flex align-items-center justify-content-center'>
+                                                        <button
+                                                            onClick={() => handleServiceRemove(index)}
+                                                            className="btn rounded-circle d-flex align-items-center justify-content-center"
+                                                            style={{
+                                                                backgroundColor: '#dc3545',
+                                                                border: 'none',
+                                                                width: '35px',
+                                                                height: '35px',
+                                                                padding: '8px',
+                                                                boxShadow: '0 2px 4px rgba(220, 53, 69, 0.3)',
+                                                                color: 'white'
+                                                            }}
+                                                        >
+                                                            <IoTrashSharp />
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
-                                <div className="d-flex justify-content-start mt-9 px-3">
+                                <div className="d-flex justify-content-start mt-3">
                                     <Button
                                         onClick={handleServiceAdd}
-                                        style={{
-                                            backgroundColor: '#198754',
-                                            color: 'white',
-                                            margin: '5px',
-                                            border: '2px solid #198754',
-                                            borderRadius: '5px',
-                                            padding: '10px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}
+                                        className="btn btn-success rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+                                        style={{ width: '40px', height: '40px' }}
                                     >
                                         <FaPlus />
                                     </Button>
                                 </div>
                             </div>
-                            <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                                <span className='valor'>Total de la cita: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}</span>
+                            <div className='d-flex align-items-center justify-content-end p-4 bg-light border-top'>
+                                <span className='valor fw-bold fs-5'>
+                                    Total de la cita: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     <div className='col-sm-6'>
-                        <div className='card-detail shadow border-0 mb-4'>
-                            <div className="cont-title w-100">
-                                <span className='Title'>Horario de cita</span>
+                        <div className='card-detail shadow-lg border-0 mb-4 rounded-lg'>
+                            <div className="cont-title w-100 bg-gradient-to-r from-blue-600 to-blue-800 p-4">
+                                <span className='Title text-white text-xl font-bold'>Información de cita</span>
                             </div>
                             <div className='d-flex align-items-center'>
                                 <div className="d-flex align-items-center w-100 p-4">
                                     <Form className='form w-100'>
-                                        <Form.Group as={Row} className="mb-3">
-                                            <Col sm="6">
-                                                <Form.Label>Fecha de cita</Form.Label>
-                                                <DatePicker
-                                                    selected={new Date(saleInfo.appointmentData.Date)}
-                                                    onChange={(date) => handleAppointmentChange({ target: { name: 'Date', value: date.toISOString().split('T')[0] } })}
-                                                />
+                                        <Form.Group as={Row} className="mb-4">
+                                            <Col sm="6" className="mb-3">
+                                                <Form.Label className="fw-bold mb-2">Fecha de cita</Form.Label>
+                                                <div className="position-relative">
+                                                    <DatePicker
+                                                        selected={new Date(saleInfo.appointmentData.Date)}
+                                                        onChange={(date) => handleAppointmentChange({
+                                                            target: {
+                                                                name: 'Date',
+                                                                value: date.toISOString().split('T')[0]
+                                                            }
+                                                        })}
+                                                        className="form-control border rounded-lg shadow-sm"
+                                                    />
+                                                    <i className="bi bi-calendar position-absolute end-3 top-50 translate-middle-y text-muted"></i>
+                                                </div>
                                             </Col>
-                                            <Col sm="6">
-                                                <Form.Label>Hora inicio</Form.Label>
-                                                <CustomTimeSelector
-                                                    name="Init_Time"
-                                                    value={saleInfo.appointmentData.Init_Time}
-                                                    onChange={(time) => handleAppointmentChange({ target: { name: 'Init_Time', value: time } })}
-                                                />
+
+                                            <Col sm="6" className="mb-3">
+                                                <Form.Label className="fw-bold mb-2">Hora inicio</Form.Label>
+                                                <div className="position-relative">
+                                                    <CustomTimeSelector
+                                                        name="Init_Time"
+                                                        value={saleInfo.appointmentData.Init_Time}
+                                                        onChange={(time) => handleAppointmentChange({
+                                                            target: {
+                                                                name: 'Init_Time',
+                                                                value: time
+                                                            }
+                                                        })}
+                                                        className="form-control border rounded-lg shadow-sm"
+                                                    />
+                                                    <i className="bi bi-clock position-absolute end-3 top-50 translate-middle-y text-muted"></i>
+                                                </div>
                                             </Col>
-                                            <Col sm="6">
-                                                <Form.Label>Hora fin</Form.Label>
-                                                <CustomTimeSelector
-                                                    name="Finish_Time"
-                                                    value={saleInfo.appointmentData.Finish_Time}
-                                                    onChange={(time) => handleAppointmentChange({ target: { name: 'Finish_Time', value: time } })}
-                                                    disabled={true}
-                                                />
+
+                                            <Col sm="6" className="mb-3">
+                                                <Form.Label className="fw-bold mb-2">Hora fin</Form.Label>
+                                                <div className="position-relative">
+                                                    <CustomTimeSelector
+                                                        name="Finish_Time"
+                                                        value={saleInfo.appointmentData.Finish_Time}
+                                                        onChange={(time) => handleAppointmentChange({
+                                                            target: {
+                                                                name: 'Finish_Time',
+                                                                value: time
+                                                            }
+                                                        })}
+                                                        disabled={true}
+                                                        className="form-control border rounded-lg shadow-sm bg-light"
+                                                    />
+                                                    <i className="bi bi-clock position-absolute end-3 top-50 translate-middle-y text-muted"></i>
+                                                </div>
                                             </Col>
                                         </Form.Group>
+
                                         {selectedService && (
                                             <Form.Group as={Row} className="mb-3">
                                                 <Col sm="12">
-                                                    <Form.Text>
-                                                        Duración del servicio: {selectedService.time} minutos
-                                                    </Form.Text>
+                                                    <div className="bg-light p-3 rounded-lg border shadow-sm">
+                                                        <Form.Text className="d-flex align-items-center">
+                                                            <i className="bi bi-stopwatch me-2"></i>
+                                                            <span className="fw-bold">
+                                                                Duración del servicio: {selectedService.time} minutos
+                                                            </span>
+                                                        </Form.Text>
+                                                    </div>
                                                 </Col>
                                             </Form.Group>
                                         )}
@@ -749,24 +830,52 @@ export default function Component() {
                                 <div className="col-sm-6 d-flex align-items-center justify-content-start padding-monto">
                                 </div>
                                 <div className="col-sm-5 d-flex align-items-center justify-content-end">
-                                    <div className='d-flex align-items-center justify-content-end'>
-                                        <Button
-                                            variant="secondary"
-                                            className='btn-red'
-                                            id='btn-red'
-                                            href="/index"
-                                            style={{ minWidth: '100px' }}
-                                        >
-                                            Cerrar
-                                        </Button>
-                                        <Button
-                                            variant="primary"
-                                            className='btn-sucess'
-                                            onClick={handleSubmit}
-                                            style={{ minWidth: '100px' }}
-                                        >
-                                            Guardar
-                                        </Button>
+                                    
+                                        <div className='d-flex align-items-center justify-content-end gap-2'>
+                                            <Button
+                                                variant="secondary"
+                                                className='btn-red'
+                                                id='btn-red'
+                                                href="/index"
+                                                style={{
+                                                    minWidth: '100px',
+                                                    backgroundColor: '#6c757d',
+                                                    border: '2px solid #6c757d',
+                                                    color: 'white',
+                                                    padding: '8px 20px',
+                                                    borderRadius: '8px',
+                                                    fontWeight: '500',
+                                                    letterSpacing: '0.5px',
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '14px',
+                                                    boxShadow: '0 2px 4px rgba(108, 117, 125, 0.2)',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            >
+                                                Cerrar
+                                            </Button>
+                                            <Button
+                                                variant="primary"
+                                                className='btn-success'
+                                                onClick={handleSubmit}
+                                                style={{
+                                                    minWidth: '100px',
+                                                    backgroundColor: '#198754',
+                                                    border: '2px solid #198754',
+                                                    color: 'white',
+                                                    padding: '8px 20px',
+                                                    borderRadius: '8px',
+                                                    fontWeight: '500',
+                                                    letterSpacing: '0.5px',
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '14px',
+                                                    boxShadow: '0 2px 4px rgba(25, 135, 84, 0.2)',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            >
+                                                Guardar
+                                            </Button>
+                                        
                                     </div>
                                 </div>
                             </div>
