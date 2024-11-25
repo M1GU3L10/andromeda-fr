@@ -1,16 +1,20 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaMoneyBillWave, FaPlus, FaMinus } from "react-icons/fa";
 import { IoSearch, IoTrashSharp } from "react-icons/io5";
 import Button from '@mui/material/Button';
 import Header from './Header1';
+import { useNavigate } from 'react-router-dom';
 import { Form, Col, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BsCalendar2DateFill } from 'react-icons/bs';
-import './styles.css';
-import { style } from '@mui/system';
+import CustomTimeSelector from '../../sales/registerSales/CustomTimeSelector/CustomTimeSelector';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Component() {
     const [users, setUsers] = useState([]);
@@ -18,6 +22,8 @@ export default function Component() {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [services, setServices] = useState([]);
+    const navigate = useNavigate();
+    const [selectedService, setSelectedService] = useState(null);
     const [saleInfo, setSaleInfo] = useState({
         Billnumber: '',
         SaleDate: new Date().toISOString().split('T')[0],
@@ -159,11 +165,12 @@ export default function Component() {
         setSelectedProducts(updatedProducts);
         calculateTotals(updatedProducts, saleInfo.saleDetails);
     };
+
     const validateAppointmentTime = () => {
         const now = new Date();
         const appointmentDate = new Date(saleInfo.appointmentData.Date);
         const appointmentTime = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
-        
+
         if (appointmentDate.toDateString() === now.toDateString()) {
             if (appointmentTime <= now) {
                 return {
@@ -213,6 +220,7 @@ export default function Component() {
 
         return { isValid: true };
     };
+
     const updateQuantity = (productId, change) => {
         const product = products.find(p => p.id === productId);
         const updatedProducts = selectedProducts.map(p => {
@@ -349,9 +357,6 @@ export default function Component() {
         return { isValid: true };
     };
 
-   
-   
-
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -399,6 +404,8 @@ export default function Component() {
                 !saleInfo.appointmentData.Finish_Time)) {
             show_alerta('Debe especificar el horario de la cita para los servicios', 'warning');
             return;
+
+
         }
 
         try {
@@ -419,10 +426,14 @@ export default function Component() {
                 saleDetails: []
             });
             setSelectedProducts([]);
+
+            // Redirigir a la ruta /index después de guardar
+            navigate('/index');
         } catch (error) {
             console.error('Error al registrar la venta:', error);
             show_alerta('Error al registrar la venta', 'error');
         }
+
     };
 
     const handleServiceAdd = () => {
@@ -458,21 +469,6 @@ export default function Component() {
         });
     };
 
-    function generateBillNumber() {
-        const randomBillNumber = Math.floor(10000000 + Math.random() * 90000000);
-        console.log(`Número de comprobante generado: ${randomBillNumber}`);
-        return randomBillNumber;
-    }
-
-    function processSaleInfo() {
-        const billNumber = generateBillNumber();
-        console.log(`Procesando el número de comprobante: ${billNumber}`);
-        return billNumber;
-    }
-
-    const generatedBillNumber = processSaleInfo();
-    console.log(`Número de comprobante final: ${generatedBillNumber}`);
-
     const handleServiceChange = (index, field, value) => {
         setSaleInfo(prevState => {
             const serviceDetails = prevState.saleDetails.filter(detail =>
@@ -488,6 +484,7 @@ export default function Component() {
                         serviceDetails[index].unitPrice = service.price;
                         serviceDetails[index].total_price = service.price;
                         serviceDetails[index].quantity = 1;
+                        setSelectedService(service);
 
                         // Automatically set the end time based on service duration
                         const startTime = prevState.appointmentData.Init_Time;
@@ -500,7 +497,8 @@ export default function Component() {
                                 ...prevState,
                                 appointmentData: {
                                     ...prevState.appointmentData,
-                                    Finish_Time: endTime
+                                    Finish_Time: endTime,
+                                    time_appointment: service.time
                                 },
                                 saleDetails: [...prevState.saleDetails.slice(0, index), serviceDetails[index], ...prevState.saleDetails.slice(index + 1)]
                             };
@@ -574,6 +572,15 @@ export default function Component() {
             appointment.Init_Time <= time &&
             appointment.Finish_Time > time
         );
+    };
+
+    const formatDuration = (minutes) => {
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+        if (hours > 0) {
+            return `${hours} hora${hours > 1 ? 's' : ''} ${remainingMinutes > 0 ? `y ${remainingMinutes} minutos` : ''}`;
+        }
+        return `${minutes} minutos`;
     };
 
     if (loading) {
@@ -693,43 +700,46 @@ export default function Component() {
                     <div className='col-sm-6'>
                         <div className='card-detail shadow border-0 mb-4'>
                             <div className="cont-title w-100">
-                                <span className='Title'>Reserva de cita</span>
+                                <span className='Title'>Horario de cita</span>
                             </div>
                             <div className='d-flex align-items-center'>
                                 <div className="d-flex align-items-center w-100 p-4">
                                     <Form className='form w-100'>
                                         <Form.Group as={Row} className="mb-3">
                                             <Col sm="6">
-                                                <Form.Label>Hora de reserva</Form.Label>
-                                                <Form.Control
-                                                    type="time"
+                                                <Form.Label>Fecha de cita</Form.Label>
+                                                <DatePicker
+                                                    selected={new Date(saleInfo.appointmentData.Date)}
+                                                    onChange={(date) => handleAppointmentChange({ target: { name: 'Date', value: date.toISOString().split('T')[0] } })}
+                                                />
+                                            </Col>
+                                            <Col sm="6">
+                                                <Form.Label>Hora inicio</Form.Label>
+                                                <CustomTimeSelector
                                                     name="Init_Time"
                                                     value={saleInfo.appointmentData.Init_Time}
-                                                    onChange={handleAppointmentChange}
-                                                    className={isTimeSlotOccupied(saleInfo.SaleDate, saleInfo.appointmentData.Init_Time) ? 'occupied-time-slot' : ''}
-                                                    disabled={isTimeSlotOccupied(saleInfo.SaleDate, saleInfo.appointmentData.Init_Time)}
+                                                    onChange={(time) => handleAppointmentChange({ target: { name: 'Init_Time', value: time } })}
                                                 />
                                             </Col>
                                             <Col sm="6">
                                                 <Form.Label>Hora fin</Form.Label>
-                                                <Form.Control
-                                                    type="time"
+                                                <CustomTimeSelector
                                                     name="Finish_Time"
                                                     value={saleInfo.appointmentData.Finish_Time}
-                                                    onChange={handleAppointmentChange}
-                                                    readOnly
-                                                />
-                                            </Col>
-                                            <Col sm="6">
-                                                <Form.Label className='required'>Dia de reserva</Form.Label>
-                                                <Form.Control
-                                                    type="date"
-                                                    name="SaleDate"
-                                                    value={saleInfo.SaleDate}
-                                                    onChange={handleInputChange}
+                                                    onChange={(time) => handleAppointmentChange({ target: { name: 'Finish_Time', value: time } })}
+                                                    disabled={true}
                                                 />
                                             </Col>
                                         </Form.Group>
+                                        {selectedService && (
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Col sm="12">
+                                                    <Form.Text>
+                                                        Duración del servicio: {selectedService.time} minutos
+                                                    </Form.Text>
+                                                </Col>
+                                            </Form.Group>
+                                        )}
                                     </Form>
                                 </div>
                             </div>
@@ -764,10 +774,7 @@ export default function Component() {
                     </div>
                 </div>
             </div>
-          
-
         </>
-
     );
 }
 
