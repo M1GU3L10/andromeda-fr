@@ -6,7 +6,6 @@ import { MyContext } from '../../App.js';
 import { Calendar, Clock, Users, CheckCircle2, DollarSign } from 'lucide-react';
 import logo from '../../assets/images/logo-light.png';
 import { Avatar, Menu, MenuItem, Button, Card } from '@mui/material';
-
 import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
@@ -17,11 +16,9 @@ import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from '@fullcalendar/core/locales/es';
 import { GrUser } from 'react-icons/gr';
 import axios from 'axios';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Form } from 'react-bootstrap';
 import { FaEye } from "react-icons/fa";
-
 
 export default function CalendarioBarberia({ info }) {
   const context = useContext(MyContext);
@@ -37,7 +34,6 @@ export default function CalendarioBarberia({ info }) {
   const { isToggleSidebar } = useContext(MyContext);
   const [userId, setUserId] = useState('');
   const [events, setEvents] = useState([]);
-
   const [users, setUsers] = useState([]);
   const [selectedView, setSelectedView] = useState('dayGridMonth');
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -126,7 +122,6 @@ export default function CalendarioBarberia({ info }) {
     }
   };
 
-
   const handleViewClick = async (info) => {
     if (!info || !info.event) {
       console.error('Event is undefined');
@@ -139,7 +134,7 @@ export default function CalendarioBarberia({ info }) {
 
     setDetailData({
       title: userName || 'Cliente Desconocido',
-      start: info.event.Init_Time,  // Usar la combinación de fecha y hora
+      start: info.event.Init_Time,
       end: info.event.Finish_Time,
       Date: info.event.extendedProps.Date,
       status: info.event.extendedProps.status,
@@ -151,13 +146,13 @@ export default function CalendarioBarberia({ info }) {
 
     await getSaleDetailsByAppointmentId(info.event.id);
     setShowDetailModal(true);
-    handleClose();
   };
 
   const handleClose = () => {
     setAnchorEl(null);
     setIsMenuOpen(false);
   };
+
   const filteredEvents = selectedEmployee
     ? events.filter(event => event.title === selectedEmployee)
     : events;
@@ -174,7 +169,6 @@ export default function CalendarioBarberia({ info }) {
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -222,15 +216,15 @@ export default function CalendarioBarberia({ info }) {
     const user = users.find(user => user.id === clienteId);
     return user ? user.name : 'Desconocido';
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [userResponse, programmingResponse,
-          salesResponse] = await Promise.all([
-            axios.get(urlUsers),
-            axios.get(urlAppointment),
-            axios.get(urlSales)
-          ]);
+        const [userResponse, programmingResponse, salesResponse] = await Promise.all([
+          axios.get(urlUsers),
+          axios.get(urlAppointment),
+          axios.get(urlSales)
+        ]);
 
         const usersData = userResponse.data;
         const programmingData = programmingResponse.data;
@@ -238,12 +232,10 @@ export default function CalendarioBarberia({ info }) {
 
         setUsers(usersData);
 
-        // Crear un mapa de appointmentId a empleadoId
         const appointmentEmployeeMap = {};
         salesData.forEach(sale => {
           sale.SaleDetails.forEach(detail => {
             if (detail.appointmentId && detail.empleadoId) {
-
               appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
             }
           });
@@ -274,15 +266,17 @@ export default function CalendarioBarberia({ info }) {
 
     fetchData();
   }, []);
+
   useEffect(() => {
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
-    }, 300);  // Agregar un pequeño retraso antes de disparar el evento resize
+    }, 300);
   }, [isToggleSidebar]);
 
   const handleEmployeeChange = (event) => {
     setSelectedEmployee(event.target.value);
   };
+
   const getProgramming = async () => {
     try {
       const [programmingResponse, salesResponse] = await Promise.all([
@@ -297,8 +291,7 @@ export default function CalendarioBarberia({ info }) {
       salesData.forEach(sale => {
         sale.SaleDetails.forEach(detail => {
           if (detail.appointmentId && detail.empleadoId) {
-            appointmentEmployeeMap[detail.appointmentId] =
-              detail.empleadoId;
+            appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
           }
         });
       });
@@ -330,58 +323,60 @@ export default function CalendarioBarberia({ info }) {
       console.error('Error fetching programming:', error);
     }
   };
+  const convertTo12HourFormat = (time) => {
+    if (!time) return 'Hora no disponible'; // Devuelve un texto predeterminado si el tiempo no está definido
+  
+    const [hours, minutes] = time.split(':').map(Number); // Divide la hora en partes
+    const period = hours >= 12 ? 'PM' : 'AM'; // Determina si es AM o PM
+    const standardHours = hours % 12 || 12; // Convierte a formato de 12 horas
+    return `${standardHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+  
   const EventComponent = ({ info }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isButtonVisible, setIsButtonVisible] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState(null);
-    const handleEventClick = (eventInfo) => {
-      setSelectedEvent(eventInfo.event.id); // Guarda el ID del evento seleccionado
+    const [isClicked, setIsClicked] = useState(false);
+
+    const handleClick = () => {
+      setIsClicked(!isClicked);
     };
 
-    const handleViewClick = (info) => {
-      // Lógica para manejar el evento click en la cita
-      console.log("Cita seleccionada:", info.event);
-      setIsButtonVisible(true); // Mostrar el botón cuando se hace clic en una cita
+    const handleViewClickWrapper = () => {
+      handleViewClick(info);
     };
-    const handleClick = (event) => {
-      setAnchorEl(event.currentTarget);
-      setIsMenuOpen(true);
+    const convertTo12HourFormat = (time) => {
+      const [hours, minutes] = time.split(':').map(Number); // Divide la hora en partes
+      const period = hours >= 12 ? 'PM' : 'AM'; // Determina si es AM o PM
+      const standardHours = hours % 12 || 12; // Convierte a formato de 12 horas
+      return `${standardHours}:${minutes.toString().padStart(2, '0')} ${period}`;
     };
 
-    const handleClose = () => {
-      setAnchorEl(null);
-      setIsMenuOpen(false);
-    };
+
     return (
       <div
         className='programming-content'
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          if (!isMenuOpen) {
-            handleClose();
-          }
-        }}
         onClick={handleClick}
       >
-        {!isHovered ? (
-          <span className='span-programming'>{getUserName(users, parseInt(info.event.title))}</span>
-        ) : (
-          <span className='span-programming'>{info.event.extendedProps.status}-{info.event.extendedProps.Finish_Time}</span>
-
+        <span className='span-programming'>{getUserName(users, parseInt(info.event.title))}</span>
+        {isClicked && (
+          <Button
+            onClick={handleViewClickWrapper}
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              marginLeft: '8px'
+            }}
+          >
+            <FaEye size={20} color="#000000" />
+          </Button>
         )}
-
-
       </div>
     );
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
         <Link to={'/'} className='d-flex align-items-center logo-index'>
           <img src={logo} alt="Logo" />
@@ -394,7 +389,6 @@ export default function CalendarioBarberia({ info }) {
               userRole == 1 || userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
             }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-
           </nav>
 
           <div className="auth-buttons">
@@ -428,7 +422,8 @@ export default function CalendarioBarberia({ info }) {
                   <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
                     <GrUser /> Mi perfil
                   </MenuItem>
-                  <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
+                  <MenuItem onClick={handleLogout} className='menu
+-item-landingPage'>
                     <GiExitDoor /> Cerrar Sesión
                   </MenuItem>
                 </Menu>
@@ -446,17 +441,13 @@ export default function CalendarioBarberia({ info }) {
         </div>
       </header>
       <br /><br /><br /><br /><br />
-      {/* Contenedor Principal */}
       <div className="container mx-auto px-4 py-8">
-        {/* Contenedor principal con márgenes y padding */}
         <div className="bg-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden border border-[#b89b58]/20">
-          {/* Estilo para una tarjeta oscura con bordes redondeados, sombra y borde dorado */}
-          <div className="p-6">
-            {/* Contenedor para el selector de vistas */}
+          <div className="logo-container">
             <Form.Select
-              value={selectedView} // Estado actual de la vista seleccionada
-              onChange={(e) => handleViewChange(e.target.value)} // Cambia la vista cuando se selecciona una opción
-              className="w-40 bg-black text-white border border-[#b89b58] rounded-lg shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#b89b58] focus:border-transparent transition-all duration-200 cursor-pointer appearance-none hover:bg-[#b89b58]"
+              value={selectedView}
+              onChange={(e) => handleViewChange(e.target.value)}
+              className="view-selector"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b89b58'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                 backgroundPosition: "right 0.5rem center",
@@ -465,34 +456,28 @@ export default function CalendarioBarberia({ info }) {
                 paddingRight: "2.5rem",
               }}
             >
-              {/* Opciones del selector */}
-              <option value="dayGridMonth" className="bg-black text-white hover:bg-[#b89b58]">
+              <option value="dayGridMonth" className="view-selector-option">
                 Mes
               </option>
-              <option value="timeGridWeek" className="bg-black text-white hover:bg-[#b89b58]">
+              <option value="timeGridWeek" className="view-selector-option">
                 Semana
               </option>
-              <option value="timeGridDay" className="bg-black text-white hover:bg-[#b89b58]">
+              <option value="timeGridDay" className="view-selector-option">
                 Día
               </option>
             </Form.Select>
           </div>
 
           <div className="table-responsive mt-3">
-            {/* Contenedor del calendario */}
             <FullCalendar
-              ref={calendarRef} // Referencia al calendario
-              locale={esLocale} // Configuración de idioma
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} // Plugins para vistas y eventos
-              events={filteredEvents} // Lista de eventos a mostrar
-              initialView={selectedView} // Vista inicial del calendario
-              dateClick={handleDateClick} // Lógica cuando se hace clic en una fecha
-              eventClick={(info) => {
-                handleViewClick(info); // Maneja el clic en un evento
-                setShowDetailModal(true); // Muestra el modal con detalles
-              }}
-              locales={[esLocale]} // Idiomas compatibles
-              eventContent={(info) => <EventComponent info={info} setAppointmentId={setAppointmentId} />}
+              ref={calendarRef}
+              locale={esLocale}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              events={filteredEvents}
+              initialView={selectedView}
+              dateClick={handleDateClick}
+              eventContent={(info) => <EventComponent info={info} />}
+              locales={[esLocale]}
               headerToolbar={{
                 left: "prev,next today",
                 center: "title",
@@ -502,23 +487,9 @@ export default function CalendarioBarberia({ info }) {
           </div>
         </div>
 
-        <MenuItem className="Menu-programming-item">
-          {/* Botón para ver más detalles */}
-          <Button
-            onClick={() => setShowDetailModal(true)} // Abre el modal
-            style={{
-              backgroundColor: "transparent",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <FaEye size={20} color="#b89b58" />
-          </Button>
-        </MenuItem>
-
         <Modal
-          show={showDetailModal} // Controla la visibilidad del modal
-          onHide={() => setShowDetailModal(false)} // Cierra el modal
+          show={showDetailModal}
+          onHide={() => setShowDetailModal(false)}
           size="lg"
           backdrop="static"
           keyboard={true}
@@ -532,23 +503,20 @@ export default function CalendarioBarberia({ info }) {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body className="custom-modal-body">
-            {/* Detalles de la cita */}
             <div className="mb-4">
-              <h5 className="border-bottom pb-2 text-gold">Información de la Cita</h5>
+              <h5 className="border-bottom pb-2 text-gold">Mi cita</h5>
               <div className="row">
                 <div className="col-md-6">
-                  <p>
-                    <strong>Cliente:</strong> {detailData.title}
-                  </p>
                   <p>
                     <strong>Fecha:</strong> {detailData.Date}
                   </p>
                   <p>
-                    <strong>Hora inicio:</strong> {detailData.Init_Time}
+                    <strong>Hora inicio:</strong> {convertTo12HourFormat(detailData.Init_Time)}
                   </p>
                   <p>
-                    <strong>Hora fin:</strong> {detailData.Finish_Time}
+                    <strong>Hora fin:</strong> {convertTo12HourFormat(detailData.Finish_Time)}
                   </p>
+
                 </div>
                 <div className="col-md-6">
                   <p>
@@ -558,14 +526,10 @@ export default function CalendarioBarberia({ info }) {
                   <p>
                     <strong>Total:</strong> {detailData.Total}
                   </p>
-                  <p>
-                    <strong>Estado:</strong> {detailData.status}
-                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Detalle de la venta */}
             <div className="mt-4">
               <h5 className="border-bottom pb-2 text-gold">Detalle de la Venta</h5>
               {saleDetails.length > 0 ? (
@@ -604,12 +568,6 @@ export default function CalendarioBarberia({ info }) {
           </Modal.Body>
         </Modal>
       </div>
-
-
-
-
-
-
 
 
       <style jsx global>{`
@@ -829,7 +787,86 @@ export default function CalendarioBarberia({ info }) {
 .view-button:hover {
     color: darkgoldenrod;
 }
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(145deg, #1e1e2e, #161623);
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.2), 
+    inset 0 0 15px rgba(255, 255, 255, 0.05),
+    0 5px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  perspective: 1000px;
+  transition: all 0.4s ease;
+  transform: translateY(0);
+}
 
+.calendar-container:hover {
+  transform: translateY(-15px);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.3), 
+    inset 0 0 20px rgba(255, 255, 255, 0.1),
+    0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(30, 30, 46, 0.8), rgba(22, 22, 35, 0.8));
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.calendar-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.view-selector {
+  background-color: #000000;
+  color: #b89b58;
+  border: 1px solid #b89b58/30;
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  appearance-none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b89b58'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.view-selector:hover {
+  background-color: #00000;
+  color: #b89b58;
+  transform: translateY(-2px) scale(0.97);
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.2), 
+    inset 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-content {
+  width: 100%;
+  background: #1a1a1a;
+  border-radius: 15px;
+  padding: 1.5rem;
+}
 `}</style>
 
     </div>

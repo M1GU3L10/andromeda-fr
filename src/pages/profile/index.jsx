@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Card, Container, Row, Col, Spinner } from 'react-bootstrap';
+import { User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+// API Configuration
+const api = axios.create({
+  baseURL: 'http://localhost:1056/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('jwtToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default function EnhancedProfileEditor() {
-  const url = 'http://localhost:1056/api/users';
-  const urlp = 'http://localhost:1056/api/users/profile';
   const [userData, setUserData] = useState({
     id: '',
     name: '',
@@ -14,6 +30,7 @@ export default function EnhancedProfileEditor() {
     status: 'A',
     roleId: '',
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -54,14 +71,18 @@ export default function EnhancedProfileEditor() {
   };
 
   const fetchUserData = async (userId) => {
-    setLoading(true);
     try {
-      const response = await fetch(`${url}/${userId}`);
-      const data = await response.json();
-      setUserData(data);
+      const response = await api.get(`/users/${userId}`);
+      setUserData(response.data);
       setError('');
     } catch (err) {
+      console.error('Error fetching user data:', err);
       setError('Error al cargar los datos del perfil');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo cargar el perfil del usuario',
+      });
     } finally {
       setLoading(false);
     }
@@ -83,12 +104,12 @@ export default function EnhancedProfileEditor() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (Object.values(errors).some(error => error !== '')) {
       Swal.fire({
+        icon: 'warning',
         title: '¡Advertencia!',
         text: 'Por favor, corrija los errores en el formulario',
-        icon: 'warning',
-        confirmButtonText: 'OK'
       });
       return;
     }
@@ -99,80 +120,66 @@ export default function EnhancedProfileEditor() {
     setLoading(true);
 
     try {
-      const dataToUpdate = { ...userData };
-      if (password) {
-        dataToUpdate.password = password;
-      }
+      const dataToUpdate = {
+        ...userData,
+        password: password || undefined,
+      };
 
-      const emailExists = await checkExistingEmail(dataToUpdate.email.trim());
-      const phoneExists = await checkExistingPhone(dataToUpdate.phone.trim());
-
-      if (emailExists && dataToUpdate.email !== userData.email) {
-        Swal.fire({
-          title: '¡Advertencia!',
-          text: 'El correo electrónico ya está registrado',
-          icon: 'warning',
-          confirmButtonText: 'OK'
-        });
-        setIsSubmitting(false);
-        setLoading(false);
-        return;
-      }
-
-      if (phoneExists && dataToUpdate.phone !== userData.phone) {
-        Swal.fire({
-          title: '¡Advertencia!',
-          text: 'El número de teléfono ya está registrado',
-          icon: 'warning',
-          confirmButtonText: 'OK'
-        });
-        setIsSubmitting(false);
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch(`${urlp}/${userData.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-        },
-        body: JSON.stringify(dataToUpdate),
-      });
-
-      if (response.ok) {
-        Swal.fire({
-          title: '¡Éxito!',
-          text: 'Perfil actualizado exitosamente',
-          icon: 'success',
-          confirmButtonText: 'OK'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.reload();
-          }
-        });
-        if (password) {
-          setPassword('');
-          setShowPassword(false);
+      // Validate email uniqueness
+      if (userData.email) {
+        const emailExists = await checkExistingEmail(userData.email);
+        if (emailExists) {
+          Swal.fire({
+            icon: 'warning',
+            title: '¡Advertencia!',
+            text: 'El correo electrónico ya está registrado',
+          });
+          setIsSubmitting(false);
+          setLoading(false);
+          return;
         }
-      } else {
+      }
+
+      // Validate phone uniqueness
+      if (userData.phone) {
+        const phoneExists = await checkExistingPhone(userData.phone);
+        if (phoneExists) {
+          Swal.fire({
+            icon: 'warning',
+            title: '¡Advertencia!',
+            text: 'El número de teléfono ya está registrado',
+          });
+          setIsSubmitting(false);
+          setLoading(false);
+          return;
+        }
+      }
+
+      const response = await api.put(`/users/profile/${userData.id}`, dataToUpdate);
+
+      if (response.status === 200) {
         Swal.fire({
+          icon: 'success',
           title: '¡Éxito!',
           text: 'Perfil actualizado exitosamente',
-          icon: 'success',
-          confirmButtonText: 'OK'
         }).then((result) => {
           if (result.isConfirmed) {
-            window.location.reload();
+            if (password) {
+              localStorage.removeItem('jwtToken');
+              localStorage.removeItem('userId');
+              window.location.href = '/login';
+            } else {
+              window.location.reload();
+            }
           }
         });
       }
     } catch (err) {
+      console.error('Error updating profile:', err);
       Swal.fire({
-        title: '¡Error!',
-        text: 'Error al actualizar el perfil',
         icon: 'error',
-        confirmButtonText: 'OK'
+        title: 'Error',
+        text: 'No se pudo actualizar el perfil',
       });
     } finally {
       setIsSubmitting(false);
@@ -182,9 +189,8 @@ export default function EnhancedProfileEditor() {
 
   const checkExistingEmail = async (email) => {
     try {
-      const response = await fetch(`${url}/check-email/${email}`);
-      const data = await response.json();
-      return data.exists;
+      const response = await api.get(`/users/check-email/${email}`);
+      return response.data.exists;
     } catch (error) {
       console.error('Error checking email:', error);
       return false;
@@ -193,9 +199,8 @@ export default function EnhancedProfileEditor() {
 
   const checkExistingPhone = async (phone) => {
     try {
-      const response = await fetch(`${url}/check-phone/${phone}`);
-      const data = await response.json();
-      return data.exists;
+      const response = await api.get(`/users/check-phone/${phone}`);
+      return response.data.exists;
     } catch (error) {
       console.error('Error checking phone:', error);
       return false;
@@ -252,8 +257,8 @@ export default function EnhancedProfileEditor() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-        <Spinner animation="border" />
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <Spinner animation="border" variant="primary" />
       </div>
     );
   }
@@ -269,14 +274,16 @@ export default function EnhancedProfileEditor() {
 
   return (
     <Container className="py-5">
-      <Card>
+      <Card className="shadow-lg">
         <Card.Header className="bg-primary text-white text-center py-4">
-          <h2>Mi Perfil</h2>
-          <p>Gestiona tu información personal</p>
+          <h2 className="mb-0">Mi Perfil</h2>
+          <p className="text-white-50 mb-0">Gestiona tu información personal</p>
         </Card.Header>
-        <Card.Body className="mt-4">
-          <div className="text-center mb-5">
+
+        <Card.Body className="p-4">
+          <div className="text-center mb-4">
             <div
+              className="avatar-circle mx-auto"
               style={{
                 width: 120,
                 height: 120,
@@ -288,7 +295,8 @@ export default function EnhancedProfileEditor() {
                 color: 'white',
                 fontSize: '2.5rem',
                 fontWeight: 'bold',
-                margin: '0 auto',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                transition: 'transform 0.3s ease',
               }}
             >
               {userData.name ? userData.name.charAt(0).toUpperCase() : ''}
@@ -298,8 +306,11 @@ export default function EnhancedProfileEditor() {
           <Form onSubmit={handleSubmit}>
             <Row className="g-4">
               <Col md={6}>
-                <Form.Group controlId="name">
-                  <Form.Label>Nombre</Form.Label>
+                <Form.Group>
+                  <Form.Label className="d-flex align-items-center">
+                    <User size={18} className="me-2" />
+                    Nombre
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     name="name"
@@ -313,9 +324,13 @@ export default function EnhancedProfileEditor() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
-                <Form.Group controlId="email">
-                  <Form.Label>Correo electrónico</Form.Label>
+                <Form.Group>
+                  <Form.Label className="d-flex align-items-center">
+                    <Mail size={18} className="me-2" />
+                    Correo electrónico
+                  </Form.Label>
                   <Form.Control
                     type="email"
                     name="email"
@@ -329,25 +344,13 @@ export default function EnhancedProfileEditor() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col xs={12}>
-                <Form.Group controlId="password">
-                  <Form.Label>Contraseña</Form.Label>
-                  <Form.Control
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.password && !!errors.password}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.password}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col xs={12}>
-                <Form.Group controlId="phone">
-                  <Form.Label>Teléfono</Form.Label>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="d-flex align-items-center">
+                    <Phone size={18} className="me-2" />
+                    Teléfono
+                  </Form.Label>
                   <Form.Control
                     type="tel"
                     name="phone"
@@ -361,34 +364,71 @@ export default function EnhancedProfileEditor() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col xs={12} className="text-center mt-4">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={isSubmitting || Object.values(errors).some(error => error !== '')}
-                  style={{ minWidth: 200, padding: '10px 0' }}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                        className="me-2"
-                      />
-                      Guardando...
-                    </>
-                  ) : (
-                    'Guardar Cambios'
-                  )}
-                </Button>
+
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="d-flex align-items-center">
+                    <Lock size={18} className="me-2" />
+                    Nueva contraseña
+                  </Form.Label>
+                  <div className="input-group">
+                    <Form.Control
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      onBlur={handleBlur}
+                      isInvalid={touched.password && !!errors.password}
+                      placeholder="Dejar en blanco para mantener la actual"
+                    />
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </Button>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.password}
+                    </Form.Control.Feedback>
+                  </div>
+                </Form.Group>
               </Col>
             </Row>
+
+            <div className="text-center mt-4">
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                disabled={isSubmitting || Object.values(errors).some(error => error !== '')}
+                className="px-5 py-2"
+                style={{
+                  background: 'linear-gradient(135deg, #0d6efd, #0a58ca)',
+                  border: 'none',
+                  transition: 'transform 0.3s ease',
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-2"
+                    />
+                    Guardando...
+                  </>
+                ) : (
+                  'Guardar Cambios'
+                )}
+              </Button>
+            </div>
           </Form>
         </Card.Body>
       </Card>
     </Container>
   );
 }
+
