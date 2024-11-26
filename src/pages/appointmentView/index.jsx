@@ -6,7 +6,6 @@ import { MyContext } from '../../App.js';
 import { Calendar, Clock, Users, CheckCircle2, DollarSign } from 'lucide-react';
 import logo from '../../assets/images/logo-light.png';
 import { Avatar, Menu, MenuItem, Button, Card } from '@mui/material';
-
 import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
@@ -17,11 +16,9 @@ import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from '@fullcalendar/core/locales/es';
 import { GrUser } from 'react-icons/gr';
 import axios from 'axios';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Form } from 'react-bootstrap';
 import { FaEye } from "react-icons/fa";
-
 
 export default function CalendarioBarberia({ info }) {
   const context = useContext(MyContext);
@@ -37,7 +34,6 @@ export default function CalendarioBarberia({ info }) {
   const { isToggleSidebar } = useContext(MyContext);
   const [userId, setUserId] = useState('');
   const [events, setEvents] = useState([]);
-
   const [users, setUsers] = useState([]);
   const [selectedView, setSelectedView] = useState('dayGridMonth');
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -126,7 +122,6 @@ export default function CalendarioBarberia({ info }) {
     }
   };
 
-
   const handleViewClick = async (info) => {
     if (!info || !info.event) {
       console.error('Event is undefined');
@@ -139,7 +134,7 @@ export default function CalendarioBarberia({ info }) {
 
     setDetailData({
       title: userName || 'Cliente Desconocido',
-      start: info.event.Init_Time,  // Usar la combinación de fecha y hora
+      start: info.event.Init_Time,
       end: info.event.Finish_Time,
       Date: info.event.extendedProps.Date,
       status: info.event.extendedProps.status,
@@ -151,13 +146,13 @@ export default function CalendarioBarberia({ info }) {
 
     await getSaleDetailsByAppointmentId(info.event.id);
     setShowDetailModal(true);
-    handleClose();
   };
 
   const handleClose = () => {
     setAnchorEl(null);
     setIsMenuOpen(false);
   };
+
   const filteredEvents = selectedEmployee
     ? events.filter(event => event.title === selectedEmployee)
     : events;
@@ -174,7 +169,6 @@ export default function CalendarioBarberia({ info }) {
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -222,15 +216,15 @@ export default function CalendarioBarberia({ info }) {
     const user = users.find(user => user.id === clienteId);
     return user ? user.name : 'Desconocido';
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [userResponse, programmingResponse,
-          salesResponse] = await Promise.all([
-            axios.get(urlUsers),
-            axios.get(urlAppointment),
-            axios.get(urlSales)
-          ]);
+        const [userResponse, programmingResponse, salesResponse] = await Promise.all([
+          axios.get(urlUsers),
+          axios.get(urlAppointment),
+          axios.get(urlSales)
+        ]);
 
         const usersData = userResponse.data;
         const programmingData = programmingResponse.data;
@@ -238,12 +232,10 @@ export default function CalendarioBarberia({ info }) {
 
         setUsers(usersData);
 
-        // Crear un mapa de appointmentId a empleadoId
         const appointmentEmployeeMap = {};
         salesData.forEach(sale => {
           sale.SaleDetails.forEach(detail => {
             if (detail.appointmentId && detail.empleadoId) {
-
               appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
             }
           });
@@ -274,15 +266,17 @@ export default function CalendarioBarberia({ info }) {
 
     fetchData();
   }, []);
+
   useEffect(() => {
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
-    }, 300);  // Agregar un pequeño retraso antes de disparar el evento resize
+    }, 300);
   }, [isToggleSidebar]);
 
   const handleEmployeeChange = (event) => {
     setSelectedEmployee(event.target.value);
   };
+
   const getProgramming = async () => {
     try {
       const [programmingResponse, salesResponse] = await Promise.all([
@@ -297,8 +291,7 @@ export default function CalendarioBarberia({ info }) {
       salesData.forEach(sale => {
         sale.SaleDetails.forEach(detail => {
           if (detail.appointmentId && detail.empleadoId) {
-            appointmentEmployeeMap[detail.appointmentId] =
-              detail.empleadoId;
+            appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
           }
         });
       });
@@ -330,58 +323,45 @@ export default function CalendarioBarberia({ info }) {
       console.error('Error fetching programming:', error);
     }
   };
+
   const EventComponent = ({ info }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isButtonVisible, setIsButtonVisible] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState(null);
-    const handleEventClick = (eventInfo) => {
-      setSelectedEvent(eventInfo.event.id); // Guarda el ID del evento seleccionado
+    const [isClicked, setIsClicked] = useState(false);
+
+    const handleClick = () => {
+      setIsClicked(!isClicked);
     };
 
-    const handleViewClick = (info) => {
-      // Lógica para manejar el evento click en la cita
-      console.log("Cita seleccionada:", info.event);
-      setIsButtonVisible(true); // Mostrar el botón cuando se hace clic en una cita
-    };
-    const handleClick = (event) => {
-      setAnchorEl(event.currentTarget);
-      setIsMenuOpen(true);
+    const handleViewClickWrapper = () => {
+      handleViewClick(info);
     };
 
-    const handleClose = () => {
-      setAnchorEl(null);
-      setIsMenuOpen(false);
-    };
     return (
       <div
         className='programming-content'
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          if (!isMenuOpen) {
-            handleClose();
-          }
-        }}
         onClick={handleClick}
       >
-        {!isHovered ? (
-          <span className='span-programming'>{getUserName(users, parseInt(info.event.title))}</span>
-        ) : (
-          <span className='span-programming'>{info.event.extendedProps.status}-{info.event.extendedProps.Finish_Time}</span>
-
+        <span className='span-programming'>{getUserName(users, parseInt(info.event.title))}</span>
+        {isClicked && (
+          <Button
+            onClick={handleViewClickWrapper}
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              marginLeft: '8px'
+            }}
+          >
+            <FaEye size={20} color="#000000" />
+          </Button>
         )}
-
-
       </div>
     );
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
         <Link to={'/'} className='d-flex align-items-center logo-index'>
           <img src={logo} alt="Logo" />
@@ -394,7 +374,6 @@ export default function CalendarioBarberia({ info }) {
               userRole == 1 || userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
             }
             <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-
           </nav>
 
           <div className="auth-buttons">
@@ -428,7 +407,8 @@ export default function CalendarioBarberia({ info }) {
                   <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
                     <GrUser /> Mi perfil
                   </MenuItem>
-                  <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
+                  <MenuItem onClick={handleLogout} className='menu
+-item-landingPage'>
                     <GiExitDoor /> Cerrar Sesión
                   </MenuItem>
                 </Menu>
@@ -446,13 +426,9 @@ export default function CalendarioBarberia({ info }) {
         </div>
       </header>
       <br /><br /><br /><br /><br />
-      {/* Contenedor Principal */}
       <div className="container mx-auto px-4 py-8">
-        {/* Contenedor principal con márgenes y padding */}
         <div className="bg-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden border border-[#b89b58]/20">
-          {/* Estilo para una tarjeta oscura con bordes redondeados, sombra y borde dorado */}
           <div className="logo-container">
-         
             <Form.Select
               value={selectedView}
               onChange={(e) => handleViewChange(e.target.value)}
@@ -478,20 +454,15 @@ export default function CalendarioBarberia({ info }) {
           </div>
 
           <div className="table-responsive mt-3">
-            {/* Contenedor del calendario */}
             <FullCalendar
-              ref={calendarRef} // Referencia al calendario
-              locale={esLocale} // Configuración de idioma
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} // Plugins para vistas y eventos
-              events={filteredEvents} // Lista de eventos a mostrar
-              initialView={selectedView} // Vista inicial del calendario
-              dateClick={handleDateClick} // Lógica cuando se hace clic en una fecha
-              eventClick={(info) => {
-                handleViewClick(info); // Maneja el clic en un evento
-                setShowDetailModal(true); // Muestra el modal con detalles
-              }}
-              locales={[esLocale]} // Idiomas compatibles
-              eventContent={(info) => <EventComponent info={info} setAppointmentId={setAppointmentId} />}
+              ref={calendarRef}
+              locale={esLocale}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              events={filteredEvents}
+              initialView={selectedView}
+              dateClick={handleDateClick}
+              eventContent={(info) => <EventComponent info={info} />}
+              locales={[esLocale]}
               headerToolbar={{
                 left: "prev,next today",
                 center: "title",
@@ -501,23 +472,9 @@ export default function CalendarioBarberia({ info }) {
           </div>
         </div>
 
-        <MenuItem className="Menu-programming-item">
-          {/* Botón para ver más detalles */}
-          <Button
-            onClick={() => setShowDetailModal(true)} // Abre el modal
-            style={{
-              backgroundColor: "transparent",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <FaEye size={20} color="#b89b58" />
-          </Button>
-        </MenuItem>
-
         <Modal
-          show={showDetailModal} // Controla la visibilidad del modal
-          onHide={() => setShowDetailModal(false)} // Cierra el modal
+          show={showDetailModal}
+          onHide={() => setShowDetailModal(false)}
           size="lg"
           backdrop="static"
           keyboard={true}
@@ -531,7 +488,6 @@ export default function CalendarioBarberia({ info }) {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body className="custom-modal-body">
-            {/* Detalles de la cita */}
             <div className="mb-4">
               <h5 className="border-bottom pb-2 text-gold">Mi cita</h5>
               <div className="row">
@@ -558,7 +514,6 @@ export default function CalendarioBarberia({ info }) {
               </div>
             </div>
 
-            {/* Detalle de la venta */}
             <div className="mt-4">
               <h5 className="border-bottom pb-2 text-gold">Detalle de la Venta</h5>
               {saleDetails.length > 0 ? (
@@ -597,12 +552,6 @@ export default function CalendarioBarberia({ info }) {
           </Modal.Body>
         </Modal>
       </div>
-
-
-
-
-
-
 
 
       <style jsx global>{`
