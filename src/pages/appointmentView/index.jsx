@@ -323,7 +323,15 @@ export default function CalendarioBarberia({ info }) {
       console.error('Error fetching programming:', error);
     }
   };
-
+  const convertTo12HourFormat = (time) => {
+    if (!time) return 'Hora no disponible'; // Devuelve un texto predeterminado si el tiempo no está definido
+  
+    const [hours, minutes] = time.split(':').map(Number); // Divide la hora en partes
+    const period = hours >= 12 ? 'PM' : 'AM'; // Determina si es AM o PM
+    const standardHours = hours % 12 || 12; // Convierte a formato de 12 horas
+    return `${standardHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+  
   const EventComponent = ({ info }) => {
     const [isClicked, setIsClicked] = useState(false);
 
@@ -334,6 +342,13 @@ export default function CalendarioBarberia({ info }) {
     const handleViewClickWrapper = () => {
       handleViewClick(info);
     };
+    const convertTo12HourFormat = (time) => {
+      const [hours, minutes] = time.split(':').map(Number); // Divide la hora en partes
+      const period = hours >= 12 ? 'PM' : 'AM'; // Determina si es AM o PM
+      const standardHours = hours % 12 || 12; // Convierte a formato de 12 horas
+      return `${standardHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
 
     return (
       <div
@@ -496,11 +511,12 @@ export default function CalendarioBarberia({ info }) {
                     <strong>Fecha:</strong> {detailData.Date}
                   </p>
                   <p>
-                    <strong>Hora inicio:</strong> {detailData.Init_Time}
+                    <strong>Hora inicio:</strong> {convertTo12HourFormat(detailData.Init_Time)}
                   </p>
                   <p>
-                    <strong>Hora fin:</strong> {detailData.Finish_Time}
+                    <strong>Hora fin:</strong> {convertTo12HourFormat(detailData.Finish_Time)}
                   </p>
+
                 </div>
                 <div className="col-md-6">
                   <p>
