@@ -451,12 +451,12 @@ export default function CalendarioBarberia({ info }) {
         {/* Contenedor principal con márgenes y padding */}
         <div className="bg-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden border border-[#b89b58]/20">
           {/* Estilo para una tarjeta oscura con bordes redondeados, sombra y borde dorado */}
-          <div className="p-6">
-            {/* Contenedor para el selector de vistas */}
+          <div className="logo-container">
+         
             <Form.Select
-              value={selectedView} // Estado actual de la vista seleccionada
-              onChange={(e) => handleViewChange(e.target.value)} // Cambia la vista cuando se selecciona una opción
-              className="w-40 bg-black text-white border border-[#b89b58] rounded-lg shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#b89b58] focus:border-transparent transition-all duration-200 cursor-pointer appearance-none hover:bg-[#b89b58]"
+              value={selectedView}
+              onChange={(e) => handleViewChange(e.target.value)}
+              className="view-selector"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b89b58'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                 backgroundPosition: "right 0.5rem center",
@@ -465,14 +465,13 @@ export default function CalendarioBarberia({ info }) {
                 paddingRight: "2.5rem",
               }}
             >
-              {/* Opciones del selector */}
-              <option value="dayGridMonth" className="bg-black text-white hover:bg-[#b89b58]">
+              <option value="dayGridMonth" className="view-selector-option">
                 Mes
               </option>
-              <option value="timeGridWeek" className="bg-black text-white hover:bg-[#b89b58]">
+              <option value="timeGridWeek" className="view-selector-option">
                 Semana
               </option>
-              <option value="timeGridDay" className="bg-black text-white hover:bg-[#b89b58]">
+              <option value="timeGridDay" className="view-selector-option">
                 Día
               </option>
             </Form.Select>
@@ -534,12 +533,9 @@ export default function CalendarioBarberia({ info }) {
           <Modal.Body className="custom-modal-body">
             {/* Detalles de la cita */}
             <div className="mb-4">
-              <h5 className="border-bottom pb-2 text-gold">Información de la Cita</h5>
+              <h5 className="border-bottom pb-2 text-gold">Mi cita</h5>
               <div className="row">
                 <div className="col-md-6">
-                  <p>
-                    <strong>Cliente:</strong> {detailData.title}
-                  </p>
                   <p>
                     <strong>Fecha:</strong> {detailData.Date}
                   </p>
@@ -557,9 +553,6 @@ export default function CalendarioBarberia({ info }) {
                   </p>
                   <p>
                     <strong>Total:</strong> {detailData.Total}
-                  </p>
-                  <p>
-                    <strong>Estado:</strong> {detailData.status}
                   </p>
                 </div>
               </div>
@@ -829,7 +822,86 @@ export default function CalendarioBarberia({ info }) {
 .view-button:hover {
     color: darkgoldenrod;
 }
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(145deg, #1e1e2e, #161623);
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.2), 
+    inset 0 0 15px rgba(255, 255, 255, 0.05),
+    0 5px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  perspective: 1000px;
+  transition: all 0.4s ease;
+  transform: translateY(0);
+}
 
+.calendar-container:hover {
+  transform: translateY(-15px);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.3), 
+    inset 0 0 20px rgba(255, 255, 255, 0.1),
+    0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(30, 30, 46, 0.8), rgba(22, 22, 35, 0.8));
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.calendar-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.view-selector {
+  background-color: #000000;
+  color: #b89b58;
+  border: 1px solid #b89b58/30;
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  appearance-none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b89b58'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.view-selector:hover {
+  background-color: #00000;
+  color: #b89b58;
+  transform: translateY(-2px) scale(0.97);
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.2), 
+    inset 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-content {
+  width: 100%;
+  background: #1a1a1a;
+  border-radius: 15px;
+  padding: 1.5rem;
+}
 `}</style>
 
     </div>
