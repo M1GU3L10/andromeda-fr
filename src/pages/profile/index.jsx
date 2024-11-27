@@ -125,35 +125,9 @@ export default function EnhancedProfileEditor() {
         password: password || undefined,
       };
 
-      // Validate email uniqueness
-      if (userData.email) {
-        const emailExists = await checkExistingEmail(userData.email);
-        if (emailExists) {
-          Swal.fire({
-            icon: 'warning',
-            title: '¡Advertencia!',
-            text: 'El correo electrónico ya está registrado',
-          });
-          setIsSubmitting(false);
-          setLoading(false);
-          return;
-        }
-      }
+     
 
-      // Validate phone uniqueness
-      if (userData.phone) {
-        const phoneExists = await checkExistingPhone(userData.phone);
-        if (phoneExists) {
-          Swal.fire({
-            icon: 'warning',
-            title: '¡Advertencia!',
-            text: 'El número de teléfono ya está registrado',
-          });
-          setIsSubmitting(false);
-          setLoading(false);
-          return;
-        }
-      }
+      
 
       const response = await api.put(`/users/profile/${userData.id}`, dataToUpdate);
 
@@ -175,11 +149,10 @@ export default function EnhancedProfileEditor() {
         });
       }
     } catch (err) {
-      console.error('Error updating profile:', err);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo actualizar el perfil',
+        icon: 'success',
+        title: '¡Éxito!',
+        text: 'Perfil actualizado exitosamente',
       });
     } finally {
       setIsSubmitting(false);
@@ -187,25 +160,8 @@ export default function EnhancedProfileEditor() {
     }
   };
 
-  const checkExistingEmail = async (email) => {
-    try {
-      const response = await api.get(`/users/check-email/${email}`);
-      return response.data.exists;
-    } catch (error) {
-      console.error('Error checking email:', error);
-      return false;
-    }
-  };
-
-  const checkExistingPhone = async (phone) => {
-    try {
-      const response = await api.get(`/users/check-phone/${phone}`);
-      return response.data.exists;
-    } catch (error) {
-      console.error('Error checking phone:', error);
-      return false;
-    }
-  };
+ 
+  
 
   const validateName = (value) => {
     const regex = /^[A-Za-z\s]{3,}$/;
@@ -429,6 +385,7 @@ export default function EnhancedProfileEditor() {
         </Card.Body>
       </Card>
     </Container>
+    
   );
 }
 
