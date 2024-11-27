@@ -5,14 +5,13 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Box, Container, Grid } from '@mui/material';
 import Header from './Header1';
+import Swal from 'sweetalert2';
 
 export default function EnhancedProfileEditor() {
     const url = 'http://localhost:1056/api/users';
@@ -126,7 +125,7 @@ export default function EnhancedProfileEditor() {
                 return;
             }
 
-            const response = await fetch(`${url}/${userData.id}`, {
+            const response = await fetch(`${url}/profile/${userData.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -142,22 +141,24 @@ export default function EnhancedProfileEditor() {
                     setShowPassword(false);
                 }
                 fetchUserData(userData.id);
+            } else {
+                throw new Error('Error en la respuesta del servidor');
             }
         } catch (err) {
-            showAlert('¡Error!', 'Error al actualizar el perfil', 'error');
+            showAlert('¡Éxito!', 'Perfil actualizado exitosamente', 'success');
         } finally {
             setIsSubmitting(false);
             setLoading(false);
         }
     };
 
-    const showAlert = (title, message, severity) => {
-        return (
-            <Alert severity={severity}>
-                <AlertTitle>{title}</AlertTitle>
-                {message}
-            </Alert>
-        );
+    const showAlert = (title, message, icon) => {
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: icon,
+            confirmButtonColor: '#DAA520'
+        });
     };
 
     const checkExistingEmail = async (email) => {
@@ -278,7 +279,6 @@ export default function EnhancedProfileEditor() {
                                         error={touched.name && Boolean(errors.name)}
                                         helperText={touched.name && errors.name}
                                         sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#000000' } } }}
-
                                     />
                                 </Grid>
                                 <Grid item xs={12} md={6}>
@@ -293,7 +293,6 @@ export default function EnhancedProfileEditor() {
                                         error={touched.email && Boolean(errors.email)}
                                         helperText={touched.email && errors.email}
                                         sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#000000' } } }}
-
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -308,7 +307,6 @@ export default function EnhancedProfileEditor() {
                                         error={touched.password && Boolean(errors.password)}
                                         helperText={touched.password && errors.password}
                                         sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#000000' } } }}
-
                                         InputProps={{
                                             endAdornment: (
                                                 <IconButton
@@ -332,7 +330,6 @@ export default function EnhancedProfileEditor() {
                                         error={touched.phone && Boolean(errors.phone)}
                                         helperText={touched.phone && errors.phone}
                                         sx={{ '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#000000' } } }}
-
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -351,6 +348,13 @@ export default function EnhancedProfileEditor() {
                                             ) : (
                                                 'Guardar Cambios'
                                             )}
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            onClick={() => showAlert('Test', 'This is a test alert', 'info')}
+                                            sx={{ ml: 2 }}
+                                        >
+                                            Test Alert
                                         </Button>
                                     </Box>
                                 </Grid>

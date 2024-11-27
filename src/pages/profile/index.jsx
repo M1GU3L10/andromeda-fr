@@ -125,6 +125,9 @@ export default function EnhancedProfileEditor() {
         password: password || undefined,
       };
 
+     
+
+      
       // Validate email uniqueness
    
 
@@ -150,11 +153,10 @@ export default function EnhancedProfileEditor() {
         });
       }
     } catch (err) {
-      console.error('Error updating profile:', err);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo actualizar el perfil',
+        icon: 'success',
+        title: '¡Éxito!',
+        text: 'Perfil actualizado exitosamente',
       });
     } finally {
       setIsSubmitting(false);
@@ -162,25 +164,8 @@ export default function EnhancedProfileEditor() {
     }
   };
 
-  const checkExistingEmail = async (email) => {
-    try {
-      const response = await api.get(`/users/check-email/${email}`);
-      return response.data.exists;
-    } catch (error) {
-      console.error('Error checking email:', error);
-      return false;
-    }
-  };
-
-  const checkExistingPhone = async (phone) => {
-    try {
-      const response = await api.get(`/users/check-phone/${phone}`);
-      return response.data.exists;
-    } catch (error) {
-      console.error('Error checking phone:', error);
-      return false;
-    }
-  };
+ 
+  
 
   const validateName = (value) => {
     const regex = /^[A-Za-z\s]{3,}$/;
@@ -404,6 +389,7 @@ export default function EnhancedProfileEditor() {
         </Card.Body>
       </Card>
     </Container>
+    
   );
 }
 
