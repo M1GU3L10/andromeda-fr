@@ -45,6 +45,9 @@ export default function Component() {
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
     const [occupiedSlots, setOccupiedSlots] = useState([]);
 
+
+
+
     const [errors, setErrors] = useState({});
     const urlServices = 'http://localhost:1056/api/services';
     const urlUsers = 'http://localhost:1056/api/users';
@@ -78,7 +81,10 @@ export default function Component() {
             show_alerta('No has iniciado sesión. Por favor, inicia sesión para crear una cita.', 'warning');
         }
     };
-
+    const [state, setState] = useState({
+        saleDetails: [], // Inicializa los detalles de productos y servicios
+        otherFields: {}  // Otros campos si son necesarios
+    });
     const generateTimeSlots = () => {
         const slots = [];
         const [minHour, minMinute] = minTime.split(':').map(Number);
@@ -583,6 +589,26 @@ export default function Component() {
             };
         });
     };
+    const handleAddProduct = () => {
+        setState((prevState) => {
+            // Mapear los productos seleccionados para generar los detalles de productos
+            const productDetails = selectedProducts.map(product => ({
+                quantity: product.quantity,
+                unitPrice: product.Price,
+                total_price: product.Price * product.quantity,
+                id_producto: product.id,
+                empleadoId: null,
+                serviceId: null
+            }));
+
+            // Retornar el nuevo estado con los detalles de productos añadidos
+            return {
+                ...prevState,
+                saleDetails: [...prevState.saleDetails, ...productDetails]
+            };
+        });
+    };
+
 
     useEffect(() => {
         localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
@@ -816,6 +842,7 @@ export default function Component() {
                                                             <div className='actions-quantity'>
                                                                 <Button className='primary' onClick={() => updateQuantity(product.id, 1)}><FaPlus /></Button>
                                                                 <Button className='primary' onClick={() => updateQuantity(product.id, -1)}><FaMinus /></Button>
+
                                                             </div>
                                                         </div>
                                                     </td>
@@ -823,6 +850,14 @@ export default function Component() {
                                             ))}
                                         </tbody>
                                     </table>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleAddProduct}
+                                    >
+                                        Agregar Producto
+                                    </Button>
+
                                 </div>
                                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
                                     <span className='valor'>Subtotal Productos: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</span>
