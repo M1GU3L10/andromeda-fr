@@ -19,14 +19,12 @@ import "react-datepicker/dist/react-datepicker.css";
 export default function Component() {
     const [users, setUsers] = useState([]);
     const [products, setProducts] = useState([]);
-    const [selectedProducts, setSelectedProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [services, setServices] = useState([]);
     const [minTime, setMinTime] = useState("07:00");
     const [maxTime, setMaxTime] = useState("21:00");
     const [timeSlots, setTimeSlots] = useState([]);
     const [prevState, setPrevState] = useState([]);
-
 
     const navigate = useNavigate();
     const [selectedService, setSelectedService] = useState(null);
@@ -51,6 +49,10 @@ export default function Component() {
     const urlServices = 'http://localhost:1056/api/services';
     const urlUsers = 'http://localhost:1056/api/users';
     const [subtotalProducts, setSubtotalProducts] = useState(0);
+    const [selectedProducts, setSelectedProducts] = useState(() => {
+        const saved = localStorage.getItem('selectedProducts');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [subtotalServices, setSubtotalServices] = useState(0);
     const [absences, setAbsences] = useState([]);
     const urlAbsences = 'http://localhost:1056/api/absences';
@@ -141,12 +143,13 @@ export default function Component() {
             console.error("Error fetching absences:", error);
         }
     };
+
     const updateFinishTime = (startTime, duration) => {
         if (startTime) {
             const [hours, minutes] = startTime.split(':').map(Number);
             const endDate = new Date(2000, 0, 1, hours, minutes + duration);
             const endTime = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
-            
+
             setSaleInfo(prevState => ({
                 ...prevState,
                 appointmentData: {
@@ -351,16 +354,11 @@ export default function Component() {
     };
 
     const handleAddService = () => {
-        
-        // Actualizar el estado de servicios utilizando prevState
         setServices((prevState) => [
-          ...prevState,
-          
+            ...prevState,
         ]);
-      
-        
-      };
-      
+    };
+
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setSaleInfo(prevState => {
@@ -417,6 +415,34 @@ export default function Component() {
         }
 
         setErrors(newErrors);
+    };
+
+    const handleServiceRemove = (index) => {
+        setSaleInfo(prevState => {
+            const serviceDetails = prevState.saleDetails.filter(detail =>
+                detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
+            );
+
+            const updatedServiceDetails = serviceDetails.filter((_, i) => i !== index);
+
+            const productDetails = selectedProducts.map(product => ({
+                quantity: product.quantity,
+                unitPrice: product.Price,
+                total_price: product.Price * product.quantity,
+                id_producto: product.id,
+                empleadoId: null,
+                serviceId: null
+            }));
+
+            const allDetails = [...productDetails, ...updatedServiceDetails];
+            const totalPrice = allDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
+
+            return {
+                ...prevState,
+                saleDetails: allDetails,
+                total_price: totalPrice
+            };
+        });
     };
 
     const validateEmployeeAvailability = () => {
@@ -558,6 +584,10 @@ export default function Component() {
         });
     };
 
+    useEffect(() => {
+        localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+    }, [selectedProducts]);
+
     const handleServiceChange = (index, field, value) => {
         setSaleInfo(prevState => {
             const serviceDetails = prevState.saleDetails.filter(detail =>
@@ -623,47 +653,14 @@ export default function Component() {
         });
     };
 
-    const handleServiceRemove = (index) => {
-        setSaleInfo(prevState => {
-            const serviceDetails = prevState.saleDetails.filter(detail =>
-                detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
-            );
-
-            const updatedServiceDetails = serviceDetails.filter((_, i) => i !== index);
-
-            const productDetails = selectedProducts.map(product => ({
-                quantity: product.quantity,
-                unitPrice: product.Price,
-                total_price: product.Price * product.quantity,
-                id_producto: product.id,
-                empleadoId: null,
-                serviceId: null
-            }));
-
-            const allDetails = [...productDetails, ...updatedServiceDetails];
-            const totalPrice = allDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
-
-            const totalDuration = updatedServiceDetails.reduce((sum, detail) => {
-                if (detail.serviceId) {
-                    const service = services.find(s => s.id === parseInt(detail.serviceId));
-                    return sum + (service ? service.time : 0);
-                }
-                return sum;
-            }, 0);
-
-            updateFinishTime(prevState.appointmentData.Init_Time, totalDuration);
-
-            return {
-                ...prevState,
-                saleDetails: allDetails,
-                total_price: totalPrice,
-                appointmentData: {
-                    ...prevState.appointmentData,
-                    time_appointment: totalDuration
-                }
-            };
-        });
-    };
+    const productDetails = selectedProducts.map(product => ({
+        quantity: product.quantity,
+        unitPrice: product.Price,
+        total_price: product.Price * product.quantity,
+        id_producto: product.id,
+        empleadoId: null,
+        serviceId: null
+    }));
 
     const isTimeSlotOccupied = (date, time) => {
         return appointments.some(appointment =>
@@ -795,109 +792,41 @@ export default function Component() {
                                     </Button>
                                 </div>
 
-
-                                <h5 className="mt-4 mb-3">Productos</h5>
-                                <div className="mb-3">
-                                    <div className="input-group">
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            placeholder="Buscar productos..."
-                                            value={searchTerm}
-                                            onChange={handleProductSearch}
-                                        />
-                                        <span className="input-group-text">
-                                            <IoSearch />
-                                        </span>
-                                    </div>
-                                </div>
-                                <Table responsive bordered hover className="table-striped">
-                                    <thead className='bg-light'>
-                                        <tr>
-                                            <th>Producto</th>
-                                            <th>Precio</th>
-                                            <th>Stock</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredProducts.map(product => (
-                                            <tr key={product.id}>   
-                                                <td>{product.Product_Name}</td>
-                                                <td>${product.Price}</td>
-                                                <td>{product.Stock}</td>
-                                                <td>
-                                                    <Button
-                                                        onClick={() => addProduct(product)}
-                                                        variant="contained"
-                                                        color="primary"
-                                                        size="small"
-                                                        startIcon={<FaPlus />}
-                                                    >
-                                                        Agregar
-                                                    </Button>
-                                                </td>
+                                <div className='table-responsive mt-3 p-3'>
+                                    <table className='table table-bordered table-hover v-align table-striped'>
+                                        <thead className='table-light'>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio unt</th>
+                                                <th>Subtotal</th>
+                                                <th>Acciones</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </Table>
-                                {selectedProducts.length > 0 && (
-                                    <>
-                                        <h5 className="mt-4 mb-3">Productos Seleccionados</h5>
-                                        <Table responsive bordered hover className="table-striped">
-                                            <thead className='bg-light'>
-                                                <tr>
-                                                    <th>Producto</th>
-                                                    <th>Precio</th>
-                                                    <th>Cantidad</th>
-                                                    <th>Total</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedProducts.map(product => (
-                                                    <tr key={product.id}>
-                                                        <td>{product.Product_Name}</td>
-                                                        <td>${product.Price.toFixed(2)}</td>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-                                                                <Button
-                                                                    onClick={() => updateQuantity(product.id, -1)}
-                                                                    variant="outlined"
-                                                                    color="primary"
-                                                                    size="small"
-                                                                >
-                                                                    <FaMinus />
-                                                                </Button>
-                                                                <span className="mx-2">{product.quantity}</span>
-                                                                <Button
-                                                                    onClick={() => updateQuantity(product.id, 1)}
-                                                                    variant="outlined"
-                                                                    color="primary"
-                                                                    size="small"
-                                                                >
-                                                                    <FaPlus />
-                                                                </Button>
+                                        </thead>
+                                        <tbody>
+                                            {selectedProducts.map(product => (
+                                                <tr key={product.id}>
+                                                    <td>{product.Product_Name}</td>
+                                                    <td>{product.quantity}</td>
+                                                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
+                                                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
+                                                    <td>
+                                                        <div className='d-flex align-items-center position-static'>
+                                                            <Button color='error' className='delete' onClick={() => removeProduct(product.id)}><IoTrashSharp /></Button>
+                                                            <div className='actions-quantity'>
+                                                                <Button className='primary' onClick={() => updateQuantity(product.id, 1)}><FaPlus /></Button>
+                                                                <Button className='primary' onClick={() => updateQuantity(product.id, -1)}><FaMinus /></Button>
                                                             </div>
-                                                        </td>
-                                                        <td>${(product.Price * product.quantity).toFixed(2)}</td>
-                                                        <td>
-                                                            <Button
-                                                                onClick={() => removeProduct(product.id)}
-                                                                variant="contained"
-                                                                color="error"
-                                                                size="small"
-                                                                startIcon={<IoTrashSharp />}
-                                                            >
-                                                                Eliminar
-                                                            </Button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </Table>
-                                    </>
-                                )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
+                                    <span className='valor'>Subtotal Productos: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1031,5 +960,4 @@ export default function Component() {
         </>
     );
 }
-
 

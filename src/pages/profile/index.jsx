@@ -126,34 +126,9 @@ export default function EnhancedProfileEditor() {
       };
 
       // Validate email uniqueness
-      if (userData.email) {
-        const emailExists = await checkExistingEmail(userData.email);
-        if (emailExists) {
-          Swal.fire({
-            icon: 'warning',
-            title: '¡Advertencia!',
-            text: 'El correo electrónico ya está registrado',
-          });
-          setIsSubmitting(false);
-          setLoading(false);
-          return;
-        }
-      }
+   
 
-      // Validate phone uniqueness
-      if (userData.phone) {
-        const phoneExists = await checkExistingPhone(userData.phone);
-        if (phoneExists) {
-          Swal.fire({
-            icon: 'warning',
-            title: '¡Advertencia!',
-            text: 'El número de teléfono ya está registrado',
-          });
-          setIsSubmitting(false);
-          setLoading(false);
-          return;
-        }
-      }
+ 
 
       const response = await api.put(`/users/profile/${userData.id}`, dataToUpdate);
 
