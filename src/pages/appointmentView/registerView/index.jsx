@@ -15,6 +15,7 @@ import { BsCalendar2DateFill } from 'react-icons/bs';
 import CustomTimeSelector from '../../sales/registerSales/CustomTimeSelector/CustomTimeSelector';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { motion } from 'framer-motion';
 
 export default function Component() {
     const [users, setUsers] = useState([]);
@@ -44,9 +45,6 @@ export default function Component() {
     });
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
     const [occupiedSlots, setOccupiedSlots] = useState([]);
-
-
-
 
     const [errors, setErrors] = useState({});
     const urlServices = 'http://localhost:1056/api/services';
@@ -81,10 +79,12 @@ export default function Component() {
             show_alerta('No has iniciado sesión. Por favor, inicia sesión para crear una cita.', 'warning');
         }
     };
+
     const [state, setState] = useState({
-        saleDetails: [], // Inicializa los detalles de productos y servicios
-        otherFields: {}  // Otros campos si son necesarios
+        saleDetails: [],
+        otherFields: {}
     });
+
     const generateTimeSlots = () => {
         const slots = [];
         const [minHour, minMinute] = minTime.split(':').map(Number);
@@ -356,7 +356,10 @@ export default function Component() {
             }
         }));
 
-        updateFinishTime(prevState.appointmentData.Init_Time, totalDuration);
+        // Fix: Check if prevState.appointmentData exists before accessing Init_Time
+        if (prevState.appointmentData && prevState.appointmentData.Init_Time) {
+            updateFinishTime(prevState.appointmentData.Init_Time, totalDuration);
+        }
     };
 
     const handleAddService = () => {
@@ -589,9 +592,9 @@ export default function Component() {
             };
         });
     };
+
     const handleAddProduct = () => {
         setState((prevState) => {
-            // Mapear los productos seleccionados para generar los detalles de productos
             const productDetails = selectedProducts.map(product => ({
                 quantity: product.quantity,
                 unitPrice: product.Price,
@@ -601,14 +604,12 @@ export default function Component() {
                 serviceId: null
             }));
 
-            // Retornar el nuevo estado con los detalles de productos añadidos
             return {
                 ...prevState,
                 saleDetails: [...prevState.saleDetails, ...productDetails]
             };
         });
     };
-
 
     useEffect(() => {
         localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
@@ -722,20 +723,20 @@ export default function Component() {
         <>
             <Header />
             <br /><br /><br /><br />
-            <div className='card border-0 p-3 d-flex colorTransparent mt-9'>
+            <div className='card border-0 p-3 d-flex colorTransparent mt-9' style={{ backgroundColor: '#1a1a1a', color: '#ffd700' }}>
                 <div className='row'>
                     <div className='col-sm-6'>
                         <div className='row p-3'></div>
-                        <div className='card-detail shadow-lg border-0 mb-4 rounded-lg'>
-                            <div className="cont-title w-100 bg-gradient-to-r from-blue-600 to-blue-800 p-4">
-                                <span className='Title text-white text-xl font-bold d-flex align-items-center'>
+                        <div className='card-detail shadow-lg border-0 mb-4 rounded-lg' style={{ backgroundColor: '#2a2a2a' }}>
+                            <div className="cont-title w-100 bg-gradient-to-r from-yellow-600 to-yellow-800 p-4">
+                                <span className='Title text-black text-xl font-bold d-flex align-items-center'>
                                     <i className="bi bi-scissors me-2"></i>
                                     Servicios y Productos
                                 </span>
                             </div>
                             <div className='p-4'>
-                                <h5 className="mb-3">Servicios</h5>
-                                <Table responsive bordered hover className="table-striped">
+                                <h5 className="mb-3 text-gold">Servicios</h5>
+                                <Table responsive bordered hover className="table-striped" style={{ color: '#ffd700' }}>
                                     <thead className='bg-light'>
                                         <tr>
                                             <th>Servicio</th>
@@ -808,19 +809,50 @@ export default function Component() {
                                     </tbody>
                                 </Table>
                                 <div className="d-flex justify-content-start mt-3">
-                                    <Button
-                                        onClick={handleServiceAdd}
-                                        variant="contained"
-                                        color="primary"
-                                        startIcon={<FaPlus />}
-                                    >
-                                        Agregar Servicio
-                                    </Button>
+                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                        <Button
+                                            onClick={handleServiceAdd}
+                                            variant="contained"
+                                            style={{ backgroundColor: '#ffd700', color: '#000' }}
+                                            startIcon={<FaPlus />}
+                                        >
+                                            Agregar Servicio
+                                        </Button>
+                                    </motion.div>
                                 </div>
 
-                                <div className='table-responsive mt-3 p-3'>
-                                    <table className='table table-bordered table-hover v-align table-striped'>
-                                        <thead className='table-light'>
+                                <div className='mt-4'>
+                                    <h5 className="mb-3 text-gold">Productos</h5>
+                                    <div className="mb-3">
+                                        <Form.Group>
+                                            <Form.Label className='text-gold'>Buscar Productos</Form.Label>
+                                            <div className="d-flex">
+                                                <Form.Control
+                                                    type="text"
+                                                    placeholder="Buscar productos..."
+                                                    value={searchTerm}
+                                                    onChange={handleProductSearch}
+                                                    className="form-control border rounded-lg shadow-sm"
+                                                />
+                                                <IoSearch className="search-icon position-absolute end-0 top-50 translate-middle-y me-2" />
+                                            </div>
+                                        </Form.Group>
+                                        {searchTerm && (
+                                            <div className="search-results mt-2 border rounded-lg shadow-sm">
+                                                {filteredProducts.map(product => (
+                                                    <div
+                                                        key={product.id}
+                                                        className="search-result-item p-2 hover:bg-gray-100 cursor-pointer"
+                                                        onClick={() => addProduct(product)}
+                                                    >
+                                                        {product.Product_Name} - Stock: {product.Stock}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <Table responsive bordered hover className="table-striped" style={{ color: '#ffd700' }}>
+                                        <thead className='bg-light'>
                                             <tr>
                                                 <th>Producto</th>
                                                 <th>Cantidad</th>
@@ -837,161 +869,175 @@ export default function Component() {
                                                     <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
                                                     <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
                                                     <td>
-                                                        <div className='d-flex align-items-center position-static'>
-                                                            <Button color='error' className='delete' onClick={() => removeProduct(product.id)}><IoTrashSharp /></Button>
+                                                        <div className='d-flex align-items-center justify-content-center'>
+                                                            <Button color='error' className='delete me-2' onClick={() => removeProduct(product.id)}><IoTrashSharp /></Button>
                                                             <div className='actions-quantity'>
-                                                                <Button className='primary' onClick={() => updateQuantity(product.id, 1)}><FaPlus /></Button>
+                                                                <Button className='primary me-1' onClick={() => updateQuantity(product.id, 1)}><FaPlus /></Button>
                                                                 <Button className='primary' onClick={() => updateQuantity(product.id, -1)}><FaMinus /></Button>
-
                                                             </div>
                                                         </div>
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
-                                    </table>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={handleAddProduct}
-                                    >
-                                        Agregar Producto
-                                    </Button>
+                                    </Table>
+                                </div>
 
+                                <div className='d-flex justify-content-between align-items-center mt-4'>
+                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                        <Button
+                                            variant="contained"
+                                            style={{ backgroundColor: '#ffd700', color: '#000' }}
+                                            onClick={handleAddProduct}
+                                            startIcon={<FaPlus />}
+                                        >
+                                            Agregar Producto
+                                        </Button>
+                                    </motion.div>
+                                    <div className='Monto-content'>
+                                        <span className='valor font-weight-bold text-gold'>Subtotal Productos: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</span>
+                                    </div>
                                 </div>
-                                <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
-                                    <span className='valor'>Subtotal Productos: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</span>
-                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div className='col-sm-6'>
+                    <div className='row p-3'></div>
+                    <div className='card-detail shadow-lg border-0 mb-4 rounded-lg' style={{ backgroundColor: '#2a2a2a' }}>
+                        <div className="cont-title w-100 bg-gradient-to-r from-yellow-600 to-yellow-800 p-4">
+                            <span className='Title text-black text-xl font-bold'>Información de cita</span>
+                        </div>
+                        <div className='d-flex align-items-center'>
+                            <div className="d-flex align-items-center w-100 p-4">
+                                <Form className='form w-100'>
+                                    <Form.Group as={Row} className="mb-4">
+                                        <Col sm="6" className="mb-3">
+                                            <Form.Label className="fw-bold mb-2 text-gold">Fecha de cita</Form.Label>
+                                            <div className="position-relative">
+                                                <DatePicker
+                                                    selected={new Date(saleInfo.appointmentData.Date)}
+                                                    onChange={(date) => handleAppointmentChange({
+                                                        target: {
+                                                            name: 'Date',
+                                                            value: date.toISOString().split('T')[0]
+                                                        }
+                                                    })}
+                                                    className="form-control border rounded-lg shadow-sm"
+                                                    minDate={new Date()}
+                                                    style={{ backgroundColor: '#2a2a2a', color: '#ffd700' }}
+                                                />
+                                                <BsCalendar2DateFill className="position-absolute end-3 top-50 translate-middle-y text-gold" />
+                                            </div>
+                                        </Col>
+                                        <Col sm="6" className="mb-3">
+                                            <Form.Label className="fw-bold mb-2 text-gold">Hora inicio</Form.Label>
+                                            <div className="position-relative">
+                                                <CustomTimeSelector
+                                                    name="Init_Time"
+                                                    value={saleInfo.appointmentData.Init_Time}
+                                                    onChange={(time) => handleAppointmentChange({
+                                                        target: {
+                                                            name: 'Init_Time',
+                                                            value: time
+                                                        }
+                                                    })}
+                                                    className="form-control border rounded-lg shadow-sm"
+                                                    style={{ backgroundColor: '#2a2a2a', color: '#ffd700' }}
+                                                />
+                                                <i className="bi bi-clock position-absolute end-3 top-50 translate-middle-y text-gold"></i>
+                                            </div>
+                                        </Col>
+                                    </Form.Group>
+                                    <Form.Group as={Row} className="mb-3">
+                                        <Col sm="6" className="mb-3">
+                                            <Form.Label className="fw-bold mb-2 text-gold">Hora fin (estimada)</Form.Label>
+                                            <div className="position-relative">
+                                                <Form.Control
+                                                    type="text"
+                                                    name="Finish_Time"
+                                                    value={saleInfo.appointmentData.Finish_Time}
+                                                    readOnly
+                                                    className="form-control border rounded-lg shadow-sm bg-dark text-gold"
+                                                />
+                                                <i className="bi bi-clock position-absolute end-3 top-50 translate-middle-y text-gold"></i>
+                                            </div>
+                                        </Col>
+                                        <Col sm="6" className="mb-3">
+                                            <Form.Label className="fw-bold mb-2 text-gold">Duración total</Form.Label>
+                                            <div className="bg-dark p-2 rounded-lg border shadow-sm">
+                                                <span className="fw-bold text-gold">
+                                                    {formatDuration(saleInfo.appointmentData.time_appointment)}
+                                                </span>
+                                            </div>
+                                        </Col>
+                                    </Form.Group>
+                                </Form>
                             </div>
                         </div>
                     </div>
-                    <div className='col-sm-6'>
-                        <div className='row p-3'></div>
-                        <div className='card-detail shadow-lg border-0 mb-4 rounded-lg'>
-                            <div className="cont-title w-100 bg-gradient-to-r from-blue-600 to-blue-800 p-4">
-                                <span className='Title text-white text-xl font-bold'>Información de cita</span>
-                            </div>
-                            <div className='d-flex align-items-center'>
-                                <div className="d-flex align-items-center w-100 p-4">
-                                    <Form className='form w-100'>
-                                        <Form.Group as={Row} className="mb-4">
-                                            <Col sm="6" className="mb-3">
-                                                <Form.Label className="fw-bold mb-2">Fecha de cita</Form.Label>
-                                                <div className="position-relative">
-                                                    <DatePicker
-                                                        selected={new Date(saleInfo.appointmentData.Date)}
-                                                        onChange={(date) => handleAppointmentChange({
-                                                            target: {
-                                                                name: 'Date',
-                                                                value: date.toISOString().split('T')[0]
-                                                            }
-                                                        })}
-                                                        className="form-control border rounded-lg shadow-sm"
-                                                        minDate={new Date()}
-                                                    />
-                                                    <BsCalendar2DateFill className="position-absolute end-3 top-50 translate-middle-y text-muted" />
-                                                </div>
-                                            </Col>
-                                            <Col sm="6" className="mb-3">
-                                                <Form.Label className="fw-bold mb-2">Hora inicio</Form.Label>
-                                                <div className="position-relative">
-                                                    <CustomTimeSelector
-                                                        name="Init_Time"
-                                                        value={saleInfo.appointmentData.Init_Time}
-                                                        onChange={(time) => handleAppointmentChange({
-                                                            target: {
-                                                                name: 'Init_Time',
-                                                                value: time
-                                                            }
-                                                        })}
-                                                        className="form-control border rounded-lg shadow-sm"
-                                                    />
-                                                    <i className="bi bi-clock position-absolute end-3 top-50 translate-middle-y text-muted"></i>
-                                                </div>
-                                            </Col>
-                                        </Form.Group>
-                                        <Form.Group as={Row} className="mb-3">
-                                            <Col sm="6" className="mb-3">
-                                                <Form.Label className="fw-bold mb-2">Hora fin (estimada)</Form.Label>
-                                                <div className="position-relative">
-                                                    <Form.Control
-                                                        type="text"
-                                                        name="Finish_Time"
-                                                        value={saleInfo.appointmentData.Finish_Time}
-                                                        readOnly
-                                                        className="form-control border rounded-lg shadow-sm bg-light"
-                                                    />
-                                                    <i className="bi bi-clock position-absolute end-3 top-50 translate-middle-y text-muted"></i>
-                                                </div>
-                                            </Col>
-                                            <Col sm="6" className="mb-3">
-                                                <Form.Label className="fw-bold mb-2">Duración total</Form.Label>
-                                                <div className="bg-light p-2 rounded-lg border shadow-sm">
-                                                    <span className="fw-bold">
-                                                        {formatDuration(saleInfo.appointmentData.time_appointment)}
-                                                    </span>
-                                                </div>
-                                            </Col>
-                                        </Form.Group>
-                                    </Form>
-                                </div>
-                            </div>
+                    <div className='card-detail shadow-lg border-0 mb-4 rounded-lg' style={{ backgroundColor: '#2a2a2a' }}>
+                        <div className="cont-title w-100 bg-gradient-to-r from-yellow-600 to-yellow-800 p-4">
+                            <span className='Title text-black text-xl font-bold'>Resumen de la cita</span>
                         </div>
-                        <div className='card-detail shadow-lg border-0 mb-4 rounded-lg'>
-                            <div className="cont-title w-100 bg-gradient-to-r from-blue-600 to-blue-800 p-4">
-                                <span className='Title text-white text-xl font-bold'>Resumen de la cita</span>
-                            </div>
-                            <div className='p-4'>
-                                <Table responsive bordered hover className="table-striped">
-                                    <tbody>
-                                        <tr>
-                                            <th>Subtotal Servicios:</th>
-                                            <td>${subtotalServices.toFixed(2)}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Subtotal Productos:</th>
-                                            <td>${subtotalProducts.toFixed(2)}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Total:</th>
-                                            <td>${saleInfo.total_price.toFixed(2)}</td>
-                                        </tr>
-                                    </tbody>
-                                </Table>
-                            </div>
+                        <div className='p-4'>
+                            <Table responsive bordered hover className="table-striped" style={{ color: '#ffd700' }}>
+                                <tbody>
+                                    <tr>
+                                        <th>Subtotal Servicios:</th>
+                                        <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Subtotal Productos:</th>
+                                        <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Total:</th>
+                                        <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</td>
+                                    </tr>
+                                </tbody>
+                            </Table>
                         </div>
                     </div>
                 </div>
-                <div className='d-flex justify-content-end mt-4'>
+            </div>
+            <div className='d-flex justify-content-end mt-4'>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                         variant="contained"
-                        color="secondary"
-                        onClick={() => navigate('/index')}
                         style={{
+                            backgroundColor: '#2a2a2a',
+                            color: '#ffd700',
                             marginRight: '10px',
                             minWidth: '150px',
                             padding: '10px 20px',
                             fontSize: '16px',
                             fontWeight: 'bold',
                         }}
+                        onClick={() => navigate('/index')}
                     >
                         Cancelar
                     </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                         variant="contained"
-                        color="primary"
-                        onClick={handleSubmit}
                         style={{
+                            backgroundColor: '#ffd700',
+                            color: '#000',
                             minWidth: '150px',
                             padding: '10px 20px',
                             fontSize: '16px',
                             fontWeight: 'bold',
                         }}
+                        onClick={handleSubmit}
                     >
                         Guardar Cita
                     </Button>
-                </div>
+                </motion.div>
             </div>
+       
         </>
     );
 }
