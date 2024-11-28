@@ -921,6 +921,7 @@ export default function Component() {
                                         <tr>
                                             <th>Producto</th>
                                             <th>Cantidad</th>
+                                            <th>Imagen</th>
                                             <th>Precio unitario</th>
                                             <th>Subtotal</th>
                                             <th>Acciones</th>
@@ -935,6 +936,26 @@ export default function Component() {
                                             >
                                                 <td>{product.Product_Name}</td>
                                                 <td>{product.quantity}</td>
+                                                <td className="p-2 text-center">
+                                                    {product.Image ? (
+                                                        <div className="inline-block">
+                                                            <img
+                                                                src={product.Image}
+                                                                alt={product.Product_Name}
+                                                                className="w-[50px] h-[50px] object-cover rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-gray-100"
+                                                                style={{
+                                                                    width: '50px',
+                                                                    height: '50px',
+                                                                    objectFit: 'cover'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-[50px] h-[50px] inline-flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 border border-gray-100">
+                                                            <span className="text-sm">No</span>
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
                                                 <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
                                                 <td>
