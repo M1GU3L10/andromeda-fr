@@ -1028,7 +1028,7 @@ export default function Component() {
                                             <Form.Group className="mb-3">
                                                 <Form.Label>Fecha de la cita</Form.Label>
                                                 <DatePicker
-                                                    selected={saleInfo.appointmentData.Date ? new Date(saleInfo.appointmentData.Date) : new Date(new Date().setHours(0, 0, 0, 0))}
+                                                    selected={new Date(saleInfo.appointmentData.Date)}
                                                     onChange={(date) => handleAppointmentChange({
                                                         target: { name: 'Date', value: date.toISOString().split('T')[0] }
                                                     })}
@@ -1113,7 +1113,7 @@ export default function Component() {
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         className="btn btn-secondary mr-2 d-flex align-items-center"
-                                        onClick={() => navigate('/index')}
+                                        onClick={() => navigate('/appointmentView')}
                                         style={{
                                             minWidth: '150px',
                                             padding: '10px 20px',
