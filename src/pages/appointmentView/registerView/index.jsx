@@ -491,76 +491,86 @@ export default function Component() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
+    
         if (!isLoggedIn) {
             show_alerta('Debes iniciar sesión para crear una cita', 'warning');
             return;
         }
-
+    
         validateField('Billnumber', saleInfo.Billnumber);
-
+    
         if (errors.Billnumber) {
             show_alerta('Por favor, corrija los errores antes de continuar', 'warning');
             return;
         }
-
+    
         if (saleInfo.saleDetails.length === 0) {
             show_alerta('Debe agregar al menos un servicio', 'warning');
             return;
         }
-
+    
         const { isValid: isEmployeeAvailable, message: employeeMessage } = validateEmployeeAvailability();
         if (!isEmployeeAvailable) {
             show_alerta(employeeMessage, 'error');
             return;
         }
-
+    
         const { isValid: isTimeValid, message: timeMessage } = validateAppointmentTime();
         if (!isTimeValid) {
             show_alerta(timeMessage, 'error');
             return;
         }
-
+    
         const { isValid: isAppointmentAvailable, message: appointmentMessage } = validateAppointmentAvailability();
         if (!isAppointmentAvailable) {
             show_alerta(appointmentMessage, 'error');
             return;
         }
-
+    
         const hasServicesWithEmployees = saleInfo.saleDetails.some(detail =>
             detail.serviceId !== null && detail.empleadoId !== null
         );
-
+    
         if (hasServicesWithEmployees &&
             (!saleInfo.appointmentData.Init_Time ||
                 !saleInfo.appointmentData.Finish_Time)) {
             show_alerta('Debe especificar el horario de la cita para los servicios', 'warning');
             return;
         }
-
-        // Solución para evitar el problema del día adicional
-        const currentDate = new Date();
-        const formattedDate = currentDate.toLocaleDateString('en-GB');  // Formato dd/mm/yyyy
-
+    
+        // Asegurarse de usar exactamente la fecha seleccionada
+        const selectedDate = new Date(saleInfo.appointmentData.Date);
+        selectedDate.setHours(0, 0, 0, 0); // Resetear horas para evitar problemas de zona horaria
+    
+        // Crear una copia del saleInfo para no modificar el estado original
+        const saleInfoToSend = {
+            ...saleInfo,
+            SaleDate: selectedDate.toISOString().split('T')[0],
+            appointmentData: {
+                ...saleInfo.appointmentData,
+                Date: selectedDate.toISOString().split('T')[0]
+            }
+        };
+    
         try {
-            await axios.post('http://localhost:1056/api/sales', saleInfo);
+            await axios.post('http://localhost:1056/api/sales', saleInfoToSend);
             show_alerta('Cita registrada con éxito', 'success');
             setSaleInfo({
                 Billnumber: '',
-                SaleDate: formattedDate,  // Fecha local formateada
+                SaleDate: new Date().toISOString().split('T')[0],
                 total_price: 0,
                 status: 'Pendiente',
                 id_usuario: saleInfo.id_usuario,
                 appointmentData: {
                     Init_Time: '',
                     Finish_Time: '',
-                    Date: formattedDate,  // Fecha local formateada
+                    Date: new Date().toISOString().split('T')[0],
                     time_appointment: 0
                 },
                 saleDetails: []
             });
             setSelectedProducts([]);
-
+    
             navigate('/index');
         } catch (error) {
             console.error('Error al registrar la venta:', error);
@@ -744,17 +754,17 @@ export default function Component() {
         return `${minutes} minutos`;
     };
 
-     if (loading) {
-    return (
-      <div style={styles.loadingContainer}>
-        <img src={logo} alt="Logo" style={styles.logo} />
-        <div style={styles.textContainer}>
-          <span style={styles.loadingText}>CARGANDO...</span>
-          <span style={styles.slogan}>Estilo y calidad en cada corte</span>
-        </div>
-      </div>
-    );
-  }
+    if (loading) {
+        return (
+            <div style={styles.loadingContainer}>
+                <img src={logo} alt="Logo" style={styles.logo} />
+                <div style={styles.textContainer}>
+                    <span style={styles.loadingText}>CARGANDO...</span>
+                    <span style={styles.slogan}>Estilo y calidad en cada corte</span>
+                </div>
+            </div>
+        );
+    }
 
     if (!isLoggedIn) {
         return (
@@ -1030,6 +1040,7 @@ export default function Component() {
                                 </Form>
                             </div>
                         </motion.div>
+                        <br /><br /><br /><br /><br />
                         <motion.div
                             className='card mb-4 shadow-lg'
                             whileHover={{ scale: 1.02 }}
@@ -1090,36 +1101,36 @@ export default function Component() {
 
 
 const styles = {
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f3f0ec',
-  },
-  logo: {
-    width: '120px',
-    height: '120px',
-    margin: '20px 0',
-    animation: 'spin 2s linear infinite',
-  },
-  textContainer: {
-    textAlign: 'center',
-    marginTop: '10px',
-  },
-  loadingText: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#6b3a1e',
-    fontFamily: '"Courier New", Courier, monospace',
-  },
-  slogan: {
-    fontSize: '16px',
-    color: '#3e3e3e',
-    fontStyle: 'italic',
-    fontFamily: 'serif',
-  },
+    loadingContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f3f0ec',
+    },
+    logo: {
+        width: '120px',
+        height: '120px',
+        margin: '20px 0',
+        animation: 'spin 2s linear infinite',
+    },
+    textContainer: {
+        textAlign: 'center',
+        marginTop: '10px',
+    },
+    loadingText: {
+        fontSize: '24px',
+        fontWeight: 'bold',
+        color: '#6b3a1e',
+        fontFamily: '"Courier New", Courier, monospace',
+    },
+    slogan: {
+        fontSize: '16px',
+        color: '#3e3e3e',
+        fontStyle: 'italic',
+        fontFamily: 'serif',
+    },
 };
 
 
