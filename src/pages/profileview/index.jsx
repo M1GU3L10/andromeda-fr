@@ -349,13 +349,6 @@ export default function EnhancedProfileEditor() {
                                                 'Guardar Cambios'
                                             )}
                                         </Button>
-                                        <Button
-                                            variant="outlined"
-                                            onClick={() => showAlert('Test', 'This is a test alert', 'info')}
-                                            sx={{ ml: 2 }}
-                                        >
-                                            Test Alert
-                                        </Button>
                                     </Box>
                                 </Grid>
                             </Grid>
