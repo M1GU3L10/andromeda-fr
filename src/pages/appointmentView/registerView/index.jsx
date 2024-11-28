@@ -491,57 +491,57 @@ export default function Component() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-    
+
         if (!isLoggedIn) {
             show_alerta('Debes iniciar sesión para crear una cita', 'warning');
             return;
         }
-    
+
         validateField('Billnumber', saleInfo.Billnumber);
-    
+
         if (errors.Billnumber) {
             show_alerta('Por favor, corrija los errores antes de continuar', 'warning');
             return;
         }
-    
+
         if (saleInfo.saleDetails.length === 0) {
             show_alerta('Debe agregar al menos un servicio', 'warning');
             return;
         }
-    
+
         const { isValid: isEmployeeAvailable, message: employeeMessage } = validateEmployeeAvailability();
         if (!isEmployeeAvailable) {
             show_alerta(employeeMessage, 'error');
             return;
         }
-    
+
         const { isValid: isTimeValid, message: timeMessage } = validateAppointmentTime();
         if (!isTimeValid) {
             show_alerta(timeMessage, 'error');
             return;
         }
-    
+
         const { isValid: isAppointmentAvailable, message: appointmentMessage } = validateAppointmentAvailability();
         if (!isAppointmentAvailable) {
             show_alerta(appointmentMessage, 'error');
             return;
         }
-    
+
         const hasServicesWithEmployees = saleInfo.saleDetails.some(detail =>
             detail.serviceId !== null && detail.empleadoId !== null
         );
-    
+
         if (hasServicesWithEmployees &&
             (!saleInfo.appointmentData.Init_Time ||
                 !saleInfo.appointmentData.Finish_Time)) {
             show_alerta('Debe especificar el horario de la cita para los servicios', 'warning');
             return;
         }
-    
+
         // Asegurarse de usar exactamente la fecha seleccionada
         const selectedDate = new Date(saleInfo.appointmentData.Date);
         selectedDate.setHours(0, 0, 0, 0); // Resetear horas para evitar problemas de zona horaria
-    
+
         // Crear una copia del saleInfo para no modificar el estado original
         const saleInfoToSend = {
             ...saleInfo,
@@ -551,7 +551,7 @@ export default function Component() {
                 Date: selectedDate.toISOString().split('T')[0]
             }
         };
-    
+
         try {
             await axios.post('http://localhost:1056/api/sales', saleInfoToSend);
             show_alerta('Cita registrada con éxito', 'success');
@@ -570,7 +570,7 @@ export default function Component() {
                 saleDetails: []
             });
             setSelectedProducts([]);
-    
+
             navigate('/index');
         } catch (error) {
             console.error('Error al registrar la venta:', error);
@@ -793,14 +793,15 @@ export default function Component() {
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
-                            <div className="card-header bg-primary text-white d-flex align-items-center">
+                            <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
                                 <Scissors className="mr-2" />
                                 <h5 className="mb-0">Servicios y Productos</h5>
                             </div>
                             <div className='card-body'>
-                                <h6 className="mb-3 font-weight-bold">Servicios</h6>
+                                {/* Servicios */}
+                                <h6 className="mb-3 font-weight-bold text-secondary">Servicios</h6>
                                 <Table responsive bordered hover className="shadow-sm">
-                                    <thead className="bg-light">
+                                    <thead style={{ backgroundColor: '#f5f5f5' }}>
                                         <tr>
                                             <th>Servicio</th>
                                             <th>Barbero</th>
@@ -810,64 +811,68 @@ export default function Component() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {saleInfo.saleDetails.filter(detail => detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)).map((detail, index) => (
-                                            <motion.tr
-                                                key={index}
-                                                initial={{ opacity: 0, y: -20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: index * 0.1 }}
-                                            >
-                                                <td>
-                                                    <Form.Select
-                                                        value={detail.serviceId || ''}
-                                                        onChange={(e) => handleServiceChange(index, 'serviceId', e.target.value)}
-                                                        className="form-control-sm"
-                                                    >
-                                                        <option value="">Seleccione un servicio</option>
-                                                        {services.map(service => (
-                                                            <option key={service.id} value={service.id}>{service.name}</option>
-                                                        ))}
-                                                    </Form.Select>
-                                                </td>
-                                                <td>
-                                                    <Form.Select
-                                                        value={detail.empleadoId || ''}
-                                                        onChange={(e) => handleServiceChange(index, 'empleadoId', e.target.value)}
-                                                        className="form-control-sm"
-                                                    >
-                                                        <option value="">Seleccione el barbero</option>
-                                                        {users.filter(user => user.roleId === 2).map(employee => (
-                                                            <option key={employee.id} value={employee.id}>{employee.name}</option>
-                                                        ))}
-                                                    </Form.Select>
-                                                </td>
-                                                <td>{detail.serviceId ? formatDuration(services.find(s => s.id === parseInt(detail.serviceId))?.time || 0) : '-'}</td>
-                                                <td>{detail.serviceId ? `$${services.find(s => s.id === parseInt(detail.serviceId))?.price.toFixed(2)}` : '-'}</td>
-                                                <td>
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleServiceRemove(index)}
-                                                        className="d-flex align-items-center justify-content-center"
-                                                        style={{ backgroundColor: 'red', color: 'white' }}
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </Button>
-                                                </td>
-                                            </motion.tr>
-                                        ))}
+                                        {saleInfo.saleDetails
+                                            .filter(detail => detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null))
+                                            .map((detail, index) => (
+                                                <motion.tr
+                                                    key={index}
+                                                    initial={{ opacity: 0, y: -20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: index * 0.1 }}
+                                                >
+                                                    <td>
+                                                        <Form.Select
+                                                            value={detail.serviceId || ''}
+                                                            onChange={(e) => handleServiceChange(index, 'serviceId', e.target.value)}
+                                                            className="form-control-sm"
+                                                        >
+                                                            <option value="">Seleccione un servicio</option>
+                                                            {services.map(service => (
+                                                                <option key={service.id} value={service.id}>{service.name}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </td>
+                                                    <td>
+                                                        <Form.Select
+                                                            value={detail.empleadoId || ''}
+                                                            onChange={(e) => handleServiceChange(index, 'empleadoId', e.target.value)}
+                                                            className="form-control-sm"
+                                                        >
+                                                            <option value="">Seleccione el barbero</option>
+                                                            {users.filter(user => user.roleId === 2).map(employee => (
+                                                                <option key={employee.id} value={employee.id}>{employee.name}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </td>
+                                                    <td>{detail.serviceId ? formatDuration(services.find(s => s.id === parseInt(detail.serviceId))?.time || 0) : '-'}</td>
+                                                    <td>{detail.serviceId ? `$${services.find(s => s.id === parseInt(detail.serviceId))?.price.toFixed(2)}` : '-'}</td>
+                                                    <td>
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => handleServiceRemove(index)}
+                                                            className="d-flex align-items-center justify-content-center"
+                                                            style={{ backgroundColor: '#b22222', color: 'white' }}
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </Button>
+                                                    </td>
+                                                </motion.tr>
+                                            ))}
                                     </tbody>
                                 </Table>
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="btn btn-primary mt-3 d-flex align-items-center"
+                                    className="btn mt-3 d-flex align-items-center"
+                                    style={{ backgroundColor: '#d4af37', color: 'white' }}
                                     onClick={handleServiceAdd}
                                 >
                                     <Plus size={16} className="mr-2" />
                                     Agregar Servicio
                                 </motion.button>
 
-                                <h6 className="mt-4 mb-3 font-weight-bold">Productos</h6>
+                                {/* Productos */}
+                                <h6 className="mt-4 mb-3 font-weight-bold text-secondary">Productos</h6>
                                 <Form.Group className="mb-3">
                                     <Form.Control
                                         type="text"
@@ -880,6 +885,7 @@ export default function Component() {
                                 {searchTerm && (
                                     <motion.div
                                         className="mb-3 border p-2 rounded shadow-sm"
+                                        style={{ backgroundColor: '#f5f5f5' }}
                                         initial={{ opacity: 0, y: -20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                     >
@@ -896,7 +902,7 @@ export default function Component() {
                                     </motion.div>
                                 )}
                                 <Table responsive bordered hover className="shadow-sm">
-                                    <thead className="bg-light">
+                                    <thead style={{ backgroundColor: '#f5f5f5' }}>
                                         <tr>
                                             <th>Producto</th>
                                             <th>Cantidad</th>
@@ -922,22 +928,22 @@ export default function Component() {
                                                             size="sm"
                                                             onClick={() => removeProduct(product.id)}
                                                             className="d-flex align-items-center justify-content-center"
-                                                            style={{ backgroundColor: 'red', color: 'white' }}
+                                                            style={{ backgroundColor: '#b22222', color: 'white' }}
                                                         >
                                                             <Trash2 size={16} />
                                                         </Button>
-
                                                         <Button
                                                             size="sm"
                                                             onClick={() => updateQuantity(product.id, 1)}
-                                                            className="mr-1 btn-gray"
+                                                            className="mr-1"
+                                                            style={{ backgroundColor: '#d4af37', color: 'white' }}
                                                         >
                                                             <Plus size={16} />
                                                         </Button>
                                                         <Button
                                                             size="sm"
                                                             onClick={() => updateQuantity(product.id, -1)}
-                                                            className="btn-gray"
+                                                            style={{ backgroundColor: '#a9a9a9', color: 'white' }}
                                                         >
                                                             <Minus size={16} />
                                                         </Button>
@@ -951,7 +957,10 @@ export default function Component() {
                         </motion.div>
 
 
-                    </div>
+
+
+
+                    </div >
 
                     {/* Columna de Información de Cita */}
                     <div className='col-md-6'>
@@ -960,7 +969,7 @@ export default function Component() {
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
-                            <div className="card-header bg-primary text-white d-flex align-items-center">
+                            <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
                                 <Calendar className="mr-2" />
                                 <h5 className="mb-0">Información de cita</h5>
                             </div>
@@ -977,27 +986,21 @@ export default function Component() {
                                                     })}
                                                     className="form-control form-control-sm"
                                                     minDate={new Date()}
-                                                    popperPlacement="top-end"  // Esto asegura que el calendario se despliegue hacia la izquierda
-                                                    locale={es}  // Configura el calendario en español
+                                                    popperPlacement="top-end"
+                                                    locale={es}
                                                     popperModifiers={{
                                                         offset: {
                                                             enabled: true,
-                                                            offset: '0, 5'  // Ajusta la posición del calendario con un pequeño margen
+                                                            offset: '0, 5'
                                                         },
                                                         preventOverflow: {
                                                             enabled: true,
-                                                            boundariesElement: 'viewport'  // Esto asegura que el calendario no se salga de la pantalla
+                                                            boundariesElement: 'viewport'
                                                         }
                                                     }}
                                                 />
                                             </Form.Group>
-
-
                                         </Col>
-
-
-
-
                                         <Col md={6}>
                                             <Form.Group className="mb-3">
                                                 <Form.Label>Hora inicio</Form.Label>
@@ -1040,13 +1043,13 @@ export default function Component() {
                                 </Form>
                             </div>
                         </motion.div>
-                        <br /><br /><br /><br /><br />
+
                         <motion.div
                             className='card mb-4 shadow-lg'
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
-                            <div className="card-header bg-primary text-white d-flex align-items-center">
+                            <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
                                 <h5 className="mb-0">Resumen</h5>
                             </div>
                             <div className='card-body'>
@@ -1057,14 +1060,16 @@ export default function Component() {
                                     <motion.button
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="btn btn-danger mr-2 d-flex align-items-center"
+                                        className="btn btn-secondary mr-2 d-flex align-items-center"
                                         onClick={() => navigate('/index')}
                                         style={{
                                             minWidth: '150px',
                                             padding: '10px 20px',
                                             fontSize: '16px',
                                             fontWeight: 'bold',
-                                            color: 'white', // Letra blanca
+                                            color: 'white',
+                                            borderRadius:20,
+                                            backgroundColor: '#6c757d',
                                         }}
                                     >
                                         <X size={20} className="mr-2" />
@@ -1074,13 +1079,15 @@ export default function Component() {
                                     <motion.button
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="btn btn-primary d-flex align-items-center"
                                         onClick={handleSubmit}
                                         style={{
                                             minWidth: '150px',
                                             padding: '10px 20px',
                                             fontSize: '16px',
                                             fontWeight: 'bold',
+                                            color: '#212529',
+                                            borderRadius:20,
+                                            backgroundColor: '#d4af37', color: 'white',
                                         }}
                                     >
                                         <Save size={20} className="mr-2" />
@@ -1089,9 +1096,9 @@ export default function Component() {
                                 </div>
                             </div>
                         </motion.div>
-                    </div>
-                </div>
-            </motion.div>
+                    </div >
+                </div >
+            </motion.div >
 
 
         </>
