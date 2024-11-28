@@ -782,6 +782,14 @@ button.primary svg {
   color: rgb(24, 102, 237) !important;
 }
 
+button.warning svg {
+  color: rgb(216, 150, 8) !important;
+}
+
+button.warning {
+  color: rgba(233, 177, 57, 0.548) !important;
+}
+
 button.primary {
   background: rgb(24, 102, 237, 0.2) !important;
 }
