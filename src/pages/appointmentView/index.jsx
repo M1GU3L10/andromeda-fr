@@ -197,29 +197,58 @@ export default function CalendarioBarberia({ info }) {
   const toggleNav = () => {
     setIsNavOpen(!isNavOpen);
   };
-  const handleCancelAppointment = (appointmentId) => {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: 'Esta acción no se puede deshacer',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, cancelar cita',
-      cancelButtonText: 'No, mantener cita',
-    }).then((result) => {
+
+  const handleCancelAppointment = async (appointmentId) => {
+    try {
+      const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cancelar cita',
+        cancelButtonText: 'No, mantener cita',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+      });
+
       if (result.isConfirmed) {
-        // Realiza la solicitud PUT para cancelar la cita
-        axios.put(`http://localhost:1056/api/appointment/${appointmentId}`, {
-          status: 'cancelada', // Cambia el estado de la cita
-        })
-          .then((response) => {
-            Swal.fire('Cita cancelada', '', 'success');
-          })
-          .catch((error) => {
-            Swal.fire('Error al cancelar cita', 'Hubo un problema al intentar cancelar la cita', 'error');
+        // First, update the appointment status
+        await axios.put(`${urlAppointment}/${appointmentId}/status`, {
+          status: 'cancelada'
+        });
+
+        // Then, update the associated sale status
+        const saleResponse = await axios.get(`${urlSales}`);
+        const sale = saleResponse.data.find(s => 
+          s.SaleDetails.some(detail => detail.appointmentId === parseInt(appointmentId))
+        );
+
+        if (sale) {
+          await axios.put(`${urlSales}/${sale.id}/status`, {
+            status: 'Cancelada'
           });
+        }
+
+        await Swal.fire({
+          title: 'Cita cancelada',
+          text: 'La cita y la venta asociada han sido canceladas',
+          icon: 'success'
+        });
+
+        // Refresh the calendar events
+        await fetchData();
+        setShowDetailModal(false);
       }
-    });
+    } catch (error) {
+      console.error('Error al cancelar la cita:', error);
+      await Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al cancelar la cita',
+        icon: 'error'
+      });
+    }
   };
+  
   const getUserInitial = () => {
     return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
   };
@@ -591,44 +620,12 @@ export default function CalendarioBarberia({ info }) {
             </div>
 
             <div className="mt-4 text-end">
-              <button
-                className="btn btn-danger"
-                onClick={() =>
-                  Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "¡No podrás revertir esta acción!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, cancelar cita',
-                    cancelButtonText: 'No, mantener cita',
-                  }).then((result) => {
-                    if (result.isConfirmed) {
-                      axios
-                        .put(`http://localhost:1056/api/appointment`, {
-                          status: 'cancelada',
-                        })
-                        .then((response) => {
-                          Swal.fire(
-                            'Cita cancelada',
-                            'Tu cita ha sido cancelada.',
-                            'success'
-                          );
-                        })
-                        .catch((error) => {
-                          Swal.fire(
-                            'Error',
-                            'Hubo un problema al cancelar la cita.',
-                            'error'
-                          );
-                        });
-                    }
-                  })
-                }
-              >
-                Cancelar cita
-              </button>
+            <button
+              className="btn btn-danger"
+              onClick={() => handleCancelAppointment(appointmentId)}
+            >
+              Cancelar cita
+            </button>
             </div>
           </Modal.Body>
 
