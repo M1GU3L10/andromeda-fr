@@ -71,13 +71,6 @@ const SectionServices = () => {
                     <AccordionDetails>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <Typography>{service.description}</Typography>
-                            <Button
-                                variant="contained"
-                               className='Button-reserved'
-                                size="small"
-                            >
-                                RESERVAR
-                            </Button>
                         </div>
                     </AccordionDetails>
                 </Accordion>

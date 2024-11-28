@@ -45,7 +45,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 
 const Roles = () => {
-   const url = 'http://localhost:1056/api/roles';
+    const url = 'http://localhost:1056/api/roles';
     const urlPermissions = 'http://localhost:1056/api/permissions';
     const urlPermissionsRoles = 'http://localhost:1056/api/permissionsRole';
     const urlPrivileges = 'http://localhost:1056/api/privileges';
@@ -151,16 +151,6 @@ const Roles = () => {
         });
     };
 
-    const handlePrivilegeChange = (permissionId, privilegeId) => {
-        setSelectedPrivileges(prevSelected => ({
-            ...prevSelected,
-            [permissionId]: {
-                ...(prevSelected[permissionId] || {}),
-                [privilegeId]: !(prevSelected[permissionId] && prevSelected[permissionId][privilegeId])
-            }
-        }));
-    };
-
     const openModal = async (op, id, name, selectedPermissions = []) => {
         setId('');
         setName('');
@@ -183,10 +173,10 @@ const Roles = () => {
             try {
                 const response = await axios.get(`${urlPrivilegePermissionRoles}?roleId=${id}`);
                 const existingPrivileges = response.data.reduce((acc, item) => {
-                    if (!acc[item.Permission.id]) {
-                        acc[item.Permission.id] = {};
+                    if (!acc[item.PermissionRole.permissionId]) {
+                        acc[item.PermissionRole.permissionId] = {};
                     }
-                    acc[item.Permission.id][item.privilegeId] = true;
+                    acc[item.PermissionRole.permissionId][item.Privilege.id] = true;
                     return acc;
                 }, {});
                 setSelectedPrivileges(existingPrivileges);
@@ -195,6 +185,16 @@ const Roles = () => {
             }
         }
         setShowModal(true);
+    };
+
+    const handlePrivilegeChange = (permissionId, privilegeId) => {
+        setSelectedPrivileges(prevSelected => ({
+            ...prevSelected,
+            [permissionId]: {
+                ...(prevSelected[permissionId] || {}),
+                [privilegeId]: !(prevSelected[permissionId] && prevSelected[permissionId][privilegeId])
+            }
+        }));
     };
 
     const handleClose = () => {
@@ -289,16 +289,17 @@ const Roles = () => {
         try {
             // Paso 1: Crear o actualizar el rol
             const response = await axios({
-                method: metodo, url: urlWithId, data: {
+                method: metodo,
+                url: urlWithId,
+                data: {
                     name: parametros.name,
                     status: parametros.status,
-                    permissions: parametros.permissions // Enviamos los permisos junto con el rol
+                    permissions: parametros.permissions
                 }
             });
 
             if (metodo === 'POST' || metodo === 'PUT') {
                 const roleId = response.data.id;
-
                 // Paso 2: Asignar privilegios
                 await asignarPrivilegios(roleId, parametros.privileges);
             }
@@ -323,7 +324,7 @@ const Roles = () => {
                 // Obtener el PermissionRole más reciente para este rol y permiso
                 const permissionRolesResponse = await axios.get(`${urlPermissionsRoles}?roleId=${roleId}&permissionId=${permissionId}`);
                 const permissionRole = permissionRolesResponse.data[permissionRolesResponse.data.length - 1]; // Obtener el más reciente
-                
+
                 if (permissionRole) {
                     // Para cada privilegio del permiso actual
                     for (const privilegeId in privilegios[permissionId]) {
@@ -336,7 +337,8 @@ const Roles = () => {
                                     permissionRoleId: permissionRole.id
                                 });
                             } catch (error) {
-                                if (error.response && error.response.status !== 409) { // Ignorar error si ya existe
+                                if (error.response && error.response.status !== 409) {
+                                    // Ignorar error si ya existe
                                     throw error;
                                 }
                             }
@@ -345,7 +347,8 @@ const Roles = () => {
                             try {
                                 await axios.delete(`${urlPrivilegePermissionRoles}/${permissionRole.id}/${privilegeId}`);
                             } catch (error) {
-                                if (error.response && error.response.status !== 404) { // Ignorar error si no existe
+                                if (error.response && error.response.status !== 404) {
+                                    // Ignorar error si no existe
                                     throw error;
                                 }
                             }
@@ -358,6 +361,7 @@ const Roles = () => {
             throw error;
         }
     };
+
 
     const getPermissionsForRoleId = (roleId) => {
         return permissionsRole
@@ -622,13 +626,12 @@ const Roles = () => {
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
                             Cerrar
                         </Button>
                         <Button variant="primary" onClick={validar} className='btn-sucess'>
                             Guardar
                         </Button>
-                       
                     </Modal.Footer>
                 </Modal>
                 <Modal show={showDetailModal} onHide={handleCloseDetail}>

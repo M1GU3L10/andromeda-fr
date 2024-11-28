@@ -18,6 +18,7 @@ import { FaMoneyBillWave } from 'react-icons/fa';
 import { BsCalendar2DateFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import esLocale from "@fullcalendar/core/locales/es";
+import { GrStatusInfo } from "react-icons/gr";
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800];
@@ -62,6 +63,9 @@ const Appointment = () => {
     const [userRole, setUserRole] = useState('');
     const [userId, setUserId] = useState('');
     const urlSales = 'http://localhost:1056/api/sales'; // Agregar URL de ventas
+    const [showWarningModal, setShowWarningModal] = useState(false);
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+
 
 
     useEffect(() => {
@@ -114,11 +118,11 @@ const Appointment = () => {
         const fetchData = async () => {
             try {
                 const [userResponse, programmingResponse,
-salesResponse] = await Promise.all([
-                    axios.get(urlUsers),
-                    axios.get(urlAppointment),
-                    axios.get(urlSales)
-                ]);
+                    salesResponse] = await Promise.all([
+                        axios.get(urlUsers),
+                        axios.get(urlAppointment),
+                        axios.get(urlSales)
+                    ]);
 
                 const usersData = userResponse.data;
                 const programmingData = programmingResponse.data;
@@ -132,7 +136,7 @@ salesResponse] = await Promise.all([
                     sale.SaleDetails.forEach(detail => {
                         if (detail.appointmentId && detail.empleadoId) {
 
-appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
+                            appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
                         }
                     });
                 });
@@ -179,13 +183,13 @@ appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
 
     const getSaleDetailsByAppointmentId = async (id) => {
         try {
-          const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
-          setSaleDetails(response.data);
+            const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
+            setSaleDetails(response.data);
         } catch (error) {
-          console.error('Error fetching sale details:', error);
-          setSaleDetails([]);
+            console.error('Error fetching sale details:', error);
+            setSaleDetails([]);
         }
-      };
+    };
 
     const getProgramming = async () => {
         try {
@@ -202,7 +206,7 @@ appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
                 sale.SaleDetails.forEach(detail => {
                     if (detail.appointmentId && detail.empleadoId) {
                         appointmentEmployeeMap[detail.appointmentId] =
-detail.empleadoId;
+                            detail.empleadoId;
                     }
                 });
             });
@@ -246,10 +250,37 @@ detail.empleadoId;
         return users.filter(user => user.roleId === 3);
     };
 
+    const handleStatusChangeSucess = async () => {
+        try {
+            await axios.put(`http://localhost:1056/api/appointment/${selectedAppointmentId}/status`, {
+                status: "Completada"
+            });
+            setShowWarningModal(false);
+            // Refresh the appointments
+            getProgramming();
+        } catch (error) {
+            console.error('Error updating appointment status:', error);
+        }
+    };
+
+    const handleStatusChangeRed = async () => {
+        try {
+            await axios.put(`http://localhost:1056/api/appointment/${selectedAppointmentId}/status`, {
+                status: "cancelada"
+            });
+            setShowWarningModal(false);
+            // Refresh the appointments
+            getProgramming();
+        } catch (error) {
+            console.error('Error updating appointment status:', error);
+        }
+    };
+
     const EventComponent = ({ info, setAppointmentId }) => {
         const [isHovered, setIsHovered] = useState(false);
         const [anchorEl, setAnchorEl] = useState(null);
         const [isMenuOpen, setIsMenuOpen] = useState(false);
+        const isStatusChangeDisabled = ['completada', 'cancelada'].includes(info.event.extendedProps.status);
 
         const handleClick = (event) => {
             setAnchorEl(event.currentTarget);
@@ -261,8 +292,11 @@ detail.empleadoId;
             setIsMenuOpen(false);
         };
 
-
-        //buscar el nmbre del id
+        const handleWarningClick = () => {
+            setSelectedAppointmentId(info.event.id);
+            setShowWarningModal(true);
+            handleClose();
+        };
 
         const getServiceById = async (id) => {
             // Suponiendo que tienes una API que devuelve un servicio por ID
@@ -280,8 +314,8 @@ detail.empleadoId;
 
         const handleViewClick = async () => {
             setAppointmentId(info.event.id);
-            
-           
+
+
             const userName = await getUserName(users, parseInt(info.event.title));
 
             setDetailData({
@@ -318,7 +352,6 @@ detail.empleadoId;
                     <span className='span-programming'>{getUserName(users, parseInt(info.event.title))}</span>
                 ) : (
                     <span className='span-programming'>{info.event.extendedProps.status}-{info.event.extendedProps.Finish_Time}</span>
-
                 )}
 
                 <Menu
@@ -332,13 +365,20 @@ detail.empleadoId;
                         style: {
                             maxHeight: 48 * 4.5,
                         },
-                    }}        
+                    }}
                 >
                     <MenuItem className='Menu-programming-item' onClick={handleViewClick}>
                         <Button color='primary' className='primary'>
                             <FaEye />
                         </Button>
                     </MenuItem>
+                    {!isStatusChangeDisabled && (
+                        <MenuItem className='Menu-programming-item' onClick={handleWarningClick}>
+                            <Button color='warning' className='warning'>
+                                <GrStatusInfo />
+                            </Button>
+                        </MenuItem>
+                    )}
                 </Menu>
             </div>
         );
@@ -535,9 +575,9 @@ detail.empleadoId;
           </div>
         </Modal.Body>
         <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                                Cerrar
-                            </Button>
+          <Button variant="outlined" onClick={() => setShowDetailModal(false)}>
+            Close
+          </Button>
         </Modal.Footer>
       </Modal>
         </div>
