@@ -14,8 +14,9 @@ import { show_alerta } from '../../../assets/functions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BsCalendar2DateFill } from 'react-icons/bs';
 import CustomTimeSelector from '../../sales/registerSales/CustomTimeSelector/CustomTimeSelector';
-import DatePicker from "react-datepicker";
 import logo from '../../../assets/images/logo.png';
+
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion } from 'framer-motion';
 import { Scissors, Calendar, Clock, Trash2, Plus, Minus, Save, X } from 'lucide-react'
@@ -394,24 +395,6 @@ export default function Component() {
 
     const handleAppointmentChange = (event) => {
         const { name, value } = event.target;
-
-        // Verificar si la hora seleccionada es mayor a las 9 PM
-        if (name === 'Init_Time') {
-            const [hour, minute] = value.split(':').map(Number);
-            if (hour >= 21) {
-                // Si la hora seleccionada es 21 (9 PM) o posterior, ajustamos a las 9 PM
-                setSaleInfo(prevState => ({
-                    ...prevState,
-                    appointmentData: {
-                        ...prevState.appointmentData,
-                        [name]: '21:00'  // Establecemos la hora a las 9 PM
-                    }
-                }));
-                updateFinishTime('21:00', saleInfo.appointmentData.time_appointment);
-                return;
-            }
-        }
-
         setSaleInfo(prevState => ({
             ...prevState,
             appointmentData: {
@@ -424,8 +407,6 @@ export default function Component() {
             updateFinishTime(value, saleInfo.appointmentData.time_appointment);
         }
     };
-
-
 
     const validateField = (fieldName, value) => {
         let newErrors = { ...errors };
@@ -763,8 +744,7 @@ export default function Component() {
         return `${minutes} minutos`;
     };
 
-   
-  if (loading) {
+     if (loading) {
     return (
       <div style={styles.loadingContainer}>
         <img src={logo} alt="Logo" style={styles.logo} />
@@ -1014,13 +994,12 @@ export default function Component() {
                                                 <CustomTimeSelector
                                                     name="Init_Time"
                                                     value={saleInfo.appointmentData.Init_Time}
-                                                    onChange={handleAppointmentChange}  // Usamos la función ajustada aquí
+                                                    onChange={(time) => handleAppointmentChange({
+                                                        target: { name: 'Init_Time', value: time }
+                                                    })}
                                                     className="form-control form-control-sm"
-                                                    maxTime="21:00"  // Esto asegura que el selector solo muestre hasta las 9 PM
                                                 />
                                             </Form.Group>
-
-
                                         </Col>
                                     </Row>
                                     <Row>
@@ -1108,40 +1087,40 @@ export default function Component() {
     );
 }
 
+
+
 const styles = {
-    loadingContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      backgroundColor: '#f3f0ec',
-    },
-    logo: {
-      width: '120px',
-      height: '120px',
-      margin: '20px 0',
-      animation: 'spin 2s linear infinite',
-    },
-    textContainer: {
-      textAlign: 'center',
-      marginTop: '10px',
-    },
-    loadingText: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      color: '#6b3a1e',
-      fontFamily: '"Courier New", Courier, monospace',
-    },
-    slogan: {
-      fontSize: '16px',
-      color: '#3e3e3e',
-      fontStyle: 'italic',
-      fontFamily: 'serif',
-    },
-  };
-
-
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    backgroundColor: '#f3f0ec',
+  },
+  logo: {
+    width: '120px',
+    height: '120px',
+    margin: '20px 0',
+    animation: 'spin 2s linear infinite',
+  },
+  textContainer: {
+    textAlign: 'center',
+    marginTop: '10px',
+  },
+  loadingText: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#6b3a1e',
+    fontFamily: '"Courier New", Courier, monospace',
+  },
+  slogan: {
+    fontSize: '16px',
+    color: '#3e3e3e',
+    fontStyle: 'italic',
+    fontFamily: 'serif',
+  },
+};
 
 
 
