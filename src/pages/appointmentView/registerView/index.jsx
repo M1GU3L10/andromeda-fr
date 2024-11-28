@@ -271,7 +271,7 @@ export default function Component() {
 
         return { isValid: true };
     };
-    
+
     const validateAppointmentAvailability = () => {
         const newAppointmentStart = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
         const newAppointmentEnd = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Finish_Time);
@@ -618,13 +618,26 @@ export default function Component() {
 
     const handleServiceChange = (index, field, value) => {
         setSaleInfo(prevState => {
+            // Verificar si el servicio ya ha sido seleccionado en otro detalle
+            if (field === 'serviceId') {
+                const serviceAlreadySelected = prevState.saleDetails.some(
+                    (detail, idx) => detail.serviceId === value && idx !== index
+                );
+                
+                if (serviceAlreadySelected) {
+                    alert('No puedes elegir el mismo servicio dos veces.');
+                    return prevState; // Prevenir la actualización
+                }
+            }
+    
+            // Filtrar los detalles del servicio
             const serviceDetails = prevState.saleDetails.filter(detail =>
                 detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
             );
-
+    
             if (serviceDetails[index]) {
                 serviceDetails[index] = { ...serviceDetails[index], [field]: value };
-
+    
                 if (field === 'serviceId') {
                     const service = services.find(s => s.id === parseInt(value));
                     if (service) {
@@ -635,7 +648,8 @@ export default function Component() {
                     }
                 }
             }
-
+    
+            // Crear detalles de productos
             const productDetails = selectedProducts.map(product => ({
                 quantity: product.quantity,
                 unitPrice: product.Price,
@@ -644,9 +658,10 @@ export default function Component() {
                 empleadoId: null,
                 serviceId: null
             }));
-
+    
             const allDetails = [...productDetails, ...serviceDetails];
-
+    
+            // Calcular duración total
             const totalDuration = serviceDetails.reduce((sum, detail) => {
                 if (detail.serviceId) {
                     const service = services.find(s => s.id === parseInt(detail.serviceId));
@@ -654,7 +669,8 @@ export default function Component() {
                 }
                 return sum;
             }, 0);
-
+    
+            // Calcular subtotales
             const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
             const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
                 if (detail.serviceId) {
@@ -663,12 +679,13 @@ export default function Component() {
                 }
                 return sum;
             }, 0);
-
+    
             setSubtotalProducts(productsSubtotal);
             setSubtotalServices(servicesSubtotal);
-
+    
+            // Actualizar hora de finalización
             updateFinishTime(prevState.appointmentData.Init_Time, totalDuration);
-
+    
             return {
                 ...prevState,
                 saleDetails: allDetails,
@@ -680,6 +697,7 @@ export default function Component() {
             };
         });
     };
+    
 
     const productDetails = selectedProducts.map(product => ({
         quantity: product.quantity,
@@ -792,14 +810,11 @@ export default function Component() {
                                                     <Button
                                                         size="sm"
                                                         onClick={() => handleServiceRemove(index)}
-                                                        
                                                         className="d-flex align-items-center justify-content-center"
                                                         style={{ backgroundColor: 'red', color: 'white' }}
                                                     >
                                                         <Trash2 size={16} />
                                                     </Button>
-
-
                                                 </td>
                                             </motion.tr>
                                         ))}
@@ -866,16 +881,14 @@ export default function Component() {
                                                 <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
                                                 <td>
                                                     <div className="d-flex">
-                                                    <Button
-                                                        size="sm"
-                                                        
-                                                        onClick={() => removeProduct(product.id)}
-                                                        className="d-flex align-items-center justify-content-center"
-                                                        style={{ backgroundColor: 'red', color: 'white' }}
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </Button>
-                                                        
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => removeProduct(product.id)}
+                                                            className="d-flex align-items-center justify-content-center"
+                                                            style={{ backgroundColor: 'red', color: 'white' }}
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </Button>
 
                                                         <Button
                                                             size="sm"
@@ -891,7 +904,6 @@ export default function Component() {
                                                         >
                                                             <Minus size={16} />
                                                         </Button>
-
                                                     </div>
                                                 </td>
                                             </motion.tr>
@@ -900,6 +912,8 @@ export default function Component() {
                                 </Table>
                             </div>
                         </motion.div>
+
+
                     </div>
 
                     {/* Columna de Información de Cita */}
@@ -977,72 +991,61 @@ export default function Component() {
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
                             <div className="card-header bg-primary text-white d-flex align-items-center">
-                                <Clock className="mr-2" />
-                                <h5 className="mb-0">Resumen de la cita</h5>
+                                <h5 className="mb-0">Resumen</h5>
                             </div>
                             <div className='card-body'>
-                                <Table bordered className="shadow-sm">
-                                    <tbody>
-                                        <tr>
-                                            <th>Subtotal Servicios:</th>
-                                            <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Subtotal Productos:</th>
-                                            <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Total:</th>
-                                            <td className="font-weight-bold">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</td>
-                                        </tr>
-                                    </tbody>
-                                </Table>
+                                <h6>Subtotal Servicios: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}</h6>
+                                <h6>Subtotal Productos: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</h6>
+                                <h6>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</h6>
+                                <div className="d-flex justify-content-end">
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="btn btn-danger mr-2 d-flex align-items-center"
+                                        onClick={() => navigate('/index')}
+                                        style={{
+                                            minWidth: '150px',
+                                            padding: '10px 20px',
+                                            fontSize: '16px',
+                                            fontWeight: 'bold',
+                                            color: 'white', // Letra blanca
+                                        }}
+                                    >
+                                        <X size={20} className="mr-2" />
+                                        Cancelar
+                                    </motion.button>
+
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="btn btn-primary d-flex align-items-center"
+                                        onClick={handleSubmit}
+                                        style={{
+                                            minWidth: '150px',
+                                            padding: '10px 20px',
+                                            fontSize: '16px',
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
+                                        <Save size={20} className="mr-2" />
+                                        Guardar Cita
+                                    </motion.button>
+                                </div>
                             </div>
                         </motion.div>
                     </div>
                 </div>
-
-                {/* Botones Finales */}
-                <motion.div
-                    className='d-flex justify-content-end mt-4'
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                >
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="btn btn-secondary mr-2 d-flex align-items-center"
-                        onClick={() => navigate('/index')}
-                        style={{
-                            minWidth: '150px',
-                            padding: '10px 20px',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        <X size={20} className="mr-2" />
-                        Cancelar
-                    </motion.button>
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="btn btn-primary d-flex align-items-center"
-                        onClick={handleSubmit}
-                        style={{
-                            minWidth: '150px',
-                            padding: '10px 20px',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        <Save size={20} className="mr-2" />
-                        Guardar Cita
-                    </motion.button>
-                </motion.div>
             </motion.div>
+
 
         </>
     );
 }
+
+
+
+
+
+
+
 
