@@ -32,6 +32,8 @@ export default function CalendarioBarberia({ info }) {
   const [appointmentId, setAppointmentId] = useState(null);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [error, setError] = useState(null);
+
   const { isToggleSidebar } = useContext(MyContext);
   const [userId, setUserId] = useState('');
   const [events, setEvents] = useState([]);
@@ -174,6 +176,50 @@ export default function CalendarioBarberia({ info }) {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+  useEffect(() => {
+    const fetchAppointmentDetails = async () => {
+      try {
+        // Llamada a la API para obtener detalles de la cita
+        const response = await axios.get(`http://localhost:1056/api/appointments/${appointmentId}`);
+        const appointment = response.data;
+
+        // Configurar datos de la cita
+        setDetailData({
+          Date: appointment.Date,
+          Init_Time: appointment.Init_Time,
+          Finish_Time: appointment.Finish_Time,
+          time_appointment: appointment.time_appointment,
+          Total: appointment.Total,
+        });
+
+        // Configurar detalles de la venta
+        if (appointment.SaleDetails && appointment.SaleDetails.length > 0) {
+          const formattedDetails = appointment.SaleDetails.map((detail) => ({
+            type: detail.serviceId ? "Servicio" : "Producto",
+            productName: detail.serviceId
+              ? `Servicio #${detail.serviceId}`
+              : detail.Product_Name || "Producto no definido",
+            quantity: detail.quantity,
+            price: detail.unitPrice,
+            total: detail.total_price,
+            employeeName: detail.empleadoId
+              ? `Empleado #${detail.empleadoId}`
+              : "N/A",
+          }));
+          setSaleDetails(formattedDetails);
+        } else {
+          setSaleDetails([]);
+        }
+      } catch (err) {
+        setError("Error al cargar los detalles de la cita.");
+        console.error(err);
+      }
+    };
+
+    fetchAppointmentDetails();
+  }, [appointmentId]);
+
+
 
   const handleLogout = () => {
     localStorage.removeItem('jwtToken');
@@ -474,8 +520,7 @@ export default function CalendarioBarberia({ info }) {
                   <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
                     <GrUser /> Mi perfil
                   </MenuItem>
-                  <MenuItem onClick={handleLogout} className='menu
--item-landingPage'>
+                  <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
                     <GiExitDoor /> Cerrar Sesión
                   </MenuItem>
                 </Menu>
@@ -557,6 +602,7 @@ export default function CalendarioBarberia({ info }) {
 
 
           <Modal.Body className="custom-modal-body">
+
             <div className="mb-4">
               <h5 className="border-bottom pb-2 text-gold">Mi cita</h5>
               <div className="row">
@@ -565,19 +611,19 @@ export default function CalendarioBarberia({ info }) {
                     <strong>Fecha:</strong> {detailData.Date}
                   </p>
                   <p>
-                    <strong>Hora inicio:</strong> {convertTo12HourFormat(detailData.Init_Time)}
+                    <strong>Hora inicio:</strong> {convertTo12HourFormat(detailData.Init_Time || "")}
                   </p>
                   <p>
-                    <strong>Hora fin:</strong> {convertTo12HourFormat(detailData.Finish_Time)}
+                    <strong>Hora fin:</strong> {convertTo12HourFormat(detailData.Finish_Time || "")}
                   </p>
                 </div>
                 <div className="col-md-6">
                   <p>
-                    <strong>Duración de la cita:</strong> {detailData.time_appointment}
+                    <strong>Duración de la cita:</strong> {detailData.time_appointment || 0}
                     <strong> Minutos</strong>
                   </p>
                   <p>
-                    <strong>Total:</strong> {detailData.Total}
+                    <strong>Total:</strong> ${detailData.Total || 0}
                   </p>
                 </div>
               </div>
@@ -585,7 +631,9 @@ export default function CalendarioBarberia({ info }) {
 
             <div className="mt-4">
               <h5 className="border-bottom pb-2 text-gold">Detalle de la Venta</h5>
-              {saleDetails.length > 0 ? (
+              {error ? (
+                <p className="text-danger">{error}</p>
+              ) : saleDetails.length > 0 ? (
                 <div className="table-responsive">
                   <table className="table table-dark table-striped table-hover align-middle">
                     <thead className="table-gold">
