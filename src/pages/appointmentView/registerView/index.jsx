@@ -792,6 +792,7 @@ export default function Component() {
                                                     <Button
                                                         size="sm"
                                                         onClick={() => handleServiceRemove(index)}
+                                                        
                                                         className="d-flex align-items-center justify-content-center"
                                                         style={{ backgroundColor: 'red', color: 'white' }}
                                                     >
@@ -865,15 +866,32 @@ export default function Component() {
                                                 <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
                                                 <td>
                                                     <div className="d-flex">
-                                                        <Button variant="outline-danger" size="sm" onClick={() => removeProduct(product.id)} className="mr-1">
-                                                            <Trash2 size={16} />
-                                                        </Button>
-                                                        <Button variant="outline-primary" size="sm" onClick={() => updateQuantity(product.id, 1)} className="mr-1">
+                                                    <Button
+                                                        size="sm"
+                                                        
+                                                        onClick={() => removeProduct(product.id)}
+                                                        className="d-flex align-items-center justify-content-center"
+                                                        style={{ backgroundColor: 'red', color: 'white' }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </Button>
+                                                        
+
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => updateQuantity(product.id, 1)}
+                                                            className="mr-1 btn-gray"
+                                                        >
                                                             <Plus size={16} />
                                                         </Button>
-                                                        <Button variant="outline-primary" size="sm" onClick={() => updateQuantity(product.id, -1)}>
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => updateQuantity(product.id, -1)}
+                                                            className="btn-gray"
+                                                        >
                                                             <Minus size={16} />
                                                         </Button>
+
                                                     </div>
                                                 </td>
                                             </motion.tr>
