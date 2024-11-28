@@ -803,6 +803,7 @@ export default function Component() {
                 <div className='row'>
                     {/* Columna de Servicios y Productos */}
                     <div className='col-md-6'>
+                        <br /><br /><br /><br />
                         <motion.div
                             className='card mb-4 shadow-lg'
                             whileHover={{ scale: 1.02 }}
@@ -811,7 +812,9 @@ export default function Component() {
                             <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
                                 <Scissors className="mr-2" />
                                 <h5 className="mb-0">SERVCIOS Y PRODUCTOS</h5>
+
                             </div>
+
                             <div className='card-body'>
                                 {/* Servicios */}
                                 <h6 className="mb-3 font-weight-bold text-secondary">Servicios</h6>
@@ -1000,6 +1003,7 @@ export default function Component() {
 
                     {/* Columna de Información de Cita */}
                     <div className='col-md-6'>
+                    <br /><br /><br /><br />
                         <motion.div
                             className='card mb-4 shadow-lg'
                             whileHover={{ scale: 1.02 }}
@@ -1024,15 +1028,15 @@ export default function Component() {
                                             <Form.Group className="mb-3">
                                                 <Form.Label>Fecha de la cita</Form.Label>
                                                 <DatePicker
-                                                    selected={new Date(saleInfo.appointmentData.Date)}
+                                                    selected={saleInfo.appointmentData.Date ? new Date(saleInfo.appointmentData.Date) : new Date(new Date().setHours(0, 0, 0, 0))}
                                                     onChange={(date) => handleAppointmentChange({
                                                         target: { name: 'Date', value: date.toISOString().split('T')[0] }
                                                     })}
                                                     className="form-control form-control-sm"
-                                                    minDate={new Date()}
-                                                    popperPlacement="top-end"
+                                                    minDate={new Date(new Date().setHours(0, 0, 0, 0))}
+                                                    popperPlacement="left-end"
                                                     locale={es}
-                                                    popperClassName="datepicker-zindex" // Agrega una clase personalizada
+                                                    popperClassName="datepicker-zindex"
                                                     popperModifiers={{
                                                         offset: {
                                                             enabled: true,
@@ -1043,9 +1047,10 @@ export default function Component() {
                                                             boundariesElement: 'viewport'
                                                         }
                                                     }}
-                                                    filterDate={(date) => date.getDay() !== 1} // Evita seleccionar lunes
+                                                    filterDate={(date) => date.getDay() !== 1}
                                                 />
                                             </Form.Group>
+
 
 
                                         </Col>
@@ -1091,8 +1096,6 @@ export default function Component() {
                                 </Form>
                             </div>
                         </motion.div>
-
-
                         <motion.div
                             className='card mb-4 shadow-lg'
                             whileHover={{ scale: 1.02 }}
@@ -1165,6 +1168,7 @@ const styles = {
         height: '100vh',
         backgroundColor: '#f3f0ec',
     },
+
     logo: {
         width: '120px',
         height: '120px',
