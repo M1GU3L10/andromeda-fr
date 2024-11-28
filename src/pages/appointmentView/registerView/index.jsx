@@ -1000,7 +1000,7 @@ export default function Component() {
                                 <Form>
                                     <Row>
                                         <Col md={6}>
-                                            <Form.Group className="mb-3" style={{ position: 'relative' }}>
+                                            <Form.Group className="mb-3">
                                                 <Form.Label>Fecha de la cita</Form.Label>
                                                 <DatePicker
                                                     selected={new Date(saleInfo.appointmentData.Date)}
@@ -1010,7 +1010,8 @@ export default function Component() {
                                                     className="form-control form-control-sm"
                                                     minDate={new Date()}
                                                     popperPlacement="top-end"
-                                                    popperClassName="custom-datepicker-popper"
+                                                    locale={es}
+                                                    popperClassName="datepicker-zindex" // Agrega una clase personalizada
                                                     popperModifiers={{
                                                         offset: {
                                                             enabled: true,
@@ -1024,17 +1025,7 @@ export default function Component() {
                                                     filterDate={(date) => date.getDay() !== 1} // Evita seleccionar lunes
                                                 />
                                             </Form.Group>
-                                            <style>
-                                                {`
-                                                   .custom-datepicker-popper {
-                                                       z-index: 9999 !important; /* Sobrescribimos cualquier otro z-index */
-                                                       }
 
-                                                   .react-datepicker__portal {
-                                                     z-index: 9999 !important; /* Para versiones con portal del DatePicker */
-                                                       }
-                                                `}
-                                            </style>
 
                                         </Col>
                                         <Col md={6}>
@@ -1176,8 +1167,8 @@ const styles = {
         fontFamily: 'serif',
     },
     datepickerZIndex: {
-        zIndex: 9999, // Aseguramos que esté por encima de otros elementos
-        position: 'absolute', // Garantizamos que no esté contenido por un padre con posición relativa
+        zIndex: 1050, // Alto para garantizar prioridad visual
+        position: 'relative',
     },
 };
 
