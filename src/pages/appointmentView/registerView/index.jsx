@@ -16,6 +16,7 @@ import CustomTimeSelector from '../../sales/registerSales/CustomTimeSelector/Cus
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion } from 'framer-motion';
+import { Scissors, Calendar, Clock, Trash2, Plus, Minus, Save, X } from 'lucide-react'
 
 export default function Component() {
     const [users, setUsers] = useState([]);
@@ -721,210 +722,306 @@ export default function Component() {
 
     return (
         <>
-           <Header />
-           <br /><br /><br /><br />
-           <div className="appointment-form-container" style={{
-            backgroundColor: '#1a1a1a',
-            color: '#ffffff',
-            borderRadius: '20px',
-            padding: '20px',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
-        }}>
-            <div className="row">
-                <div className="col-md-6">
-                    <div className="card mb-4" style={{
-                        backgroundColor: '#2d2d2d',
-                        borderRadius: '15px',
-                        border: '1px solid #b89b58'
-                    }}>
-                        <div className="card-header" style={{
-                            backgroundColor: '#b89b58',
-                            color: '#1a1a1a',
-                            borderTopLeftRadius: '15px',
-                            borderTopRightRadius: '15px'
-                        }}>
-                            <h5 className="mb-0">Servicios y Productos</h5>
-                        </div>
-                        <div className="card-body">
-                            <h6 className="mb-3" style={{ color: '#b89b58' }}>Servicios</h6>
-                            <Table responsive bordered hover variant="dark" style={{
-                                backgroundColor: '#1a1a1a',
-                                color: '#ffffff',
-                                borderColor: '#333333'
-                            }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: '#2d2d2d' }}>
-                                        <th>Servicio</th>
-                                        <th>Barbero</th>
-                                        <th>Duración</th>
-                                        <th>Precio</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {/* Existing service rows logic */}
-                                </tbody>
-                            </Table>
-
-                            <h6 className="mt-4 mb-3" style={{ color: '#b89b58' }}>Productos</h6>
-                            <Form.Control
-                                type="text"
-                                placeholder="Buscar productos..."
-                                style={{
-                                    backgroundColor: '#1a1a1a',
-                                    color: '#ffffff',
-                                    border: '1px solid #b89b58'
-                                }}
-                            />
-
-                            <Table responsive bordered hover variant="dark" style={{
-                                backgroundColor: '#1a1a1a',
-                                color: '#ffffff',
-                                borderColor: '#333333'
-                            }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: '#2d2d2d' }}>
-                                        <th>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio unt</th>
-                                        <th>Subtotal</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {/* Existing product rows logic */}
-                                </tbody>
-                            </Table>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="col-md-6">
-                    <div className="card mb-4" style={{
-                        backgroundColor: '#2d2d2d',
-                        borderRadius: '15px',
-                        border: '1px solid #b89b58'
-                    }}>
-                        <div className="card-header" style={{
-                            backgroundColor: '#b89b58',
-                            color: '#1a1a1a',
-                            borderTopLeftRadius: '15px',
-                            borderTopRightRadius: '15px'
-                        }}>
-                            <h5 className="mb-0">Información de cita</h5>
-                        </div>
-                        <div className="card-body">
-                            <Form>
-                                <Row>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label style={{ color: '#b89b58' }}>Fecha de cita</Form.Label>
-                                            <Form.Control
-                                                type="date"
-                                                style={{
-                                                    backgroundColor: '#1a1a1a',
-                                                    color: '#ffffff',
-                                                    border: '1px solid #b89b58'
-                                                }}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label style={{ color: '#b89b58' }}>Hora inicio</Form.Label>
-                                            <Form.Control
-                                                type="time"
-                                                style={{
-                                                    backgroundColor: '#1a1a1a',
-                                                    color: '#ffffff',
-                                                    border: '1px solid #b89b58'
-                                                }}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-                            </Form>
-                        </div>
-                    </div>
-
-                    <div className="card mb-4" style={{
-                        backgroundColor: '#2d2d2d',
-                        borderRadius: '15px',
-                        border: '1px solid #b89b58'
-                    }}>
-                        <div className="card-header" style={{
-                            backgroundColor: '#b89b58',
-                            color: '#1a1a1a',
-                            borderTopLeftRadius: '15px',
-                            borderTopRightRadius: '15px'
-                        }}>
-                            <h5 className="mb-0">Resumen de la cita</h5>
-                        </div>
-                        <div className="card-body">
-                            <Table bordered style={{
-                                backgroundColor: '#1a1a1a',
-                                color: '#ffffff',
-                                borderColor: '#333333'
-                            }}>
-                                <tbody>
-                                    <tr>
-                                        <th style={{ backgroundColor: '#2d2d2d' }}>Subtotal Servicios:</th>
-                                        <td>$0.00</td>
-                                    </tr>
-                                    <tr>
-                                        <th style={{ backgroundColor: '#2d2d2d' }}>Subtotal Productos:</th>
-                                        <td>$0.00</td>
-                                    </tr>
-                                    <tr>
-                                        <th style={{ backgroundColor: '#2d2d2d' }}>Total:</th>
-                                        <td>$0.00</td>
-                                    </tr>
-                                </tbody>
-                            </Table>
-                        </div>
-                    </div>
-                </div>
+            <Header />
+            <br /><br /><br /><br />
+            <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      transition={{ duration: 0.5 }}
+      className='container mt-5'
+    >
+      <div className='row'>
+        {/* Columna de Servicios y Productos */}
+        <div className='col-md-6'>
+          <motion.div 
+            className='card mb-4 shadow-lg'
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
+            <div className="card-header bg-primary text-white d-flex align-items-center">
+              <Scissors className="mr-2" />
+              <h5 className="mb-0">Servicios y Productos</h5>
             </div>
+            <div className='card-body'>
+              <h6 className="mb-3 font-weight-bold">Servicios</h6>
+              <Table responsive bordered hover className="shadow-sm">
+                <thead className="bg-light">
+                  <tr>
+                    <th>Servicio</th>
+                    <th>Barbero</th>
+                    <th>Duración</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {saleInfo.saleDetails.filter(detail => detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)).map((detail, index) => (
+                    <motion.tr 
+                      key={index}
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <td>
+                        <Form.Select
+                          value={detail.serviceId || ''}
+                          onChange={(e) => handleServiceChange(index, 'serviceId', e.target.value)}
+                          className="form-control-sm"
+                        >
+                          <option value="">Seleccione un servicio</option>
+                          {services.map(service => (
+                            <option key={service.id} value={service.id}>{service.name}</option>
+                          ))}
+                        </Form.Select>
+                      </td>
+                      <td>
+                        <Form.Select
+                          value={detail.empleadoId || ''}
+                          onChange={(e) => handleServiceChange(index, 'empleadoId', e.target.value)}
+                          className="form-control-sm"
+                        >
+                          <option value="">Seleccione el barbero</option>
+                          {users.filter(user => user.roleId === 2).map(employee => (
+                            <option key={employee.id} value={employee.id}>{employee.name}</option>
+                          ))}
+                        </Form.Select>
+                      </td>
+                      <td>{detail.serviceId ? formatDuration(services.find(s => s.id === parseInt(detail.serviceId))?.time || 0) : '-'}</td>
+                      <td>{detail.serviceId ? `$${services.find(s => s.id === parseInt(detail.serviceId))?.price.toFixed(2)}` : '-'}</td>
+                      <td>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleServiceRemove(index)}
+                          className="d-flex align-items-center justify-content-center"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </Table>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="btn btn-primary mt-3 d-flex align-items-center"
+                onClick={handleServiceAdd}
+              >
+                <Plus size={16} className="mr-2" />
+                Agregar Servicio
+              </motion.button>
 
-            <div className="d-flex justify-content-end mt-4">
-                <Button
-                    variant="contained"
-                    style={{
-                        backgroundColor: '#2d2d2d',
-                        color: '#b89b58',
-                        border: '1px solid #b89b58',
-                        marginRight: '10px',
-                        transition: 'all 0.3s ease'
-                    }}
-                    onMouseOver={(e) => {
-                        e.target.style.backgroundColor = '#b89b58';
-                        e.target.style.color = '#1a1a1a';
-                    }}
-                    onMouseOut={(e) => {
-                        e.target.style.backgroundColor = '#2d2d2d';
-                        e.target.style.color = '#b89b58';
-                    }}
+              <h6 className="mt-4 mb-3 font-weight-bold">Productos</h6>
+              <Form.Group className="mb-3">
+                <Form.Control
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchTerm}
+                  onChange={handleProductSearch}
+                  className="form-control-sm"
+                />
+              </Form.Group>
+              {searchTerm && (
+                <motion.div 
+                  className="mb-3 border p-2 rounded shadow-sm"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
                 >
-                    Cancelar
-                </Button>
-                <Button
-                    variant="contained"
-                    style={{
-                        backgroundColor: '#b89b58',
-                        color: '#1a1a1a',
-                        transition: 'all 0.3s ease'
-                    }}
-                    onMouseOver={(e) => {
-                        e.target.style.backgroundColor = '#a38928';
-                    }}
-                    onMouseOut={(e) => {
-                        e.target.style.backgroundColor = '#b89b58';
-                    }}
-                >
-                    Guardar Cita
-                </Button>
+                  {filteredProducts.map(product => (
+                    <motion.div
+                      key={product.id}
+                      className="p-2 border-bottom cursor-pointer hover:bg-light"
+                      onClick={() => addProduct(product)}
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      {product.Product_Name}
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+              <Table responsive bordered hover className="shadow-sm">
+                <thead className="bg-light">
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unt</th>
+                    <th>Subtotal</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedProducts.map(product => (
+                    <motion.tr 
+                      key={product.id}
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <td>{product.Product_Name}</td>
+                      <td>{product.quantity}</td>
+                      <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price)}</td>
+                      <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.Price * product.quantity)}</td>
+                      <td>
+                        <div className="d-flex">
+                          <Button variant="outline-danger" size="sm" onClick={() => removeProduct(product.id)} className="mr-1">
+                            <Trash2 size={16} />
+                          </Button>
+                          <Button variant="outline-primary" size="sm" onClick={() => updateQuantity(product.id, 1)} className="mr-1">
+                            <Plus size={16} />
+                          </Button>
+                          <Button variant="outline-primary" size="sm" onClick={() => updateQuantity(product.id, -1)}>
+                            <Minus size={16} />
+                          </Button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </Table>
             </div>
+          </motion.div>
         </div>
+
+        {/* Columna de Información de Cita */}
+        <div className='col-md-6'>
+          <motion.div 
+            className='card mb-4 shadow-lg'
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
+            <div className="card-header bg-primary text-white d-flex align-items-center">
+              <Calendar className="mr-2" />
+              <h5 className="mb-0">Información de cita</h5>
+            </div>
+            <div className='card-body'>
+              <Form>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Fecha de cita</Form.Label>
+                      <DatePicker
+                        selected={new Date(saleInfo.appointmentData.Date)}
+                        onChange={(date) => handleAppointmentChange({
+                          target: { name: 'Date', value: date.toISOString().split('T')[0] }
+                        })}
+                        className="form-control form-control-sm"
+                        minDate={new Date()}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Hora inicio</Form.Label>
+                      <CustomTimeSelector
+                        name="Init_Time"
+                        value={saleInfo.appointmentData.Init_Time}
+                        onChange={(time) => handleAppointmentChange({
+                          target: { name: 'Init_Time', value: time }
+                        })}
+                        className="form-control form-control-sm"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Hora fin (estimada)</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="Finish_Time"
+                        value={saleInfo.appointmentData.Finish_Time}
+                        readOnly
+                        className="form-control-sm"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Duración total</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formatDuration(saleInfo.appointmentData.time_appointment)}
+                        readOnly
+                        className="form-control-sm"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Form>
+            </div>
+          </motion.div>
+          <motion.div 
+            className='card mb-4 shadow-lg'
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
+            <div className="card-header bg-primary text-white d-flex align-items-center">
+              <Clock className="mr-2" />
+              <h5 className="mb-0">Resumen de la cita</h5>
+            </div>
+            <div className='card-body'>
+              <Table bordered className="shadow-sm">
+                <tbody>
+                  <tr>
+                    <th>Subtotal Servicios:</th>
+                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}</td>
+                  </tr>
+                  <tr>
+                    <th>Subtotal Productos:</th>
+                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalProducts)}</td>
+                  </tr>
+                  <tr>
+                    <th>Total:</th>
+                    <td className="font-weight-bold">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(saleInfo.total_price)}</td>
+                  </tr>
+                </tbody>
+              </Table>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Botones Finales */}
+      <motion.div 
+        className='d-flex justify-content-end mt-4'
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn btn-secondary mr-2 d-flex align-items-center"
+          onClick={() => navigate('/index')}
+          style={{
+            minWidth: '150px',
+            padding: '10px 20px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+          }}
+        >
+          <X size={20} className="mr-2" />
+          Cancelar
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn btn-primary d-flex align-items-center"
+          onClick={handleSubmit}
+          style={{
+            minWidth: '150px',
+            padding: '10px 20px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+          }}
+        >
+          <Save size={20} className="mr-2" />
+          Guardar Cita
+        </motion.button>
+      </motion.div>
+    </motion.div>
+
         </>
     );
 }
