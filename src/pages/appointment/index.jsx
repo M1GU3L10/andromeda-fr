@@ -520,83 +520,66 @@ const Appointment = () => {
                 </div>
             </div>
             <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} size="lg">
-                <Modal.Header closeButton>
-                    <Modal.Title>Detalle de la <i class="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="mb-4">
-                        <h5 className="border-bottom pb-2">Informaciòn de la cita</h5>
-                        <div className="row">
-                            <div className="col-md-6">
-                                <p><strong>Cliente:</strong> {detailData.title}</p>
-                                <p><strong>Fecha:</strong> {detailData.Date}</p>
-                                <p><strong>Hora inicio:</strong> {detailData.Init_Time}</p>
-                                <p><strong>Hora fin:</strong> {detailData.Finish_Time}</p>
-                            </div>
-                            <div className="col-md-6">
-                                <p><strong>Duraciòn de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
-                                <p><strong>Total:</strong> {detailData.Total}</p>
-                                <p><strong>Estado:</strong> {detailData.status}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-4">
-                        <h5 className="border-bottom pb-2">Detalle de la venta</h5>
-                        {saleDetails.length > 0 ? (
-                            <div className="table-responsive">
-                                <table className="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Tipo</th>
-                                            <th>Nombre</th>
-                                            <th>Cantidad</th>
-                                            <th>Precio unit</th>
-                                            <th>Total</th>
-                                            <th>Empleado</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {saleDetails.map((detail, index) => (
-                                            <tr key={index}>
-                                                <td>{detail.type}</td>
-                                                <td>{detail.productName}</td>
-                                                <td>{detail.quantity}</td>
-                                                <td>${detail.price.toLocaleString()}</td>
-                                                <td>${detail.total.toLocaleString()}</td>
-                                                <td>{detail.employeeName || '-'}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <p className="text-muted">No se encuentran productos en esta cita.</p>
-                        )}
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="outlined" onClick={() => setShowDetailModal(false)}>
-                        Close
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-            {/* Warning Modal */}
-            <Modal show={showWarningModal} onHide={() => setShowWarningModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Cambiar Estado de la Cita</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    El estado de la cita será modificado y esta acción no se podrá deshacer. Si existe una venta asociada a esta cita, también se verá afectada por los cambios.
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button className='btn-red' onClick={handleStatusChangeRed}>
-                        Anular cita
-                    </Button>
-                    <Button className='btn-sucess' onClick={handleStatusChangeSucess}>
-                        Completar cita
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+        <Modal.Header closeButton>
+          <Modal.Title>Detalle de la <i class="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-4">
+            <h5 className="border-bottom pb-2">Informaciòn de la cita</h5>
+            <div className="row">
+              <div className="col-md-6">
+                <p><strong>Cliente:</strong> {detailData.title}</p>
+                <p><strong>Fecha:</strong> {detailData.Date}</p>
+                <p><strong>Hora inicio:</strong> {detailData.Init_Time}</p>
+                <p><strong>Hora fin:</strong> {detailData.Finish_Time}</p>
+              </div>
+              <div className="col-md-6">
+                <p><strong>Duraciòn de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
+                <p><strong>Total:</strong> {detailData.Total}</p>
+                <p><strong>Estado:</strong> {detailData.status}</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4">
+            <h5 className="border-bottom pb-2">Detalle de la venta</h5>
+            {saleDetails.length > 0 ? (
+              <div className="table-responsive">
+                <table className="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Nombre</th>
+                      <th>Cantidad</th>
+                      <th>Precio unit</th>
+                      <th>Total</th>
+                      <th>Empleado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {saleDetails.map((detail, index) => (
+                      <tr key={index}>
+                        <td>{detail.type}</td>
+                        <td>{detail.productName}</td>
+                        <td>{detail.quantity}</td>
+                        <td>${detail.price.toLocaleString()}</td>
+                        <td>${detail.total.toLocaleString()}</td>
+                        <td>{detail.employeeName || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted">No se encuentran productos en esta cita.</p>
+            )}
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outlined" onClick={() => setShowDetailModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
         </div>
     );
 };

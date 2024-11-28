@@ -21,6 +21,7 @@ import { Modal, Form } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { BsPlusSquareFill } from "react-icons/bs";
+import { useUserPermissions } from '../../hooks/useUserPermissions';
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -57,6 +58,7 @@ const Categories = () => {
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
+    const { hasPrivilege } = useUserPermissions();
 
     const [errors, setErrors] = useState({
         name: '',
@@ -362,129 +364,139 @@ const Categories = () => {
                             </div>
                         </div>
                         <div className='card shadow border-0 p-3'>
-                            <div className='row'>
-                                <div className='col-sm-5 d-flex align-items-center'>
-                                    <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
-                                </div>
-                                <div className='col-sm-7 d-flex align-items-center justify-content-end'>
-                                    <div className="searchBox position-relative d-flex align-items-center">
-                                        <IoSearch className="mr-2" />
-                                        <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
-                                    </div>
+                        <div className='row'>
+                            <div className='col-sm-5 d-flex align-items-center'>
+                                {hasPrivilege('Registrar') && (
+                                    <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
+                                        <BsPlusSquareFill />Registrar
+                                    </Button>
+                                )}
+                            </div>
+                            <div className='col-sm-7 d-flex align-items-center justify-content-end'>
+                                <div className="searchBox position-relative d-flex align-items-center">
+                                    <IoSearch className="mr-2" />
+                                    <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
                                 </div>
                             </div>
-                            <div className='table-responsive mt-3'>
-                                <table className='table table-bordered table-hover v-align table-striped'>
-                                    <thead className='table-primary'>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Nombre</th>
-                                            <th>Descripción</th>
-                                            <th>Estado</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        { results.length > 0 ? (
-                                            results.map((category, i) => (
-                                                <tr key={category.id}>
-                                                    <td>{(i + 1)}</td>
-                                                    <td>{category.name}</td>
-                                                    <td>{category.description}</td>
-                                                    <td><span  className= {`serviceStatus ${category.status ===  'A' ? '' : 'Inactive'}`}>{category.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
-                                                    <td>
-                                                        <div className='actions d-flex align-items-center'>
+                        </div>
+                        <div className='table-responsive mt-3'>
+                            <table className='table table-bordered table-hover v-align table-striped'>
+                                <thead className='table-primary'>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    { results.length > 0 ? (
+                                        results.map((category, i) => (
+                                            <tr key={category.id}>
+                                                <td>{(i + 1)}</td>
+                                                <td>{category.name}</td>
+                                                <td>{category.description}</td>
+                                                <td><span className={`serviceStatus ${category.status === 'A' ? '' : 'Inactive'}`}>{category.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
+                                                <td>
+                                                    <div className='actions d-flex align-items-center'>
+                                                        {hasPrivilege('Editar') && (
                                                             <Switch
                                                                 checked={category.status === 'A'}
                                                                 onChange={(e) => handleSwitchChange(category.id, e.target.checked)}
                                                             />
-                                                            {
-                                                                category.status === 'A' && (
-                                                                    <>
-                                                                        <Button color="secondary" className='secondary' onClick={() => openModal(2, category.id, category.name, category.description)}><FaPencilAlt /></Button>
-                                                                        <Button color='error' className='delete' onClick={() => deleteCategory(category.id, category.name)}><IoTrashSharp /></Button>
-                                                                    </>
-                                                                )
-                                                            }
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ): (
-                                            <tr>
-                                                <td colSpan={7} className='text-center'>
-                                                    No hay categorias disponibles
+                                                        )}
+                                                        {category.status === 'A' && (
+                                                            <>
+                                                                {hasPrivilege('Editar') && (
+                                                                    <Button color="secondary" className='secondary' onClick={() => openModal(2, category.id, category.name, category.description)}>
+                                                                        <FaPencilAlt />
+                                                                    </Button>
+                                                                )}
+                                                                {hasPrivilege('Eliminar') && (
+                                                                    <Button color='error' className='delete' onClick={() => deleteCategory(category.id, category.name)}>
+                                                                        <IoTrashSharp />
+                                                                    </Button>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
-                                        )
-                                            
-                                        }
-                                    </tbody>
-                                </table>
-                                {
-                                    results.length > 0 ? (
-                                        <div className="d-flex table-footer">
-                                            <Pagination
-                                                setCurrentPages={setCurrentPages}
-                                                currentPages={currentPages}
-                                                nPages={nPages} />
-                                        </div>
-                                    ) : (<div className="d-flex table-footer">
-                                    </div>)
-                                }
-                            </div>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className='text-center'>
+                                                No hay categorias disponibles
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                            {
+                                results.length > 0 ? (
+                                    <div className="d-flex table-footer">
+                                        <Pagination
+                                            setCurrentPages={setCurrentPages}
+                                            currentPages={currentPages}
+                                            nPages={nPages} />
+                                    </div>
+                                ) : (<div className="d-flex table-footer">
+                                </div>)
+                            }
                         </div>
                     </div>
-                    <Modal show={showModal}>
-                        <Modal.Header>
-                            <Modal.Title>{title}</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <Form>
-                                <Form.Group className='pb-2'>
-                                    <Form.Label className='required'>Nombre</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="name"
-                                        value={name}
-                                        placeholder="Nombre"
-                                        onChange={handleInputChange}
-                                        onBlur={handleBlur}
-                                        isInvalid={touched.name && !!errors.name}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.name}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
-                                <Form.Group className='pb-2'>
-                                    <Form.Label className='required'>Descripción</Form.Label>
-                                    <Form.Control
-                                        as="textarea" rows={2}
-                                        name="description"
-                                        value={description}
-                                        placeholder="Descripcion"
-                                        onChange={handleInputChange}
-                                        onBlur={handleBlur}
-                                        isInvalid={touched.description && !!errors.description}
-                                    />
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.description}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
-                            </Form>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="primary" onClick={validar} className='btn-sucess'>
-                                Guardar
-                            </Button>
-                            <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                                Cerrar
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
                 </div>
-            </>
-        );
-    }
+                <Modal show={showModal}>
+                    <Modal.Header>
+                        <Modal.Title>{title}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group className='pb-2'>
+                                <Form.Label className='required'>Nombre</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="name"
+                                    value={name}
+                                    placeholder="Nombre"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.name && !!errors.name}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.name}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+                            <Form.Group className='pb-2'>
+                                <Form.Label className='required'>Descripción</Form.Label>
+                                <Form.Control
+                                    as="textarea" rows={2}
+                                    name="description"
+                                    value={description}
+                                    placeholder="Descripcion"
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched.description && !!errors.description}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.description}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="primary" onClick={validar} className='btn-sucess'>
+                            Guardar
+                        </Button>
+                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                            Cerrar
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            </div>
+        </>
+    );
+}
 
 export default Categories;

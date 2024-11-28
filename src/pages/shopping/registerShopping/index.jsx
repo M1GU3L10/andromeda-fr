@@ -202,7 +202,7 @@ const RegisterShopping = () => {
 
             setFormData({ code: '', purchaseDate: '', supplierId: '' });
             setShoppingDetails([]);
-            localStorage.removeItem('shoppingFormData');
+            // Remove the line that clears localStorage here
         } catch (error) {
             console.error('Error al registrar la compra', error);
             Swal.fire({
@@ -224,6 +224,12 @@ const RegisterShopping = () => {
             setFormData(savedFormData);
             setShoppingDetails(savedShoppingDetails);
         }
+    };
+
+    const handleClose = () => {
+        // Clear localStorage when closing
+        localStorage.removeItem('shoppingFormData');
+        navigate('/Shopping');
     };
 
     return (
@@ -330,7 +336,7 @@ const RegisterShopping = () => {
                                                             <Button color='error' className='delete' onClick={() => removeProduct(item.product_id)}><IoTrashSharp /></Button>
                                                             <div className='actions-quantity'>
                                                                 <Button className='primary' onClick={() => updateQuantity(item.product_id, item.quantity + 1)}><FaPlus /></Button>
-                                                        
+
                                                                 <Button className='primary' onClick={() => updateQuantity(item.product_id, Math.max(1, item.quantity - 1))}><FaMinus /></Button>
                                                             </div>
                                                         </div>
@@ -392,7 +398,7 @@ const RegisterShopping = () => {
                                                 </Form.Select>
                                             </Form.Group>
                                             <Form.Group className='d-flex align-items-center justify-content-end'>
-                                                <Button variant="secondary" className='btn-red' href="/Shopping">
+                                                <Button variant="secondary" className='btn-red' onClick={handleClose}>
                                                     Cerrar
                                                 </Button>
                                                 <Button variant="primary" type="submit" className='btn-sucess'>
