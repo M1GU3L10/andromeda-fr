@@ -197,7 +197,29 @@ export default function CalendarioBarberia({ info }) {
   const toggleNav = () => {
     setIsNavOpen(!isNavOpen);
   };
-
+  const handleCancelAppointment = (appointmentId) => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar cita',
+      cancelButtonText: 'No, mantener cita',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Realiza la solicitud PUT para cancelar la cita
+        axios.put(`http://localhost:1056/api/appointment/${appointmentId}`, {
+          status: 'cancelada', // Cambia el estado de la cita
+        })
+          .then((response) => {
+            Swal.fire('Cita cancelada', '', 'success');
+          })
+          .catch((error) => {
+            Swal.fire('Error al cancelar cita', 'Hubo un problema al intentar cancelar la cita', 'error');
+          });
+      }
+    });
+  };
   const getUserInitial = () => {
     return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
   };
@@ -503,7 +525,7 @@ export default function CalendarioBarberia({ info }) {
               Detalle de la Cita
             </Modal.Title>
           </Modal.Header>
-          
+
 
           <Modal.Body className="custom-modal-body">
             <div className="mb-4">
@@ -583,12 +605,24 @@ export default function CalendarioBarberia({ info }) {
                     cancelButtonText: 'No, mantener cita',
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      // Aquí iría la lógica para cancelar la cita
-                      Swal.fire(
-                        'Cita cancelada',
-                        'Tu cita ha sido cancelada.',
-                        'success'
-                      );
+                      axios
+                        .put(`http://localhost:1056/api/appointment`, {
+                          status: 'cancelada',
+                        })
+                        .then((response) => {
+                          Swal.fire(
+                            'Cita cancelada',
+                            'Tu cita ha sido cancelada.',
+                            'success'
+                          );
+                        })
+                        .catch((error) => {
+                          Swal.fire(
+                            'Error',
+                            'Hubo un problema al cancelar la cita.',
+                            'error'
+                          );
+                        });
                     }
                   })
                 }
