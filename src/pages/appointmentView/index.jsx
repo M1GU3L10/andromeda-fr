@@ -11,6 +11,7 @@ import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import Swal from 'sweetalert2';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from '@fullcalendar/core/locales/es';
@@ -325,13 +326,13 @@ export default function CalendarioBarberia({ info }) {
   };
   const convertTo12HourFormat = (time) => {
     if (!time) return 'Hora no disponible'; // Devuelve un texto predeterminado si el tiempo no está definido
-  
+
     const [hours, minutes] = time.split(':').map(Number); // Divide la hora en partes
     const period = hours >= 12 ? 'PM' : 'AM'; // Determina si es AM o PM
     const standardHours = hours % 12 || 12; // Convierte a formato de 12 horas
     return `${standardHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
-  
+
   const EventComponent = ({ info }) => {
     const [isClicked, setIsClicked] = useState(false);
 
@@ -502,6 +503,8 @@ export default function CalendarioBarberia({ info }) {
               Detalle de la Cita
             </Modal.Title>
           </Modal.Header>
+          
+
           <Modal.Body className="custom-modal-body">
             <div className="mb-4">
               <h5 className="border-bottom pb-2 text-gold">Mi cita</h5>
@@ -516,7 +519,6 @@ export default function CalendarioBarberia({ info }) {
                   <p>
                     <strong>Hora fin:</strong> {convertTo12HourFormat(detailData.Finish_Time)}
                   </p>
-
                 </div>
                 <div className="col-md-6">
                   <p>
@@ -565,7 +567,38 @@ export default function CalendarioBarberia({ info }) {
                 </p>
               )}
             </div>
+
+            <div className="mt-4 text-end">
+              <button
+                className="btn btn-danger"
+                onClick={() =>
+                  Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "¡No podrás revertir esta acción!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, cancelar cita',
+                    cancelButtonText: 'No, mantener cita',
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      // Aquí iría la lógica para cancelar la cita
+                      Swal.fire(
+                        'Cita cancelada',
+                        'Tu cita ha sido cancelada.',
+                        'success'
+                      );
+                    }
+                  })
+                }
+              >
+                Cancelar cita
+              </button>
+            </div>
           </Modal.Body>
+
+
         </Modal>
       </div>
 

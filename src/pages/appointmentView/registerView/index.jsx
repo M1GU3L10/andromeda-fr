@@ -271,7 +271,7 @@ export default function Component() {
 
         return { isValid: true };
     };
-
+    
     const validateAppointmentAvailability = () => {
         const newAppointmentStart = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Init_Time);
         const newAppointmentEnd = new Date(saleInfo.appointmentData.Date + 'T' + saleInfo.appointmentData.Finish_Time);
