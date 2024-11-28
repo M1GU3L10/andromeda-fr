@@ -5,6 +5,8 @@ import axios from 'axios';
 import { FaMoneyBillWave, FaPlus, FaMinus } from "react-icons/fa";
 import { IoSearch, IoTrashSharp } from "react-icons/io5";
 import Button from '@mui/material/Button';
+import { IoRefreshSharp } from 'react-icons/io5';
+
 import Header from './Header1';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -634,6 +636,19 @@ export default function Component() {
         localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
     }, [selectedProducts]);
 
+    const resetTableStates = () => {
+        setSaleInfo({
+            ...saleInfo,
+            appointmentData: {
+                Date: new Date().toISOString().split('T')[0], // Reinicia la fecha a hoy
+                Init_Time: '',
+                Finish_Time: '',
+                time_appointment: 0,
+            }
+        });
+        console.log('Tabla reiniciada');
+    };
+
     const handleServiceChange = (index, field, value) => {
         setSaleInfo(prevState => {
             // Verificar si el servicio ya ha sido seleccionado en otro detalle
@@ -969,9 +984,17 @@ export default function Component() {
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
-                            <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
-                                <Calendar className="mr-2" />
-                                <h5 className="mb-0">Información de cita</h5>
+                            <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <Calendar className="mr-2" />
+                                    <h5 className="mb-0">Información de cita</h5>
+                                </div>
+                                <IoRefreshSharp
+                                    size={20}
+                                    style={{ cursor: 'pointer', color: 'white' }}
+                                    title="Reiniciar estados de la tabla"
+                                    onClick={resetTableStates}
+                                />
                             </div>
                             <div className='card-body'>
                                 <Form>
@@ -1044,6 +1067,7 @@ export default function Component() {
                             </div>
                         </motion.div>
 
+
                         <motion.div
                             className='card mb-4 shadow-lg'
                             whileHover={{ scale: 1.02 }}
@@ -1068,7 +1092,7 @@ export default function Component() {
                                             fontSize: '16px',
                                             fontWeight: 'bold',
                                             color: 'white',
-                                            borderRadius:20,
+                                            borderRadius: 20,
                                             backgroundColor: '#6c757d',
                                         }}
                                     >
@@ -1086,7 +1110,7 @@ export default function Component() {
                                             fontSize: '16px',
                                             fontWeight: 'bold',
                                             color: '#212529',
-                                            borderRadius:20,
+                                            borderRadius: 20,
                                             backgroundColor: '#d4af37', color: 'white',
                                         }}
                                     >
