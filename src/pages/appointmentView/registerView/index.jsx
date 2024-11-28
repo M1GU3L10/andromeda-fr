@@ -1021,8 +1021,10 @@ export default function Component() {
                                                             boundariesElement: 'viewport'
                                                         }
                                                     }}
+                                                    filterDate={(date) => date.getDay() !== 1} // Evita seleccionar lunes (getDay() devuelve 1 para lunes)
                                                 />
                                             </Form.Group>
+
                                         </Col>
                                         <Col md={6}>
                                             <Form.Group className="mb-3">
