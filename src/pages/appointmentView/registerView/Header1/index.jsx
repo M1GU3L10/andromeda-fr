@@ -101,10 +101,6 @@ const Header = ({ scrollToServices, scrollToContact }) => {
             <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
                 <nav className='navBar-index'>
                     <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-                    
-                    {
-                       userRole == 3  && (<Link to='/appointmentView'>CITAS</Link>)
-                    }
                   <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
                     
                 </nav>

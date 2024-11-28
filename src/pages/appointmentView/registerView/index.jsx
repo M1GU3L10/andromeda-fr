@@ -1003,7 +1003,7 @@ export default function Component() {
 
                     {/* Columna de Información de Cita */}
                     <div className='col-md-6'>
-                    <br /><br /><br /><br />
+                        <br /><br /><br /><br />
                         <motion.div
                             className='card mb-4 shadow-lg'
                             whileHover={{ scale: 1.02 }}
@@ -1113,7 +1113,7 @@ export default function Component() {
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         className="btn btn-secondary mr-2 d-flex align-items-center"
-                                        onClick={() => navigate('/appointmentView')}
+                                        onClick={() => (window.location.href = '/appointmentView')}
                                         style={{
                                             minWidth: '150px',
                                             padding: '10px 20px',
@@ -1127,6 +1127,7 @@ export default function Component() {
                                         <X size={20} className="mr-2" />
                                         Cancelar
                                     </motion.button>
+
 
                                     <motion.button
                                         whileHover={{ scale: 1.05 }}
