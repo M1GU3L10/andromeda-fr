@@ -6,6 +6,7 @@ import { FaMoneyBillWave, FaPlus, FaMinus } from "react-icons/fa";
 import { IoSearch, IoTrashSharp } from "react-icons/io5";
 import Button from '@mui/material/Button';
 import Header from './Header1';
+import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { Form, Col, Row, Table } from 'react-bootstrap';
 import Swal from 'sweetalert2';
@@ -14,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { BsCalendar2DateFill } from 'react-icons/bs';
 import CustomTimeSelector from '../../sales/registerSales/CustomTimeSelector/CustomTimeSelector';
 import DatePicker from "react-datepicker";
+import logo from '../../../assets/images/logo.png';
 import "react-datepicker/dist/react-datepicker.css";
 import { motion } from 'framer-motion';
 import { Scissors, Calendar, Clock, Trash2, Plus, Minus, Save, X } from 'lucide-react'
@@ -392,6 +394,24 @@ export default function Component() {
 
     const handleAppointmentChange = (event) => {
         const { name, value } = event.target;
+
+        // Verificar si la hora seleccionada es mayor a las 9 PM
+        if (name === 'Init_Time') {
+            const [hour, minute] = value.split(':').map(Number);
+            if (hour >= 21) {
+                // Si la hora seleccionada es 21 (9 PM) o posterior, ajustamos a las 9 PM
+                setSaleInfo(prevState => ({
+                    ...prevState,
+                    appointmentData: {
+                        ...prevState.appointmentData,
+                        [name]: '21:00'  // Establecemos la hora a las 9 PM
+                    }
+                }));
+                updateFinishTime('21:00', saleInfo.appointmentData.time_appointment);
+                return;
+            }
+        }
+
         setSaleInfo(prevState => ({
             ...prevState,
             appointmentData: {
@@ -404,6 +424,8 @@ export default function Component() {
             updateFinishTime(value, saleInfo.appointmentData.time_appointment);
         }
     };
+
+
 
     const validateField = (fieldName, value) => {
         let newErrors = { ...errors };
@@ -535,19 +557,23 @@ export default function Component() {
             return;
         }
 
+        // Solución para evitar el problema del día adicional
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleDateString('en-GB');  // Formato dd/mm/yyyy
+
         try {
             await axios.post('http://localhost:1056/api/sales', saleInfo);
             show_alerta('Cita registrada con éxito', 'success');
             setSaleInfo({
                 Billnumber: '',
-                SaleDate: new Date().toISOString().split('T')[0],
+                SaleDate: formattedDate,  // Fecha local formateada
                 total_price: 0,
                 status: 'Pendiente',
                 id_usuario: saleInfo.id_usuario,
                 appointmentData: {
                     Init_Time: '',
                     Finish_Time: '',
-                    Date: new Date().toISOString().split('T')[0],
+                    Date: formattedDate,  // Fecha local formateada
                     time_appointment: 0
                 },
                 saleDetails: []
@@ -560,6 +586,7 @@ export default function Component() {
             show_alerta('Error al registrar la venta', 'error');
         }
     };
+
 
     const handleServiceAdd = () => {
         setSaleInfo(prevState => {
@@ -623,7 +650,7 @@ export default function Component() {
                 const serviceAlreadySelected = prevState.saleDetails.some(
                     (detail, idx) => detail.serviceId === value && idx !== index
                 );
-                
+
                 if (serviceAlreadySelected) {
                     // Usar SweetAlert2 para la alerta
                     Swal.fire({
@@ -640,15 +667,15 @@ export default function Component() {
                     return prevState; // Prevenir la actualización
                 }
             }
-    
+
             // Filtrar los detalles del servicio
             const serviceDetails = prevState.saleDetails.filter(detail =>
                 detail.serviceId !== null || (detail.id_producto === null && detail.empleadoId === null)
             );
-    
+
             if (serviceDetails[index]) {
                 serviceDetails[index] = { ...serviceDetails[index], [field]: value };
-    
+
                 if (field === 'serviceId') {
                     const service = services.find(s => s.id === parseInt(value));
                     if (service) {
@@ -659,7 +686,7 @@ export default function Component() {
                     }
                 }
             }
-    
+
             // Crear detalles de productos
             const productDetails = selectedProducts.map(product => ({
                 quantity: product.quantity,
@@ -669,9 +696,9 @@ export default function Component() {
                 empleadoId: null,
                 serviceId: null
             }));
-    
+
             const allDetails = [...productDetails, ...serviceDetails];
-    
+
             // Calcular duración total
             const totalDuration = serviceDetails.reduce((sum, detail) => {
                 if (detail.serviceId) {
@@ -680,7 +707,7 @@ export default function Component() {
                 }
                 return sum;
             }, 0);
-    
+
             // Calcular subtotales
             const productsSubtotal = productDetails.reduce((sum, item) => sum + item.total_price, 0);
             const servicesSubtotal = serviceDetails.reduce((sum, detail) => {
@@ -690,13 +717,13 @@ export default function Component() {
                 }
                 return sum;
             }, 0);
-    
+
             setSubtotalProducts(productsSubtotal);
             setSubtotalServices(servicesSubtotal);
-    
+
             // Actualizar hora de finalización
             updateFinishTime(prevState.appointmentData.Init_Time, totalDuration);
-    
+
             return {
                 ...prevState,
                 saleDetails: allDetails,
@@ -708,7 +735,7 @@ export default function Component() {
             };
         });
     };
-    
+
 
     const productDetails = selectedProducts.map(product => ({
         quantity: product.quantity,
@@ -736,9 +763,18 @@ export default function Component() {
         return `${minutes} minutos`;
     };
 
-    if (loading) {
-        return <div>Cargando...</div>;
-    }
+   
+  if (loading) {
+    return (
+      <div style={styles.loadingContainer}>
+        <img src={logo} alt="Logo" style={styles.logo} />
+        <div style={styles.textContainer}>
+          <span style={styles.loadingText}>CARGANDO...</span>
+          <span style={styles.slogan}>Estilo y calidad en cada corte</span>
+        </div>
+      </div>
+    );
+  }
 
     if (!isLoggedIn) {
         return (
@@ -951,21 +987,40 @@ export default function Component() {
                                                     })}
                                                     className="form-control form-control-sm"
                                                     minDate={new Date()}
+                                                    popperPlacement="top-end"  // Esto asegura que el calendario se despliegue hacia la izquierda
+                                                    locale={es}  // Configura el calendario en español
+                                                    popperModifiers={{
+                                                        offset: {
+                                                            enabled: true,
+                                                            offset: '0, 5'  // Ajusta la posición del calendario con un pequeño margen
+                                                        },
+                                                        preventOverflow: {
+                                                            enabled: true,
+                                                            boundariesElement: 'viewport'  // Esto asegura que el calendario no se salga de la pantalla
+                                                        }
+                                                    }}
                                                 />
                                             </Form.Group>
+
+
                                         </Col>
+
+
+
+
                                         <Col md={6}>
                                             <Form.Group className="mb-3">
                                                 <Form.Label>Hora inicio</Form.Label>
                                                 <CustomTimeSelector
                                                     name="Init_Time"
                                                     value={saleInfo.appointmentData.Init_Time}
-                                                    onChange={(time) => handleAppointmentChange({
-                                                        target: { name: 'Init_Time', value: time }
-                                                    })}
+                                                    onChange={handleAppointmentChange}  // Usamos la función ajustada aquí
                                                     className="form-control form-control-sm"
+                                                    maxTime="21:00"  // Esto asegura que el selector solo muestre hasta las 9 PM
                                                 />
                                             </Form.Group>
+
+
                                         </Col>
                                     </Row>
                                     <Row>
@@ -1053,7 +1108,38 @@ export default function Component() {
     );
 }
 
-
+const styles = {
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      backgroundColor: '#f3f0ec',
+    },
+    logo: {
+      width: '120px',
+      height: '120px',
+      margin: '20px 0',
+      animation: 'spin 2s linear infinite',
+    },
+    textContainer: {
+      textAlign: 'center',
+      marginTop: '10px',
+    },
+    loadingText: {
+      fontSize: '24px',
+      fontWeight: 'bold',
+      color: '#6b3a1e',
+      fontFamily: '"Courier New", Courier, monospace',
+    },
+    slogan: {
+      fontSize: '16px',
+      color: '#3e3e3e',
+      fontStyle: 'italic',
+      fontFamily: 'serif',
+    },
+  };
 
 
 
