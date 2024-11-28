@@ -810,7 +810,7 @@ export default function Component() {
                         >
                             <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
                                 <Scissors className="mr-2" />
-                                <h5 className="mb-0">Servicios y Productos</h5>
+                                <h5 className="mb-0">SERVCIOS Y PRODUCTOS</h5>
                             </div>
                             <div className='card-body'>
                                 {/* Servicios */}
@@ -921,7 +921,7 @@ export default function Component() {
                                         <tr>
                                             <th>Producto</th>
                                             <th>Cantidad</th>
-                                            <th>Precio unt</th>
+                                            <th>Precio unitario</th>
                                             <th>Subtotal</th>
                                             <th>Acciones</th>
                                         </tr>
@@ -987,7 +987,7 @@ export default function Component() {
                             <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <Calendar className="mr-2" />
-                                    <h5 className="mb-0">Información de cita</h5>
+                                    <h5 className="mb-0">INFORMACION DE LA CITA </h5>
                                 </div>
                                 <IoRefreshSharp
                                     size={20}
@@ -1001,7 +1001,7 @@ export default function Component() {
                                     <Row>
                                         <Col md={6}>
                                             <Form.Group className="mb-3">
-                                                <Form.Label>Fecha de cita</Form.Label>
+                                                <Form.Label>Fecha de la cita</Form.Label>
                                                 <DatePicker
                                                     selected={new Date(saleInfo.appointmentData.Date)}
                                                     onChange={(date) => handleAppointmentChange({
@@ -1026,7 +1026,7 @@ export default function Component() {
                                         </Col>
                                         <Col md={6}>
                                             <Form.Group className="mb-3">
-                                                <Form.Label>Hora inicio</Form.Label>
+                                                <Form.Label>Hora de la cita</Form.Label>
                                                 <CustomTimeSelector
                                                     name="Init_Time"
                                                     value={saleInfo.appointmentData.Init_Time}
@@ -1041,7 +1041,7 @@ export default function Component() {
                                     <Row>
                                         <Col md={6}>
                                             <Form.Group className="mb-3">
-                                                <Form.Label>Hora fin (estimada)</Form.Label>
+                                                <Form.Label>Hora fin de la cita (estimada)</Form.Label>
                                                 <Form.Control
                                                     type="text"
                                                     name="Finish_Time"
@@ -1074,7 +1074,7 @@ export default function Component() {
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
                             <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
-                                <h5 className="mb-0">Resumen</h5>
+                                <h5 className="mb-0">RESUMEN DE LA CITA </h5>
                             </div>
                             <div className='card-body'>
                                 <h6>Subtotal Servicios: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(subtotalServices)}</h6>
