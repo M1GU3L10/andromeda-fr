@@ -625,7 +625,18 @@ export default function Component() {
                 );
                 
                 if (serviceAlreadySelected) {
-                    alert('No puedes elegir el mismo servicio dos veces.');
+                    // Usar SweetAlert2 para la alerta
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Servicio ya seleccionado',
+                        text: 'No puedes elegir el mismo servicio dos veces.',
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#d33',
+                        background: '#f8d7da',
+                        color: '#721c24',
+                        iconColor: '#721c24',
+                        showConfirmButton: true
+                    });
                     return prevState; // Prevenir la actualización
                 }
             }
