@@ -51,7 +51,7 @@ const RegisterShopping = () => {
 
     const [formData, setFormData] = useState({
         code: '',
-        purchaseDate: '',
+        purchaseDate: new Date().toISOString().split("T")[0],
         supplierId: '',
     });
 
@@ -70,25 +70,6 @@ const RegisterShopping = () => {
         }
     };
 
-    useEffect(() => {
-        const today = new Date().toISOString().split("T")[0];
-        setFormData((prevState) => ({ ...prevState, purchaseDate: today }));
-    }, []);
-
-    useEffect(() => {
-        const generateRandomCode = () => {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            let code = "";
-            for (let i = 0; i < 5; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return code;
-        };
-
-        const randomCode = generateRandomCode();
-        setFormData((prevState) => ({ ...prevState, code: randomCode }));
-    }, []);
-
     const getProducts = async () => {
         try {
             const response = await axios.get(urlProducts);
@@ -100,6 +81,20 @@ const RegisterShopping = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'purchaseDate') {
+            const selectedDate = new Date(value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate > today) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se puede registrar compras para fechas futuras.',
+                });
+                return;
+            }
+        }
         setFormData({ ...formData, [name]: value });
         saveData({ ...formData, [name]: value }, shoppingDetails);
     };
@@ -161,7 +156,6 @@ const RegisterShopping = () => {
         updateQuantity(productId, newQuantity);
     };
 
-
     const removeProduct = (productId) => {
         const updatedDetails = shoppingDetails.filter(item => item.product_id !== productId);
         setShoppingDetails(updatedDetails);
@@ -202,7 +196,6 @@ const RegisterShopping = () => {
 
             setFormData({ code: '', purchaseDate: '', supplierId: '' });
             setShoppingDetails([]);
-            // Remove the line that clears localStorage here
         } catch (error) {
             console.error('Error al registrar la compra', error);
             Swal.fire({
@@ -227,7 +220,6 @@ const RegisterShopping = () => {
     };
 
     const handleClose = () => {
-        // Clear localStorage when closing
         localStorage.removeItem('shoppingFormData');
         navigate('/Shopping');
     };
@@ -336,7 +328,6 @@ const RegisterShopping = () => {
                                                             <Button color='error' className='delete' onClick={() => removeProduct(item.product_id)}><IoTrashSharp /></Button>
                                                             <div className='actions-quantity'>
                                                                 <Button className='primary' onClick={() => updateQuantity(item.product_id, item.quantity + 1)}><FaPlus /></Button>
-
                                                                 <Button className='primary' onClick={() => updateQuantity(item.product_id, Math.max(1, item.quantity - 1))}><FaMinus /></Button>
                                                             </div>
                                                         </div>
@@ -365,10 +356,11 @@ const RegisterShopping = () => {
                                                     <Form.Label>Codigo</Form.Label>
                                                     <Form.Control
                                                         type="text"
-                                                        placeholder="Codigo"
+                                                        placeholder="Ingrese el código"
                                                         name="code"
                                                         value={formData.code}
-                                                        readOnly
+                                                        onChange={handleInputChange}
+                                                        required
                                                     />
                                                 </Col>
                                                 <Col sm="6">
@@ -379,6 +371,8 @@ const RegisterShopping = () => {
                                                         name="purchaseDate"
                                                         value={formData.purchaseDate}
                                                         onChange={handleInputChange}
+                                                        max={new Date().toISOString().split("T")[0]}
+                                                        required
                                                     />
                                                 </Col>
                                             </Form.Group>
@@ -388,6 +382,7 @@ const RegisterShopping = () => {
                                                     name="supplierId"
                                                     value={formData.supplierId}
                                                     onChange={handleInputChange}
+                                                    required
                                                 >
                                                     <option value="">Seleccionar proveedor</option>
                                                     {suppliers.map((supplier) => (
