@@ -93,8 +93,12 @@ export default function EnhancedProfileEditor() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (Object.values(errors).some(error => error !== '')) {
-            showAlert('¡Advertencia!', 'Por favor, corrija los errores en el formulario', 'warning');
-            return;
+            Swal.fire({
+                            icon: 'warning',
+                            title: '¡Advertencia!',
+                            text: 'Por favor, corrija los errores en el formulario',
+                        });
+                        return;
         }
 
         if (isSubmitting) return;
@@ -103,28 +107,13 @@ export default function EnhancedProfileEditor() {
         setLoading(true);
 
         try {
-            const dataToUpdate = { ...userData };
-            if (password) {
-                dataToUpdate.password = password;
-            }
-
-            const emailExists = await checkExistingEmail(dataToUpdate.email.trim());
-            const phoneExists = await checkExistingPhone(dataToUpdate.phone.trim());
-
-            if (emailExists && dataToUpdate.email !== userData.email) {
-                showAlert('¡Advertencia!', 'El correo electrónico ya está registrado', 'warning');
-                setIsSubmitting(false);
-                setLoading(false);
-                return;
-            }
-
-            if (phoneExists && dataToUpdate.phone !== userData.phone) {
-                showAlert('¡Advertencia!', 'El número de teléfono ya está registrado', 'warning');
-                setIsSubmitting(false);
-                setLoading(false);
-                return;
-            }
-
+            const dataToUpdate = {
+                            name: userData.name,
+                            email: userData.email,
+                            phone: userData.phone,
+                            ...(password && { password })
+            };
+            
             const response = await fetch(`${url}/profile/${userData.id}`, {
                 method: 'PUT',
                 headers: {
@@ -134,52 +123,40 @@ export default function EnhancedProfileEditor() {
                 body: JSON.stringify(dataToUpdate),
             });
 
+            if (response.data.token) {
+                // Update token in localStorage
+                localStorage.setItem('jwtToken', response.data.token);
+            }
+
             if (response.ok) {
-                showAlert('¡Éxito!', 'Perfil actualizado exitosamente', 'success');
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: 'Perfil actualizado exitosamente',
+                });
+                return;
                 if (password) {
-                    setPassword('');
-                    setShowPassword(false);
+                    // If password was changed, force re-login
+                    localStorage.removeItem('jwtToken');
+                    localStorage.removeItem('userId');
+                    window.location.href = '/login';
+                } else {
+                    // Just reload the profile
+                    window.location.reload();
                 }
-                fetchUserData(userData.id);
             } else {
                 throw new Error('Error en la respuesta del servidor');
             }
         } catch (err) {
-            showAlert('¡Éxito!', 'Perfil actualizado exitosamente', 'success');
+           Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: 'Perfil actualizado exitosamente',
+                });
+                return;
         } finally {
             setIsSubmitting(false);
             setLoading(false);
-        }
-    };
-
-    const showAlert = (title, message, icon) => {
-        Swal.fire({
-            title: title,
-            text: message,
-            icon: icon,
-            confirmButtonColor: '#DAA520'
-        });
-    };
-
-    const checkExistingEmail = async (email) => {
-        try {
-            const response = await fetch(`${url}/check-email/${email}`);
-            const data = await response.json();
-            return data.exists;
-        } catch (error) {
-            console.error('Error checking email:', error);
-            return false;
-        }
-    };
-
-    const checkExistingPhone = async (phone) => {
-        try {
-            const response = await fetch(`${url}/check-phone/${phone}`);
-            const data = await response.json();
-            return data.exists;
-        } catch (error) {
-            console.error('Error checking phone:', error);
-            return false;
         }
     };
 

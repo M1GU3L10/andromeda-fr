@@ -216,8 +216,8 @@ export default function CalendarioBarberia({ info }) {
       }
     };
 
-    fetchAppointmentDetails();
-  }, [appointmentId]);
+    fetchAppointmentDetails();   
+  }, [appointmentId]);  
 
 
 
