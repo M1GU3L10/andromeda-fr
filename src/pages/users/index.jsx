@@ -516,24 +516,20 @@ finally {
                       </td>
                       <td>
                         <div className='actions d-flex align-items-center'>
-                        {hasPermission('Cambiar Estado') && (
                         <Switch
         checked={user.status === 'A'}
         onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
       />
-    )}
-     {
-            hasPermission('Ver') && (
+    
         <Button color="primary" className="primary" onClick={() => handleViewDetails(user)}>
           <FaEye />
         </Button>
-      )}
-      {user.status === 'A' && hasPermission('Editar') && (
+      {user.status === 'A'  && (
         <Button color="secondary" className="secondary" onClick={() => openModal(2, user)}>
           <FaPencilAlt />
         </Button>
       )}
-      {user.status === 'A' && hasPermission('Eliminar') && (
+      {user.status === 'A'  && (
         <Button color="error" className="delete" onClick={() => deleteUser(user.id, user.name)}>
           <IoTrashSharp />
         </Button>

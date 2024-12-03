@@ -24,7 +24,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800];
     return {
         backgroundColor,
-        height: theme.spacing(3),
+        height: theme.spacing(3), 
         color: theme.palette.text.primary,
         fontWeight: theme.typography.fontWeightRegular,
         '&:hover, &:focus': {
@@ -57,16 +57,14 @@ const Appointment = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
-    const [saleDetails, setSaleDetails] = useState([]);
+    const [saleDetails, setSaleDetails] = useState({ success: true, data: [], saleInfo: {} });
     const [selectedView, setSelectedView] = useState('dayGridMonth');
     const [selectedEmployee, setSelectedEmployee] = useState('');
     const [userRole, setUserRole] = useState('');
     const [userId, setUserId] = useState('');
-    const urlSales = 'http://localhost:1056/api/sales'; // Agregar URL de ventas
+    const urlSales = 'http://localhost:1056/api/sales';
     const [showWarningModal, setShowWarningModal] = useState(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
-
-
 
     useEffect(() => {
         const roleId = localStorage.getItem('roleId');
@@ -113,16 +111,14 @@ const Appointment = () => {
         appointmentDetails: false
     });
 
-
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [userResponse, programmingResponse,
-                    salesResponse] = await Promise.all([
-                        axios.get(urlUsers),
-                        axios.get(urlAppointment),
-                        axios.get(urlSales)
-                    ]);
+                const [userResponse, programmingResponse, salesResponse] = await Promise.all([
+                    axios.get(urlUsers),
+                    axios.get(urlAppointment),
+                    axios.get(urlSales)
+                ]);
 
                 const usersData = userResponse.data;
                 const programmingData = programmingResponse.data;
@@ -130,12 +126,10 @@ const Appointment = () => {
 
                 setUsers(usersData);
 
-                // Crear un mapa de appointmentId a empleadoId
                 const appointmentEmployeeMap = {};
                 salesData.forEach(sale => {
                     sale.SaleDetails.forEach(detail => {
                         if (detail.appointmentId && detail.empleadoId) {
-
                             appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
                         }
                     });
@@ -157,8 +151,7 @@ const Appointment = () => {
                     }
                 }));
 
-                // Filtrar eventos según el rol
-                if (userRole === '2') { // Rol de empleado
+                if (userRole === '2') {
                     transformedEvents = transformedEvents.filter(event =>
                         event.extendedProps.empleadoId?.toString() === userId
                     );
@@ -176,20 +169,22 @@ const Appointment = () => {
     useEffect(() => {
         setTimeout(() => {
             window.dispatchEvent(new Event('resize'));
-        }, 300);  // Agregar un pequeño retraso antes de disparar el evento resize
+        }, 300);
     }, [isToggleSidebar]);
-
-    ///detalle venta
 
     const getSaleDetailsByAppointmentId = async (id) => {
         try {
             const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
-            setSaleDetails(response.data);
+            setSaleDetails({
+                success: response.data.success,
+                data: response.data.data,
+                saleInfo: response.data.data[0]?.saleInfo || {}
+            });
         } catch (error) {
             console.error('Error fetching sale details:', error);
-            setSaleDetails([]);
-        }
-    };
+            setSaleDetails({ success: false, data: [], saleInfo: {} });
+        }    
+    };      
 
     const getProgramming = async () => {
         try {
@@ -205,8 +200,7 @@ const Appointment = () => {
             salesData.forEach(sale => {
                 sale.SaleDetails.forEach(detail => {
                     if (detail.appointmentId && detail.empleadoId) {
-                        appointmentEmployeeMap[detail.appointmentId] =
-                            detail.empleadoId;
+                        appointmentEmployeeMap[detail.appointmentId] = detail.empleadoId;
                     }
                 });
             });
@@ -239,12 +233,9 @@ const Appointment = () => {
         }
     };
 
-
     const handleDateClick = (arg) => {
         navigate('/appointmentRegister', { state: { date: arg.dateStr } });
     };
-
-
 
     const FiltrarUsers = () => {
         return users.filter(user => user.roleId === 3);
@@ -256,7 +247,6 @@ const Appointment = () => {
                 status: "Completada"
             });
             setShowWarningModal(false);
-            // Refresh the appointments
             getProgramming();
         } catch (error) {
             console.error('Error updating appointment status:', error);
@@ -269,7 +259,6 @@ const Appointment = () => {
                 status: "cancelada"
             });
             setShowWarningModal(false);
-            // Refresh the appointments
             getProgramming();
         } catch (error) {
             console.error('Error updating appointment status:', error);
@@ -298,29 +287,14 @@ const Appointment = () => {
             handleClose();
         };
 
-        const getServiceById = async (id) => {
-            // Suponiendo que tienes una API que devuelve un servicio por ID
-            const response = await axios.get(`http://localhost:1056/api/services/${id}`);
-            return response.data.name;
-        };
-
-        const getEmployeeById = async (id) => {
-            // Suponiendo que tienes una API que devuelve un empleado por ID
-            const response = await axios.get(`http://localhost:1056/api/users/${id}`);
-            return response.data.name;  // Devuelve el nombre del empleado
-        };
-
-        //
-
         const handleViewClick = async () => {
             setAppointmentId(info.event.id);
-
 
             const userName = await getUserName(users, parseInt(info.event.title));
 
             setDetailData({
                 title: userName || 'Cliente Desconocido',
-                start: info.event.Init_Time,  // Usar la combinación de fecha y hora
+                start: info.event.Init_Time,
                 end: info.event.Finish_Time,
                 Date: info.event.extendedProps.Date,
                 status: info.event.extendedProps.status,
@@ -333,7 +307,6 @@ const Appointment = () => {
             setShowDetailModal(true);
             handleClose();
         };
-
 
         return (
             <div
@@ -383,6 +356,7 @@ const Appointment = () => {
             </div>
         );
     };
+
     const handleClose = () => setShowModal(false);
 
     const validateStartTime = (value) => {
@@ -442,7 +416,6 @@ const Appointment = () => {
         setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
         handleValidation(name, e.target.value);
     };
-
 
     return (
         <div className="right-content w-100">
@@ -520,68 +493,97 @@ const Appointment = () => {
                 </div>
             </div>
             <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Detalle de la <i class="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="mb-4">
-            <h5 className="border-bottom pb-2">Informaciòn de la cita</h5>
-            <div className="row">
-              <div className="col-md-6">
-                <p><strong>Cliente:</strong> {detailData.title}</p>
-                <p><strong>Fecha:</strong> {detailData.Date}</p>
-                <p><strong>Hora inicio:</strong> {detailData.Init_Time}</p>
-                <p><strong>Hora fin:</strong> {detailData.Finish_Time}</p>
-              </div>
-              <div className="col-md-6">
-                <p><strong>Duraciòn de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
-                <p><strong>Total:</strong> {detailData.Total}</p>
-                <p><strong>Estado:</strong> {detailData.status}</p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4">
-            <h5 className="border-bottom pb-2">Detalle de la venta</h5>
-            {saleDetails.length > 0 ? (
-              <div className="table-responsive">
-                <table className="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Tipo</th>
-                      <th>Nombre</th>
-                      <th>Cantidad</th>
-                      <th>Precio unit</th>
-                      <th>Total</th>
-                      <th>Empleado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {saleDetails.map((detail, index) => (
-                      <tr key={index}>
-                        <td>{detail.type}</td>
-                        <td>{detail.productName}</td>
-                        <td>{detail.quantity}</td>
-                        <td>${detail.price.toLocaleString()}</td>
-                        <td>${detail.total.toLocaleString()}</td>
-                        <td>{detail.employeeName || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-muted">No se encuentran productos en esta cita.</p>
-            )}
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="outlined" onClick={() => setShowDetailModal(false)}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+                <Modal.Header closeButton>
+                    <Modal.Title>Detalle de la <i className="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="mb-4">
+                        <h5 className="border-bottom pb-2">Información de la cita</h5>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <p><strong>Cliente:</strong> {detailData.title}</p>
+                                <p><strong>Fecha:</strong> {detailData.Date}</p>
+                                <p><strong>Hora inicio:</strong> {detailData.Init_Time}</p>
+                                <p><strong>Hora fin:</strong> {detailData.Finish_Time}</p>
+                            </div>
+                            <div className="col-md-6">
+                                <p><strong>Duración de la cita:</strong> {detailData.time_appointment}<strong> Minutos</strong></p>
+                                <p><strong>Total:</strong> {detailData.Total}</p>
+                                <p><strong>Estado:</strong> {detailData.status}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-4">
+                        <h5 className="border-bottom pb-2">Detalle de la venta</h5>
+                        {saleDetails.data && saleDetails.data.length > 0 ? (
+                            <>
+                                <div className="mb-3">
+                                    <h6>Información de la venta</h6>
+                                    <p><strong>Número de factura:</strong> {saleDetails.saleInfo.billNumber}</p>
+                                    <p><strong>Estado:</strong> {saleDetails.saleInfo.status}</p>
+                                    <p><strong>ID de usuario:</strong> {saleDetails.saleInfo.id_usuario}</p>
+                                    <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.empleadoId}</p>
+                                </div>
+                                <div className="table-responsive">
+                                    <table className="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Tipo</th>
+                                                <th>Nombre</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio unit</th>
+                                                <th>Total</th>
+                                                <th>Empleado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {saleDetails.data.map((detail, index) => (
+                                                <tr key={index}>
+                                                    <td>{detail.type}</td>
+                                                    <td>{detail.name}</td>
+                                                    <td>{detail.quantity}</td>
+                                                    <td>${detail.price.toLocaleString()}</td>
+                                                    <td>${detail.total.toLocaleString()}</td>
+                                                    <td>{detail.employeeName || '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        ) : (
+                            <p className="text-muted">No se encuentran productos en esta cita.</p>
+                        )}
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="outlined" onClick={() => setShowDetailModal(false)}>
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showWarningModal} onHide={() => setShowWarningModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Cambiar estado de la cita</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>¿Está seguro de que desea cambiar el estado de esta cita?</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="outlined" onClick={() => setShowWarningModal(false)}>
+                        Cancelar
+                    </Button>
+                    <Button variant="contained" color="success" onClick={handleStatusChangeSucess}>
+                        Completada
+                    </Button>
+                    <Button variant="contained" color="error" onClick={handleStatusChangeRed}>
+                        Cancelada
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };
 
 export default Appointment;
+
