@@ -16,7 +16,7 @@ import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Pagination from '../../components/pagination/index';
-import { usePermissions } from '../../components/PrivilegeCheck';
+import { usePermissions } from '../../components/PermissionCheck';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   const backgroundColor =
@@ -475,11 +475,13 @@ finally {
           <div className='card shadow border-0 p-3'>
             <div className='row'>
               <div className='col-sm-5 d-flex align-items-center'>
-             
+              {
+            hasPermission('Usuarios registrar') && (
                 <Button className='btn-register' onClick={() => openModal(1)} variant="contained" color="primary">
                   <BsPlusSquareFill /> Registrar
                 </Button>
-      
+      )
+    }
               </div>
               <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                 <div className="searchBox position-relative d-flex align-items-center">
@@ -516,20 +518,28 @@ finally {
                       </td>
                       <td>
                         <div className='actions d-flex align-items-center'>
+                        {
+            hasPermission('Usuarios cambiar estado') && (
                         <Switch
         checked={user.status === 'A'}
         onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
       />
-    
+      )
+    }
+    {
+            hasPermission('Usuarios ver') && (
         <Button color="primary" className="primary" onClick={() => handleViewDetails(user)}>
           <FaEye />
         </Button>
-      {user.status === 'A'  && (
+        )
+      }
+
+      {user.status === 'A'  &&  hasPermission('Usuarios editar') && (
         <Button color="secondary" className="secondary" onClick={() => openModal(2, user)}>
           <FaPencilAlt />
         </Button>
-      )}
-      {user.status === 'A'  && (
+      )} 
+      {user.status === 'A'  &&  hasPermission('Usuarios eliminar') && (
         <Button color="error" className="delete" onClick={() => deleteUser(user.id, user.name)}>
           <IoTrashSharp />
         </Button>

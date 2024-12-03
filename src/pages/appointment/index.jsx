@@ -523,6 +523,7 @@ const Appointment = () => {
                                     <p><strong>Estado:</strong> {saleDetails.saleInfo.status}</p>
                                     <p><strong>ID de usuario:</strong> {saleDetails.saleInfo.id_usuario}</p>
                                     <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.empleadoId}</p>
+                                    <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.id_producto}</p>
                                 </div>
                                 <div className="table-responsive">
                                     <table className="table table-striped">
