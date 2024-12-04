@@ -130,7 +130,7 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                                 {userEmail}
                             </Button>
                             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
-                                {userRole == 1 || userRole == 38 ? (
+                                {userRole == 1 || userRole == 2 ? (
                                     <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
                                         <GrUserAdmin /> Administrar
                                     </MenuItem>
