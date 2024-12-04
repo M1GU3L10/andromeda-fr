@@ -106,66 +106,62 @@ export default function EnhancedProfileEditor() {
     e.preventDefault();
     
     if (Object.values(errors).some(error => error !== '')) {
-      Swal.fire({
-        icon: 'warning',
-        title: '¡Advertencia!',
-        text: 'Por favor, corrija los errores en el formulario',
-      });
-      return;
+        Swal.fire({
+            icon: 'warning',
+            title: '¡Advertencia!',
+            text: 'Por favor, corrija los errores en el formulario',
+        });
+        return;
     }
-
-    if (isSubmitting) return;
 
     setIsSubmitting(true);
     setLoading(true);
 
     try {
-      const dataToUpdate = {
-        ...userData,
-        password: password || undefined,
-      };
+        const dataToUpdate = {
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone,
+            ...(password && { password })
+        };
 
-     
+        const response = await api.put(`/users/profile/${userData.id}`, dataToUpdate);
 
-      
-      // Validate email uniqueness
-   
+        if (response.data.token) {
+            // Update token in localStorage
+            localStorage.setItem('jwtToken', response.data.token);
+        }
 
- 
-
-      const response = await api.put(`/users/profile/${userData.id}`, dataToUpdate);
-
-      if (response.status === 200) {
         Swal.fire({
-          icon: 'success',
-          title: '¡Éxito!',
-          text: 'Perfil actualizado exitosamente',
+            icon: 'success',
+            title: '¡Éxito!',
+            text: 'Perfil actualizado exitosamente',
         }).then((result) => {
-          if (result.isConfirmed) {
-            if (password) {
-              localStorage.removeItem('jwtToken');
-              localStorage.removeItem('userId');
-              window.location.href = '/login';
-            } else {
-              window.location.reload();
+            if (result.isConfirmed) {
+                if (password) {
+                    // If password was changed, force re-login
+                    localStorage.removeItem('jwtToken');
+                    localStorage.removeItem('userId');
+                    window.location.href = '/login';
+                } else {
+                    // Just reload the profile
+                    window.location.reload();
+                }
             }
-          }
         });
-      }
-    } catch (err) {
-      Swal.fire({
-        icon: 'success',
-        title: '¡Éxito!',
-        text: 'Perfil actualizado exitosamente',
-      });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.response?.data?.message || 'Error al actualizar el perfil',
+        });
     } finally {
-      setIsSubmitting(false);
-      setLoading(false);
+        setIsSubmitting(false);
+        setLoading(false);
     }
-  };
+};
 
- 
-  
 
   const validateName = (value) => {
     const regex = /^[A-Za-z\s]{3,}$/;
