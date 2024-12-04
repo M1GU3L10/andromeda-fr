@@ -99,11 +99,7 @@ const Header = ({ scrollToServices, scrollToContact }) => {
                 <span className='ml-2'>Barberia Orion</span>
             </Link>
             <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
-                <nav className='navBar-index'>
-                    <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-                  <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-                    
-                </nav>
+             
                 <div className="auth-buttons">
                     {isLoggedIn && userEmail ? (
                         <div className="user-menu">

@@ -643,35 +643,29 @@ export default function CalendarioBarberia({ info }) {
             </div>
 
             <div className="mt-4">
-              <h5 className="border-bottom pb-2 text-gold">Detalle de la Venta</h5>
+              <h5 className="border-bottom pb-2 text-gold">Detalle de la cita</h5>
               {saleDetails.data && saleDetails.data.length > 0 ? (
                             <>
-                                <div className="mb-3">
-                                    <p><strong>Número de factura:</strong> {saleDetails.saleInfo.billNumber}</p>
-                                    {/* <p><strong>Estado:</strong> {saleDetails.saleInfo.status}</p>
-                                    <p><strong>ID de usuario:</strong> {saleDetails.saleInfo.id_usuario}</p>
-                                    <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.empleadoId}</p>
-                                    <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.id_producto}</p> */}
-                                </div>
+                              
                                 <div className="table-responsive">
                                     <table className="table table-striped">
                                         <thead>
                                             <tr>
-                                                <th>Tipo</th>
+                                                
                                                 <th>Nombre</th>
                                                 <th>Cantidad</th>
-                                                <th>Precio unit</th>
-                                                <th>Empleado</th>
+                                                <th>Precio unitario</th>
+                                                <th>Barbero</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {saleDetails.data.map((detail, index) => (
                                                 <tr key={index}>
-                                                    <td>{detail.type}</td>
+                                                    
                                                     <td>{detail.name}</td>
                                                     <td>{detail.quantity}</td>
                                                     <td>${detail.price.toLocaleString()}</td>
-                                                    <td>{detail.employeeName || '-'}</td>
+                                                    <td>{detail.employeeName || ''}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
