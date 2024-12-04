@@ -48,17 +48,10 @@ const Roles = () => {
     const url = 'http://localhost:1056/api/roles';
     const urlPermissions = 'http://localhost:1056/api/permissions';
     const urlPermissionsRoles = 'http://localhost:1056/api/permissionsRole';
-    const urlPrivileges = 'http://localhost:1056/api/privileges';
-    const urlPrivilegePermissionRoles = 'http://localhost:1056/api/privilege-permission-roles';
-    const urlAssignPrivileges = 'http://localhost:1056/api/privileges/assign';
-    const { hasPrivilege } = useUserPermissions();
-
     const [services, setServices] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [selectedPermissions, setSelectedPermissions] = useState([]);
     const [permissionsRole, setPermissionsRole] = useState([]);
-    const [privileges, setPrivileges] = useState({});
-    const [selectedPrivileges, setSelectedPrivileges] = useState({});
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [status, setStatus] = useState('');
@@ -84,24 +77,7 @@ const Roles = () => {
         getServices();
         getPermissions();
         getPermissionsRole();
-        getPrivileges();
     }, []);
-
-    const getPrivileges = async () => {
-        try {
-            const response = await axios.get(urlPrivileges);
-            const groupedPrivileges = response.data.reduce((acc, privilege) => {
-                if (!acc[privilege.permissionId]) {
-                    acc[privilege.permissionId] = [];
-                }
-                acc[privilege.permissionId].push(privilege);
-                return acc;
-            }, {});
-            setPrivileges(groupedPrivileges);
-        } catch (error) {
-            console.error('Error al obtener los privilegios', error);
-        }
-    };
 
     const getPermissions = async () => {
         try {
@@ -157,7 +133,6 @@ const Roles = () => {
         setStatus('A');
         setSelectedPermissions(selectedPermissions);
         setOperation(op);
-        setSelectedPrivileges({});
 
         if (op === 1) {
             setTitle('Registrar rol');
@@ -168,34 +143,11 @@ const Roles = () => {
             setId(id);
             setName(name);
             const rolePermissions = getPermissionsForRoleId(id);
-            setSelectedPermissions(rolePermissions);
 
-            try {
-                const response = await axios.get(`${urlPrivilegePermissionRoles}?roleId=${id}`);
-                const existingPrivileges = response.data.reduce((acc, item) => {
-                    if (!acc[item.PermissionRole.permissionId]) {
-                        acc[item.PermissionRole.permissionId] = {};
-                    }
-                    acc[item.PermissionRole.permissionId][item.Privilege.id] = true;
-                    return acc;
-                }, {});
-                setSelectedPrivileges(existingPrivileges);
-            } catch (error) {
-                console.error('Error fetching existing privileges', error);
-            }
         }
         setShowModal(true);
     };
 
-    const handlePrivilegeChange = (permissionId, privilegeId) => {
-        setSelectedPrivileges(prevSelected => ({
-            ...prevSelected,
-            [permissionId]: {
-                ...(prevSelected[permissionId] || {}),
-                [privilegeId]: !(prevSelected[permissionId] && prevSelected[permissionId][privilegeId])
-            }
-        }));
-    };
 
     const handleClose = () => {
         setId('');
@@ -274,8 +226,7 @@ const Roles = () => {
                 id: id,
                 name: name.trim(),
                 status: status,
-                permissions: selectedPermissions,
-                privileges: selectedPrivileges
+                permissions: selectedPermissions
             };
 
             const isUpdate = operation === 2;
@@ -298,12 +249,6 @@ const Roles = () => {
                 }
             });
 
-            if (metodo === 'POST' || metodo === 'PUT') {
-                const roleId = response.data.id;
-                // Paso 2: Asignar privilegios
-                await asignarPrivilegios(roleId, parametros.privileges);
-            }
-
             show_alerta('Operación exitosa', 'success');
             if (metodo === 'PUT' || metodo === 'POST') {
                 document.getElementById('btnCerrar').click();
@@ -316,56 +261,6 @@ const Roles = () => {
             console.error(error);
         }
     };
-
-    const asignarPrivilegios = async (roleId, privilegios) => {
-        try {
-          // Obtener todos los PermissionRoles existentes para este rol
-          const permissionRolesResponse = await axios.get(`${urlPermissionsRoles}?roleId=${roleId}`);
-          const existingPermissionRoles = permissionRolesResponse.data;
-        
-          // Para cada permiso seleccionado
-          for (const permissionId in privilegios) {
-            // Encontrar el PermissionRole correspondiente
-            const permissionRole = existingPermissionRoles.find(pr => pr.permissionId === parseInt(permissionId));
-        
-            if (permissionRole) {
-              // Para cada privilegio del permiso actual, solo procesar los seleccionados
-              for (const privilegeId in privilegios[permissionId]) {
-                const isSelected = privilegios[permissionId][privilegeId];
-        
-                if (isSelected) {
-                  try {
-                    // Crear la relación PrivilegePermissionRole solo para privilegios seleccionados
-                    await axios.post(urlPrivilegePermissionRoles, {
-                      privilegeId: parseInt(privilegeId),
-                      permissionRoleId: permissionRole.id
-                    });
-                  } catch (error) {
-                    if (error.response && error.response.status !== 409) {
-                      // Ignorar error si ya existe
-                      console.error('Error al crear PrivilegePermissionRole:', error);
-                    }
-                  }
-                } else {
-                  // Si el privilegio no está seleccionado, intentar eliminarlo
-                  try {
-                    await axios.delete(`${urlPrivilegePermissionRoles}/${permissionRole.id}/${privilegeId}`);
-                  } catch (error) {
-                    if (error.response && error.response.status !== 404) {
-                      // Ignorar error si no existe
-                      console.error('Error al eliminar PrivilegePermissionRole:', error);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error al asignar privilegios:', error);
-          throw error;
-        }
-      };
-      
       
 
 
@@ -612,20 +507,6 @@ const Roles = () => {
                                             checked={selectedPermissions.includes(permission.id)}
                                             onChange={() => handleCheckboxChange(permission.id)}
                                         />
-                                        {selectedPermissions.includes(permission.id) && privileges[permission.id] && (
-                                            <div className="ml-4">
-                                                {privileges[permission.id].map(privilege => (
-                                                    <Form.Check
-                                                        key={privilege.id}
-                                                        type="checkbox"
-                                                        id={`privilege-${permission.id}-${privilege.id}`}
-                                                        label={privilege.name}
-                                                        checked={selectedPrivileges[permission.id] && selectedPrivileges[permission.id][privilege.id]}
-                                                        onChange={() => handlePrivilegeChange(permission.id, privilege.id)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
                                 ))}
                             </Form.Group>
