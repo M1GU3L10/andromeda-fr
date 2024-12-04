@@ -40,14 +40,14 @@ export default function CalendarioBarberia({ info }) {
   const [users, setUsers] = useState([]);
   const [selectedView, setSelectedView] = useState('dayGridMonth');
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [detailData, setDetailData] = useState({});
   const [showModal, setShowModal] = useState(false);
-  const [saleDetails, setSaleDetails] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const urlSales = 'http://localhost:1056/api/sales';
   const urlUsers = 'http://localhost:1056/api/users';
   const urlAppointment = 'http://localhost:1056/api/appointment';
+  const [detailData, setDetailData] = useState({});
+  const [saleDetails, setSaleDetails] = useState({ success: true, data: [], saleInfo: {} });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,13 +67,17 @@ export default function CalendarioBarberia({ info }) {
 
   const getSaleDetailsByAppointmentId = async (id) => {
     try {
-      const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
-      setSaleDetails(response.data);
+        const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
+        setSaleDetails({
+            success: response.data.success,
+            data: response.data.data,
+            saleInfo: response.data.data[0]?.saleInfo || {}
+        });
     } catch (error) {
-      console.error('Error fetching sale details:', error);
-      setSaleDetails([]);
-    }
-  };
+        console.error('Error fetching sale details:', error);
+        setSaleDetails({ success: false, data: [], saleInfo: {} });
+    }    
+};      
 
   const fetchData = async () => {
     try {
@@ -256,31 +260,39 @@ export default function CalendarioBarberia({ info }) {
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
       });
-
+  
       if (result.isConfirmed) {
-        // First, update the appointment status
-        await axios.put(`${urlAppointment}/${appointmentId}/status`, {
+        // Update the appointment status
+        const appointmentResponse = await axios.put(`${urlAppointment}/${appointmentId}/status`, {
           status: 'cancelada'
         });
-
-        // Then, update the associated sale status
+  
+        if (appointmentResponse.status !== 200) {
+          throw new Error('Failed to update appointment status');
+        }
+  
+        // Find and update the associated sale status
         const saleResponse = await axios.get(`${urlSales}`);
         const sale = saleResponse.data.find(s => 
           s.SaleDetails.some(detail => detail.appointmentId === parseInt(appointmentId))
         );
-
+  
         if (sale) {
-          await axios.put(`${urlSales}/${sale.id}/status`, {
+          const saleUpdateResponse = await axios.put(`${urlSales}/${sale.id}/status`, {
             status: 'Cancelada'
           });
+  
+          if (saleUpdateResponse.status !== 200) {
+            throw new Error('Failed to update sale status');
+          }
         }
-
+  
         await Swal.fire({
           title: 'Cita cancelada',
           text: 'La cita y la venta asociada han sido canceladas',
           icon: 'success'
         });
-
+  
         // Refresh the calendar events
         await fetchData();
         setShowDetailModal(false);
@@ -289,11 +301,12 @@ export default function CalendarioBarberia({ info }) {
       console.error('Error al cancelar la cita:', error);
       await Swal.fire({
         title: 'Error',
-        text: 'Hubo un problema al cancelar la cita',
+        text: 'Hubo un problema al cancelar la cita: ' + error.message,
         icon: 'error'
       });
     }
   };
+  
   
   const getUserInitial = () => {
     return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
@@ -631,40 +644,43 @@ export default function CalendarioBarberia({ info }) {
 
             <div className="mt-4">
               <h5 className="border-bottom pb-2 text-gold">Detalle de la Venta</h5>
-              {error ? (
-                <p className="text-danger">{error}</p>
-              ) : saleDetails.length > 0 ? (
-                <div className="table-responsive">
-                  <table className="table table-dark table-striped table-hover align-middle">
-                    <thead className="table-gold">
-                      <tr>
-                        <th>Tipo</th>
-                        <th>Nombre</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Total</th>
-                        <th>Empleado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {saleDetails.map((detail, index) => (
-                        <tr key={index}>
-                          <td>{detail.type}</td>
-                          <td>{detail.productName}</td>
-                          <td>{detail.quantity}</td>
-                          <td>${detail.price.toLocaleString()}</td>
-                          <td>${detail.total.toLocaleString()}</td>
-                          <td>{detail.employeeName || "-"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="text-muted fst-italic">
-                  No se encuentran productos en esta cita.
-                </p>
-              )}
+              {saleDetails.data && saleDetails.data.length > 0 ? (
+                            <>
+                                <div className="mb-3">
+                                    <p><strong>Número de factura:</strong> {saleDetails.saleInfo.billNumber}</p>
+                                    {/* <p><strong>Estado:</strong> {saleDetails.saleInfo.status}</p>
+                                    <p><strong>ID de usuario:</strong> {saleDetails.saleInfo.id_usuario}</p>
+                                    <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.empleadoId}</p>
+                                    <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.id_producto}</p> */}
+                                </div>
+                                <div className="table-responsive">
+                                    <table className="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Tipo</th>
+                                                <th>Nombre</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio unit</th>
+                                                <th>Empleado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {saleDetails.data.map((detail, index) => (
+                                                <tr key={index}>
+                                                    <td>{detail.type}</td>
+                                                    <td>{detail.name}</td>
+                                                    <td>{detail.quantity}</td>
+                                                    <td>${detail.price.toLocaleString()}</td>
+                                                    <td>{detail.employeeName || '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        ) : (
+                            <p className="text-muted">No se encuentran productos en esta cita.</p>
+                        )}
             </div>
 
             <div className="mt-4 text-end">

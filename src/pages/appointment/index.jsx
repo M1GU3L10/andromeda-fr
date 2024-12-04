@@ -494,7 +494,7 @@ const Appointment = () => {
             </div>
             <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} size="lg">
                 <Modal.Header closeButton>
-                    <Modal.Title>Detalle de la <i className="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
+                    <Modal.Title>Detalle de la venta y la cita <i className="fa fa-credit-card" aria-hidden="true"></i></Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div className="mb-4">
@@ -518,12 +518,11 @@ const Appointment = () => {
                         {saleDetails.data && saleDetails.data.length > 0 ? (
                             <>
                                 <div className="mb-3">
-                                    <h6>Información de la venta</h6>
                                     <p><strong>Número de factura:</strong> {saleDetails.saleInfo.billNumber}</p>
-                                    <p><strong>Estado:</strong> {saleDetails.saleInfo.status}</p>
+                                    {/* <p><strong>Estado:</strong> {saleDetails.saleInfo.status}</p>
                                     <p><strong>ID de usuario:</strong> {saleDetails.saleInfo.id_usuario}</p>
                                     <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.empleadoId}</p>
-                                    <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.id_producto}</p>
+                                    <p><strong>ID de empleado:</strong> {saleDetails.saleInfo.id_producto}</p> */}
                                 </div>
                                 <div className="table-responsive">
                                     <table className="table table-striped">
@@ -533,7 +532,6 @@ const Appointment = () => {
                                                 <th>Nombre</th>
                                                 <th>Cantidad</th>
                                                 <th>Precio unit</th>
-                                                <th>Total</th>
                                                 <th>Empleado</th>
                                             </tr>
                                         </thead>
@@ -544,7 +542,6 @@ const Appointment = () => {
                                                     <td>{detail.name}</td>
                                                     <td>{detail.quantity}</td>
                                                     <td>${detail.price.toLocaleString()}</td>
-                                                    <td>${detail.total.toLocaleString()}</td>
                                                     <td>{detail.employeeName || '-'}</td>
                                                 </tr>
                                             ))}
