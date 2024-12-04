@@ -113,6 +113,12 @@ export default function CalendarioBarberia({ info }) {
     }
   };
 
+  // Llamar a fetchData en useEffect
+  useEffect(() => {
+    fetchData(); // Se llama al fetch cuando se monta el componente
+  }, []); // [] asegura que se ejecuta solo una vez al montarse
+
+
   const checkLoginStatus = () => {
     const token = localStorage.getItem('jwtToken');
     const storedEmail = localStorage.getItem('userName');
@@ -260,39 +266,31 @@ export default function CalendarioBarberia({ info }) {
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
       });
-  
+
       if (result.isConfirmed) {
-        // Update the appointment status
-        const appointmentResponse = await axios.put(`${urlAppointment}/${appointmentId}/status`, {
+        // First, update the appointment status
+        await axios.put(`${urlAppointment}/${appointmentId}`, {
           status: 'cancelada'
         });
-  
-        if (appointmentResponse.status !== 200) {
-          throw new Error('Failed to update appointment status');
-        }
-  
-        // Find and update the associated sale status
+
+        // Then, update the associated sale status
         const saleResponse = await axios.get(`${urlSales}`);
         const sale = saleResponse.data.find(s => 
           s.SaleDetails.some(detail => detail.appointmentId === parseInt(appointmentId))
         );
-  
+
         if (sale) {
-          const saleUpdateResponse = await axios.put(`${urlSales}/${sale.id}/status`, {
-            status: 'Cancelada'
+          await axios.put(`${urlSales}/${sale.id}/status`, {
+            status: 'Cancelado'
           });
-  
-          if (saleUpdateResponse.status !== 200) {
-            throw new Error('Failed to update sale status');
-          }
         }
-  
+
         await Swal.fire({
           title: 'Cita cancelada',
           text: 'La cita y la venta asociada han sido canceladas',
           icon: 'success'
         });
-  
+
         // Refresh the calendar events
         await fetchData();
         setShowDetailModal(false);
@@ -301,7 +299,7 @@ export default function CalendarioBarberia({ info }) {
       console.error('Error al cancelar la cita:', error);
       await Swal.fire({
         title: 'Error',
-        text: 'Hubo un problema al cancelar la cita: ' + error.message,
+        text: 'Hubo un problema al cancelar la cita',
         icon: 'error'
       });
     }
