@@ -48,6 +48,7 @@ export default function CalendarioBarberia({ info }) {
   const urlAppointment = 'http://localhost:1056/api/appointment';
   const [detailData, setDetailData] = useState({});
   const [saleDetails, setSaleDetails] = useState({ success: true, data: [], saleInfo: {} });
+  const [hasFetchedData, setHasFetchedData] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,45 +80,51 @@ export default function CalendarioBarberia({ info }) {
     }    
 };      
 
-  const fetchData = async () => {
-    try {
-      const [userResponse, programmingResponse] = await Promise.all([
-        axios.get(urlUsers),
-        axios.get(urlAppointment),
-      ]);
+const fetchData = async () => {
+  try {
+    const [userResponse, programmingResponse] = await Promise.all([
+      axios.get(urlUsers),
+      axios.get(urlAppointment),
+    ]);                                
 
-      const usersData = userResponse.data;
-      const programmingData = programmingResponse.data.filter(event => event.clienteId.toString() === localStorage.getItem('userId'));
+    const usersData = userResponse.data;
+    const userId = localStorage.getItem('userId');
+    const programmingData = programmingResponse.data.filter(event => event.clienteId.toString() === userId);
 
-      setUsers(usersData);
+    setUsers(usersData);
 
-      const transformedEvents = programmingData.map(event => ({
-        id: event.id.toString(),
-        title: event.clienteId.toString(),
-        start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
-        end: `${event.Date.split('T')[0]}T${event.Finish_Time}`,
-        extendedProps: {
-          status: event.status,
-          Total: event.Total,
-          Init_Time: event.Init_Time,
-          Finish_Time: event.Finish_Time,
-          Date: event.Date,
-          time_appointment: event.time_appointment,
-          DetailAppointments: event.DetailAppointments,
-        }
-      }));
+    const transformedEvents = programmingData.map(event => ({
+      id: event.id.toString(),
+      title: event.clienteId.toString(),
+      start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
+      end: `${event.Date.split('T')[0]}T${event.Finish_Time}`,
+      extendedProps: {
+        status: event.status,
+        Total: event.Total,
+        Init_Time: event.Init_Time,
+        Finish_Time: event.Finish_Time,
+        Date: event.Date,
+        time_appointment: event.time_appointment,
+        DetailAppointments: event.DetailAppointments,
+      }
+    }));
 
-      setEvents(transformedEvents);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
+    setEvents(transformedEvents);
+    setHasFetchedData(true);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+
+useEffect(() => {
+  if (!hasFetchedData) {
+    fetchData();
+  }
+  // Este cleanup es para asegurar que el estado se resetee si la ruta cambia
+  return () => {
+    setHasFetchedData(false);
   };
-
-  // Llamar a fetchData en useEffect
-  useEffect(() => {
-    fetchData(); // Se llama al fetch cuando se monta el componente
-  }, []); // [] asegura que se ejecuta solo una vez al montarse
-
+}, [hasFetchedData]);
 
   const checkLoginStatus = () => {
     const token = localStorage.getItem('jwtToken');
@@ -322,6 +329,11 @@ export default function CalendarioBarberia({ info }) {
   };
 
   const getUserName = (users, clienteId) => {
+    const userId = localStorage.getItem('userId'); // Obtener el ID del usuario logueado
+      if (!userId) {
+        console.error('No userId found in localStorage');
+        return;
+      }
     const user = users.find(user => user.id === clienteId);
     return user ? user.name : 'Desconocido';
   };
