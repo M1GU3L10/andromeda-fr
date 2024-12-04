@@ -56,7 +56,7 @@ const Absences = () => {
     const [detailData, setDetailData] = useState({});
     const [search, setSearch] = useState('');
     const [currentPages, setCurrentPages] = useState(1);
-    const [dataQt, setDataQt] = useState(3);
+    const [dataQt, setDataQt] = useState(5);
 
     const [formValues, setFormValues] = useState({
         id: '',
@@ -166,7 +166,7 @@ const Absences = () => {
 
     // funcion para que no traiga usuarios que tengan otro rol diferente a empleados
     const FiltrarUsers = () => {
-        return users.filter(user => user.roleId === 2);
+        return users.filter(user => user.roleId === 2 && user.status === 'A');
     }
 
     const deleteAbsence = async (id, description) => {
@@ -282,7 +282,7 @@ const Absences = () => {
         let valid = true;
 
         Object.keys(fields).forEach(field => {
-            if (operation !== 3 || fields[field] || field === 'status') { // Solo valida si es un nuevo registro o si el campo fue modificado
+            if (operation !== 3 || fields[field] || field === 'status') {
                 validateField(field, fields[field]);
                 if (errors[field]) valid = false;
             }
@@ -295,22 +295,26 @@ const Absences = () => {
 
         const data = {
             id: formValues.id,
-            startTime: startTime,
-            endTime: endTime,
-            date: date,
-            description: description,
-            userId: userId,
-            status: status
+            startTime,
+            endTime,
+            date,
+            description,
+            userId,
+            status
         };
-
-        // Depurar valores
-        console.log('Data a enviar:', data);
 
         if (operation === 1) {
             await enviarSolicitud('POST', data);
         } else if (operation === 3) {
             if (!data.id) {
                 show_alerta('ID no encontrado para actualizar', 'error');
+                return;
+            }
+            // Check if any field has changed
+            const hasChanges = Object.keys(data).some(key => data[key] !== currentAbsence[key]);
+            if (!hasChanges) {
+                show_alerta('No se modificó ningún campo', 'info');
+                handleCloseModal();
                 return;
             }
             await enviarSolicitud('PUT', data);
@@ -325,10 +329,13 @@ const Absences = () => {
 
         try {
             await axios({ method: metodo, url, data: parametros });
-            show_alerta('Operación exitosa', 'success');
+            if (metodo === 'PUT' && JSON.stringify(parametros) === JSON.stringify(currentAbsence)) {
+                show_alerta('No se realizaron cambios', 'info');
+            } else {
+                show_alerta('Operación exitosa', 'success');
+            }
             handleCloseModal();
             getAbsences();
-            console.log('Parámetros enviados:', parametros); // Para depuración
         } catch (error) {
             console.error('Error en la solicitud:', error.response?.status, error.response?.data);
             show_alerta('Error en la solicitud', 'error');
@@ -419,7 +426,6 @@ const Absences = () => {
                                     nPages={nPages}
                                 />
                             </div>
-
                         </div>
                     </div>
                 </div>
