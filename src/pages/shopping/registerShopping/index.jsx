@@ -40,6 +40,7 @@ const RegisterShopping = () => {
     const [shoppingDetails, setShoppingDetails] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [realTimeErrors, setRealTimeErrors] = useState({});
+    const [codeExists, setCodeExists] = useState(false); // Added state for code existence
 
     const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm({
         defaultValues: {
@@ -58,7 +59,7 @@ const RegisterShopping = () => {
     const getSuppliers = async () => {
         try {
             const response = await axios.get(urlSuppliers);
-            setSuppliers(response.data);
+            setSuppliers(response.data.filter(supplier => supplier.status === 'A'));
         } catch (error) {
             console.error('Error al obtener proveedores', error);
         }
@@ -67,7 +68,7 @@ const RegisterShopping = () => {
     const getProducts = async () => {
         try {
             const response = await axios.get(urlProducts);
-            setProducts(response.data);
+            setProducts(response.data.filter(product => product.status === 'A'));
         } catch (error) {
             console.error('Error al obtener productos', error);
         }
@@ -79,36 +80,37 @@ const RegisterShopping = () => {
             const selectedDate = new Date(value);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-    
+
             if (selectedDate > today) {
                 setRealTimeErrors(prev => ({
                     ...prev,
                     purchaseDate: 'No se puede registrar compras para fechas futuras.'
                 }));
             } else {
-                // Clear the error when the date is valid
                 setRealTimeErrors(prev => ({ ...prev, purchaseDate: '' }));
             }
         }
-    
+
         if (name === 'code') {
             if (value.trim() === '') {
                 setRealTimeErrors(prev => ({ ...prev, code: 'El código no puede estar vacío' }));
+            } else if (value.length > 15) {
+                setRealTimeErrors(prev => ({ ...prev, code: 'El código no puede tener más de 15 caracteres' }));
             } else {
-                // Clear the error when the code is not empty
                 setRealTimeErrors(prev => ({ ...prev, code: '' }));
+                // Check if the code already exists
+                checkCodeExists(value);
             }
         }
-    
+
         if (name === 'supplierId') {
             if (!value) {
                 setRealTimeErrors(prev => ({ ...prev, supplierId: 'Debe seleccionar un proveedor' }));
             } else {
-                // Clear the error when a supplier is selected
                 setRealTimeErrors(prev => ({ ...prev, supplierId: '' }));
             }
         }
-    
+
         setValue(name, value);
         saveData({ ...watch(), [name]: value }, shoppingDetails);
     };
@@ -180,12 +182,33 @@ const RegisterShopping = () => {
         return shoppingDetails.reduce((total, item) => total + item.total_price, 0);
     };
 
+    const checkCodeExists = async (code) => { // Added function to check code existence
+        try {
+            const response = await axios.get(`${urlShopping}/check-code/${code}`);
+            setCodeExists(response.data.exists);
+            if (response.data.exists) {
+                setRealTimeErrors(prev => ({ ...prev, code: 'Este código ya está en uso' }));
+            }
+        } catch (error) {
+            console.error('Error al verificar el código', error);
+        }
+    };
+
     const onSubmit = async (data) => {
         if (shoppingDetails.length === 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
                 text: 'Por favor, agregue al menos un producto.',
+            });
+            return;
+        }
+
+        if (codeExists) { // Check if code already exists before submitting
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ya existe una compra registrada con este código.',
             });
             return;
         }
@@ -364,8 +387,7 @@ const RegisterShopping = () => {
 
                                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
                                     <span className='valor'>Total: ${calculateTotal().toFixed(2)}</span>
-                                </div>
-                            </div>
+                                </div></div>
                         </div>
                         <div className='col-sm-5'>
                             <div className='card-detail shadow border-0'>
@@ -383,7 +405,8 @@ const RegisterShopping = () => {
                                                         placeholder="Ingrese el código"
                                                         {...register("code", {
                                                             required: "El código es requerido",
-                                                            validate: (value) => value.trim() !== '' || "El código no puede estar vacío"
+                                                            validate: (value) => value.trim() !== '' || "El código no puede estar vacío",
+                                                            maxLength: { value: 15, message: "El código no puede tener más de 15 caracteres" }
                                                         })}
                                                         onChange={handleInputChange}
                                                         className={
@@ -415,7 +438,7 @@ const RegisterShopping = () => {
                                                         onChange={handleInputChange}
                                                         max={new Date().toISOString().split("T")[0]}
                                                         className={
-                                                            errors.code || realTimeErrors.code
+                                                            errors.purchaseDate || realTimeErrors.purchaseDate
                                                                 ? 'form-control is-invalid'
                                                                 : 'form-control'
                                                         }
@@ -433,7 +456,7 @@ const RegisterShopping = () => {
                                                     {...register("supplierId", { required: "Debe seleccionar un proveedor" })}
                                                     onChange={handleInputChange}
                                                     className={
-                                                        errors.code || realTimeErrors.code
+                                                        errors.supplierId || realTimeErrors.supplierId
                                                             ? 'form-control is-invalid'
                                                             : 'form-control'
                                                     }
