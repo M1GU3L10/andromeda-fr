@@ -19,6 +19,8 @@ import { BsCalendar2DateFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import esLocale from "@fullcalendar/core/locales/es";
 import { GrStatusInfo } from "react-icons/gr";
+import { usePermissions } from '../../components/PermissionCheck';
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor = theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800];
@@ -65,6 +67,9 @@ const Appointment = () => {
     const urlSales = 'http://localhost:1056/api/sales';
     const [showWarningModal, setShowWarningModal] = useState(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+    const permissions = usePermissions();
+
+
 
     useEffect(() => {
         const roleId = localStorage.getItem('roleId');
@@ -72,6 +77,10 @@ const Appointment = () => {
         setUserRole(roleId);
         setUserId(currentUserId);
     }, []);
+
+    const hasPermission = (permission) => {
+        return permissions.includes(permission);
+      };
 
     const getUserName = (users, clienteId) => {
         const user = users.find(user => user.id === clienteId);
@@ -341,15 +350,24 @@ const Appointment = () => {
                     }}
                 >
                     <MenuItem className='Menu-programming-item' onClick={handleViewClick}>
+                    {
+                  hasPermission('Citas ver') && (
                         <Button color='primary' className='primary'>
                             <FaEye />
                         </Button>
+                        )
+                    }
+                    
                     </MenuItem>
                     {!isStatusChangeDisabled && (
                         <MenuItem className='Menu-programming-item' onClick={handleWarningClick}>
+                              {
+                  hasPermission('Citas cambiar estado') && (
                             <Button color='warning' className='warning'>
                                 <GrStatusInfo />
                             </Button>
+                        )
+                    }
                         </MenuItem>
                     )}
                 </Menu>

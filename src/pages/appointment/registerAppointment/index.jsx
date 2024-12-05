@@ -17,6 +17,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import CustomTimeSelector from '../../sales/registerSales/CustomTimeSelector/CustomTimeSelector';
 import { Link, useNavigate } from 'react-router-dom';
 
+
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
   height: theme.spacing(3),
@@ -75,6 +76,7 @@ export default function Component() {
     return saved ? parseFloat(saved) : 0;
   });
 
+
   // Save to localStorage whenever these values change
   useEffect(() => {
     localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
@@ -97,6 +99,8 @@ export default function Component() {
     getProducts();
     getServices();
   }, []);
+
+ 
 
   const getUsers = async () => {
     const response = await axios.get(urlUsers);
