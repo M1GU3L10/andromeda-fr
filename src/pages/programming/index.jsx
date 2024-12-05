@@ -14,6 +14,10 @@ import { Modal, Form } from 'react-bootstrap';
 import Button from '@mui/material/Button';
 import { FaEye } from "react-icons/fa";
 import esLocale from "@fullcalendar/core/locales/es";
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { usePermissions } from '../../components/PermissionCheck';
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   const backgroundColor = theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800];
@@ -45,6 +49,8 @@ const Programming = () => {
   const [selectedView, setSelectedView] = useState('dayGridMonth');
   const [userRole, setUserRole] = useState('');
   const [userId, setUserId] = useState('');
+const permissions = usePermissions();
+
 
   useEffect(() => {
     const roleId = localStorage.getItem('roleId');
@@ -141,11 +147,17 @@ const Programming = () => {
 
   const EventComponent = ({ info }) => {
     const [isHovered, setIsHovered] = useState(false);
-    const [showViewButton, setShowViewButton] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleClick = (e) => {
-      e.stopPropagation();
-      setShowViewButton(!showViewButton);
+    const handleClick = (event) => {
+      setAnchorEl(event.currentTarget);
+      setIsMenuOpen(true);
+    };
+
+    const handleClose = () => {
+      setAnchorEl(null);
+      setIsMenuOpen(false);
     };
 
     const handleViewClick = (e) => {
@@ -174,7 +186,12 @@ const Programming = () => {
         });
       }
       setShowDetailModal(true);
+      handleClose();
     };
+
+    const hasPermission = (permission) => {
+      return permissions.includes(permission);
+  };
 
     return (
       <div
@@ -183,29 +200,41 @@ const Programming = () => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
           setIsHovered(false);
-          setShowViewButton(false);
+          if (!isMenuOpen) {
+            handleClose();
+          }
         }}
         onClick={handleClick}
       >
-        {isHovered ? (
-          <span className='span-programming'>
-            {info.event.extendedProps.type === 'appointment' 
-              ? `${info.event.extendedProps.status}-${info.event.extendedProps.Finish_Time}`
-              : `${info.event.extendedProps.status}`}
-          </span>
-        ) : (
+        {!isHovered ? (
           <span className='span-programming'>{info.event.title}</span>
+        ) :(
+          <span className='span-programming'>
+            {info.event.extendedProps.status}
+            {info.event.extendedProps.type === 'appointment' && ` - ${info.event.extendedProps.Finish_Time}`}
+          </span>
         )}
-        {showViewButton && (
-          <Button 
-            color='primary' 
-            className='primary view-button'
-            onClick={handleViewClick}
-            aria-label="Ver detalles"
-          >
+        {hasPermission('Programacion ver') && (
+      <Menu
+        className='Menu-programming'
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        PaperProps={{
+          onMouseEnter: () => setIsMenuOpen(true),
+          onMouseLeave: handleClose,
+          style: {
+            maxHeight: 48 * 4.5,
+          },
+        }}
+      >
+        <MenuItem className='Menu-programming-item' onClick={handleViewClick}>
+          <Button color='primary' className='primary'>
             <FaEye />
           </Button>
-        )}
+        </MenuItem>
+      </Menu>
+    )}
       </div>
     );
   };
@@ -300,7 +329,7 @@ const Programming = () => {
               <p><strong>Descripción:</strong> {detailData.description}</p>
               <p><strong>Fecha de inicio:</strong> {new Date(detailData.start).toLocaleString()}</p>
               <p><strong>Fecha de fin:</strong> {new Date(detailData.end).toLocaleString()}</p>
-              <p><strong>Estado:</strong> {detailData.status}</p>
+              <p><strong>Estado:</strong>{detailData.status}</p>
             </div>
           )}
         </Modal.Body>

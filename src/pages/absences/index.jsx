@@ -20,8 +20,7 @@ import { Modal, Form, Col, Row } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { MdOutlineSave } from "react-icons/md";
-
-
+import { usePermissions } from '../../components/PermissionCheck';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -57,6 +56,7 @@ const Absences = () => {
     const [search, setSearch] = useState('');
     const [currentPages, setCurrentPages] = useState(1);
     const [dataQt, setDataQt] = useState(5);
+    const permissionsR = usePermissions();
 
     const [formValues, setFormValues] = useState({
         id: '',
@@ -67,8 +67,6 @@ const Absences = () => {
         userId: '',
         status: 'en proceso'
     });
-
-
 
     useEffect(() => {
         getAbsences();
@@ -150,12 +148,10 @@ const Absences = () => {
         setShowModal(true);
     }
 
-
     const handleCloseModal = () => {
         setShowModal(false);
         setErrors({});
     };
-
 
     const openDetailModal = (absence) => {
         setDetailData(absence);
@@ -207,19 +203,17 @@ const Absences = () => {
 
     const validateField = (name, value) => {
         let error = '';
+        setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
 
         if (operation === 3 && value === '') {
-            setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
-            return; // Si está en edición y el campo está vacío, no lo valida
-        }
-
-        switch (name) {
+            return;
+        }   switch (name) {
             case 'startTime':
                 if (!value) {
                     error = 'La hora de inicio es requerida';
                 }
                 break;
-
+    
             case 'endTime':
                 if (!value) {
                     error = 'La hora de fin es requerida';
@@ -232,7 +226,7 @@ const Absences = () => {
                     }
                 }
                 break;
-
+    
             case 'date':
                 if (!value) {
                     error = 'La fecha es requerida';
@@ -240,7 +234,7 @@ const Absences = () => {
                     error = 'La fecha debe estar en formato YYYY-MM-DD';
                 }
                 break;
-
+    
             case 'description':
                 if (!value) {
                     error = 'La descripción es obligatoria';
@@ -248,26 +242,28 @@ const Absences = () => {
                     error = 'La descripción debe tener al menos 5 caracteres';
                 }
                 break;
-
+    
             case 'userId':
                 if (!value) {
                     error = 'Debe seleccionar un usuario';
                 }
                 break;
-
+    
             case 'status':
                 if (!['en proceso', 'aprobado', 'no aprobado'].includes(value)) {
                     error = 'El estado debe ser "en proceso", "aprobado" o "no aprobado"';
                 }
                 break;
-
+    
             default:
                 break;
         }
-
-        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+    
+        // Only set the error if there is one
+        if (error) {
+            setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+        }
     };
-
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -321,7 +317,6 @@ const Absences = () => {
         }
     };
 
-
     const enviarSolicitud = async (metodo, parametros) => {
         const url = metodo === 'PUT' || metodo === 'DELETE'
             ? `${urlAbsences}/${parametros.id}`
@@ -342,6 +337,9 @@ const Absences = () => {
         }
     };
 
+    const hasPermission = (permission) => {
+        return permissionsR.includes(permission);
+    };
 
     return (
         <>
@@ -371,9 +369,11 @@ const Absences = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={() => openModal(1, {})} variant="contained">
-                                    <BsPlusSquareFill />Registrar
-                                </Button>
+                                {hasPermission('Ausencias registrar') && (
+                                    <Button className='btn-register' onClick={() => openModal(1, {})} variant="contained">
+                                        <BsPlusSquareFill />Registrar
+                                    </Button>
+                                )}
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
@@ -409,9 +409,15 @@ const Absences = () => {
                                                 <td>{getUserName(absence.userId)}</td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        <Button color='primary' className='primary' onClick={() => openDetailModal(absence)}><FaEye /></Button>
-                                                        <Button color="secondary" className='secondary' onClick={() => openModal(3, absence)}><FaPencilAlt /></Button>
-                                                        <Button color='error' className='delete' onClick={() => deleteAbsence(absence.id, absence.description)}><IoTrashSharp /></Button>
+                                                        {hasPermission('Ausencias ver') && (
+                                                            <Button color='primary' className='primary' onClick={() => openDetailModal(absence)}><FaEye /></Button>
+                                                        )}
+                                                        {hasPermission('Ausencias editar') && (
+                                                            <Button color="secondary" className='secondary' onClick={() => openModal(3, absence)}><FaPencilAlt /></Button>
+                                                        )}
+                                                        {hasPermission('Ausencias eliminar') && (
+                                                            <Button color='error' className='delete' onClick={() => deleteAbsence(absence.id, absence.description)}><IoTrashSharp /></Button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -657,9 +663,6 @@ const Absences = () => {
                                 </>
                             )}
                         </Form>
-
-
-
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" className='btn-red' onClick={handleCloseModal}>
@@ -670,7 +673,6 @@ const Absences = () => {
                                 <MdOutlineSave /> Guardar
                             </Button>
                         )}
-
                     </Modal.Footer>
                 </Modal>
 
@@ -691,10 +693,10 @@ const Absences = () => {
                         <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
                     </Modal.Footer>
                 </Modal>
-
             </div>
         </>
     );
 }
 
 export default Absences;
+
