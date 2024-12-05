@@ -12,6 +12,7 @@ import { IoTrashSharp } from "react-icons/io5";
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { show_alerta } from '../../assets/functions';
+import { usePermissions } from '../../components/PermissionCheck';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import { alpha } from '@mui/material/styles';
@@ -59,7 +60,7 @@ const Suppliers = () => {
     const url = 'http://localhost:1056/api/suppliers';
     const [suppliers, setSuppliers] = React.useState([]);
     const [formValues, setFormValues] = React.useState({
-        id: '', 
+        id: '',
         Supplier_Name: '',
         Phone_Number: '',
         Email: '',
@@ -72,6 +73,7 @@ const Suppliers = () => {
     const [dataQt, setDataQt] = React.useState(3);
     const [currentPages, setCurrentPages] = React.useState(1);
     const [showModal, setShowModal] = React.useState(false);
+    const permissions = usePermissions();
     const [errors, setErrors] = React.useState({
         Supplier_Name: '',
         Phone_Number: '',
@@ -133,6 +135,9 @@ const Suppliers = () => {
             status: supplier.status
         });
         setShowModal(true);
+    };
+    const hasPermission = (permission) => {
+        return permissions.includes(permission);
     };
 
     const handleClose = () => {
@@ -313,7 +318,7 @@ const Suppliers = () => {
                                         label="Home"
                                         icon={<HomeIcon fontSize="small" />}
                                     />
-                                      <StyledBreadcrumb
+                                    <StyledBreadcrumb
                                         component="a"
                                         href="#"
                                         label="Ingresos"
@@ -332,8 +337,20 @@ const Suppliers = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
+                                {
+                                    hasPermission('Proveedores registrar') && (
+                                        <Button
+                                            className='btn-register'
+                                            onClick={() => openModal(1)}
+                                            variant="contained"
+                                            color="primary"
+                                        >
+                                            <BsPlusSquareFill /> Registrar
+                                        </Button>
+                                    )
+                                }
                             </div>
+
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
                                     <IoSearch className="mr-2" />
@@ -369,20 +386,49 @@ const Suppliers = () => {
                                             </td>
                                             <td>
                                                 <div className='actions d-flex align-items-center'>
-                                                <BlueSwitch
-                                                    checked={supplier.status === 'A'}
-                                                    onChange={(e) => handleSwitchChange(supplier.id, e.target.checked)}
-                                                />
-                                                    <Button color='primary' className='primary' onClick={() => handleViewDetails(supplier)}><FaEye /></Button>
                                                     {
-                                                        supplier.status === 'A' && (
-                                                            <>
-                                                                <Button color="secondary" className='secondary' onClick={() => openModal(2, supplier)}><FaPencilAlt /></Button>
-                                                                <Button color='error' className='delete' onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}><IoTrashSharp /></Button>
-                                                            </>
+                                                        hasPermission('Proveedores cambiar estado') && (
+                                                            <BlueSwitch
+                                                                checked={supplier.status === 'A'}
+                                                                onChange={(e) => handleSwitchChange(supplier.id, e.target.checked)}
+                                                            />
+                                                        )
+                                                    }
+                                                    {
+                                                        hasPermission('Proveedores ver') && (
+                                                            <Button
+                                                                color='primary'
+                                                                className='primary'
+                                                                onClick={() => handleViewDetails(supplier)}
+                                                            >
+                                                                <FaEye />
+                                                            </Button>
+                                                        )
+                                                    }
+                                                    {
+                                                        supplier.status === 'A' && hasPermission('Proveedores editar') && (
+                                                            <Button
+                                                                color="secondary"
+                                                                className='secondary'
+                                                                onClick={() => openModal(2, supplier)}
+                                                            >
+                                                                <FaPencilAlt />
+                                                            </Button>
+                                                        )
+                                                    }
+                                                    {
+                                                        supplier.status === 'A' && hasPermission('Proveedores eliminar') && (
+                                                            <Button
+                                                                color='error'
+                                                                className='delete'
+                                                                onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}
+                                                            >
+                                                                <IoTrashSharp />
+                                                            </Button>
                                                         )
                                                     }
                                                 </div>
+
                                             </td>
                                         </tr>
                                     ))}

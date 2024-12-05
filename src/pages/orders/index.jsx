@@ -7,6 +7,7 @@ import { Button, Breadcrumbs, Chip } from '@mui/material'
 import HomeIcon from '@mui/icons-material/Home'
 import { GiShoppingCart } from 'react-icons/gi'
 import { BsPlusSquareFill } from 'react-icons/bs'
+import { usePermissions } from '../../components/PermissionCheck';
 import { FaEye, FaPencilAlt, FaMoneyBillWave } from 'react-icons/fa'
 import { IoTrashSharp, IoSearch, IoCart } from 'react-icons/io5'
 import { MdOutlineSave } from 'react-icons/md'
@@ -14,6 +15,7 @@ import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 import { Modal, Form, Col, Row } from 'react-bootstrap'
 import Pagination from '../../components/pagination'
+
 
 const API_URL = 'http://localhost:1056/api'
 
@@ -36,6 +38,7 @@ export default function Orders() {
   const [products, setProducts] = useState([])
   const [users, setUsers] = useState([])
   const [userNames, setUserNames] = useState({})
+  const permissions = usePermissions();
   const [formValues, setFormValues] = useState({
     id: '',
     Billnumber: '',
@@ -104,7 +107,9 @@ export default function Orders() {
   const generateBillNumber = () => {
     return `FAC-${Date.now()}`
   }
-
+  const hasPermission = (permission) => {
+    return permissions.includes(permission);
+  };
   const openRegisterModal = () => {
     setFormValues({
       id: '',
@@ -240,11 +245,11 @@ export default function Orders() {
           total_price: parseFloat(formValues.total_price),
           id_usuario: parseInt(formValues.id_usuario),
         };
-  
+
         // Enviar solicitud para registrar la orden
         const response = await axios.post(`${API_URL}/orders`, orderData);
         const orderId = response.data.id;
-  
+
         // Preparar datos para los detalles de la orden
         const orderDetails = formValues.orderDetails.map((detail) => ({
           ...detail,
@@ -254,10 +259,10 @@ export default function Orders() {
           total_price: parseFloat(detail.total_price),
           id_producto: parseInt(detail.id_producto),
         }));
-  
+
         // Enviar solicitud para registrar los detalles de la orden
         await axios.post(`${API_URL}/order-details`, orderDetails);
-  
+
         // Mostrar alerta de éxito
         showAlert('Pedido registrada exitosamente', 'success');
       } catch (error) {
@@ -273,14 +278,14 @@ export default function Orders() {
       showAlert('Por favor, completa todos los campos requeridos', 'warning');
     }
   };
-  
-  
+
+
 
   const handleEditSubmit = async () => {
     if (validateEditForm()) {
       try {
         await axios.put(`${API_URL}/orders/${editValues.id}`, { status: editValues.status })
-        
+
         showAlert('Estado de la pedido actualizado exitosamente', 'success')
         setShowEditModal(false)
         await fetchOrders()
@@ -403,8 +408,20 @@ export default function Orders() {
         <div className='card shadow border-0 p-3'>
           <div className='row'>
             <div className='col-sm-5 d-flex align-items-center'>
-              <Button className='btn-register' onClick={openRegisterModal} variant="contained"><BsPlusSquareFill />Registrar</Button>
+              {
+                hasPermission('Pedidos registrar') && (
+                  <Button
+                    className='btn-register'
+                    onClick={() => openRegisterModal(1)}
+                    variant="contained"
+                    color="primary"
+                  >
+                    <BsPlusSquareFill /> Registrar
+                  </Button>
+                )
+              }
             </div>
+
             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
               <div className="searchBox position-relative d-flex align-items-center">
                 <IoSearch className="mr-2" />
@@ -440,10 +457,41 @@ export default function Orders() {
                     <td>{userNames[order.id_usuario] || 'Cargando...'}</td>
                     <td>
                       <div className='actions d-flex align-items-center'>
-                        <Button color='primary' className='primary' onClick={() => handleViewDetails(order)}><FaEye /></Button>
-                        <Button color="secondary" className='secondary' onClick={() => openEditModal(order)}><FaPencilAlt /></Button>
-                        <Button color='error' className='delete' onClick={() => deleteOrder(order.id, order.Billnumber)}><IoTrashSharp /></Button>
+                        {
+                          hasPermission('Pedidos ver') && (
+                            <Button
+                              color='primary'
+                              className='primary'
+                              onClick={() => handleViewDetails(order)}
+                            >
+                              <FaEye />
+                            </Button>
+                          )
+                        }
+                        {
+                          hasPermission('Pedidos editar') && (
+                            <Button
+                              color="secondary"
+                              className='secondary'
+                              onClick={() => openEditModal(order)}
+                            >
+                              <FaPencilAlt />
+                            </Button>
+                          )
+                        }
+                        {
+                          hasPermission('Pedidos eliminar') && (
+                            <Button
+                              color='error'
+                              className='delete'
+                              onClick={() => deleteOrder(order.id, order.Billnumber)}
+                            >
+                              <IoTrashSharp />
+                            </Button>
+                          )
+                        }
                       </div>
+
                     </td>
                   </tr>
                 ))}
@@ -607,13 +655,13 @@ export default function Orders() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-        <Button variant="secondary" onClick={handleCloseRegisterModal} className='btn-red'>
+          <Button variant="secondary" onClick={handleCloseRegisterModal} className='btn-red'>
             Cerrar
           </Button>
           <Button variant="primary" onClick={handleRegisterSubmit} className='btn-sucess'>
-             Guardar
+            Guardar
           </Button>
-      
+
         </Modal.Footer>
       </Modal>
 
@@ -641,13 +689,13 @@ export default function Orders() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-        <Button variant="secondary" onClick={handleCloseEditModal} className='btn-red'>
+          <Button variant="secondary" onClick={handleCloseEditModal} className='btn-red'>
             Cerrar
           </Button>
           <Button variant="primary" onClick={handleEditSubmit} className='btn-sucess'>
-             Guardar
+            Guardar
           </Button>
-         
+
         </Modal.Footer>
       </Modal>
     </div>
