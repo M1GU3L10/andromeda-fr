@@ -62,7 +62,7 @@ const Users = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const permissions = usePermissions();
 
-  
+
   const [errors, setErrors] = useState({
     name: '',
     email: '',
@@ -87,7 +87,7 @@ const Users = () => {
   const hasPermission = (permission) => {
     return permissions.includes(permission);
   };
-  
+
   const getRoles = async () => {
     try {
       const response = await axios.get(urlRoles);
@@ -267,7 +267,7 @@ const Users = () => {
       return false;
     }
   };
-  
+
   const validar = async () => {
     if (isSubmitting) return;
 
@@ -319,17 +319,17 @@ const Users = () => {
         status: status,
         roleId: roleId
       };
-    
+
       if (operation === 1 || (operation === 2 && password)) {
         parametros.password = password.trim();
       }
-    
+
       const response = await axios({
         method: operation === 1 ? 'POST' : 'PUT',
         url: operation === 1 ? url : `${url}/${id}`,
         data: parametros
       });
-    
+
       if (response.status === 200 || response.status === 201) {
         show_alerta(
           operation === 1 ? 'Usuario creado exitosamente' : 'Usuario actualizado exitosamente',
@@ -344,55 +344,55 @@ const Users = () => {
         'success'
       );
     }
-finally {
+    finally {
       setIsSubmitting(false);
     }
   };
 
   const handleSwitchChange = async (userId, checked) => {
-        // Encuentra el servicio que está siendo actualizado
-        const userToUpdate = users.find(user => user.id === userId);
-        const Myswal = withReactContent(Swal);
-        Myswal.fire({
-            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el Usuario "${userToUpdate.name}"?`,
-            icon: 'question',
-            text: 'Esta acción puede afectar la disponibilidad del usuario.',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, confirmar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const updatedUser = {
-                    ...userToUpdate,
-                    status: checked ? 'A' : 'I'
-                };
-                try {
-                    const response = await axios.put(`${url}/${userId}`, updatedUser);
-                    if (response.status === 200) {
-                        setUsers(users.map(user =>
-                            user.id === userId ? { ...user, status: updatedUser.status } : user
-                        ));
-                        show_alerta('Estado del usuario actualizado exitosamente', 'success');
-                    }
-                } catch (error) {
-                    if (error.response) {
-                        setUsers(users.map(user =>
-                            user.id === userId ? { ...user, status: updatedUser.status } : user
-                        ));
-                        show_alerta('Estado del usuario actualizado exitosamente', 'success');
-                    } else {
-                        show_alerta('Estado del usuario actualizado exitosamente', 'success');
-                    }
-                }
-            } else {
-                // Si el usuario cancela, restablece el switch a su estado original
-                setUsers(users.map(user =>
-                    user.id === userId ? { ...user, status: !checked ? 'A' : 'I' } : user
-                ));
-                show_alerta('Estado del servicio no cambiado', 'info');
-            }
-        });
-    };
+    // Encuentra el servicio que está siendo actualizado
+    const userToUpdate = users.find(user => user.id === userId);
+    const Myswal = withReactContent(Swal);
+    Myswal.fire({
+      title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el Usuario "${userToUpdate.name}"?`,
+      icon: 'question',
+      text: 'Esta acción puede afectar la disponibilidad del usuario.',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const updatedUser = {
+          ...userToUpdate,
+          status: checked ? 'A' : 'I'
+        };
+        try {
+          const response = await axios.put(`${url}/${userId}`, updatedUser);
+          if (response.status === 200) {
+            setUsers(users.map(user =>
+              user.id === userId ? { ...user, status: updatedUser.status } : user
+            ));
+            show_alerta('Estado del usuario actualizado exitosamente', 'success');
+          }
+        } catch (error) {
+          if (error.response) {
+            setUsers(users.map(user =>
+              user.id === userId ? { ...user, status: updatedUser.status } : user
+            ));
+            show_alerta('Estado del usuario actualizado exitosamente', 'success');
+          } else {
+            show_alerta('Estado del usuario actualizado exitosamente', 'success');
+          }
+        }
+      } else {
+        // Si el usuario cancela, restablece el switch a su estado original
+        setUsers(users.map(user =>
+          user.id === userId ? { ...user, status: !checked ? 'A' : 'I' } : user
+        ));
+        show_alerta('Estado del servicio no cambiado', 'info');
+      }
+    });
+  };
 
   const deleteUser = async (id, name) => {
     const Myswal = withReactContent(Swal);
@@ -414,7 +414,7 @@ finally {
         }
       } catch (error) {
         show_alerta(
-          error.response?.data?.message || 
+          error.response?.data?.message ||
           'Error al eliminar el usuario. Por favor, intente nuevamente.',
           'error'
         );
@@ -422,9 +422,9 @@ finally {
     }
   };
 
-    const handleCloseDetail = () => {
-      setShowModal(false);
-      setShowDetailModal(false);
+  const handleCloseDetail = () => {
+    setShowModal(false);
+    setShowDetailModal(false);
   };
 
 
@@ -441,7 +441,7 @@ finally {
   const indexStart = indexEnd - dataQt;
   const nPages = Math.ceil(users.length / dataQt);
 
-  let results = !search 
+  let results = !search
     ? users.slice(indexStart, indexEnd)
     : users.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()));
 
@@ -475,13 +475,13 @@ finally {
           <div className='card shadow border-0 p-3'>
             <div className='row'>
               <div className='col-sm-5 d-flex align-items-center'>
-              {
-            hasPermission('Usuarios registrar') && (
-                <Button className='btn-register' onClick={() => openModal(1)} variant="contained" color="primary">
-                  <BsPlusSquareFill /> Registrar
-                </Button>
-      )
-    }
+                {
+                  hasPermission('Usuarios registrar') && (
+                    <Button className='btn-register' onClick={() => openModal(1)} variant="contained" color="primary">
+                      <BsPlusSquareFill /> Registrar
+                    </Button>
+                  )
+                }
               </div>
               <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                 <div className="searchBox position-relative d-flex align-items-center">
@@ -518,32 +518,32 @@ finally {
                       </td>
                       <td>
                         <div className='actions d-flex align-items-center'>
-                        {
-            hasPermission('Usuarios cambiar estado') && (
-                        <Switch
-        checked={user.status === 'A'}
-        onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
-      />
-      )
-    }
-    {
-            hasPermission('Usuarios ver') && (
-        <Button color="primary" className="primary" onClick={() => handleViewDetails(user)}>
-          <FaEye />
-        </Button>
-        )
-      }
+                          {
+                            hasPermission('Usuarios cambiar estado') && (
+                              <Switch
+                                checked={user.status === 'A'}
+                                onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
+                              />
+                            )
+                          }
+                          {
+                            hasPermission('Usuarios ver') && (
+                              <Button color="primary" className="primary" onClick={() => handleViewDetails(user)}>
+                                <FaEye />
+                              </Button>
+                            )
+                          }
 
-      {user.status === 'A'  &&  hasPermission('Usuarios editar') && (
-        <Button color="secondary" className="secondary" onClick={() => openModal(2, user)}>
-          <FaPencilAlt />
-        </Button>
-      )} 
-      {user.status === 'A'  &&  hasPermission('Usuarios eliminar') && (
-        <Button color="error" className="delete" onClick={() => deleteUser(user.id, user.name)}>
-          <IoTrashSharp />
-        </Button>
-      )}
+                          {user.status === 'A' && hasPermission('Usuarios editar') && (
+                            <Button color="secondary" className="secondary" onClick={() => openModal(2, user)}>
+                              <FaPencilAlt />
+                            </Button>
+                          )}
+                          {user.status === 'A' && hasPermission('Usuarios eliminar') && (
+                            <Button color="error" className="delete" onClick={() => deleteUser(user.id, user.name)}>
+                              <IoTrashSharp />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -659,31 +659,31 @@ finally {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                            Cerrar
-                        </Button>
-          <Button variant="primary" onClick={validar} className='btn-sucess'>
-                            Guardar
-                        </Button>
-                      
+            <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+              Cerrar
+            </Button>
+            <Button variant="primary" onClick={validar} className='btn-sucess'>
+              Guardar
+            </Button>
+
           </Modal.Footer>
         </Modal>
-         <Modal show={showDetailModal} onHide={handleCloseDetail}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Detalle usuario</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <p><strong>ID:</strong> {detailData.id}</p>
-                        <p><strong>Nombre:</strong> {detailData.name}</p>
-                        <p><strong>Email:</strong> {detailData.email}</p>
-                        <p><strong>Teléfono:</strong> {detailData.phone}</p>
-                        <p><strong>Rol:</strong> {detailData.roleId === 1 ? 'Administrador' : detailData.roleId === 2 ? 'Empleado' : detailData.roleId === 3 ? 'Cliente' : 'Desconocido'}</p>
-                        <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
-                    </Modal.Footer>
-          </Modal>
+        <Modal show={showDetailModal} onHide={handleCloseDetail}>
+          <Modal.Header closeButton>
+            <Modal.Title>Detalle usuario</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p><strong>ID:</strong> {detailData.id}</p>
+            <p><strong>Nombre:</strong> {detailData.name}</p>
+            <p><strong>Email:</strong> {detailData.email}</p>
+            <p><strong>Teléfono:</strong> {detailData.phone}</p>
+            <p><strong>Rol:</strong> {detailData.roleId === 1 ? 'Administrador' : detailData.roleId === 2 ? 'Empleado' : detailData.roleId === 3 ? 'Cliente' : 'Desconocido'}</p>
+            <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

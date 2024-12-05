@@ -43,83 +43,237 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 })
 
+const SaleDetailModal = ({ show, onHide, sale }) => {
+    const urlUsers = 'http://localhost:1056/api/users';
+    const urlServices = 'http://localhost:1056/api/users';
+    const urlProducts = 'http://localhost:1056/api/users';
+    const [users, setUsers] = useState([]);
+    const [productss, setProducts] = useState([]);
+    const [servicess, setServices] = useState([]);
+
+
+
+    useEffect(() => {
+        getServices();
+        getProducts();
+        getUsers();
+    }, []);
+
+    const getProducts = async () => {
+        try{
+            const response = await axios.get(urlProducts);
+            setProducts(response)
+        }catch(error){
+            console.error('Error fetching users:', error);
+            Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+        }
+    }
+
+    const getServices = async () => {
+        try{
+            const response = await axios.get(urlServices);
+            setServices(response)
+        }catch(error){
+            console.error('Error fetching users:', error);
+            Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+        }
+    }
+
+    const getUsers = async () => {
+        try {
+            const response = await axios.get(urlUsers);
+            setUsers(response.data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            Swal.fire('Error', 'No se pudieron cargar los usuarios', 'error');
+        }
+    };
+
+    const userName = (userId) => {
+        const user = users.find(user => user.id === userId);
+        return user ? user.name : 'Desconocido';
+    };
+
+    const ProductName = (productId) => {
+        const product = productss.find(product => product.id === productId);
+        return product ? product.Product_Name : 'Desconocido';
+    };
+
+    const ServiceName = (serviceId) => {
+        const service = servicess.find(service => service.id === serviceId);
+        return service ? service.name : 'Desconocido';
+    };
+
+
+    if (!sale) return null;
+
+    const products = sale.SaleDetails.filter(detail => detail.id_producto !== null);
+    const services = sale.SaleDetails.filter(detail => detail.serviceId !== null);
+
+    return (
+        <Modal show={show} onHide={onHide} size="lg">
+            <Modal.Header closeButton>
+                <Modal.Title>Detalle de Venta - Factura #{sale.Billnumber}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <h5 className='fw-bold border-bottom pb-2 mb-2'>Información General</h5>
+                <div className="row">
+                    <div className="col-sm-4 d-flex align-items-center">
+                        <p className='fw-semibold pe-1'>Fecha de Venta:</p><p>{sale.SaleDate}</p>
+                    </div>
+                    <div className="col-sm-5 d-flex align-items-center">
+                        <p className='fw-semibold pe-1'>Fecha de Registro: </p><p>{sale.registrationDate}</p>
+                    </div>
+                    <div className="col-sm-3 d-flex align-items-center">
+                        <p className='fw-semibold pe-1'>Estado: </p><p>{sale.status}</p>
+                    </div>
+                </div>
+                <div className="d-flex align-items-center">
+                    <p className='fw-semibold pe-1'>Cliente: </p><p>{userName(sale.id_usuario)}</p>
+                </div>
+
+                {products.length > 0 && (
+                    <>
+                        <h5 className="mt-4">Productos</h5>
+                        <table className="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {products.map((product) => (
+                                    <tr key={product.id}>
+                                        <td>{product.id_producto}</td>
+                                        <td>{product.quantity}</td>
+                                        <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.unitPrice)}</td>
+                                        <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.total_price)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </>
+                )}
+
+                {services.length > 0 && (
+                    <>
+                        <h5 className="mt-4">Servicios</h5>
+                        <table className="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Servicio</th>
+                                    <th>Empleado</th>
+                                    <th>Precio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {services.map((service) => (
+                                    <tr key={service.id}>
+                                        <td>Servicio ID: {service.serviceId}</td>
+                                        <td>Empleado ID: {service.empleadoId}</td>
+                                        <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(service.total_price)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </>
+                )}
+
+                <p className='fw-bold border-top pt-2 mt-2'>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.total_price)}</p>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={onHide}>
+                    Cerrar
+                </Button>
+            </Modal.Footer>
+        </Modal>
+    );
+};
+
 const Sales = () => {
-    //UseStates
-    const url = 'http://localhost:1056/api/sales'
-    const urlUsers = 'http://localhost:1056/api/users'
-    const [sales, SetSales] = useState([])
-    const [users, SetUsers] = useState([])
+    const url = 'http://localhost:1056/api/sales';
+    const urlUsers = 'http://localhost:1056/api/users';
+    const [sales, setSales] = useState([]);
+    const [users, setUsers] = useState([]);
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(5);
     const [currentPages, setCurrentPages] = useState(1);
-    const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
-    const [detailData, setDetailData] = useState({});
-
-    //End useStates
+    const [detailData, setDetailData] = useState(null);
 
     useEffect(() => {
         getSales();
         getUsers();
-    }, [])
+    }, []);
 
     const getSales = async () => {
-        const response = await axios.get(url)
-        SetSales(response.data)
-    }
+        try {
+            const response = await axios.get(url);
+            setSales(response.data);
+        } catch (error) {
+            console.error('Error fetching sales:', error);
+            Swal.fire('Error', 'No se pudieron cargar las ventas', 'error');
+        }
+    };
 
     const getUsers = async () => {
-        const response = await axios.get(urlUsers)
-        SetUsers(response.data)
-    }
+        try {
+            const response = await axios.get(urlUsers);
+            setUsers(response.data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            Swal.fire('Error', 'No se pudieron cargar los usuarios', 'error');
+        }
+    };
 
     const userName = (userId) => {
-        const user = users.find(user => user.id === userId)
-        return user ? user.name : 'Desconocido'
-    }
+        const user = users.find(user => user.id === userId);
+        return user ? user.name : 'Desconocido';
+    };
 
     const searcher = (e) => {
-        setSearch(e.target.value)
-    }
+        setSearch(e.target.value);
+    };
 
     const handleCloseDetail = () => {
-        setShowModal(false);
         setShowDetailModal(false);
     };
 
-    const handleViewDetails = (sale) => {
-        setDetailData(sale);
-        setShowDetailModal(true);
+    const handleViewDetails = async (saleId) => {
+        try {
+            const response = await axios.get(`${url}/${saleId}`);
+            setDetailData(response.data);
+            setShowDetailModal(true);
+        } catch (error) {
+            console.error('Error fetching sale details:', error);
+            Swal.fire('Error', 'No se pudieron cargar los detalles de la venta', 'error');
+        }
     };
 
-    let results = []
-    if (!search) {
-        results = sales;
-    } else {
-        results = sales.filter((dato) => {
+    let results = !search
+        ? sales
+        : sales.filter((dato) => {
             const searchTerm = search.toLowerCase();
             const userNameStr = userName(dato.id_usuario).toLowerCase();
-
             return (
                 dato.Billnumber.toLowerCase().includes(searchTerm) ||
                 userNameStr.includes(searchTerm) ||
                 dato.SaleDate.toLowerCase().includes(searchTerm)
-            )
-        })
-    }
+            );
+        });
 
     const indexEnd = currentPages * dataQt;
     const indexStart = indexEnd - dataQt;
-
     const nPages = Math.ceil(results.length / dataQt);
-
     results = results.slice(indexStart, indexEnd);
 
     const handleSwitchChange = async (saleId, checked) => {
-        // Encuentra el servicio que está siendo actualizado
         const saleToUpdate = sales.find(sale => sale.id === saleId);
-        const Myswal = withReactContent(Swal);
-        Myswal.fire({
+        const MySwal = withReactContent(Swal);
+        MySwal.fire({
             title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el servicio "${saleToUpdate.Billnumber}"?`,
             icon: 'question',
             text: 'Esta acción puede afectar la disponibilidad del servicio.',
@@ -135,152 +289,130 @@ const Sales = () => {
                 try {
                     const response = await axios.put(`${url}/${saleId}/status`, updatedSale);
                     if (response.status === 200) {
-                        SetSales(sales.map(sale =>
+                        setSales(sales.map(sale =>
                             sale.id === saleId ? { ...sale, status: updatedSale.status } : sale
                         ));
-                        show_alerta('Estado de la venta actualizado exitosamente', 'success');
+                        Swal.fire('Estado de la venta actualizado exitosamente', '', 'success');
                     }
                 } catch (error) {
-                    if (error.response) {
-                        console.log('Error details:', error.response.data);
-                        show_alerta('Error al actualizar el estado de la venta: ' + JSON.stringify(error.response.data.errors), 'error');
-                    } else {
-                        console.log('Error details:', error.message);
-                        show_alerta('Error al actualizar el estado de la venta', 'error');
-                    }
+                    console.error('Error updating sale status:', error);
+                    Swal.fire('Error al actualizar el estado de la venta', '', 'error');
                 }
             } else {
-                // Si el usuario cancela, restablece el switch a su estado original
-                SetSales(sales.map(sale =>
+                setSales(sales.map(sale =>
                     sale.id === saleId ? { ...sale, status: !checked ? 'Completada' : 'Cancelada' } : sale
                 ));
-                show_alerta('Estado de la venta no cambiado', 'info');
+                Swal.fire('Estado de la venta no cambiado', '', 'info');
             }
         });
     };
 
-
     return (
-        <>
-            <div className="right-content w-100">
-                <div class="row d-flex align-items-center w-100">
-                    <div className="spacing d-flex align-items-center">
-                        <div className='col-sm-5'>
-                            <span className='Title'>Ventas</span>
-                        </div>
-                        <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
-                            <div role="presentation">
-                                <Breadcrumbs aria-label="breadcrumb">
-                                    <StyledBreadcrumb
-                                        component="a"
-                                        href="#"
-                                        label="Home"
-                                        icon={<HomeIcon fontSize="small" />}
-                                    />
-                                    <StyledBreadcrumb
-                                        component="a"
-                                        href="#"
-                                        label="Salidas"
-                                        icon={<FaMoneyBillWave fontSize="small" />}
-                                    />
-                                    <StyledBreadcrumb
-                                        component="a"
-                                        href="#"
-                                        label="Ventas"
-                                        icon={<FcSalesPerformance fontSize="small" />}
-                                    />
-                                </Breadcrumbs>
-                            </div>
-                        </div>
+        <div className="right-content w-100">
+            <div className="row d-flex align-items-center w-100">
+                <div className="spacing d-flex align-items-center">
+                    <div className='col-sm-5'>
+                        <span className='Title'>Ventas</span>
                     </div>
-                    <div className='card shadow border-0 p-3'>
-                        <div className='row'>
-                            <div className='col-sm-5 d-flex align-items-center'>
-                                <Link className='btn-register btn btn-primary' variant="contained" to="/salesRegister"><BsPlusSquareFill />Registrar</Link>
-                            </div>
-                            <div className='col-sm-7 d-flex align-items-center justify-content-end'>
-                                <div className="searchBox position-relative d-flex align-items-center">
-                                    <IoSearch className="mr-2" />
-                                    <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
-                                </div>
-                            </div>
-                        </div>
-                        <div className='table-responsive mt-3'>
-                            <table className='table table-bordered table-hover v-align table-striped'>
-                                <thead className='table-primary'>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Nmro Combrobante</th>
-                                        <th>Fecha venta</th>
-                                        <th>Fecha registro</th>
-                                        <th>MontoTotal</th>
-                                        <th>Usuario</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        results.length > 0 ? (
-                                            results.map((sale, i) => (
-                                                <tr key={sale.id}>
-                                                    <td>{(i + 1)}</td>
-                                                    <td>{sale.Billnumber}</td>
-                                                    <td>{sale.SaleDate}</td>
-                                                    <td>{sale.registrationDate}</td>
-                                                    <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.total_price)}</td>
-                                                    <td>{userName(sale.id_usuario)}</td>
-                                                    <td>{sale.status}</td>
-                                                    <td>
-                                                        <div className='actions d-flex align-items-center'>
-                                                            <Switch
-                                                                checked={sale.status === 'Completada'}
-                                                                onChange={(e) => handleSwitchChange(sale.id, e.target.checked)}
-                                                            />
-                                                            <Button color="primary" className='primary' onClick={() => handleViewDetails(sale)} ><FaEye /></Button>
-                                                            <PDFDownloadLink document={<DocumentPdf sale={sale} />} fileName={`DetalleVenta ${sale.Billnumber}.pdf`}>
-                                                                <Button color='warning' className='warning'><TbFileDownload /></Button>
-                                                            </PDFDownloadLink>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) :
-                                            (
-                                                <tr>
-                                                    <td colSpan={7} className='text-center'>No hay ventas disponibles</td>
-                                                </tr>
-                                            )
-                                    }
-                                </tbody>
-                            </table>
-                            {
-                                results.length > 0 ? (
-                                    <div className="d-flex table-footer">
-                                        <Pagination
-                                            setCurrentPages={setCurrentPages}
-                                            currentPages={currentPages}
-                                            nPages={nPages} />
-                                    </div>
-                                ) : (<div className="d-flex table-footer">
-                                </div>)
-                            }
-                        </div>
+                    <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
+                        <StyledBreadcrumb
+                            items={[
+                                { href: "#", label: "Home", icon: <HomeIcon fontSize="small" /> },
+                                { href: "#", label: "Salidas", icon: <FaMoneyBillWave fontSize="small" /> },
+                                { href: "#", label: "Ventas", icon: <FcSalesPerformance fontSize="small" /> }
+                            ]}
+                        />
                     </div>
                 </div>
-                <Modal show={showDetailModal}>
-                    <Modal.Body className='p-zero Modal-height'>
-                        <PDFViewer className='Pdf-Modal'>
-                            <DocumentPdf sale={detailData} />
-                        </PDFViewer>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
-                    </Modal.Footer>
-                </Modal>
+                <div className='card shadow border-0 p-3'>
+                    <div className='row'>
+                        <div className='col-sm-5 d-flex align-items-center'>
+                            <Link className='btn-register btn btn-primary' to="/salesRegister">
+                                <BsPlusSquareFill />Registrar
+                            </Link>
+                        </div>
+                        <div className='col-sm-7 d-flex align-items-center justify-content-end'>
+                            <div className="searchBox position-relative d-flex align-items-center">
+                                <IoSearch className="mr-2" />
+                                <input
+                                    value={search}
+                                    onChange={searcher}
+                                    type="text"
+                                    placeholder='Buscar...'
+                                    className='form-control'
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className='table-responsive mt-3'>
+                        <table className='table table-bordered table-hover v-align table-striped'>
+                            <thead className='table-primary'>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nmro Comprobante</th>
+                                    <th>Fecha venta</th>
+                                    <th>Fecha registro</th>
+                                    <th>MontoTotal</th>
+                                    <th>Usuario</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {results.length > 0 ? (
+                                    results.map((sale, i) => (
+                                        <tr key={sale.id}>
+                                            <td>{i + 1}</td>
+                                            <td>{sale.Billnumber}</td>
+                                            <td>{sale.SaleDate}</td>
+                                            <td>{sale.registrationDate}</td>
+                                            <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.total_price)}</td>
+                                            <td>{userName(sale.id_usuario)}</td>
+                                            <td>{sale.status}</td>
+                                            <td>
+                                                <div className='actions d-flex align-items-center'>
+                                                    <Switch
+                                                        checked={sale.status === 'Completada'}
+                                                        onChange={(e) => handleSwitchChange(sale.id, e.target.checked)}
+                                                    />
+                                                    <Button color="primary" className='primary' onClick={() => handleViewDetails(sale.id)}>
+                                                        <FaEye />
+                                                    </Button>
+                                                    <PDFDownloadLink document={<DocumentPdf sale={sale} />} fileName={`DetalleVenta ${sale.Billnumber}.pdf`}>
+                                                        <Button color='warning' className='warning'>
+                                                            <TbFileDownload />
+                                                        </Button>
+                                                    </PDFDownloadLink>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={8} className='text-center'>No hay ventas disponibles</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                        {results.length > 0 && (
+                            <div className="d-flex table-footer">
+                                <Pagination
+                                    setCurrentPages={setCurrentPages}
+                                    currentPages={currentPages}
+                                    nPages={nPages}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
-        </>
+            <SaleDetailModal
+                show={showDetailModal}
+                onHide={handleCloseDetail}
+                sale={detailData}
+            />
+        </div>
     );
-}
+};
 
 export default Sales;

@@ -40,7 +40,6 @@ const RegisterShopping = () => {
     const [shoppingDetails, setShoppingDetails] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [realTimeErrors, setRealTimeErrors] = useState({});
-    const [codeExists, setCodeExists] = useState(false); // Added state for code existence
 
     const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm({
         defaultValues: {
@@ -98,8 +97,6 @@ const RegisterShopping = () => {
                 setRealTimeErrors(prev => ({ ...prev, code: 'El código no puede tener más de 15 caracteres' }));
             } else {
                 setRealTimeErrors(prev => ({ ...prev, code: '' }));
-                // Check if the code already exists
-                checkCodeExists(value);
             }
         }
 
@@ -182,42 +179,12 @@ const RegisterShopping = () => {
         return shoppingDetails.reduce((total, item) => total + item.total_price, 0);
     };
 
-    const checkCodeExists = async (code) => { // Added function to check code existence
-        try {
-            const response = await axios.get(`${urlShopping}/check-code/${code}`);
-            setCodeExists(response.data.exists);
-            if (response.data.exists) {
-                setRealTimeErrors(prev => ({ ...prev, code: 'Este código ya está en uso' }));
-            }
-        } catch (error) {
-            console.error('Error al verificar el código', error);
-        }
-    };
-
     const onSubmit = async (data) => {
         if (shoppingDetails.length === 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
                 text: 'Por favor, agregue al menos un producto.',
-            });
-            return;
-        }
-
-        if (codeExists) { // Check if code already exists before submitting
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Ya existe una compra registrada con este código.',
-            });
-            return;
-        }
-
-        if (Object.values(realTimeErrors).some(error => error !== '')) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Por favor, corrija los errores antes de enviar.',
             });
             return;
         }
@@ -245,11 +212,28 @@ const RegisterShopping = () => {
             setShoppingDetails([]);
         } catch (error) {
             console.error('Error al registrar la compra', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al registrar la compra',
-            });
+            
+            if (error.response && error.response.data && error.response.data.message) {
+                if (error.response.data.message.toLowerCase().includes('código')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Código Duplicado',
+                        text: 'Ya existe una compra registrada con este código.',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.response.data.message || 'Error al registrar la compra',
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al registrar la compra',
+                });
+            }
         }
     };
 
@@ -387,7 +371,8 @@ const RegisterShopping = () => {
 
                                 <div className='d-flex align-items-center justify-content-end Monto-content p-4'>
                                     <span className='valor'>Total: ${calculateTotal().toFixed(2)}</span>
-                                </div></div>
+                                </div>
+                            </div>
                         </div>
                         <div className='col-sm-5'>
                             <div className='card-detail shadow border-0'>
