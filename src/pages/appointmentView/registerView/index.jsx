@@ -573,10 +573,10 @@ export default function Component() {
             });
             setSelectedProducts([]);
 
-            navigate('/index');
+            navigate('/appointmentView');
         } catch (error) {
-            console.error('Error al registrar la venta:', error);
-            show_alerta('Error al registrar la venta', 'error');
+            console.error('Error al registrar la cita:', error);
+            show_alerta('Error al registrar la cita', 'error');
         }
     };
 
