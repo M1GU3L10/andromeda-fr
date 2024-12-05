@@ -299,118 +299,122 @@ export default function Component() {
         </div>
       </header>
 
-      <div className="container mt-5">
-        <h1 className="text-center mb-4" style={{ color: '#b89b58' }}>Mis Pedidos</h1>
+      <div className="container mt-5 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-center mb-4 text-2xl sm:text-3xl font-bold" style={{ color: '#b89b58' }}>Mis Pedidos</h1>
         {isLoggedIn ? (
-          <TableContainer component={Paper} className="rounded-lg shadow-lg">
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>N° Pedido</TableCell>
-                  <TableCell>Fecha</TableCell>
-                  <TableCell>Total</TableCell>
-                  <TableCell>Estado</TableCell>
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((order) => (
-                  <React.Fragment key={order.id}>
-                    <TableRow>
-                      <TableCell>{order.Billnumber}</TableCell>
-                      <TableCell>{formatDate(order.OrderDate)}</TableCell>
-                      <TableCell>{formatCurrency(order.total_price)}</TableCell>
-                      <TableCell>
-                        <span style={{
-                          backgroundColor: getStatusColor(order.status),
-                          color: 'white',
-                          padding: '4px 8px',
-                          borderRadius: '12px',
-                          fontSize: '0.875rem'
-                        }}>
-                          {order.status}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outlined"
-                            onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                            className="min-w-[130px] bg-white border-2 border-[#b89b58] text-[#b89b58] hover:bg-[#b89b58] hover:text-white rounded-full py-1 px-4 font-medium flex items-center justify-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
-                          >
-                            {expandedOrder === order.id ? (
-                              <>
-                                <FaEyeSlash className="text-lg" />
-                                <span>Ocultar</span>
-                              </>
-                            ) : (
-                              <>
-                                <FaEye className="text-lg" />
-                                <span>Ver Detalles</span>
-                              </>
-                            )}
-                          </Button>
-
-                          {order.status.toLowerCase() === 'pendiente' && (
+          <div className="overflow-x-auto">
+            <TableContainer component={Paper} className="rounded-lg shadow-lg">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell className="font-semibold">N° Pedido</TableCell>
+                    <TableCell className="font-semibold">Fecha</TableCell>
+                    <TableCell className="font-semibold">Total</TableCell>
+                    <TableCell className="font-semibold">Estado</TableCell>
+                    <TableCell className="font-semibold">Acciones</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((order) => (
+                    <React.Fragment key={order.id}>
+                      <TableRow>
+                        <TableCell>{order.Billnumber}</TableCell>
+                        <TableCell>{formatDate(order.OrderDate)}</TableCell>
+                        <TableCell>{formatCurrency(order.total_price)}</TableCell>
+                        <TableCell>
+                          <span style={{
+                            backgroundColor: getStatusColor(order.status),
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '0.875rem'
+                          }}>
+                            {order.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col sm:flex-row gap-2">
                             <Button
                               variant="outlined"
-                              onClick={() => handleCancelOrder(order.id)}
-                              className="min-w-[130px] bg-white border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-full py-1 px-4 font-medium flex items-center justify-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
+                              onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                              className="min-w-[130px] bg-white border-2 border-[#b89b58] text-[#b89b58] hover:bg-[#b89b58] hover:text-white rounded-full py-1 px-4 font-medium flex items-center justify-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
                             >
-                              <MdCancel className="text-lg" />
-                              <span>Cancelar</span>
+                              {expandedOrder === order.id ? (
+                                <>
+                                  <FaEyeSlash className="text-lg" />
+                                  <span>Ocultar</span>
+                                </>
+                              ) : (
+                                <>
+                                  <FaEye className="text-lg" />
+                                  <span>Ver Detalles</span>
+                                </>
+                              )}
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    {expandedOrder === order.id && (
-                      <TableRow>
-                        <TableCell colSpan={5}>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Producto</TableCell>
-                                <TableCell>Cantidad</TableCell>
-                                <TableCell>Precio Unitario</TableCell>
-                                <TableCell>Precio Total</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {order.OrderDetails.map((item) => (
-                                <TableRow key={item.id}>
-                                  <TableCell>{getProductName(item.id_producto)}</TableCell>
-                                  <TableCell>{item.quantity}</TableCell>
-                                  <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
-                                  <TableCell>{formatCurrency(item.total_price)}</TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+
+                            {order.status.toLowerCase() === 'pendiente' && (
+                              <Button
+                                variant="outlined"
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="min-w-[130px] bg-white border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-full py-1 px-4 font-medium flex items-center justify-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
+                              >
+                                <MdCancel className="text-lg" />
+                                <span>Cancelar</span>
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
-                    )}
-                  </React.Fragment>
-                ))}
-              </TableBody>
-            </Table>
-            <TablePagination
-              rowsPerPageOptions={[7, 10, 25]}
-              component="div"
-              count={orders.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              labelRowsPerPage="Filas por página"
-              labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
-              }
-            />
-          </TableContainer>
+                      {expandedOrder === order.id && (
+                        <TableRow>
+                          <TableCell colSpan={5}>
+                            <div className="overflow-x-auto">
+                              <Table size="small">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>Producto</TableCell>
+                                    <TableCell>Cantidad</TableCell>
+                                    <TableCell>Precio Unitario</TableCell>
+                                    <TableCell>Precio Total</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {order.OrderDetails.map((item) => (
+                                    <TableRow key={item.id}>
+                                      <TableCell>{getProductName(item.id_producto)}</TableCell>
+                                      <TableCell>{item.quantity}</TableCell>
+                                      <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
+                                      <TableCell>{formatCurrency(item.total_price)}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                rowsPerPageOptions={[7, 10, 25]}
+                component="div"
+                count={orders.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                labelRowsPerPage="Filas por página"
+                labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`}
+              />
+            </TableContainer>
+          </div>
         ) : (
-          <p className="text-center">Inicia sesión para ver tus pedidos.</p>
+          <p className="text-center text-lg">Inicia sesión para ver tus pedidos.</p>
         )}
       </div>
     </>
   );
 }
+
