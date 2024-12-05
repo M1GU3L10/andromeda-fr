@@ -479,7 +479,7 @@ const Users = () => {
                   hasPermission('Usuarios registrar') && (
                     <Button className='btn-register' onClick={() => openModal(1)} variant="contained" color="primary">
                       <BsPlusSquareFill /> Registrar
-                    </Button>
+                    </Button> 
                   )
                 }
               </div>
@@ -517,34 +517,34 @@ const Users = () => {
                         </span>
                       </td>
                       <td>
-                        <div className='actions d-flex align-items-center'>
-                          {
-                            hasPermission('Usuarios cambiar estado') && (
-                              <Switch
-                                checked={user.status === 'A'}
-                                onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
-                              />
-                            )
-                          }
-                          {
-                            hasPermission('Usuarios ver') && (
-                              <Button color="primary" className="primary" onClick={() => handleViewDetails(user)}>
-                                <FaEye />
-                              </Button>
-                            )
-                          }
+                          <div className='actions d-flex align-items-center'>
+                            {
+                              hasPermission('Usuarios cambiar estado') && (
+                                <Switch
+                                  checked={user.status === 'A'}
+                                  onChange={(e) => handleSwitchChange(user.id, e.target.checked)}
+                                />
+                              )
+                            }
+                            {
+                              hasPermission('Usuarios ver') && (
+                                <Button color="primary" className="primary" onClick={() => handleViewDetails(user)}>
+                                  <FaEye />
+                                </Button>
+                              )
+                            }
 
-                          {user.status === 'A' && hasPermission('Usuarios editar') && (
-                            <Button color="secondary" className="secondary" onClick={() => openModal(2, user)}>
-                              <FaPencilAlt />
-                            </Button>
-                          )}
-                          {user.status === 'A' && hasPermission('Usuarios eliminar') && (
-                            <Button color="error" className="delete" onClick={() => deleteUser(user.id, user.name)}>
-                              <IoTrashSharp />
-                            </Button>
-                          )}
-                        </div>
+                            {user.status === 'A' && hasPermission('Usuarios editar') && (
+                              <Button color="secondary" className="secondary" onClick={() => openModal(2, user)}>
+                                <FaPencilAlt />
+                              </Button>
+                            )}
+                            {user.status === 'A' && hasPermission('Usuarios eliminar') && (
+                              <Button color="error" className="delete" onClick={() => deleteUser(user.id, user.name)}>
+                                <IoTrashSharp />
+                              </Button>
+                            )}
+                          </div>
                       </td>
                     </tr>
                   ))}

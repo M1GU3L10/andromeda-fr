@@ -15,6 +15,7 @@ import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Switch from '@mui/material/Switch';
 import { Modal, Form, Col, Row } from 'react-bootstrap';
+import { usePermissions } from '../../components/PermissionCheck';
 import Pagination from '../../components/pagination/index';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
@@ -50,6 +51,7 @@ const Products = () => {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [search, setSearch] = useState('');
+  const permissions = usePermissions();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
@@ -76,7 +78,9 @@ const Products = () => {
       show_alerta('Error al cargar los productos', 'error');
     }
   };
-
+  const hasPermission = (permission) => {
+    return permissions.includes(permission);
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     let updatedValue = value;
@@ -428,9 +432,13 @@ const Products = () => {
         <div className='card shadow border-0 p-3'>
           <div className='row'>
             <div className='col-sm-5 d-flex align-items-center'>
-              <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
-                <BsPlusSquareFill />Registrar
-              </Button>
+              {
+                hasPermission('Productos registrar') && (
+                  <Button className='btn-register' onClick={() => openModal(1)} variant="contained" color="primary">
+                    <BsPlusSquareFill /> Registrar
+                  </Button>
+                )
+              }
             </div>
             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
               <div className="searchBox position-relative d-flex align-items-center">
@@ -498,19 +506,27 @@ const Products = () => {
                       </td>
                       <td>
                         <div className='actions d-flex align-items-center'>
-                          <Switch
-                            checked={product.status === 'A'}
-                            onChange={(e) => handleSwitchChange(product.id, e.target.checked)}
-                          />
-                          <Button
-                            color='primary'
-                            className='primary'
-                            onClick={() => handleViewDetails(product)}
-                          >
-                            <FaEye />
-                          </Button>
-                          {product.status === 'A' && (
-                            <>
+                          {
+                            hasPermission('Productos cambiar estado') && (
+                              <Switch
+                                checked={product.status === 'A'}
+                                onChange={(e) => handleSwitchChange(product.id, e.target.checked)}
+                              />
+                            )
+                          }
+                          {
+                            hasPermission('Productos ver') && (
+                              <Button
+                                color='primary'
+                                className='primary'
+                                onClick={() => handleViewDetails(product)}
+                              >
+                                <FaEye />
+                              </Button>
+                            )
+                          }
+                          {
+                            product.status === 'A' && hasPermission('Productos editar') && (
                               <Button
                                 color="secondary"
                                 className='secondary'
@@ -519,6 +535,10 @@ const Products = () => {
                               >
                                 <FaPencilAlt />
                               </Button>
+                            )
+                          }
+                          {
+                            product.status === 'A' && hasPermission('Productos eliminar') && (
                               <Button
                                 color='error'
                                 className='delete'
@@ -526,9 +546,10 @@ const Products = () => {
                               >
                                 <IoTrashSharp />
                               </Button>
-                            </>
-                          )}
+                            )
+                          }
                         </div>
+
                       </td>
                     </tr>
                   ))
