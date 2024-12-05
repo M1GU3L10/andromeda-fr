@@ -583,71 +583,51 @@ const Roles = () => {
                         </div>
                     </div>
                 </div>
-                <Modal show={showModal}>
-                    <Modal.Header>
-                        <Modal.Title>{title}</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group>
-                                <Form.Label>Nombre</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="name"
-                                    value={name}
-                                    placeholder="Nombre"
-                                    onChange={handleInputChange}
-                                    onBlur={handleBlur}
-                                    isInvalid={touched.name && !!errors.name}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.name}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                            <Form.Group>
-                                <Form.Label>Permisos y Privilegios</Form.Label>
-                                <div>
-                                    <Button onClick={handleSelectAll} variant="outline-primary" size="sm" className="mb-2">
-                                        {selectAll ? 'Deseleccionar todos' : 'Seleccionar todos'}
-                                    </Button>
-                                </div>
-                                {permissions.map(permission => (
-                                    <div key={permission.id}>
-                                        <Form.Check
-                                            type="checkbox"
-                                            id={`permission-${permission.id}`}
-                                            label={permission.name}
-                                            checked={selectedPermissions.includes(permission.id)}
-                                            onChange={() => handleCheckboxChange(permission.id)}
-                                        />
-                                        {selectedPermissions.includes(permission.id) && privileges[permission.id] && (
-                                            <div className="ml-4">
-                                                {privileges[permission.id].map(privilege => (
-                                                    <Form.Check
-                                                        key={privilege.id}
-                                                        type="checkbox"
-                                                        id={`privilege-${permission.id}-${privilege.id}`}
-                                                        label={privilege.name}
-                                                        checked={selectedPrivileges[permission.id] && selectedPrivileges[permission.id][privilege.id]}
-                                                        onChange={() => handlePrivilegeChange(permission.id, privilege.id)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </Form.Group>
-                        </Form>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                            Cerrar
-                        </Button>
-                        <Button variant="primary" onClick={validar} className='btn-sucess'>
-                            Guardar
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
+                <Modal show={showModal} size="xl" centered>
+    <Modal.Header closeButton>
+      <Modal.Title>{title}</Modal.Title>
+    </Modal.Header>
+    <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+      <Form>
+        <Form.Group>
+          <Form.Label>Nombre</Form.Label>
+          <Form.Control
+            type="text"
+            name="name"
+            value={name}
+            placeholder="Nombre"
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            isInvalid={touched.name && !!errors.name}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.name}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>Permisos y Privilegios</Form.Label>
+          <div className="d-flex justify-content-end mb-3">
+            <Button
+              onClick={handleSelectAll}
+              variant={selectAll ? 'danger' : 'primary'}
+              size="sm"
+            >
+              {selectAll ? 'Deseleccionar todos' : 'Seleccionar todos'}
+            </Button>
+          </div>
+          {renderPermissionCards()}
+        </Form.Group>
+      </Form>
+    </Modal.Body>
+    <Modal.Footer>
+    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+              Cerrar
+            </Button>
+            <Button variant="primary" onClick={validar} className='btn-sucess'>
+              Guardar
+            </Button>
+    </Modal.Footer>
+  </Modal>
                 <Modal show={showDetailModal} onHide={handleCloseDetail}>
                     <Modal.Header closeButton>
                         <Modal.Title>Detalle rol</Modal.Title>
