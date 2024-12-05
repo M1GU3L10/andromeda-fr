@@ -907,17 +907,20 @@ export default function Component() {
                                         initial={{ opacity: 0, y: -20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                     >
-                                        {filteredProducts.map(product => (
-                                            <motion.div
-                                                key={product.id}
-                                                className="p-2 border-bottom cursor-pointer hover:bg-light"
-                                                onClick={() => addProduct(product)}
-                                                whileHover={{ scale: 1.02 }}
-                                            >
-                                                {product.Product_Name}
-                                            </motion.div>
-                                        ))}
+                                        {filteredProducts
+                                            .filter(product => product.Stock >= 1) // Filtrar productos con stock >= 1
+                                            .map(product => (
+                                                <motion.div
+                                                    key={product.id}
+                                                    className="p-2 border-bottom cursor-pointer hover:bg-light"
+                                                    onClick={() => addProduct(product)}
+                                                    whileHover={{ scale: 1.02 }}
+                                                >
+                                                    {product.Product_Name}
+                                                </motion.div>
+                                            ))}
                                     </motion.div>
+
                                 )}
                                 <Table responsive bordered hover className="shadow-sm">
                                     <thead style={{ backgroundColor: '#f5f5f5' }}>

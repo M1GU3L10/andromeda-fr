@@ -614,16 +614,7 @@ const Roles = () => {
                                         />
                                         {selectedPermissions.includes(permission.id) && privileges[permission.id] && (
                                             <div className="ml-4">
-                                                {privileges[permission.id].map(privilege => (
-                                                    <Form.Check
-                                                        key={privilege.id}
-                                                        type="checkbox"
-                                                        id={`privilege-${permission.id}-${privilege.id}`}
-                                                        label={privilege.name}
-                                                        checked={selectedPrivileges[permission.id] && selectedPrivileges[permission.id][privilege.id]}
-                                                        onChange={() => handlePrivilegeChange(permission.id, privilege.id)}
-                                                    />
-                                                ))}
+                                              
                                             </div>
                                         )}
                                     </div>
