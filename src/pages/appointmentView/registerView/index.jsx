@@ -65,6 +65,7 @@ export default function Component() {
     const urlAbsences = 'http://localhost:1056/api/absences';
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
     const [appointments, setAppointments] = useState([]);
 
     useEffect(() => {
@@ -490,6 +491,20 @@ export default function Component() {
 
         return { isValid: true };
     };
+
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsSmallScreen(window.innerWidth < 768);
+        };
+    
+        window.addEventListener('resize', handleResize);
+    
+        // Cleanup function
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -1032,23 +1047,25 @@ export default function Component() {
                                                 <Form.Label>Fecha de la cita</Form.Label>
                                                 <DatePicker
                                                     selected={new Date(saleInfo.appointmentData.Date)}
-                                                    onChange={(date) => handleAppointmentChange({
-                                                        target: { name: 'Date', value: date.toISOString().split('T')[0] }
-                                                    })}
+                                                    onChange={(date) =>
+                                                        handleAppointmentChange({
+                                                            target: { name: "Date", value: date.toISOString().split("T")[0] },
+                                                        })
+                                                    }
                                                     className="form-control form-control-sm"
                                                     minDate={new Date(new Date().setHours(0, 0, 0, 0))}
-                                                    popperPlacement="left-end"
+                                                    popperPlacement={isSmallScreen ? "bottom" : "left-end"} // Usando el estado de pantalla pequeña
                                                     locale={es}
                                                     popperClassName="datepicker-zindex"
                                                     popperModifiers={{
                                                         offset: {
                                                             enabled: true,
-                                                            offset: '0, 5'
+                                                            offset: "0, 5",
                                                         },
                                                         preventOverflow: {
                                                             enabled: true,
-                                                            boundariesElement: 'viewport'
-                                                        }
+                                                            boundariesElement: "viewport",
+                                                        },
                                                     }}
                                                     filterDate={(date) => date.getDay() !== 1}
                                                 />
