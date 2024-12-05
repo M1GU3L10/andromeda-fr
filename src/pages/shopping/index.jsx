@@ -7,13 +7,14 @@ import { FaCartPlus, FaEye } from "react-icons/fa";
 import { IoCart, IoSearch } from "react-icons/io5";
 import { BsPlusSquareFill } from "react-icons/bs";
 import { TbFileDownload } from "react-icons/tb";
-import { Link } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
 import Pagination from '../../components/pagination/index';
-import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import DocumentPdf from './viewShopping';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { usePermissions } from '../../components/PermissionCheck';
+import { Link } from 'react-router-dom';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -38,6 +39,7 @@ const Shopping = () => {
   const [search, setSearch] = useState('');
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedShopping, setSelectedShopping] = useState(null);
+  const permissions = usePermissions();
 
   useEffect(() => {
     getShopping();
@@ -110,15 +112,15 @@ const Shopping = () => {
       Swal.fire('Error', 'El estado de la compra no es válido.', 'error');
       return;
     }
-
+  
     if (currentStatus === 'anulada') {
       Swal.fire('No permitido', 'No se puede cambiar el estado de una compra anulada.', 'warning');
       return;
     }
-
+  
     const newStatus = currentStatus === 'completada' ? 'anulada' : 'completada';
     const MySwal = withReactContent(Swal);
-
+  
     MySwal.fire({
       title: `¿Estás seguro que deseas ${newStatus === 'completada' ? 'completar' : 'anular'} la compra?`,
       icon: 'question',
@@ -135,7 +137,7 @@ const Shopping = () => {
           } else {
             response = await axios.put(`http://localhost:1056/api/shopping/${shoppingId}`, { status: 'completada' });
           }
-
+  
           if (response.status === 200) {
             setShopping(prevShopping => prevShopping.map(item =>
               item.id === shoppingId ? { ...item, status: newStatus } : item
@@ -144,11 +146,17 @@ const Shopping = () => {
           }
         } catch (error) {
           console.error('Error al actualizar el estado de la compra:', error);
-          Swal.fire('Error', 'Hubo un problema al actualizar el estado de la compra.', 'error');
+  
+          if (error.response && error.response.data && error.response.data.error === 'stock_negativo') {
+            Swal.fire('Error', 'Hubo un problema al actualizar el estado de la compra.', 'error');
+          } else {
+            Swal.fire('Stock insuficiente', 'No se puede cambiar el estado porque el stock de productos quedaría en un número negativo.', 'error');
+          }
         }
       }
     });
   };
+  
 
   return (
     <>
@@ -184,9 +192,12 @@ const Shopping = () => {
           <div className='card shadow border-0 p-3'>
             <div className='row'>
               <div className='col-sm-5 d-flex align-items-center'>
-                <Link className='btn-register btn btn-primary' to="/shoppingRegister">
-                  <BsPlusSquareFill /> Registrar
-                </Link>
+              {permissions.includes('Compras registrar') && (
+  <Link className='btn-register btn btn-primary' to="/shoppingRegister">
+    <BsPlusSquareFill /> Registrar
+  </Link>
+)}
+
               </div>
               <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                 <div className="searchBox position-relative d-flex align-items-center">
@@ -227,16 +238,22 @@ const Shopping = () => {
                       <td>{shopping.status}</td>
                       <td>
                         <div className='actions d-flex align-items-center'>
-                          <Switch
-                            checked={shopping.status.toLowerCase() === 'completada'}
-                            onChange={() => handleSwitchChange(shopping.id, shopping.status.toLowerCase())}
-                          />
-                          <Button color='primary' className='primary' onClick={() => handleOpenModal(shopping)}>
-                            <FaEye />
-                          </Button>
-                          <PDFDownloadLink document={<DocumentPdf shopping={shopping} suppliers={suppliers} products={products} />} fileName={`Detalle Compra ${shopping.code}.pdf`}>
-                            <Button color='warning' className='warning'><TbFileDownload /></Button>
-                          </PDFDownloadLink>
+                          {permissions.includes('Compras cambiar estado') && (
+                            <Switch
+                              checked={shopping.status.toLowerCase() === 'completada'}
+                              onChange={() => handleSwitchChange(shopping.id, shopping.status.toLowerCase())}
+                            />
+                          )}
+                          {permissions.includes('Compras ver') && (
+                            <Button color='primary' className='primary' onClick={() => handleOpenModal(shopping)}>
+                              <FaEye />
+                            </Button>
+                          )}
+                          {permissions.includes('Compras imprimir') && (
+                            <PDFDownloadLink document={<DocumentPdf shopping={shopping} suppliers={suppliers} products={products} />} fileName={`Detalle Compra ${shopping.code}.pdf`}>
+                              <Button color='warning' className='warning'><TbFileDownload /></Button>
+                            </PDFDownloadLink>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -324,3 +341,4 @@ const Shopping = () => {
 };
 
 export default Shopping;
+
