@@ -21,7 +21,7 @@ import { Modal, Form } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { BsPlusSquareFill } from "react-icons/bs";
-import { useUserPermissions } from '../../hooks/useUserPermissions';
+import { usePermissions } from '../../components/PermissionCheck';
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -58,7 +58,7 @@ const Categories = () => {
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
-    const { hasPrivilege } = useUserPermissions();
+    const permissions = usePermissions();
 
     const [errors, setErrors] = useState({
         name: '',
@@ -74,6 +74,10 @@ const Categories = () => {
     useEffect(() => {
         getCategories();
     }, [])
+
+    const hasPermission = (permission) => {
+        return permissions.includes(permission);
+    };
 
     const getCategories = async () => {
         const response = await axios.get(url);
@@ -92,12 +96,12 @@ const Categories = () => {
 
     let results = []
     if (!search) {
-        results = categories.slice(indexStart,indexEnd);
-    } else{
+        results = categories.slice(indexStart, indexEnd);
+    } else {
         results = categories.filter((dato) => dato.name.toLowerCase().includes(search.toLocaleLowerCase()))
     }
 
-    const openModal = (op, id, name,description) => {
+    const openModal = (op, id, name, description) => {
         setId('');
         setName('');
         setDescription('');
@@ -268,11 +272,11 @@ const Categories = () => {
         // Encuentra la categoría que está siendo actualizada
         const categoryToUpdate = categories.find(category => category.id === categoryId);
         const Myswal = withReactContent(Swal);
-    
+
         try {
             // Verificar si la categoría está asociada con algún producto
             const associationCheck = await axios.get(`${url}/check-association/${categoryId}`);
-            
+
             if (associationCheck.data.isAssociated) {
                 // Si la categoría está asociada, mostrar alerta y detener la ejecución
                 Myswal.fire({
@@ -283,7 +287,7 @@ const Categories = () => {
                 });
                 return; // Salir de la función si está asociada
             }
-    
+
             // Si no está asociada, continuar con la confirmación de activación/desactivación
             Myswal.fire({
                 title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} la categoría "${categoryToUpdate.name}"?`,
@@ -328,49 +332,51 @@ const Categories = () => {
             show_alerta('Error al verificar asociación de la categoría', 'error');
         }
     };
-    
 
-        return (
-            <>
-                <div className="right-content w-100">
-                    <div class="row d-flex align-items-center w-100">
-                        <div className="spacing d-flex align-items-center">
-                            <div className='col-sm-5'>
-                                <span className='Title'>Categorias</span>
-                            </div>
-                            <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
-                                <div role="presentation">
-                                    <Breadcrumbs aria-label="breadcrumb">
-                                        <StyledBreadcrumb
-                                            component="a"
-                                            href="#"
-                                            label="Home"
-                                            icon={<HomeIcon fontSize="small" />}
-                                        />
-                                        <StyledBreadcrumb
-                                            component="a"
-                                            href="#"
-                                            label="Ingresos"
-                                            icon={<IoCart fontSize="small" />}
-                                        />
-                                        <StyledBreadcrumb
-                                            component="a"
-                                            href="#"
-                                            label="Categorias"
-                                            icon={<MdCategory fontSize="small" />}
-                                        />
-                                    </Breadcrumbs>
-                                </div>
+
+    return (
+        <>
+            <div className="right-content w-100">
+                <div class="row d-flex align-items-center w-100">
+                    <div className="spacing d-flex align-items-center">
+                        <div className='col-sm-5'>
+                            <span className='Title'>Categorias</span>
+                        </div>
+                        <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
+                            <div role="presentation">
+                                <Breadcrumbs aria-label="breadcrumb">
+                                    <StyledBreadcrumb
+                                        component="a"
+                                        href="#"
+                                        label="Home"
+                                        icon={<HomeIcon fontSize="small" />}
+                                    />
+                                    <StyledBreadcrumb
+                                        component="a"
+                                        href="#"
+                                        label="Ingresos"
+                                        icon={<IoCart fontSize="small" />}
+                                    />
+                                    <StyledBreadcrumb
+                                        component="a"
+                                        href="#"
+                                        label="Categorias"
+                                        icon={<MdCategory fontSize="small" />}
+                                    />
+                                </Breadcrumbs>
                             </div>
                         </div>
-                        <div className='card shadow border-0 p-3'>
+                    </div>
+                    <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                {hasPrivilege('Registrar') && (
-                                    <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
-                                        <BsPlusSquareFill />Registrar
-                                    </Button>
-                                )}
+                                {
+                                    hasPermission('Categorias registrar') && (
+                                        <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
+                                            <BsPlusSquareFill />Registrar
+                                        </Button>
+                                    )
+                                }
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
@@ -391,7 +397,7 @@ const Categories = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    { results.length > 0 ? (
+                                    {results.length > 0 ? (
                                         results.map((category, i) => (
                                             <tr key={category.id}>
                                                 <td>{(i + 1)}</td>
@@ -400,20 +406,22 @@ const Categories = () => {
                                                 <td><span className={`serviceStatus ${category.status === 'A' ? '' : 'Inactive'}`}>{category.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        {hasPrivilege('Editar') && (
-                                                            <Switch
-                                                                checked={category.status === 'A'}
-                                                                onChange={(e) => handleSwitchChange(category.id, e.target.checked)}
-                                                            />
-                                                        )}
+                                                        {
+                                                            hasPermission('Categorias cambiar estado') && (
+                                                                <Switch
+                                                                    checked={category.status === 'A'}
+                                                                    onChange={(e) => handleSwitchChange(category.id, e.target.checked)}
+                                                                />
+                                                            )
+                                                        }
                                                         {category.status === 'A' && (
                                                             <>
-                                                                {hasPrivilege('Editar') && (
+                                                                {hasPermission('Categorias editar') && (
                                                                     <Button color="secondary" className='secondary' onClick={() => openModal(2, category.id, category.name, category.description)}>
                                                                         <FaPencilAlt />
                                                                     </Button>
                                                                 )}
-                                                                {hasPrivilege('Eliminar') && (
+                                                                {hasPermission('Categorias eliminar') && (
                                                                     <Button color='error' className='delete' onClick={() => deleteCategory(category.id, category.name)}>
                                                                         <IoTrashSharp />
                                                                     </Button>

@@ -22,6 +22,10 @@ import { show_alerta } from '../../assets/functions'
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Switch from '@mui/material/Switch';
+import { usePermissions } from '../../components/PermissionCheck';
+import { Button as BootstrapButton } from 'react-bootstrap';
+import { GrStatusInfo } from "react-icons/gr";
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -60,20 +64,20 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
     }, []);
 
     const getProducts = async () => {
-        try{
+        try {
             const response = await axios.get(urlProducts);
             setProducts(response)
-        }catch(error){
+        } catch (error) {
             console.error('Error fetching users:', error);
             Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
         }
     }
 
     const getServices = async () => {
-        try{
+        try {
             const response = await axios.get(urlServices);
             setServices(response)
-        }catch(error){
+        } catch (error) {
             console.error('Error fetching users:', error);
             Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
         }
@@ -203,11 +207,18 @@ const Sales = () => {
     const [currentPages, setCurrentPages] = useState(1);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState(null);
+    const permissions = usePermissions();
+    const [showStatusModal, setShowStatusModal] = useState(false);
+    const [selectedSale, setSelectedSale] = useState(null);
 
     useEffect(() => {
         getSales();
         getUsers();
     }, []);
+
+    const hasPermission = (permission) => {
+        return permissions.includes(permission);
+    };
 
     const getSales = async () => {
         try {
@@ -253,6 +264,11 @@ const Sales = () => {
         }
     };
 
+    const handleShowStatusModal = (sale) => {
+        setSelectedSale(sale);
+        setShowStatusModal(true);
+    };
+
     let results = !search
         ? sales
         : sales.filter((dato) => {
@@ -270,41 +286,42 @@ const Sales = () => {
     const nPages = Math.ceil(results.length / dataQt);
     results = results.slice(indexStart, indexEnd);
 
-    const handleSwitchChange = async (saleId, checked) => {
-        const saleToUpdate = sales.find(sale => sale.id === saleId);
-        const MySwal = withReactContent(Swal);
-        MySwal.fire({
-            title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} el servicio "${saleToUpdate.Billnumber}"?`,
-            icon: 'question',
-            text: 'Esta acción puede afectar la disponibilidad del servicio.',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, confirmar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const updatedSale = {
-                    ...saleToUpdate,
-                    status: checked ? 'Completada' : 'Cancelada'
-                };
-                try {
-                    const response = await axios.put(`${url}/${saleId}/status`, updatedSale);
-                    if (response.status === 200) {
-                        setSales(sales.map(sale =>
-                            sale.id === saleId ? { ...sale, status: updatedSale.status } : sale
-                        ));
-                        Swal.fire('Estado de la venta actualizado exitosamente', '', 'success');
-                    }
-                } catch (error) {
-                    console.error('Error updating sale status:', error);
-                    Swal.fire('Error al actualizar el estado de la venta', '', 'error');
-                }
-            } else {
-                setSales(sales.map(sale =>
-                    sale.id === saleId ? { ...sale, status: !checked ? 'Completada' : 'Cancelada' } : sale
-                ));
-                Swal.fire('Estado de la venta no cambiado', '', 'info');
+    const handleStatusChange = async (newStatus) => {
+        if (!selectedSale) return;
+
+        try {
+            const response = await axios.put(`${url}/${selectedSale.id}/status`, {
+                status: newStatus
+            });
+
+            if (response.status === 200) {
+                // Update the sales list with the new status
+                setSales(prevSales =>
+                    prevSales.map(sale =>
+                        sale.id === selectedSale.id
+                            ? { ...sale, status: newStatus }
+                            : sale
+                    )
+                );
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Estado actualizado',
+                    text: `La venta ${selectedSale.Billnumber} ha sido ${newStatus}.`,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+
+                setShowStatusModal(false);
             }
-        });
+        } catch (error) {
+            console.error('Error updating sale status:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo actualizar el estado de la venta.',
+            });
+        }
     };
 
     return (
@@ -327,9 +344,13 @@ const Sales = () => {
                 <div className='card shadow border-0 p-3'>
                     <div className='row'>
                         <div className='col-sm-5 d-flex align-items-center'>
-                            <Link className='btn-register btn btn-primary' to="/salesRegister">
-                                <BsPlusSquareFill />Registrar
-                            </Link>
+                            {
+                                hasPermission('Ventas registrar') && (
+                                    <Link className='btn-register btn btn-primary' to="/salesRegister">
+                                        <BsPlusSquareFill />Registrar
+                                    </Link>
+                                )
+                            }
                         </div>
                         <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                             <div className="searchBox position-relative d-flex align-items-center">
@@ -371,18 +392,31 @@ const Sales = () => {
                                             <td>{sale.status}</td>
                                             <td>
                                                 <div className='actions d-flex align-items-center'>
-                                                    <Switch
-                                                        checked={sale.status === 'Completada'}
-                                                        onChange={(e) => handleSwitchChange(sale.id, e.target.checked)}
-                                                    />
-                                                    <Button color="primary" className='primary' onClick={() => handleViewDetails(sale.id)}>
-                                                        <FaEye />
-                                                    </Button>
-                                                    <PDFDownloadLink document={<DocumentPdf sale={sale} />} fileName={`DetalleVenta ${sale.Billnumber}.pdf`}>
-                                                        <Button color='warning' className='warning'>
-                                                            <TbFileDownload />
+                                                    {hasPermission('Ventas cambiar estado') && (
+                                                        <Button
+                                                            color='warning'
+                                                            className='warning'
+                                                            onClick={() => handleShowStatusModal(sale)}
+                                                        >
+                                                            <GrStatusInfo />
                                                         </Button>
-                                                    </PDFDownloadLink>
+                                                    )}
+                                                    {
+                                                        hasPermission('Ventas ver') && (
+                                                            <Button color="primary" className='primary' onClick={() => handleViewDetails(sale.id)}>
+                                                                <FaEye />
+                                                            </Button>
+                                                        )
+                                                    }
+                                                    {
+                                                        hasPermission('Ventas imprimir') && (
+                                                            <PDFDownloadLink document={<DocumentPdf sale={sale} />} fileName={`DetalleVenta ${sale.Billnumber}.pdf`}>
+                                                                <Button color='warning' className='warning'>
+                                                                    <TbFileDownload />
+                                                                </Button>
+                                                            </PDFDownloadLink>
+                                                        )
+                                                    }
                                                 </div>
                                             </td>
                                         </tr>
@@ -411,6 +445,28 @@ const Sales = () => {
                 onHide={handleCloseDetail}
                 sale={detailData}
             />
+            <Modal show={showStatusModal} onHide={() => setShowStatusModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Cambiar Estado de Venta</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>¿Qué acción desea realizar para la venta {selectedSale?.Billnumber}?</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <BootstrapButton
+                        variant="success"
+                        onClick={() => handleStatusChange('Completada')}
+                    >
+                        Completar
+                    </BootstrapButton>
+                    <BootstrapButton
+                        variant="danger"
+                        onClick={() => handleStatusChange('Cancelada')}
+                    >
+                        Cancelar
+                    </BootstrapButton>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

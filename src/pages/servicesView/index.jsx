@@ -20,6 +20,7 @@ import Switch from '@mui/material/Switch';
 import { Modal, Form, Col, Row } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
+import { usePermissions } from '../../components/PermissionCheck';
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -62,6 +63,7 @@ const Services = () => {
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
+    const permissions = usePermissions();
 
     const [errors, setErrors] = useState({
         name: '',
@@ -83,6 +85,10 @@ const Services = () => {
     useEffect(() => {
         getServices();
     }, [])
+
+    const hasPermission = (permission) => {
+        return permissions.includes(permission);
+    };
 
     const getServices = async () => {
         const response = await axios.get(url);
@@ -260,17 +266,6 @@ const Services = () => {
             return;
         }
 
-        if (errors.price || !price.trim()) {
-            show_alerta(errors.price || 'Por favor, complete el precio del servicio.', 'warning');
-            return;
-        }
-
-        if (errors.time || !time.trim()) {
-            show_alerta(errors.time || 'Por favor, seleccione un tiempo del servicio.', 'warning');
-            return;
-        }
-
-
         // Verifica la existencia
         if (operation === 1) {
             const serviceExists = await checkIfServiceExists(name.trim());
@@ -438,7 +433,11 @@ const Services = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row '>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
+                                {
+                                    hasPermission('Servicios registrar') && (
+                                        <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
+                                    )
+                                }
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
@@ -472,16 +471,32 @@ const Services = () => {
                                                 <td><span className={`serviceStatus ${service.status === 'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        <Switch
-                                                            checked={service.status === 'A'}
-                                                            onChange={(e) => handleSwitchChange(service.id, e.target.checked)}
-                                                        />
-                                                        <Button color='primary' className='primary' onClick={() => handleViewDetails(service)}><FaEye /></Button>
+                                                        {
+                                                            hasPermission('Servicios cambiar estado') && (
+                                                                <Switch
+                                                                    checked={service.status === 'A'}
+                                                                    onChange={(e) => handleSwitchChange(service.id, e.target.checked)}
+                                                                />
+                                                            )
+                                                        }
+                                                        {
+                                                            hasPermission('Servicios ver') && (
+                                                                <Button color='primary' className='primary' onClick={() => handleViewDetails(service)}><FaEye /></Button>
+                                                            )
+                                                        }
                                                         {
                                                             service.status === 'A' && (
                                                                 <>
-                                                                    <Button color="secondary" className='secondary' onClick={() => openModal(2, service.id, service.name, service.price, service.description, service.time)}><FaPencilAlt /></Button>
-                                                                    <Button color='error' className='delete' onClick={() => deleteService(service.id, service.name)}><IoTrashSharp /></Button>
+                                                                    {
+                                                                        hasPermission('Servicios editar') && (
+                                                                            <Button color="secondary" className='secondary' onClick={() => openModal(2, service.id, service.name, service.price, service.description, service.time)}><FaPencilAlt /></Button>
+                                                                        )
+                                                                    }
+                                                                    {
+                                                                        hasPermission('Servicios eliminar') && (
+                                                                            <Button color='error' className='delete' onClick={() => deleteService(service.id, service.name)}><IoTrashSharp /></Button>
+                                                                        )
+                                                                    }
                                                                 </>
                                                             )
                                                         }
