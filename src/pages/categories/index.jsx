@@ -23,7 +23,6 @@ import Pagination from '../../components/pagination/index';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { usePermissions } from '../../components/PermissionCheck';
 
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
         theme.palette.mode === 'light'
@@ -70,7 +69,6 @@ const Categories = () => {
         description: false,
     });
 
-
     useEffect(() => {
         getCategories();
     }, [])
@@ -109,9 +107,9 @@ const Categories = () => {
         setOperation(op);
 
         if (op === 1) {
-            setTitle('Registrar servicio');
+            setTitle('Registrar categoria');
         } else if (op === 2) {
-            setTitle('Editar servicio');
+            setTitle('Editar categoria');
             setId(id);
             setName(name);
             setDescription(description);
@@ -149,7 +147,7 @@ const Categories = () => {
             });
             return response.data.some(category => category.name.trim().toLowerCase() === name.trim().toLowerCase());
         } catch (error) {
-            console.error('Error al verificar la existencia del servicio:', error);
+            console.error('Error al verificar la existencia de la categoría:', error);
             return false;
         }
     };
@@ -200,16 +198,15 @@ const Categories = () => {
 
     const validar = async () => {
         if (errors.name || !name.trim()) {
-            show_alerta(errors.name || 'Por favor, complete el nombre del servicio.', 'warning');
+            show_alerta(errors.name || 'Por favor, complete el nombre de la categoría.', 'warning');
             return;
         }
 
-        // Verifica la existencia
         if (operation === 1) {
-            const serviceExists = await checkIfCategoryExists(name.trim());
+            const categoryExists = await checkIfCategoryExists(name.trim());
 
-            if (serviceExists) {
-                show_alerta('El servicio con este nombre ya existe. Por favor, elija otro nombre.', 'warning');
+            if (categoryExists) {
+                show_alerta('La categoría con este nombre ya existe. Por favor, elija otro nombre.', 'warning');
                 return;
             }
         }
@@ -250,49 +247,76 @@ const Categories = () => {
     };
 
     const deleteCategory = async (id, name) => {
-        const Myswal = withReactContent(Swal);
-        Myswal.fire({
-            title: 'Estas seguro que desea eliminar la categoria ' + name + '?',
-            icon: 'question',
-            text: 'No se podrá dar marcha atras',
-            showCancelButton: true,
-            confirmButtonText: 'Si, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setId(id);
-                enviarSolicitud('DELETE', { id: id })
-            } else {
-                show_alerta('El servicio NO fue eliminado', 'info')
+        try {
+            // Check if the category is associated with any products
+            const productsResponse = await axios.get('http://localhost:1056/api/products');
+            const isCategoryInUse = productsResponse.data.some(product => 
+                product.Category_Id === id
+            );
+
+            const Myswal = withReactContent(Swal);
+            
+            // If category is associated with products, show an error message and prevent deletion
+            if (isCategoryInUse) {
+                Myswal.fire({
+                    title: 'No se puede eliminar',
+                    text: `La categoría "${name}" está asociada a uno o más productos existentes y no puede ser eliminada.`,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
             }
-        })
+
+            // If no products are associated, proceed with deletion confirmation
+            Myswal.fire({
+                title: '¿Estás seguro que desea eliminar la categoría ' + name + '?',
+                icon: 'question',
+                text: 'No se podrá dar marcha atrás',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    setId(id);
+                    enviarSolicitud('DELETE', { id: id });
+
+                    const totalItems = categories.length - 1;
+                    const newTotalPages = Math.ceil(totalItems / dataQt);
+
+                    if (currentPages > newTotalPages) {
+                        setCurrentPages(Math.max(1, currentPages - 1));
+                    }
+                } else {
+                    show_alerta('La categoría NO fue eliminada', 'info');
+                }
+            });
+        } catch (error) {
+            console.error('Error checking category associations:', error);
+            show_alerta('Error al verificar las asociaciones de la categoría', 'error');
+        }
     }
 
     const handleSwitchChange = async (categoryId, checked) => {
-        // Encuentra la categoría que está siendo actualizada
         const categoryToUpdate = categories.find(category => category.id === categoryId);
         const Myswal = withReactContent(Swal);
 
         try {
-            // Verificar si la categoría está asociada con algún producto
             const associationCheck = await axios.get(`${url}/check-association/${categoryId}`);
 
             if (associationCheck.data.isAssociated) {
-                // Si la categoría está asociada, mostrar alerta y detener la ejecución
                 Myswal.fire({
                     title: 'No se puede cambiar el estado',
                     text: `La categoría "${categoryToUpdate.name}" está asociada a uno o más productos.`,
                     icon: 'warning',
                     confirmButtonText: 'Aceptar'
                 });
-                return; // Salir de la función si está asociada
+                return;
             }
 
-            // Si no está asociada, continuar con la confirmación de activación/desactivación
             Myswal.fire({
                 title: `¿Estás seguro que deseas ${checked ? 'activar' : 'desactivar'} la categoría "${categoryToUpdate.name}"?`,
                 icon: 'question',
-                text: 'Esta acción puede afectar la disponibilidad del servicio.',
+                text: 'Esta acción puede afectar la disponibilidad de la categoría.',
                 showCancelButton: true,
                 confirmButtonText: 'Sí, confirmar',
                 cancelButtonText: 'Cancelar'
@@ -320,7 +344,6 @@ const Categories = () => {
                         }
                     }
                 } else {
-                    // Si el usuario cancela, restablece el switch a su estado original
                     setCategories(categories.map(category =>
                         category.id === categoryId ? { ...category, status: !checked ? 'A' : 'I' } : category
                     ));
@@ -333,11 +356,10 @@ const Categories = () => {
         }
     };
 
-
     return (
         <>
             <div className="right-content w-100">
-                <div class="row d-flex align-items-center w-100">
+                <div className="row d-flex align-items-center w-100">
                     <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
                             <span className='Title'>Categorias</span>
@@ -434,7 +456,7 @@ const Categories = () => {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={7} className='text-center'>
+                                            <td colSpan={5} className='text-center'>
                                                 No hay categorias disponibles
                                             </td>
                                         </tr>

@@ -331,32 +331,64 @@ const Services = () => {
     };
 
     const deleteService = async (id, name) => {
-        const Myswal = withReactContent(Swal);
-        Myswal.fire({
-            title: 'Estas seguro que desea eliminar el servicio ' + name + '?',
-            icon: 'question',
-            text: 'No se podrá dar marcha atras',
-            showCancelButton: true,
-            confirmButtonText: 'Si, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setId(id);
-                enviarSolicitud('DELETE', { id: id });
-
-                const totalItems = services.length - 1; // Restamos 1 por el elemento eliminado
-                const newTotalPages = Math.ceil(totalItems / dataQt);
-
-                // Si estamos en la última página y está vacía después de eliminar
-                if (currentPages > newTotalPages) {
-                    // Regresar a la página anterior
-                    setCurrentPages(Math.max(1, currentPages - 1));
-                }
-            } else {
-                show_alerta('El servicio NO fue eliminado', 'info')
+        try {
+            // First, check if the service is associated with any appointments
+            const appointmentsResponse = await axios.get('http://localhost:1056/api/appointment');
+            const isServiceInUse = appointmentsResponse.data.some(appointment => 
+                appointment.serviceId === id
+            );
+    
+            // Check if the service is associated with any sales
+            const salesResponse = await axios.get('http://localhost:1056/api/sales');
+            const isServiceInSale = salesResponse.data.some(sale => 
+                sale.SaleDetails.some(detail => detail.serviceId === id)
+            );
+    
+            const Myswal = withReactContent(Swal);
+            
+            // If service is associated with appointments or sales, show an error message and prevent deletion
+            if (isServiceInUse || isServiceInSale) {
+                Myswal.fire({
+                    title: 'No se puede eliminar',
+                    text: `El servicio "${name}" está asociado a una o más citas o ventas existentes y no puede ser eliminado.`,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
             }
-        })
+    
+            // If no appointments or sales are associated, proceed with deletion
+            Myswal.fire({
+                title: 'Estas seguro que desea eliminar el servicio ' + name + '?',
+                icon: 'question',
+                text: 'No se podrá dar marcha atras',
+                showCancelButton: true,
+                confirmButtonText: 'Si, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    setId(id);
+                    enviarSolicitud('DELETE', { id: id });
+    
+                    const totalItems = services.length - 1; // Restamos 1 por el elemento eliminado
+                    const newTotalPages = Math.ceil(totalItems / dataQt);
+    
+                    // Si estamos en la última página y está vacía después de eliminar
+                    if (currentPages > newTotalPages) {
+                        // Regresar a la página anterior
+                        setCurrentPages(Math.max(1, currentPages - 1));
+                    }
+                } else {
+                    show_alerta('El servicio NO fue eliminado', 'info')
+                }
+            })
+        } catch (error) {
+            console.error('Error checking service associations:', error);
+            show_alerta('Error al verificar las asociaciones del servicio', 'error');
+        }
     }
+    
+    
 
     const handleSwitchChange = async (serviceId, checked) => {
         // Encuentra el servicio que está siendo actualizado
