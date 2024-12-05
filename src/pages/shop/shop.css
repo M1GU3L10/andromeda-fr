@@ -788,27 +788,7 @@
         color: #c59d5f !important;
     }
     
-    /* Responsivo */
-    @media (max-width: 900px) {
-        .barber-add-cart-btn {
-            padding: 24px 20px !important;
-            font-size: 1rem !important;
-        }
-        
-        .icon-button-barber svg {
-            width: 18px !important;
-            height: 18px !important;
-        }
-    }
-
-    /* Responsivo para pantallas pequeñas */
-    @media (max-width: 900px) {
-        .barber-add-cart-btn {
-            padding: 24px 20px !important; /* Aumenta el padding en pantallas pequeñas */
-            font-size:  1rem !important; /* Aumenta el tamaño de la fuente en pantallas pequeñas */
-        }
-    }
-
+  
 
     .cart-buttons1 {
         display: flex;
@@ -1428,8 +1408,5 @@
           font-size: 18px;
         }
 
-        .barber-add-cart-btn {
-          padding: 8px 12px;
-          font-size: 10px;
-        }
+   
       }
