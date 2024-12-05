@@ -9,40 +9,65 @@ import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye } from "react-icons/fa";
 import { FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp } from "react-icons/io5";
-import axios from 'axios'
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { show_alerta } from '../../assets/functions'
+import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Switch from '@mui/material/Switch';
-import { Modal, Form } from 'react-bootstrap';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
-import { useUserPermissions } from '../../hooks/useUserPermissions';
+import { Modal, Form, Row, Col, Card } from 'react-bootstrap';
 
-const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
-    const backgroundColor =
-        theme.palette.mode === 'light'
-            ? theme.palette.grey[100]
-            : theme.palette.grey[800];
-    return {
-        backgroundColor,
-        height: theme.spacing(3),
-        color: theme.palette.text.primary,
-        fontWeight: theme.typography.fontWeightRegular,
-        '&:hover, &:focus': {
-            backgroundColor: emphasize(backgroundColor, 0.06),
-        },
-        '&:active': {
-            boxShadow: theme.shadows[1],
-            backgroundColor: emphasize(backgroundColor, 0.12),
-        },
-    };
-})
+const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
+    height: theme.spacing(3),
+    color: theme.palette.text.primary,
+    fontWeight: theme.typography.fontWeightRegular,
+    '&:hover, &:focus': {
+        backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.06),
+    },
+    '&:active': {
+        boxShadow: theme.shadows[1],
+        backgroundColor: emphasize(theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800], 0.12),
+    },
+}));
 
+const PermissionCard = styled('div')({
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    padding: '16px',
+    marginBottom: '16px',
+    height: '100%',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    '& h3': {
+        fontSize: '1.125rem',
+        fontWeight: 600,
+        marginBottom: '12px',
+        color: '#1f2937',
+    },
+    '& .permission-list': {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+    },
+});
+
+const PermissionGrid = styled('div')({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '16px',
+    padding: '16px',
+    '@media (max-width: 1024px)': {
+        gridTemplateColumns: 'repeat(2, 1fr)',
+    },
+    '@media (max-width: 768px)': {
+        gridTemplateColumns: '1fr',
+    },
+});
 
 const Roles = () => {
     const url = 'http://localhost:1056/api/roles';
@@ -78,6 +103,58 @@ const Roles = () => {
         getPermissions();
         getPermissionsRole();
     }, []);
+
+    const groupPermissionsByPrefix = () => {
+        const groups = {};
+        permissions.forEach(permission => {
+            const prefix = permission.name.split(' ')[0];
+            if (!groups[prefix]) {
+                groups[prefix] = [];
+            }
+            groups[prefix].push(permission);
+        });
+        return groups;
+    };
+
+    const renderPermissionCards = () => {
+        const groups = groupPermissionsByPrefix();
+        const groupEntries = Object.entries(groups);
+        const itemsPerColumn = Math.ceil(groupEntries.length / 3);
+      
+        const columns = [
+          groupEntries.slice(0, itemsPerColumn),
+          groupEntries.slice(itemsPerColumn, itemsPerColumn * 2),
+          groupEntries.slice(itemsPerColumn * 2)
+        ];
+      
+        return (
+          <Row className="gy-4">
+            {columns.map((column, columnIndex) => (
+              <Col key={columnIndex} lg={4} md={6}>
+                {column.map(([title, perms]) => (
+                  <Card key={title} className="h-100 shadow-sm" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    <Card.Body>
+                      <Card.Title className="mb-3">{title}</Card.Title>
+                      <div className="d-flex flex-column gap-2">
+                        {perms.map(permission => (
+                          <Form.Check
+                            key={permission.id}
+                            type="checkbox"
+                            id={`permission-${permission.id}`}
+                            label={permission.name}
+                            checked={selectedPermissions.includes(permission.id)}
+                            onChange={() => handleCheckboxChange(permission.id)}
+                          />
+                        ))}
+                      </div>
+                    </Card.Body>
+                  </Card>
+                ))}
+              </Col>
+            ))}
+          </Row>
+        );
+      };
 
     const getPermissions = async () => {
         try {
@@ -143,11 +220,10 @@ const Roles = () => {
             setId(id);
             setName(name);
             const rolePermissions = getPermissionsForRoleId(id);
-
+            setSelectedPermissions(rolePermissions);
         }
         setShowModal(true);
     };
-
 
     const handleClose = () => {
         setId('');
@@ -238,8 +314,7 @@ const Roles = () => {
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
         try {
-            // Paso 1: Crear o actualizar el rol
-            const response = await axios({
+            await axios({
                 method: metodo,
                 url: urlWithId,
                 data: {
@@ -251,7 +326,7 @@ const Roles = () => {
 
             show_alerta('Operación exitosa', 'success');
             if (metodo === 'PUT' || metodo === 'POST') {
-                document.getElementById('btnCerrar').click();
+                handleClose();
             }
             getServices();
             getPermissions();
@@ -261,8 +336,6 @@ const Roles = () => {
             console.error(error);
         }
     };
-      
-
 
     const getPermissionsForRoleId = (roleId) => {
         return permissionsRole
@@ -364,14 +437,6 @@ const Roles = () => {
         });
     };
 
-    const show_alerta = (message, icon) => {
-        const Myswal = withReactContent(Swal);
-        Myswal.fire({
-            title: message,
-            icon: icon
-        });
-    };
-
     return (
         <>
             <div className="right-content w-100">
@@ -402,12 +467,20 @@ const Roles = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
+                                <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
+                                    <BsPlusSquareFill />Registrar
+                                </Button>
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
                                     <IoSearch className="mr-2" />
-                                    <input value={search} onChange={searcher} type="text" placeholder='Buscar...' className='form-control' />
+                                    <input 
+                                        value={search} 
+                                        onChange={searcher} 
+                                        type="text" 
+                                        placeholder='Buscar...' 
+                                        className='form-control' 
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -429,22 +502,42 @@ const Roles = () => {
                                                 <td>{(i + 1)}</td>
                                                 <td>{service.name}</td>
                                                 <td>{getPermissionsForRole(service.id)}</td>
-                                                <td><span className={`serviceStatus ${service.status === 'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
+                                                <td>
+                                                    <span className={`serviceStatus ${service.status === 'A' ? '' : 'Inactive'}`}>
+                                                        {service.status === 'A' ? 'Activo' : 'Inactivo'}
+                                                    </span>
+                                                </td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
                                                         <Switch
                                                             checked={service.status === 'A'}
                                                             onChange={(e) => handleSwitchChange(service.id, e.target.checked)}
                                                         />
-                                                        <Button color='primary' className='primary' onClick={() => handleViewDetails(service)}><FaEye /></Button>
-                                                        {
-                                                            service.status === 'A' && (
-                                                                <>
-                                                                    <Button color="secondary" className='secondary' onClick={() => openModal(2, service.id, service.name)}><FaPencilAlt /></Button>
-                                                                    <Button color='error' className='delete' onClick={() => deleteService(service.id, service.name)}><IoTrashSharp /></Button>
-                                                                </>
-                                                            )
-                                                        }
+                                                        <Button 
+                                                            color='primary' 
+                                                            className='primary' 
+                                                            onClick={() => handleViewDetails(service)}
+                                                        >
+                                                            <FaEye />
+                                                        </Button>
+                                                        {service.status === 'A' && (
+                                                            <>
+                                                                <Button 
+                                                                    color="secondary" 
+                                                                    className='secondary' 
+                                                                    onClick={() => openModal(2, service.id, service.name)}
+                                                                >
+                                                                    <FaPencilAlt />
+                                                                </Button>
+                                                                <Button 
+                                                                    color='error' 
+                                                                    className='delete' 
+                                                                    onClick={() => deleteService(service.id, service.name)}
+                                                                >
+                                                                    <IoTrashSharp />
+                                                                </Button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -456,71 +549,65 @@ const Roles = () => {
                                     )}
                                 </tbody>
                             </table>
-                            {
-                                results.length > 0 ? (
-                                    <div className="d-flex table-footer">
-                                        <Pagination
-                                            setCurrentPages={setCurrentPages}
-                                            currentPages={currentPages}
-                                            nPages={nPages} />
-                                    </div>
-                                ) : (<div className="d-flex table-footer">
-                                </div>)
-                            }
+                            {results.length > 0 ? (
+                                <div className="d-flex table-footer">
+                                    <Pagination
+                                        setCurrentPages={setCurrentPages}
+                                        currentPages={currentPages}
+                                        nPages={nPages}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="d-flex table-footer"></div>
+                            )}
                         </div>
                     </div>
                 </div>
-                <Modal show={showModal}>
-                    <Modal.Header>
-                        <Modal.Title>{title}</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group>
-                                <Form.Label>Nombre</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="name"
-                                    value={name}
-                                    placeholder="Nombre"
-                                    onChange={handleInputChange}
-                                    onBlur={handleBlur}
-                                    isInvalid={touched.name && !!errors.name}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.name}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                            <Form.Group>
-                                <Form.Label>Permisos y Privilegios</Form.Label>
-                                <div>
-                                    <Button onClick={handleSelectAll} variant="outline-primary" size="sm" className="mb-2">
-                                        {selectAll ? 'Deseleccionar todos' : 'Seleccionar todos'}
-                                    </Button>
-                                </div>
-                                {permissions.map(permission => (
-                                    <div key={permission.id}>
-                                        <Form.Check
-                                            type="checkbox"
-                                            id={`permission-${permission.id}`}
-                                            label={permission.name}
-                                            checked={selectedPermissions.includes(permission.id)}
-                                            onChange={() => handleCheckboxChange(permission.id)}
-                                        />
-                                    </div>
-                                ))}
-                            </Form.Group>
-                        </Form>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
-                            Cerrar
-                        </Button>
-                        <Button variant="primary" onClick={validar} className='btn-sucess'>
-                            Guardar
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
+                <Modal show={showModal} size="xl" centered>
+    <Modal.Header closeButton>
+      <Modal.Title>{title}</Modal.Title>
+    </Modal.Header>
+    <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+      <Form>
+        <Form.Group>
+          <Form.Label>Nombre</Form.Label>
+          <Form.Control
+            type="text"
+            name="name"
+            value={name}
+            placeholder="Nombre"
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            isInvalid={touched.name && !!errors.name}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.name}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>Permisos y Privilegios</Form.Label>
+          <div className="d-flex justify-content-end mb-3">
+            <Button
+              onClick={handleSelectAll}
+              variant={selectAll ? 'danger' : 'primary'}
+              size="sm"
+            >
+              {selectAll ? 'Deseleccionar todos' : 'Seleccionar todos'}
+            </Button>
+          </div>
+          {renderPermissionCards()}
+        </Form.Group>
+      </Form>
+    </Modal.Body>
+    <Modal.Footer>
+    <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+              Cerrar
+            </Button>
+            <Button variant="primary" onClick={validar} className='btn-sucess'>
+              Guardar
+            </Button>
+    </Modal.Footer>
+  </Modal>
                 <Modal show={showDetailModal} onHide={handleCloseDetail}>
                     <Modal.Header closeButton>
                         <Modal.Title>Detalle rol</Modal.Title>
@@ -531,12 +618,17 @@ const Roles = () => {
                         <p><strong>Permisos:</strong> {getPermissionsForRole(detailData.id)}</p>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
+                        <Button 
+                            variant="outlined" 
+                            onClick={handleCloseDetail}
+                        >
+                            Cerrar
+                        </Button>
                     </Modal.Footer>
                 </Modal>
             </div>
         </>
     );
-}
+};
 
 export default Roles;
