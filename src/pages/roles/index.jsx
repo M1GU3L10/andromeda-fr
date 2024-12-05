@@ -20,6 +20,7 @@ import Switch from '@mui/material/Switch';
 import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { Modal, Form, Row, Col, Card } from 'react-bootstrap';
+import { usePermissions } from '../../components/PermissionCheck';
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
@@ -89,6 +90,12 @@ const Roles = () => {
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
     const [selectAll, setSelectAll] = useState(false);
+    const permissionsR = usePermissions();
+
+
+    const hasPermission = (permission) => {
+        return permissionsR.includes(permission);
+      };
 
     const [errors, setErrors] = useState({
         name: '',
@@ -467,9 +474,13 @@ const Roles = () => {
                     <div className='card shadow border-0 p-3'>
                         <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
+                            {
+                  hasPermission('Roles registrar') && (
                                 <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
                                     <BsPlusSquareFill />Registrar
                                 </Button>
+                                )
+                            }
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
@@ -509,10 +520,16 @@ const Roles = () => {
                                                 </td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
+                                                    {
+                  hasPermission('Roles cambiar estado') && (
                                                         <Switch
                                                             checked={service.status === 'A'}
                                                             onChange={(e) => handleSwitchChange(service.id, e.target.checked)}
                                                         />
+                                                    )
+                                                }
+                                                 {
+                  hasPermission('Roles ver') && (
                                                         <Button 
                                                             color='primary' 
                                                             className='primary' 
@@ -520,8 +537,10 @@ const Roles = () => {
                                                         >
                                                             <FaEye />
                                                         </Button>
-                                                        {service.status === 'A' && (
-                                                            <>
+                                                         )
+                                                        }
+                                                        {service.status === 'A' && hasPermission('Roles editar') && (
+                                                            
                                                                 <Button 
                                                                     color="secondary" 
                                                                     className='secondary' 
@@ -529,6 +548,8 @@ const Roles = () => {
                                                                 >
                                                                     <FaPencilAlt />
                                                                 </Button>
+                                                        )}
+                                                            {service.status === 'A' && hasPermission('Roles eliminar') && (
                                                                 <Button 
                                                                     color='error' 
                                                                     className='delete' 
@@ -536,8 +557,7 @@ const Roles = () => {
                                                                 >
                                                                     <IoTrashSharp />
                                                                 </Button>
-                                                            </>
-                                                        )}
+                                                            )}
                                                     </div>
                                                 </td>
                                             </tr>
