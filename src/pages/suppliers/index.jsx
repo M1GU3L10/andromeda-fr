@@ -421,10 +421,53 @@ const Suppliers = () => {
                                                             <Button
                                                                 color='error'
                                                                 className='delete'
-                                                                onClick={() => deleteSupplier(supplier.id, supplier.Supplier_Name)}
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        // Consultar compras asociadas
+                                                                        const response = await axios.get('http://localhost:1056/api/shopping');
+                                                                        const purchases = response.data;
+
+                                                                        // Verificar si el proveedor está asociado a alguna compra
+                                                                        const isAssociated = purchases.some((purchase) => purchase.supplierId === supplier.id);
+
+                                                                        if (isAssociated) {
+                                                                            // Mostrar alerta si está asociado
+                                                                            Swal.fire({
+                                                                                title: 'No se puede eliminar',
+                                                                                text: `El proveedor "${supplier.Supplier_Name}" está asociado a una compra y no puede ser eliminado.`,
+                                                                                icon: 'warning',
+                                                                                confirmButtonText: 'Entendido'
+                                                                            });
+                                                                        } else {
+                                                                            // Mostrar confirmación de eliminación
+                                                                            const confirmDelete = await Swal.fire({
+                                                                                title: '¿Estás seguro?',
+                                                                                text: `Se eliminará el proveedor "${supplier.Supplier_Name}". Esta acción no se puede deshacer.`,
+                                                                                icon: 'warning',
+                                                                                showCancelButton: true,
+                                                                                confirmButtonText: 'Eliminar',
+                                                                                cancelButtonText: 'Cancelar'
+                                                                            });
+
+                                                                            if (confirmDelete.isConfirmed) {
+                                                                                // Llamar a la función de eliminación
+                                                                                deleteSupplier(supplier.id, supplier.Supplier_Name);
+                                                                            }
+                                                                        }
+                                                                    } catch (error) {
+                                                                        console.error('Error al verificar compras:', error);
+                                                                        Swal.fire({
+                                                                            title: 'Error',
+                                                                            text: 'No se pudo verificar si el proveedor está asociado a una compra. Inténtalo de nuevo más tarde.',
+                                                                            icon: 'error',
+                                                                            confirmButtonText: 'Cerrar'
+                                                                        });
+                                                                    }
+                                                                }}
                                                             >
                                                                 <IoTrashSharp />
                                                             </Button>
+
                                                         )
                                                     }
                                                 </div>

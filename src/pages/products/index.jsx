@@ -542,10 +542,55 @@ const Products = () => {
                               <Button
                                 color='error'
                                 className='delete'
-                                onClick={() => handleDelete(product.id, product.Product_Name)}
+                                onClick={async () => {
+                                  try {
+                                    // Consultar compras asociadas
+                                    const response = await axios.get('http://localhost:1056/api/shopping');
+                                    const purchases = response.data;
+
+                                    // Verificar si el producto está en los detalles de compras
+                                    const isAssociated = purchases.some((purchase) =>
+                                      purchase.ShoppingDetails.some((detail) => detail.product_id === product.id)
+                                    );
+
+                                    if (isAssociated) {
+                                      // Mostrar alerta si está asociado
+                                      Swal.fire({
+                                        title: 'No se puede eliminar',
+                                        text: `El producto "${product.Product_Name}" está asociado a una compra y no puede ser eliminado.`,
+                                        icon: 'warning',
+                                        confirmButtonText: 'Entendido'
+                                      });
+                                    } else {
+                                      // Mostrar confirmación de eliminación
+                                      const confirmDelete = await Swal.fire({
+                                        title: '¿Estás seguro?',
+                                        text: `Se eliminará el producto "${product.Product_Name}". Esta acción no se puede deshacer.`,
+                                        icon: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonText: 'Eliminar',
+                                        cancelButtonText: 'Cancelar'
+                                      });
+
+                                      if (confirmDelete.isConfirmed) {
+                                        // Llamar a la función de eliminación
+                                        handleDelete(product.id, product.Product_Name);
+                                      }
+                                    }
+                                  } catch (error) {
+                                    console.error('Error al verificar compras:', error);
+                                    Swal.fire({
+                                      title: 'Error',
+                                      text: 'No se pudo verificar si el producto está asociado a una compra. Inténtalo de nuevo más tarde.',
+                                      icon: 'error',
+                                      confirmButtonText: 'Cerrar'
+                                    });
+                                  }
+                                }}
                               >
                                 <IoTrashSharp />
                               </Button>
+
                             )
                           }
                         </div>
