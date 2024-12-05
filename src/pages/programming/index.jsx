@@ -52,10 +52,10 @@ const Programming = () => {
     setUserRole(roleId);
     setUserId(currentUserId);
 
-    fetchData();
+    fetchData(roleId, currentUserId);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (roleId, currentUserId) => {
     try {
       const [userResponse, appointmentResponse, salesResponse, absencesResponse] = await Promise.all([
         axios.get(urlUsers),
@@ -112,10 +112,10 @@ const Programming = () => {
         }))
       ];
 
-      if (userRole === '2') { // Rol de empleado
+      if (roleId === '2') { // Rol de empleado
         transformedEvents = transformedEvents.filter(event => 
-          (event.extendedProps.type === 'appointment' && event.extendedProps.empleadoId?.toString() === userId) ||
-          (event.extendedProps.type === 'absence' && event.extendedProps.userId?.toString() === userId)
+          (event.extendedProps.type === 'appointment' && event.extendedProps.empleadoId?.toString() === currentUserId) ||
+          (event.extendedProps.type === 'absence' && event.extendedProps.userId?.toString() === currentUserId)
         );
       }
 
@@ -315,3 +315,4 @@ const Programming = () => {
 };
 
 export default Programming;
+
