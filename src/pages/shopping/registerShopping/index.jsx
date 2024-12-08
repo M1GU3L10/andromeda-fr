@@ -14,6 +14,8 @@ import { FaPlus, FaMinus } from "react-icons/fa6";
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { show_alerta } from '../../../assets/functions';
+
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],
@@ -179,6 +181,18 @@ const RegisterShopping = () => {
         return shoppingDetails.reduce((total, item) => total + item.total_price, 0);
     };
 
+    const checkIfShopExists = async (code) => {
+        try {
+            const response = await axios.get(`${urlShopping}`, {
+                params: { code }
+            });
+            return response.data.some(shoppi => shoppi.code.trim().toLowerCase() === code.trim().toLowerCase());
+        } catch (error) {
+            console.error('Error al verificar la existencia de la compra:', error);
+            return false;
+        }
+    };
+
     const onSubmit = async (data) => {
         if (shoppingDetails.length === 0) {
             Swal.fire({
@@ -186,6 +200,13 @@ const RegisterShopping = () => {
                 title: 'Error',
                 text: 'Por favor, agregue al menos un producto.',
             });
+            return;
+        }
+
+        const serviceExists = await checkIfShopExists(data.code.trim());
+
+        if (serviceExists) {
+            show_alerta('El codigo de esta compra ya existe. Por favor, ingrese el codigo correcto', 'warning');
             return;
         }
 
@@ -212,7 +233,7 @@ const RegisterShopping = () => {
             setShoppingDetails([]);
         } catch (error) {
             console.error('Error al registrar la compra', error);
-            
+
             if (error.response && error.response.data && error.response.data.message) {
                 if (error.response.data.message.toLowerCase().includes('código')) {
                     Swal.fire({

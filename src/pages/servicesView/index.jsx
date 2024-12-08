@@ -13,7 +13,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { show_alerta } from '../../assets/functions'
+import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Switch from '@mui/material/Switch';
@@ -173,8 +173,17 @@ const Services = () => {
 
 
     const validateName = (value) => {
-        const regex = /^[A-Za-z\s]+$/;
-        return regex.test(value) ? '' : 'El nombre solo debe contener letras';
+        const regex = /^[a-zA-ZñÑ\s]+$/;
+
+        if (!regex.test(value)) {
+            return 'El nombre solo debe contener letras';
+        }
+
+        if (value.length < 0 || value.length > 100) {
+            return 'Complete el campo';
+        }
+
+        return '';
     };
 
     const checkIfServiceExists = async (name) => {
@@ -189,14 +198,24 @@ const Services = () => {
         }
     };
 
-    const validatePriceFormat = (value) => {
-        const regex = /^\d+(\.\d{1,2})?$/;
-        return regex.test(value) ? '' : 'El formato del precio no es válido';
-    };
-
     const validatePrice = (value) => {
+        const regex = /^\d+(\.\d{1,2})?$/;
         const numberValue = parseFloat(value);
-        return numberValue > 0 ? '' : 'El precio debe ser mayor a 0';
+
+        if (!regex.test(value)) {
+            return 'El formato del precio no es válido';
+        }
+
+        if (numberValue <= 1000) {
+            return 'El precio debe ser mayor a 1000';
+        }
+
+        if (value.length < 0 || value.length > 100) {
+            return 'Complete el campo';
+        }
+
+        return ''
+
     };
 
     const validateDescription = (value) => {
@@ -217,7 +236,6 @@ const Services = () => {
                 error = validateName(value);
                 break;
             case 'price':
-                error = validatePriceFormat(value);
                 error = validatePrice(value);
                 break;
             case 'description':
@@ -261,13 +279,9 @@ const Services = () => {
     };
 
     const validar = async () => {
-        if (errors.name || !name.trim()) {
-            show_alerta(errors.name || 'Por favor, complete el nombre del servicio.', 'warning');
-            return;
-        }
 
         // Verifica la existencia
-        if (operation === 1) {
+        if (operation === 1 || operation === 2) {
             const serviceExists = await checkIfServiceExists(name.trim());
 
             if (serviceExists) {
@@ -278,13 +292,11 @@ const Services = () => {
 
         const isValidName = !validateName(name);
         const isValidPrice = !validatePrice(price);
-        const isValidPriceFormat = !validatePriceFormat(price);
         const isValidDescription = !validateDescription(description);
         const isValidTime = !validateTime(time);
 
         if (!isValidName) show_alerta(errors.name, 'warning');
         else if (!isValidPrice) show_alerta(errors.price, 'warning');
-        else if (!isValidPriceFormat) show_alerta(errors.price, 'warning');
         else if (!isValidDescription) show_alerta(errors.description, 'warning');
         else if (!isValidTime) show_alerta(errors.time, 'warning');
         else {
@@ -334,29 +346,34 @@ const Services = () => {
         try {
             // First, check if the service is associated with any appointments
             const appointmentsResponse = await axios.get('http://localhost:1056/api/appointment');
-            const isServiceInUse = appointmentsResponse.data.some(appointment => 
-                appointment.serviceId === id
-            );
-    
+
+            // Filtrar las citas con estado pendiente
+            const pendingAppointments = appointmentsResponse.data.filter(appointment => appointment.status === 'pendiente');
+
+            // Verificar si el servicio está asociado a alguna cita pendiente
+            const isServiceInUse = pendingAppointments.some(appointment => appointment.serviceId === id);
+
+
             // Check if the service is associated with any sales
             const salesResponse = await axios.get('http://localhost:1056/api/sales');
-            const isServiceInSale = salesResponse.data.some(sale => 
+            const pendingSales = salesResponse.data.filter(sales => sales.status === 'Pendiente');
+            const isServiceInSale = pendingSales.some(sale =>
                 sale.SaleDetails.some(detail => detail.serviceId === id)
             );
-    
+
             const Myswal = withReactContent(Swal);
-            
+
             // If service is associated with appointments or sales, show an error message and prevent deletion
             if (isServiceInUse || isServiceInSale) {
                 Myswal.fire({
                     title: 'No se puede eliminar',
-                    text: `El servicio "${name}" está asociado a una o más citas o ventas existentes y no puede ser eliminado.`,
+                    text: `El servicio "${name}" está asociado a una o más citas o ventas existentes pendientes y no puede ser eliminado.`,
                     icon: 'error',
                     confirmButtonText: 'Entendido'
                 });
                 return;
             }
-    
+
             // If no appointments or sales are associated, proceed with deletion
             Myswal.fire({
                 title: 'Estas seguro que desea eliminar el servicio ' + name + '?',
@@ -369,10 +386,10 @@ const Services = () => {
                 if (result.isConfirmed) {
                     setId(id);
                     enviarSolicitud('DELETE', { id: id });
-    
+
                     const totalItems = services.length - 1; // Restamos 1 por el elemento eliminado
                     const newTotalPages = Math.ceil(totalItems / dataQt);
-    
+
                     // Si estamos en la última página y está vacía después de eliminar
                     if (currentPages > newTotalPages) {
                         // Regresar a la página anterior
@@ -387,8 +404,8 @@ const Services = () => {
             show_alerta('Error al verificar las asociaciones del servicio', 'error');
         }
     }
-    
-    
+
+
 
     const handleSwitchChange = async (serviceId, checked) => {
         // Encuentra el servicio que está siendo actualizado
@@ -590,10 +607,10 @@ const Services = () => {
                                         placeholder="Precio"
                                         onChange={handleInputChange}
                                         onBlur={handleBlur}
-                                        isInvalid={touched.price && !!errors.price && touched.priceFormat && !!errors.priceFormat}
+                                        isInvalid={touched.price && !!errors.price}
                                     />
                                     <Form.Control.Feedback type="invalid">
-                                        {errors.price || errors.priceFormat}
+                                        {errors.price}
                                     </Form.Control.Feedback>
                                 </Col>
                                 <Col sm="6">

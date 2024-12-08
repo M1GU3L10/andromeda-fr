@@ -49,10 +49,10 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 const SaleDetailModal = ({ show, onHide, sale }) => {
     const urlUsers = 'http://localhost:1056/api/users';
-    const urlServices = 'http://localhost:1056/api/users';
-    const urlProducts = 'http://localhost:1056/api/users';
+    const urlServices = 'http://localhost:1056/api/services';
+    const urlProducts = 'http://localhost:1056/api/products';
     const [users, setUsers] = useState([]);
-    const [productss, setProducts] = useState([]);
+    const [productos, setProducts] = useState([]);
     const [servicess, setServices] = useState([]);
 
 
@@ -66,7 +66,7 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
     const getProducts = async () => {
         try {
             const response = await axios.get(urlProducts);
-            setProducts(response)
+            setProducts(response.data)
         } catch (error) {
             console.error('Error fetching users:', error);
             Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
@@ -76,7 +76,7 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
     const getServices = async () => {
         try {
             const response = await axios.get(urlServices);
-            setServices(response)
+            setServices(response.data)
         } catch (error) {
             console.error('Error fetching users:', error);
             Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
@@ -99,7 +99,7 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
     };
 
     const ProductName = (productId) => {
-        const product = productss.find(product => product.id === productId);
+        const product = productos.find(product => product.id === productId);
         return product ? product.Product_Name : 'Desconocido';
     };
 
@@ -139,8 +139,8 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
                 {products.length > 0 && (
                     <>
                         <h5 className="mt-4">Productos</h5>
-                        <table className="table table-striped">
-                            <thead>
+                        <table className="table table-bordered table-hover v-align table-striped">
+                            <thead className='table-primary'>
                                 <tr>
                                     <th>Producto</th>
                                     <th>Cantidad</th>
@@ -151,7 +151,7 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
                             <tbody>
                                 {products.map((product) => (
                                     <tr key={product.id}>
-                                        <td>{product.id_producto}</td>
+                                        <td>{ProductName(product.id_producto)}</td>
                                         <td>{product.quantity}</td>
                                         <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.unitPrice)}</td>
                                         <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.total_price)}</td>
@@ -165,8 +165,8 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
                 {services.length > 0 && (
                     <>
                         <h5 className="mt-4">Servicios</h5>
-                        <table className="table table-striped">
-                            <thead>
+                        <table className="table table-bordered table-hover v-align table-striped">
+                            <thead className='table-primary'>
                                 <tr>
                                     <th>Servicio</th>
                                     <th>Empleado</th>
@@ -176,8 +176,8 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
                             <tbody>
                                 {services.map((service) => (
                                     <tr key={service.id}>
-                                        <td>Servicio ID: {service.serviceId}</td>
-                                        <td>Empleado ID: {service.empleadoId}</td>
+                                        <td> {ServiceName(service.serviceId)}</td>
+                                        <td> {userName(service.empleadoId)}</td>
                                         <td>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(service.total_price)}</td>
                                     </tr>
                                 ))}
@@ -189,7 +189,7 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
                 <p className='fw-bold border-top pt-2 mt-2'>Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.total_price)}</p>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>
+                <Button variant="secondary" className='btn-blue' onClick={onHide}>
                     Cerrar
                 </Button>
             </Modal.Footer>
@@ -392,15 +392,22 @@ const Sales = () => {
                                             <td>{sale.status}</td>
                                             <td>
                                                 <div className='actions d-flex align-items-center'>
-                                                    {hasPermission('Ventas cambiar estado') && (
-                                                        <Button
-                                                            color='warning'
-                                                            className='warning'
-                                                            onClick={() => handleShowStatusModal(sale)}
-                                                        >
-                                                            <GrStatusInfo />
-                                                        </Button>
-                                                    )}
+                                                    {
+                                                        sale.status == 'Pendiente' && (
+                                                            <>
+                                                                {hasPermission('Ventas cambiar estado') && (
+                                                                    <Button
+                                                                        color='warning'
+                                                                        className='warning'
+                                                                        onClick={() => handleShowStatusModal(sale)}
+                                                                    >
+                                                                        <GrStatusInfo />
+                                                                    </Button>
+                                                                )}
+                                                            </>
+                                                        )
+                                                    }
+
                                                     {
                                                         hasPermission('Ventas ver') && (
                                                             <Button color="primary" className='primary' onClick={() => handleViewDetails(sale.id)}>
@@ -450,7 +457,7 @@ const Sales = () => {
                     <Modal.Title>Cambiar Estado de Venta</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <p>¿Qué acción desea realizar para la venta {selectedSale?.Billnumber}?</p>
+                    <p>Se va a modificar el estado de la venta {selectedSale?.Billnumber}. Una vez realizado este cambio, no será posible revertir la acción. Si la venta tiene una cita asociada, el estado de dicha cita también se verá afectado.</p>
                 </Modal.Body>
                 <Modal.Footer>
                     <BootstrapButton

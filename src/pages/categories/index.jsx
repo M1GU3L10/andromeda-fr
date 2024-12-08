@@ -136,9 +136,18 @@ const Categories = () => {
     };
 
     const validateName = (value) => {
-        const regex = /^[A-Za-z\s]+$/;
-        return regex.test(value) ? '' : 'El nombre solo debe contener letras';
+        const regex = /^[a-zA-ZñÑ\s]+$/;
+
+        if (!regex.test(value)) {
+            return 'El nombre solo debe contener letras';
+        }
+
+        if (value.length < 0 || value.length > 100) {
+            return 'Complete el campo';
+        }
+        return '';
     };
+
 
     const checkIfCategoryExists = async (name) => {
         try {
@@ -199,6 +208,11 @@ const Categories = () => {
     const validar = async () => {
         if (errors.name || !name.trim()) {
             show_alerta(errors.name || 'Por favor, complete el nombre de la categoría.', 'warning');
+            return;
+        }
+
+        if (errors.description || !description.trim()) {
+            show_alerta(errors.description || 'Por favor, complete la descripción de la categoría.', 'warning');
             return;
         }
 
