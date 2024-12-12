@@ -824,7 +824,7 @@ export default function Component() {
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
-                            <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
+                            <div className="card-header" style={{ backgroundColor: '#000000', color: 'white', display: 'flex', alignItems: 'center' }}>
                                 <Scissors className="mr-2" />
                                 <h5 className="mb-0">SERVCIOS Y PRODUCTOS</h5>
 
@@ -1027,7 +1027,7 @@ export default function Component() {
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
-                            <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div className="card-header" style={{ backgroundColor: '#000000', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <Calendar className="mr-2" />
                                     <h5 className="mb-0">INFORMACION DE LA CITA </h5>
@@ -1121,7 +1121,7 @@ export default function Component() {
                             whileHover={{ scale: 1.02 }}
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
-                            <div className="card-header" style={{ backgroundColor: '#d4af37', color: 'white', display: 'flex', alignItems: 'center' }}>
+                            <div className="card-header" style={{ backgroundColor: '#000000', color: 'white', display: 'flex', alignItems: 'center' }}>
                                 <h5 className="mb-0">RESUMEN DE LA CITA </h5>
                             </div>
                             <div className='card-body'>
