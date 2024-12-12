@@ -33,7 +33,7 @@ const ForgotPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('https://andromeda-8.onrender.com/api/users/forgot-password', { email });
+            const response = await axios.post('https://barberiaorion.onrender.com/api/users/forgot-password', { email });
             setMessage(response.data.message);
             setError('');
             toast.success('Revisa tu bandeja de entrada para restablecer tu contraseña.', {

@@ -36,8 +36,8 @@ export const PermissionProvider = ({ children }) => {
       }
 
       try {
-        const permissionsRoleResponse = await axios.get('https://andromeda-8.onrender.com/api/permissionsRole');
-        const permissionsResponse = await axios.get('https://andromeda-8.onrender.com/api/permissions');
+        const permissionsRoleResponse = await axios.get('https://barberiaorion.onrender.com/api/permissionsRole');
+        const permissionsResponse = await axios.get('https://barberiaorion.onrender.com/api/permissions');
 
         const rolePermissions = permissionsRoleResponse.data.filter(pr => pr.roleId === parseInt(roleId));
         const permissionNames = permissionsResponse.data.filter(p =>

@@ -48,9 +48,9 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 })
 
 const SaleDetailModal = ({ show, onHide, sale }) => {
-    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
-    const urlServices = 'https://andromeda-8.onrender.com/api/services';
-    const urlProducts = 'https://andromeda-8.onrender.com/api/products';
+    const urlUsers = 'https://barberiaorion.onrender.com/api/users';
+    const urlServices = 'https://barberiaorion.onrender.com/api/services';
+    const urlProducts = 'https://barberiaorion.onrender.com/api/products';
     const [users, setUsers] = useState([]);
     const [productos, setProducts] = useState([]);
     const [servicess, setServices] = useState([]);
@@ -198,8 +198,8 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
 };
 
 const Sales = () => {
-    const url = 'https://andromeda-8.onrender.com/api/sales';
-    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
+    const url = 'https://barberiaorion.onrender.com/api/sales';
+    const urlUsers = 'https://barberiaorion.onrender.com/api/users';
     const [sales, setSales] = useState([]);
     const [users, setUsers] = useState([]);
     const [search, setSearch] = useState('');

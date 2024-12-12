@@ -6,9 +6,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import { GiHairStrands } from "react-icons/gi";
 import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
-import { FaEye } from "react-icons/fa";
-import { FaPencilAlt } from "react-icons/fa";
-import { IoTrashSharp } from "react-icons/io5";
+import { FaEye, FaPencilAlt } from "react-icons/fa";
+import { IoTrashSharp, IoSearch } from "react-icons/io5";
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -18,14 +17,10 @@ import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import Switch from '@mui/material/Switch';
 import { Modal, Form, Col, Row } from 'react-bootstrap';
-import { IoSearch } from "react-icons/io5";
 import Pagination from '../../components/pagination/index';
 import { usePermissions } from '../../components/PermissionCheck';
 
-
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
-
-
     const backgroundColor =
         theme.palette.mode === 'light'
             ? theme.palette.grey[100]
@@ -43,23 +38,24 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
             backgroundColor: emphasize(backgroundColor, 0.12),
         },
     };
-})
+});
 
 const Services = () => {
-    const url = 'https://andromeda-8.onrender.com/api/services';
+    const url = 'https://barberiaorion.onrender.com/api/services';
     const [services, setServices] = useState([]);
-    const [id, setId] = useState('');
-    const [name, setName] = useState('');
-    const [price, setPrice] = useState('');
-    const [description, setDescription] = useState('');
-    const [time, setTime] = useState('');
-    const [status, setStatus] = useState('');
+    const [formValues, setFormValues] = useState({
+        id: '',
+        name: '',
+        price: '',
+        description: '',
+        time: '',
+        status: 'A'
+    });
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailData, setDetailData] = useState({});
-    const [value, setValue] = useState([]);
     const [search, setSearch] = useState('');
     const [dataQt, setDataQt] = useState(3);
     const [currentPages, setCurrentPages] = useState(1);
@@ -68,7 +64,6 @@ const Services = () => {
     const [errors, setErrors] = useState({
         name: '',
         price: '',
-        priceFormat: '',
         description: '',
         time: '',
     });
@@ -76,29 +71,27 @@ const Services = () => {
     const [touched, setTouched] = useState({
         name: false,
         price: false,
-        priceFormat: false,
         description: false,
         time: false,
     });
 
-
     useEffect(() => {
         getServices();
-    }, [])
-
-    const hasPermission = (permission) => {
-        return permissions.includes(permission);
-    };
+    }, []);
 
     const getServices = async () => {
-        const response = await axios.get(url);
-        setServices(response.data);
-    }
+        try {
+            const response = await axios.get(url);
+            setServices(response.data);
+        } catch (error) {
+            console.error('Error fetching services:', error);
+            show_alerta('Error al obtener los servicios', 'error');
+        }
+    };
 
     const searcher = (e) => {
         setSearch(e.target.value);
-        console.log(e.target.value)
-    }
+    };
 
     let results = [];
     if (!search) {
@@ -106,8 +99,6 @@ const Services = () => {
     } else {
         results = services.filter((dato) => {
             const searchTerm = search.toLowerCase();
-
-            // Buscamos por nombre, precio o tiempo
             return (
                 dato.name.toLowerCase().includes(searchTerm) ||
                 dato.price.toString().includes(searchTerm) ||
@@ -123,67 +114,74 @@ const Services = () => {
 
     results = results.slice(indexStart, indexEnd);
 
-    const openModal = (op, id, name, price, description, time) => {
-        setId('');
-        setName('');
-        setPrice('');
-        setDescription('');
-        setTime('');
-        setStatus('A');
+    const openModal = (op, service = {}) => {
         setOperation(op);
-
-        if (op === 1) {
-            setTitle('Registrar servicio');
-        } else if (op === 2) {
-            setTitle('Editar servicio');
-            setId(id);
-            setName(name);
-            setPrice(price);
-            setDescription(description);
-            setTime(time);
-        }
+        setTitle(op === 1 ? 'Registrar servicio' : 'Editar servicio');
+        setFormValues(op === 1 ? {
+            id: '',
+            name: '',
+            price: '',
+            description: '',
+            time: '',
+            status: 'A'
+        } : {
+            id: service.id,
+            name: service.name,
+            price: service.price,
+            description: service.description,
+            time: service.time,
+            status: service.status
+        });
         setShowModal(true);
-    }
+    };
 
     const handleClose = () => {
-        setId('');
-        setName('');
-        setPrice('');
-        setDescription('');
-        setTime('');
-        setStatus('A');
-
+        setShowModal(false);
         setErrors({
             name: '',
             price: '',
-            priceFormat: '',
             description: '',
             time: '',
         });
         setTouched({
             name: false,
             price: false,
-            priceFormat: false,
             description: false,
             time: false,
         });
-
-        setShowModal(false);
     };
 
-
-    const validateName = (value) => {
-        const regex = /^[a-zA-ZñÑ\s]+$/;
-
-        if (!regex.test(value)) {
-            return 'El nombre solo debe contener letras';
+    const handleValidation = (name, value) => {
+        let error = '';
+        switch (name) {
+            case 'name':
+                error = value.trim() === '' ? 'El nombre del servicio es requerido' : '';
+                break;
+            case 'price':
+                error = value <= 1000 ? 'El precio debe ser mayor a 1000' : '';
+                break;
+            case 'description':
+                error = value.length < 5 || value.length > 500 ? 'La descripción debe tener entre 5 y 500 caracteres' : '';
+                break;
+            case 'time':
+                error = value === '' ? 'Debe seleccionar el tiempo del servicio' : '';
+                break;
+            default:
+                break;
         }
+        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
+    };
 
-        if (value.length < 0 || value.length > 100) {
-            return 'Complete el campo';
-        }
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormValues(prevValues => ({ ...prevValues, [name]: value }));
+        handleValidation(name, value);
+    };
 
-        return '';
+    const handleBlur = (e) => {
+        const { name } = e.target;
+        setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
+        handleValidation(name, e.target.value);
     };
 
     const checkIfServiceExists = async (name) => {
@@ -198,217 +196,93 @@ const Services = () => {
         }
     };
 
-    const validatePrice = (value) => {
-        const regex = /^\d+(\.\d{1,2})?$/;
-        const numberValue = parseFloat(value);
-
-        if (!regex.test(value)) {
-            return 'El formato del precio no es válido';
-        }
-
-        if (numberValue <= 1000) {
-            return 'El precio debe ser mayor a 1000';
-        }
-
-        if (value.length < 0 || value.length > 100) {
-            return 'Complete el campo';
-        }
-
-        return ''
-
-    };
-
-    const validateDescription = (value) => {
-        if (value.length < 5 || value.length > 500) {
-            return 'La descripción debe tener entre 10 y 500 caracteres';
-        }
-        return '';
-    };
-
-    const validateTime = (value) => {
-        return value ? '' : 'Debe seleccionar el tiempo del servicio';
-    };
-
-    const handleValidation = (name, value) => {
-        let error = '';
-        switch (name) {
-            case 'name':
-                error = validateName(value);
-                break;
-            case 'price':
-                error = validatePrice(value);
-                break;
-            case 'description':
-                error = validateDescription(value);
-                break;
-            case 'time':
-                error = validateTime(value);
-                break;
-            default:
-                break;
-        }
-        setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        handleValidation(name, value);
-
-        switch (name) {
-            case 'name':
-                setName(value);
-                break;
-            case 'price':
-                setPrice(value);
-                break;
-            case 'description':
-                setDescription(value);
-                break;
-            case 'time':
-                setTime(value);
-                break;
-            default:
-                break;
-        }
-    };
-
-    const handleBlur = (e) => {
-        const { name } = e.target;
-        setTouched(prevTouched => ({ ...prevTouched, [name]: true }));
-        handleValidation(name, e.target.value);
-    };
-
     const validar = async () => {
+        const { name, price, description, time } = formValues;
 
-        // Verifica la existencia
-        if (operation === 1 || operation === 2) {
+        if (errors.name || !name.trim()) {
+            show_alerta(errors.name || 'Por favor, complete el nombre del servicio.', 'warning');
+            return;
+        }
+        if (errors.price || !price) {
+            show_alerta(errors.price || 'Por favor, ingrese un precio válido.', 'warning');
+            return;
+        }
+        if (errors.description || !description.trim()) {
+            show_alerta(errors.description || 'Por favor, ingrese una descripción válida.', 'warning');
+            return;
+        }
+        if (errors.time || !time) {
+            show_alerta(errors.time || 'Por favor, seleccione el tiempo del servicio.', 'warning');
+            return;
+        }
+
+        if (operation === 1) {
             const serviceExists = await checkIfServiceExists(name.trim());
-
             if (serviceExists) {
                 show_alerta('El servicio con este nombre ya existe. Por favor, elija otro nombre.', 'warning');
                 return;
             }
         }
 
-        const isValidName = !validateName(name);
-        const isValidPrice = !validatePrice(price);
-        const isValidDescription = !validateDescription(description);
-        const isValidTime = !validateTime(time);
+        const parametros = {
+            name: name.trim(),
+            price: parseFloat(price),
+            description: description.trim(),
+            time: parseInt(time),
+            status: 'A'
+        };
 
-        if (!isValidName) show_alerta(errors.name, 'warning');
-        else if (!isValidPrice) show_alerta(errors.price, 'warning');
-        else if (!isValidDescription) show_alerta(errors.description, 'warning');
-        else if (!isValidTime) show_alerta(errors.time, 'warning');
-        else {
-            const parametros = {
-                id: id,
-                name: name.trim(),
-                price: price,
-                description: description.trim(),
-                time: time,
-                status: status,
-            };
-
-            const isUpdate = operation === 2;
-            const metodo = isUpdate ? 'PUT' : 'POST';
-            enviarSolicitud(metodo, parametros);
+        if (operation === 2) {
+            parametros.id = formValues.id;
         }
+
+        const metodo = operation === 1 ? 'POST' : 'PUT';
+        enviarSolicitud(metodo, parametros);
     };
 
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
         try {
-            await axios({ method: metodo, url: urlWithId, data: parametros });
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            console.log('Request details:', {
+                method: metodo,
+                url: urlWithId,
+                data: parametros
+            });
+
+            const response = await axios({
+                method: metodo,
+                url: urlWithId,
+                data: parametros,
+                ...config
+            });
+
+            console.log('Response:', response.data);
+
             show_alerta('Operación exitosa', 'success');
             if (metodo === 'PUT' || metodo === 'POST') {
-                document.getElementById('btnCerrar').click();
+                handleClose();
             }
             getServices();
-            console.log(parametros);
         } catch (error) {
-            show_alerta('Error en la solicitud', 'error');
-            console.log(error);
-            console.log(parametros);
+            console.error('Error details:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                data: parametros
+            });
+
+            const errorMessage = error.response?.data?.message || 'Error en la solicitud';
+            show_alerta(errorMessage, 'error');
         }
     };
-
-    const handleCloseDetail = () => {
-        setShowModal(false);
-        setShowDetailModal(false);
-    };
-
-    const handleViewDetails = (service) => {
-        setDetailData(service);
-        setShowDetailModal(true);
-    };
-
-    const deleteService = async (id, name) => {
-        try {
-            // First, check if the service is associated with any appointments
-            const appointmentsResponse = await axios.get('https://andromeda-8.onrender.com/api/appointment');
-
-            // Filtrar las citas con estado pendiente
-            const pendingAppointments = appointmentsResponse.data.filter(appointment => appointment.status === 'pendiente');
-
-            // Verificar si el servicio está asociado a alguna cita pendiente
-            const isServiceInUse = pendingAppointments.some(appointment => appointment.serviceId === id);
-
-
-            // Check if the service is associated with any sales
-            const salesResponse = await axios.get('https://andromeda-8.onrender.com/api/sales');
-            const pendingSales = salesResponse.data.filter(sales => sales.status === 'Pendiente');
-            const isServiceInSale = pendingSales.some(sale =>
-                sale.SaleDetails.some(detail => detail.serviceId === id)
-            );
-
-            const Myswal = withReactContent(Swal);
-
-            // If service is associated with appointments or sales, show an error message and prevent deletion
-            if (isServiceInUse || isServiceInSale) {
-                Myswal.fire({
-                    title: 'No se puede eliminar',
-                    text: `El servicio "${name}" está asociado a una o más citas o ventas existentes pendientes y no puede ser eliminado.`,
-                    icon: 'error',
-                    confirmButtonText: 'Entendido'
-                });
-                return;
-            }
-
-            // If no appointments or sales are associated, proceed with deletion
-            Myswal.fire({
-                title: 'Estas seguro que desea eliminar el servicio ' + name + '?',
-                icon: 'question',
-                text: 'No se podrá dar marcha atras',
-                showCancelButton: true,
-                confirmButtonText: 'Si, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    setId(id);
-                    enviarSolicitud('DELETE', { id: id });
-
-                    const totalItems = services.length - 1; // Restamos 1 por el elemento eliminado
-                    const newTotalPages = Math.ceil(totalItems / dataQt);
-
-                    // Si estamos en la última página y está vacía después de eliminar
-                    if (currentPages > newTotalPages) {
-                        // Regresar a la página anterior
-                        setCurrentPages(Math.max(1, currentPages - 1));
-                    }
-                } else {
-                    show_alerta('El servicio NO fue eliminado', 'info')
-                }
-            })
-        } catch (error) {
-            console.error('Error checking service associations:', error);
-            show_alerta('Error al verificar las asociaciones del servicio', 'error');
-        }
-    }
-
-
 
     const handleSwitchChange = async (serviceId, checked) => {
-        // Encuentra el servicio que está siendo actualizado
         const serviceToUpdate = services.find(service => service.id === serviceId);
         const Myswal = withReactContent(Swal);
         Myswal.fire({
@@ -433,16 +307,10 @@ const Services = () => {
                         show_alerta('Estado del servicio actualizado exitosamente', 'success');
                     }
                 } catch (error) {
-                    if (error.response) {
-                        console.log('Error details:', error.response.data);
-                        show_alerta('Error al actualizar el estado del servicio: ' + JSON.stringify(error.response.data.errors), 'error');
-                    } else {
-                        console.log('Error details:', error.message);
-                        show_alerta('Error al actualizar el estado del servicio', 'error');
-                    }
+                    console.error('Error updating service status:', error);
+                    show_alerta('Error al actualizar el estado del servicio', 'error');
                 }
             } else {
-                // Si el usuario cancela, restablece el switch a su estado original
                 setServices(services.map(service =>
                     service.id === serviceId ? { ...service, status: !checked ? 'A' : 'I' } : service
                 ));
@@ -451,11 +319,63 @@ const Services = () => {
         });
     };
 
+    const deleteService = async (id, name) => {
+        try {
+            const appointmentsResponse = await axios.get('https://barberiaorion.onrender.com/api/appointment');
+            const pendingAppointments = appointmentsResponse.data.filter(appointment => appointment.status === 'pendiente');
+            const isServiceInUse = pendingAppointments.some(appointment => appointment.serviceId === id);
+
+            const salesResponse = await axios.get('https://barberiaorion.onrender.com/api/sales');
+            const pendingSales = salesResponse.data.filter(sales => sales.status === 'Pendiente');
+            const isServiceInSale = pendingSales.some(sale =>
+                sale.SaleDetails.some(detail => detail.serviceId === id)
+            );
+
+            const Myswal = withReactContent(Swal);
+
+            if (isServiceInUse || isServiceInSale) {
+                Myswal.fire({
+                    title: 'No se puede eliminar',
+                    text: `El servicio "${name}" está asociado a una o más citas o ventas existentes pendientes y no puede ser eliminado.`,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            Myswal.fire({
+                title: `¿Estás seguro que desea eliminar el servicio ${name}?`,
+                icon: 'question',
+                text: 'No se podrá dar marcha atrás',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarSolicitud('DELETE', { id: id });
+                } else {
+                    show_alerta('El servicio NO fue eliminado', 'info');
+                }
+            });
+        } catch (error) {
+            console.error('Error checking service associations:', error);
+            show_alerta('Error al verificar las asociaciones del servicio', 'error');
+        }
+    };
+
+    const handleViewDetails = (service) => {
+        setDetailData(service);
+        setShowDetailModal(true);
+    };
+
+    const handleCloseDetail = () => {
+        setShowDetailModal(false);
+    };
 
     return (
         <>
             <div className="right-content w-100">
-                <div class="row d-flex align-items-center w-100">
+                <div className="row d-flex align-items-center w-100">
                     <div className="spacing d-flex align-items-center">
                         <div className='col-sm-5'>
                             <span className='Title'>Servicios</span>
@@ -480,13 +400,13 @@ const Services = () => {
                         </div>
                     </div>
                     <div className='card shadow border-0 p-3'>
-                        <div className='row '>
+                        <div className='row'>
                             <div className='col-sm-5 d-flex align-items-center'>
-                                {
-                                    hasPermission('Servicios registrar') && (
-                                        <Button className='btn-register' onClick={() => openModal(1)} variant="contained"><BsPlusSquareFill />Registrar</Button>
-                                    )
-                                }
+                                {permissions.includes('Servicios registrar') && (
+                                    <Button className='btn-register' onClick={() => openModal(1)} variant="contained">
+                                        <BsPlusSquareFill />Registrar
+                                    </Button>
+                                )}
                             </div>
                             <div className='col-sm-7 d-flex align-items-center justify-content-end'>
                                 <div className="searchBox position-relative d-flex align-items-center">
@@ -520,35 +440,25 @@ const Services = () => {
                                                 <td><span className={`serviceStatus ${service.status === 'A' ? '' : 'Inactive'}`}>{service.status === 'A' ? 'Activo' : 'Inactivo'}</span></td>
                                                 <td>
                                                     <div className='actions d-flex align-items-center'>
-                                                        {
-                                                            hasPermission('Servicios cambiar estado') && (
-                                                                <Switch
-                                                                    checked={service.status === 'A'}
-                                                                    onChange={(e) => handleSwitchChange(service.id, e.target.checked)}
-                                                                />
-                                                            )
-                                                        }
-                                                        {
-                                                            hasPermission('Servicios ver') && (
-                                                                <Button color='primary' className='primary' onClick={() => handleViewDetails(service)}><FaEye /></Button>
-                                                            )
-                                                        }
-                                                        {
-                                                            service.status === 'A' && (
-                                                                <>
-                                                                    {
-                                                                        hasPermission('Servicios editar') && (
-                                                                            <Button color="secondary" className='secondary' onClick={() => openModal(2, service.id, service.name, service.price, service.description, service.time)}><FaPencilAlt /></Button>
-                                                                        )
-                                                                    }
-                                                                    {
-                                                                        hasPermission('Servicios eliminar') && (
-                                                                            <Button color='error' className='delete' onClick={() => deleteService(service.id, service.name)}><IoTrashSharp /></Button>
-                                                                        )
-                                                                    }
-                                                                </>
-                                                            )
-                                                        }
+                                                        {permissions.includes('Servicios cambiar estado') && (
+                                                            <Switch
+                                                                checked={service.status === 'A'}
+                                                                onChange={(e) => handleSwitchChange(service.id, e.target.checked)}
+                                                            />
+                                                        )}
+                                                        {permissions.includes('Servicios ver') && (
+                                                            <Button color='primary' className='primary' onClick={() => handleViewDetails(service)}><FaEye /></Button>
+                                                        )}
+                                                        {service.status === 'A' && (
+                                                            <>
+                                                                {permissions.includes('Servicios editar') && (
+                                                                    <Button color="secondary" className='secondary' onClick={() => openModal(2, service)}><FaPencilAlt /></Button>
+                                                                )}
+                                                                {permissions.includes('Servicios eliminar') && (
+                                                                    <Button color='error' className='delete' onClick={() => deleteService(service.id, service.name)}><IoTrashSharp /></Button>
+                                                                )}
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -557,27 +467,23 @@ const Services = () => {
                                         <tr>
                                             <td colSpan={7} className='text-center'>No hay Servicios disponibles</td>
                                         </tr>
-                                    )
-
-                                    }
+                                    )}
                                 </tbody>
                             </table>
-                            {
-                                results.length > 0 ? (
-                                    <div className="d-flex table-footer">
-                                        <Pagination
-                                            setCurrentPages={setCurrentPages}
-                                            currentPages={currentPages}
-                                            nPages={nPages} />
-                                    </div>
-                                ) : (<div className="d-flex table-footer">
-                                </div>)
-                            }
+                            {results.length > 0 && (
+                                <div className="d-flex table-footer">
+                                    <Pagination
+                                        setCurrentPages={setCurrentPages}
+                                        currentPages={currentPages}
+                                        nPages={nPages}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
-                <Modal show={showModal}>
-                    <Modal.Header>
+                <Modal show={showModal} onHide={handleClose}>
+                    <Modal.Header closeButton>
                         <Modal.Title>{title}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
@@ -587,7 +493,7 @@ const Services = () => {
                                 <Form.Control
                                     type="text"
                                     name="name"
-                                    value={name}
+                                    value={formValues.name}
                                     placeholder="Nombre"
                                     onChange={handleInputChange}
                                     onBlur={handleBlur}
@@ -603,7 +509,7 @@ const Services = () => {
                                     <Form.Control
                                         type="number"
                                         name="price"
-                                        value={price}
+                                        value={formValues.price}
                                         placeholder="Precio"
                                         onChange={handleInputChange}
                                         onBlur={handleBlur}
@@ -618,7 +524,7 @@ const Services = () => {
                                     <Form.Control
                                         as="select"
                                         name="time"
-                                        value={time}
+                                        value={formValues.time}
                                         onChange={handleInputChange}
                                         onBlur={handleBlur}
                                         isInvalid={touched.time && !!errors.time}
@@ -637,9 +543,10 @@ const Services = () => {
                             <Form.Group className='pb-2'>
                                 <Form.Label className='required'>Descripción</Form.Label>
                                 <Form.Control
-                                    as="textarea" rows={2}
+                                    as="textarea"
+                                    rows={2}
                                     name="description"
-                                    value={description}
+                                    value={formValues.description}
                                     placeholder="Descripcion"
                                     onChange={handleInputChange}
                                     onBlur={handleBlur}
@@ -652,7 +559,7 @@ const Services = () => {
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={handleClose} id='btnCerrar' className='btn-red'>
+                        <Button variant="secondary" onClick={handleClose} className='btn-red'>
                             Cerrar
                         </Button>
                         <Button variant="primary" onClick={validar} className='btn-sucess'>
@@ -666,18 +573,21 @@ const Services = () => {
                     </Modal.Header>
                     <Modal.Body>
                         <p><strong>Nombre:</strong> {detailData.name}</p>
-                        <p><strong>Precio:</strong> {detailData.price}</p>
+                        <p><strong>Precio:</strong> {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(detailData.price)}</p>
                         <p><strong>Descripción:</strong> {detailData.description}</p>
-                        <p><strong>Tiempo:</strong> {detailData.time === 20 ? '20 Minutos' : detailData.time === 30 ? '30 Minutos' : detailData.time === 45 ? '45 Minutos' : detailData.time === 60 ? '60 Minutos' : 'Desconocido'}</p>
+                        <p><strong>Tiempo:</strong> {detailData.time} Minutos</p>
                         <p><strong>Estado:</strong> {detailData.status === 'A' ? 'Activo' : 'Inactivo'}</p>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type='button' className='btn-blue' variant="outlined" onClick={handleCloseDetail}>Cerrar</Button>
+                        <Button variant="secondary" onClick={handleCloseDetail}>
+                            Cerrar
+                        </Button>
                     </Modal.Footer>
                 </Modal>
             </div>
         </>
     );
-}
+};
 
 export default Services;
+

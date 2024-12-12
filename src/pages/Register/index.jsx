@@ -19,7 +19,7 @@ import withReactContent from 'sweetalert2-react-content';
 const MySwal = withReactContent(Swal);
 
 const Register = () => {
-    const url = 'https://andromeda-8.onrender.com/api/users';
+    const url = 'https://barberiaorion.onrender.com/api/users';
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const [inputIndex, setInputIndex] = useState(null);
@@ -149,7 +149,7 @@ const Register = () => {
         }
 
         try {
-            const response = await axios.post('https://andromeda-8.onrender.com/api/users/register', {
+            const response = await axios.post('https://barberiaorion.onrender.com/api/users/register', {
                 name,
                 email,
                 password,

@@ -72,7 +72,7 @@ const ResetPassword = () => {
         }
 
         try {
-            const response = await fetch('https://andromeda-8.onrender.com/api/users/reset-password', {
+            const response = await fetch('https://barberiaorion.onrender.com/api/users/reset-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

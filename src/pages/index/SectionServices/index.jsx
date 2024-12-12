@@ -12,7 +12,7 @@ import StarIcon from '@mui/icons-material/Star';
 
 const SectionServices = () => {
     const [expanded, setExpanded] = React.useState(null); // Inicialmente ningún acordeón está expandido
-    const url = 'https://andromeda-8.onrender.com/api/services';
+    const url = 'https://barberiaorion.onrender.com/api/services';
     const [services, setServices] = useState([]);
 
     useEffect(() => {

@@ -39,8 +39,8 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const Users = () => {
-  const url = 'https://andromeda-8.onrender.com/api/users';
-  const urlRoles = 'https://andromeda-8.onrender.com/api/roles';
+  const url = 'https://barberiaorion.onrender.com/api/users';
+  const urlRoles = 'https://barberiaorion.onrender.com/api/roles';
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [id, setId] = useState('');

@@ -45,8 +45,8 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 axios.defaults.baseURL = 'https://andromeda-8.onrender.com';
 
 const Absences = () => {
-    const urlAbsences = '/api/absences';
-    const urlUsers = '/api/users';
+    const urlAbsences = 'https://andromeda-8.onrender.com/api/absences';
+    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
     const [absences, setAbsences] = useState([]);
     const [users, setUsers] = useState([]);
     const [currentAbsence, setCurrentAbsence] = useState({});

@@ -16,7 +16,7 @@ const PrivilegesModal = ({ show, handleClose, permissionId, permissionName }) =>
 
     const loadPrivileges = async () => {
         try {
-            const response = await axios.get('https://andromeda-8.onrender.com/api/privileges');
+            const response = await axios.get('https://barberiaorion.onrender.com/api/privileges');
             setPrivileges(response.data);
         } catch (error) {
             console.error('Error loading privileges:', error);
@@ -25,7 +25,7 @@ const PrivilegesModal = ({ show, handleClose, permissionId, permissionName }) =>
 
     const loadPermissionPrivileges = async () => {
         try {
-            const response = await axios.get(`https://andromeda-8.onrender.com/api/permission-privileges/permission/${permissionId}`);
+            const response = await axios.get(`https://barberiaorion.onrender.com/api/permission-privileges/permission/${permissionId}`);
             setPermissionPrivileges(response.data);
             setLoading(false);
         } catch (error) {
@@ -37,13 +37,13 @@ const PrivilegesModal = ({ show, handleClose, permissionId, permissionName }) =>
     const handlePrivilegeChange = async (privilegeId, checked) => {
         try {
             if (checked) {
-                await axios.post('https://andromeda-8.onrender.com/api/permission-privileges', {
+                await axios.post('https://barberiaorion.onrender.com/api/permission-privileges', {
                     permissionId,
                     privilegeId,
                     status: 'A'
                 });
             } else {
-                await axios.delete(`https://andromeda-8.onrender.com/api/permission-privileges/${permissionId}/${privilegeId}`);
+                await axios.delete(`https://barberiaorion.onrender.com/api/permission-privileges/${permissionId}/${privilegeId}`);
             }
             await loadPermissionPrivileges();
         } catch (error) {

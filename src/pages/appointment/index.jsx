@@ -40,8 +40,8 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const Appointment = () => {
-    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
-    const urlAppointment = 'https://andromeda-8.onrender.com/api/appointment';
+    const urlUsers = 'https://barberiaorion.onrender.com/api/users';
+    const urlAppointment = 'https://barberiaorion.onrender.com/api/appointment';
     const navigate = useNavigate();
     const calendarRef = useRef(null);
     const { isToggleSidebar } = useContext(MyContext);
@@ -64,7 +64,7 @@ const Appointment = () => {
     const [selectedEmployee, setSelectedEmployee] = useState('');
     const [userRole, setUserRole] = useState('');
     const [userId, setUserId] = useState('');
-    const urlSales = 'https://andromeda-8.onrender.com/api/sales';
+    const urlSales = 'https://barberiaorion.onrender.com/api/sales';
     const [showWarningModal, setShowWarningModal] = useState(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
     const permissions = usePermissions();
@@ -252,7 +252,7 @@ const Appointment = () => {
 
     const handleStatusChangeSucess = async () => {
         try {
-            await axios.put(`https://andromeda-8.onrender.com/api/appointment/${selectedAppointmentId}/status`, {
+            await axios.put(`https://barberiaorion.onrender.com/api/appointment/${selectedAppointmentId}/status`, {
                 status: "Completada"
             });
             setShowWarningModal(false);
@@ -264,7 +264,7 @@ const Appointment = () => {
 
     const handleStatusChangeRed = async () => {
         try {
-            await axios.put(`https://andromeda-8.onrender.com/api/appointment/${selectedAppointmentId}/status`, {
+            await axios.put(`https://barberiaorion.onrender.com/api/appointment/${selectedAppointmentId}/status`, {
                 status: "cancelada"
             });
             setShowWarningModal(false);

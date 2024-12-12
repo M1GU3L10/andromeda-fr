@@ -37,10 +37,10 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const Programming = () => {
-  const urlAppointments = 'https://andromeda-8.onrender.com/api/appointment';
-  const urlUsers = 'https://andromeda-8.onrender.com/api/users';
-  const urlSales = 'https://andromeda-8.onrender.com/api/sales';
-  const urlAbsences = 'https://andromeda-8.onrender.com/api/absences';
+  const urlAppointments = 'https://barberiaorion.onrender.com/api/appointment';
+  const urlUsers = 'https://barberiaorion.onrender.com/api/users';
+  const urlSales = 'https://barberiaorion.onrender.com/api/sales';
+  const urlAbsences = 'https://barberiaorion.onrender.com/api/absences';
   const calendarRef = useRef(null);
   const [events, setEvents] = useState([]);
   const [users, setUsers] = useState([]);

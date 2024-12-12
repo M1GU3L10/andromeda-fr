@@ -23,6 +23,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Modal, Form, Col, Row } from 'react-bootstrap';
 import { MdOutlineSave } from "react-icons/md";
 import { IoCart } from "react-icons/io5";
+import { useState, useEffect } from 'react';
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     const backgroundColor =
@@ -58,8 +59,8 @@ const BlueSwitch = styled(Switch)(({ theme }) => ({
 
 const Suppliers = () => {
     const url = 'https://andromeda-8.onrender.com/api/suppliers';
-    const [suppliers, setSuppliers] = React.useState([]);
-    const [formValues, setFormValues] = React.useState({
+    const [suppliers, setSuppliers] = useState([]);
+    const [formValues, setFormValues] = useState({
         id: '',
         Supplier_Name: '',
         Phone_Number: '',
@@ -67,36 +68,42 @@ const Suppliers = () => {
         Address: '',
         status: 'A'
     });
-    const [operation, setOperation] = React.useState(1);
-    const [title, setTitle] = React.useState('');
-    const [search, setSearch] = React.useState('');
-    const [dataQt, setDataQt] = React.useState(3);
-    const [currentPages, setCurrentPages] = React.useState(1);
-    const [showModal, setShowModal] = React.useState(false);
+    const [operation, setOperation] = useState(1);
+    const [title, setTitle] = useState('');
+    const [search, setSearch] = useState('');
+    const [dataQt, setDataQt] = useState(3);
+    const [currentPages, setCurrentPages] = useState(1);
+    const [showModal, setShowModal] = useState(false);
     const permissions = usePermissions();
-    const [errors, setErrors] = React.useState({
+    const [errors, setErrors] = useState({
         Supplier_Name: '',
         Phone_Number: '',
         Email: '',
         Address: '',
     });
-    const [touched, setTouched] = React.useState({
+    const [touched, setTouched] = useState({
         Supplier_Name: false,
         Phone_Number: false,
         Email: false,
         Address: false,
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         getSuppliers();
     }, []);
 
     const getSuppliers = async () => {
         try {
-            const response = await axios.get(url);
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             setSuppliers(response.data);
         } catch (error) {
-            show_alerta('Error al obtener proveedores', 'error');
+            console.error('Error fetching suppliers:', error.response || error);
+            show_alerta(`Error al obtener proveedores: ${error.response?.data?.message || error.message}`, 'error');
+            setSuppliers([]);
         }
     };
 
@@ -189,38 +196,89 @@ const Suppliers = () => {
         handleValidation(name, e.target.value);
     };
 
-    const validar = () => {
-        const { Supplier_Name, Phone_Number, Email, Address } = formValues;
-        if (errors.Supplier_Name || !Supplier_Name.trim()) {
+    const validar = async () => {
+        if (errors.Supplier_Name || !formValues.Supplier_Name.trim()) {
             show_alerta(errors.Supplier_Name || 'Por favor, complete el nombre del proveedor.', 'warning');
             return;
         }
-        if (errors.Phone_Number || !Phone_Number.trim()) {
+        if (errors.Phone_Number || !formValues.Phone_Number.trim()) {
             show_alerta(errors.Phone_Number || 'Por favor, ingrese un número de teléfono válido.', 'warning');
             return;
         }
-        if (errors.Email || !Email.trim()) {
+        if (errors.Email || !formValues.Email.trim()) {
             show_alerta(errors.Email || 'Por favor, ingrese un correo electrónico válido.', 'warning');
             return;
         }
-        if (errors.Address || !Address.trim()) {
+        if (errors.Address || !formValues.Address.trim()) {
             show_alerta(errors.Address || 'Por favor, ingrese la dirección.', 'warning');
             return;
         }
 
-        enviarSolicitud(operation === 1 ? 'POST' : 'PUT', formValues);
+        const parametros = {
+            Supplier_Name: formValues.Supplier_Name.trim(),
+            Phone_Number: formValues.Phone_Number.trim(),
+            Email: formValues.Email.trim(),
+            Address: formValues.Address.trim(),
+            status: 'A'
+        };
+
+        if (operation === 2) {
+            parametros.id = formValues.id;
+        }
+
+        const metodo = operation === 1 ? 'POST' : 'PUT';
+        enviarSolicitud(metodo, parametros);
+    };
+
+    const checkIfSupplierExists = async (email) => {
+        try {
+            const response = await axios.get(`${url}`);
+            return response.data.some(supplier => supplier.Email.trim().toLowerCase() === email.trim().toLowerCase());
+        } catch (error) {
+            console.error('Error al verificar la existencia del proveedor:', error);
+            return false;
+        }
     };
 
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
         try {
-            await axios({ method: metodo, url: urlWithId, data: parametros });
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            console.log('Request details:', {
+                method: metodo,
+                url: urlWithId,
+                data: parametros
+            });
+
+            const response = await axios({
+                method: metodo,
+                url: urlWithId,
+                data: parametros,
+                ...config
+            });
+
+            console.log('Response:', response.data);
+
             show_alerta('Operación exitosa', 'success');
-            handleClose();
+            if (metodo === 'PUT' || metodo === 'POST') {
+                handleClose();
+            }
             getSuppliers();
         } catch (error) {
-            show_alerta('Error en la solicitud', 'error');
-            console.log(error);
+            console.error('Error details:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                data: parametros
+            });
+
+            const errorMessage = error.response?.data?.message || 'Error en la solicitud';
+            show_alerta(errorMessage, 'error');
         }
     };
 
@@ -588,3 +646,4 @@ const Suppliers = () => {
 };
 
 export default Suppliers;
+

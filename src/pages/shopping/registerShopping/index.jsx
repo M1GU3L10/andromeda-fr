@@ -32,9 +32,9 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
 }));
 
 const RegisterShopping = () => {
-    const urlShopping = 'https://andromeda-8.onrender.com/api/shopping';
-    const urlSuppliers = 'https://andromeda-8.onrender.com/api/suppliers';
-    const urlProducts = 'https://andromeda-8.onrender.com/api/products';
+    const urlShopping = 'https://barberiaorion.onrender.com/api/shopping';
+    const urlSuppliers = 'https://barberiaorion.onrender.com/api/suppliers';
+    const urlProducts = 'https://barberiaorion.onrender.com/api/products';
     const navigate = useNavigate();
 
     const [suppliers, setSuppliers] = useState([]);
