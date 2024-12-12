@@ -654,11 +654,12 @@ export default function Component() {
           </div>
           <Button
             onClick={handleCategoryClick}
-            className="bg-amber-700 hover:bg-amber-800 text-black font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center space-x-2"
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-md shadow transition duration-200 ease-in-out transform hover:scale-105 flex items-center space-x-2"
           >
-            <Scissors className="w-5 h-5 text-black" />
+            <Scissors className="w-5 h-5 text-gray-600" />
             <span>Categorías</span>
           </Button>
+
 
           <Menu
             anchorEl={categoryMenuAnchorEl}
