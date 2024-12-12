@@ -38,6 +38,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PermissionProvider, PermissionCheck } from './components/PermissionCheck';
 import Error404 from './pages/404'
+import Tango from './pages/ayudas';
 
 export const MyContext = createContext();
 
@@ -104,6 +105,7 @@ function App() {
                 <Route path="/forgotPassword" element={<PermissionCheck requiredPermission="public"><ForgotPassword /></PermissionCheck>} />
                 <Route path="/resetPassword" element={<PermissionCheck requiredPermission="public"><ResetPassword /></PermissionCheck>} />
                 <Route path="/" element={<Navigate to="/index" replace />} />
+
 
                 <Route path="/404" element={
                   <PermissionCheck requiredPermission="public">
@@ -223,6 +225,12 @@ function App() {
                 <Route path="/absences" element={
                   <PermissionCheck requiredPermission="Ausencias">
                     <Absences />
+                  </PermissionCheck>
+                } />
+
+                <Route path="/tango" element={
+                  <PermissionCheck requiredPermission="Ausencias">
+                    <Tango />
                   </PermissionCheck>
                 } />
               </Routes>

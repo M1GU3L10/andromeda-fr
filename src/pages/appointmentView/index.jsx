@@ -688,12 +688,6 @@ useEffect(() => {
             </div>
 
             <div className="mt-4 text-end">
-            <button
-              className="btn btn-danger"
-              onClick={() => handleCancelAppointment(appointmentId)}
-            >
-              Cancelar cita
-            </button>
             </div>
           </Modal.Body>
 

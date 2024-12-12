@@ -1386,3 +1386,9 @@ a {
   font-size: 40px;
   font-weight: bold;
 }
+
+.tango-content{
+  padding-left: 300px;
+  padding-top: 100px;
+  width: 100%;
+}

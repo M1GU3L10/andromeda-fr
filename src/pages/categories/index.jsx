@@ -55,7 +55,7 @@ const Categories = () => {
     const [showModal, setShowModal] = useState(false);
     const [value, setValue] = useState([]);
     const [search, setSearch] = useState('');
-    const [dataQt, setDataQt] = useState(3);
+    const [dataQt, setDataQt] = useState(5);
     const [currentPages, setCurrentPages] = useState(1);
     const permissions = usePermissions();
 

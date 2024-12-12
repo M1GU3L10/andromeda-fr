@@ -43,7 +43,7 @@ const Sidebar = () => {
     <>
       <div className="sidebar">
         <ul>
- 
+
           {
             hasPermission('Dashboard') && (
               <li>
@@ -60,14 +60,14 @@ const Sidebar = () => {
           {
             hasPermission('Dashboard') && (
               <li>
-              <Link to="/profile">
-                <Button className={`w-100 ${activeTab === 1 ? 'active' : ''}`} onClick={() => isOpensubMenu(1)}>
-                  <span className='icon'><BsFillPersonVcardFill /></span>
-                  <span className='sidebar-option'>Mi perfil</span>
-                  <span className='arrow'></span>
-                </Button>
-              </Link>
-            </li>
+                <Link to="/profile">
+                  <Button className={`w-100 ${activeTab === 1 ? 'active' : ''}`} onClick={() => isOpensubMenu(1)}>
+                    <span className='icon'><BsFillPersonVcardFill /></span>
+                    <span className='sidebar-option'>Mi perfil</span>
+                    <span className='arrow'></span>
+                  </Button>
+                </Link>
+              </li>
             )
           }
           {hasPermission('Roles') && (
@@ -196,7 +196,9 @@ const Sidebar = () => {
         </ul>
         <div className='logoutWrapper'>
           <div className='logoutBox'>
-            <Button variant="contained" className='btn-golden' onClick={handleLogout}><GiExitDoor />Cerrar sesión</Button>
+            <Link to="/tango">
+              <Button variant="contained" className='btn-golden' ><GiExitDoor />Guia de Usuarios</Button>
+            </Link>
           </div>
         </div>
       </div>
