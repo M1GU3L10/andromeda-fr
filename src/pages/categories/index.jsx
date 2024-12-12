@@ -44,7 +44,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 })
 
 const Categories = () => {
-    const url = 'https://andromeda-8.onrender.com/api/categories';
+    const url = 'https://barberiaorion.onrender.com/api/categories';
     const [categories, setCategories] = useState([]);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
@@ -292,7 +292,7 @@ const Categories = () => {
     const deleteCategory = async (id, name) => {
         try {
             // Check if the category is associated with any products
-            const productsResponse = await axios.get('https://andromeda-8.onrender.com/api/products');
+            const productsResponse = await axios.get('https://barberiaorion.onrender.com/api/products');
             const isCategoryInUse = productsResponse.data.some(product =>
                 product.Category_Id === id
             );

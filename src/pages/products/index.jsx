@@ -60,7 +60,7 @@ const Products = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('https://andromeda-8.onrender.com/api/categories');
+      const response = await axios.get('https://barberiaorion.onrender.com/api/categories');
       setCategories(response.data);
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -70,7 +70,7 @@ const Products = () => {
 
   const fetchProductData = async () => {
     try {
-      const response = await axios.get('https://andromeda-8.onrender.com/api/products');
+      const response = await axios.get('https://barberiaorion.onrender.com/api/products');
       setProductData(response.data);
     } catch (err) {
       show_alerta('Error al cargar los productos', 'error');
@@ -181,7 +181,7 @@ const Products = () => {
     }
 
     try {
-      const response = await axios.post('https://andromeda-8.onrender.com/api/products', formDataToSend, {
+      const response = await axios.post('https://barberiaorion.onrender.com/api/products', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -217,7 +217,7 @@ const Products = () => {
     }
 
     try {
-      const response = await axios.put(`https://andromeda-8.onrender.com/api/products/${formData.id}`,
+      const response = await axios.put(`https://barberiaorion.onrender.com/api/products/${formData.id}`,
         formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -282,7 +282,7 @@ const Products = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`https://andromeda-8.onrender.com/api/products/${id}`);
+          await axios.delete(`https://barberiaorion.onrender.com/api/products/${id}`);
           fetchProductData();
           show_alerta('Producto eliminado exitosamente', 'success');
         } catch (err) {
@@ -321,7 +321,7 @@ const Products = () => {
           },
         });
 
-        const response = await axios.put(`https://andromeda-8.onrender.com/api/products/${productId}/status`, {
+        const response = await axios.put(`https://barberiaorion.onrender.com/api/products/${productId}/status`, {
           status: newStatus
         });
 
@@ -537,7 +537,7 @@ const Products = () => {
                                 onClick={async () => {
                                   try {
                                     // Consultar compras asociadas
-                                    const response = await axios.get('https://andromeda-8.onrender.com/api/shopping');
+                                    const response = await axios.get('https://barberiaorion.onrender.com/api/shopping');
                                     const purchases = response.data;
 
                                     // Verificar si el producto está en los detalles de compras

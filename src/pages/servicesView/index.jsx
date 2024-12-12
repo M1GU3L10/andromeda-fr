@@ -46,7 +46,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 })
 
 const Services = () => {
-    const url = 'https://andromeda-8.onrender.com/api/services';
+    const url = 'https://barberiaorion.onrender.com/api/services';
     const [services, setServices] = useState([]);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
@@ -345,7 +345,7 @@ const Services = () => {
     const deleteService = async (id, name) => {
         try {
             // First, check if the service is associated with any appointments
-            const appointmentsResponse = await axios.get('https://andromeda-8.onrender.com/api/appointment');
+            const appointmentsResponse = await axios.get('https://barberiaorion.onrender.com/api/appointment');
 
             // Filtrar las citas con estado pendiente
             const pendingAppointments = appointmentsResponse.data.filter(appointment => appointment.status === 'pendiente');
@@ -355,7 +355,7 @@ const Services = () => {
 
 
             // Check if the service is associated with any sales
-            const salesResponse = await axios.get('https://andromeda-8.onrender.com/api/sales');
+            const salesResponse = await axios.get('https://barberiaorion.onrender.com/api/sales');
             const pendingSales = salesResponse.data.filter(sales => sales.status === 'Pendiente');
             const isServiceInSale = pendingSales.some(sale =>
                 sale.SaleDetails.some(detail => detail.serviceId === id)

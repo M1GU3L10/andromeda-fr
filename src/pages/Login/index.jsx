@@ -56,7 +56,7 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('https://andromeda-8.onrender.com/api/users/login', {
+            const response = await axios.post('https://barberiaorion.onrender.com/api/users/login', {
                 email,
                 password
             });

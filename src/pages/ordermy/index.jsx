@@ -105,7 +105,7 @@ export default function Component() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('https://andromeda-8.onrender.com/api/products');
+      const response = await fetch('https://barberiaorion.onrender.com/api/products');
       const data = await response.json();
       setProducts(data);
     } catch (error) {
@@ -116,7 +116,7 @@ export default function Component() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('https://andromeda-8.onrender.com/api/orders');
+      const response = await fetch('https://barberiaorion.onrender.com/api/orders');
       const data = await response.json();
 
       const filteredOrders = data
@@ -215,7 +215,7 @@ export default function Component() {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`https://andromeda-8.onrender.com/api/orders/${orderId}`, {
+        const response = await fetch(`https://barberiaorion.onrender.com/api/orders/${orderId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

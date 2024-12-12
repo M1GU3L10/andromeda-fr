@@ -53,8 +53,8 @@ export default function Component() {
     const [occupiedSlots, setOccupiedSlots] = useState([]);
 
     const [errors, setErrors] = useState({});
-    const urlServices = 'https://andromeda-8.onrender.com/api/services';
-    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
+    const urlServices = 'https://barberiaorion.onrender.com/api/services';
+    const urlUsers = 'https://barberiaorion.onrender.com/api/users';
     const [subtotalProducts, setSubtotalProducts] = useState(0);
     const [selectedProducts, setSelectedProducts] = useState(() => {
         const saved = localStorage.getItem('selectedProducts');
@@ -62,7 +62,7 @@ export default function Component() {
     });
     const [subtotalServices, setSubtotalServices] = useState(0);
     const [absences, setAbsences] = useState([]);
-    const urlAbsences = 'https://andromeda-8.onrender.com/api/absences';
+    const urlAbsences = 'https://barberiaorion.onrender.com/api/absences';
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
@@ -180,7 +180,7 @@ export default function Component() {
 
     const getProducts = async () => {
         try {
-            const response = await axios.get('https://andromeda-8.onrender.com/api/products');
+            const response = await axios.get('https://barberiaorion.onrender.com/api/products');
             setProducts(response.data);
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -199,7 +199,7 @@ export default function Component() {
 
     const getAppointments = async () => {
         try {
-            const response = await axios.get('https://andromeda-8.onrender.com/api/appointment');
+            const response = await axios.get('https://barberiaorion.onrender.com/api/appointment');
             setAppointments(response.data);
             updateOccupiedSlots(response.data);
         } catch (error) {
@@ -570,7 +570,7 @@ export default function Component() {
         };
 
         try {
-            await axios.post('https://andromeda-8.onrender.com/api/sales', saleInfoToSend);
+            await axios.post('https://barberiaorion.onrender.com/api/sales', saleInfoToSend);
             show_alerta('Cita registrada con éxito', 'success');
             setSaleInfo({
                 Billnumber: '',

@@ -44,9 +44,9 @@ export default function CalendarioBarberia({ info }) {
   const [showModal, setShowModal] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState('');
-  const urlSales = 'https://andromeda-8.onrender.com/api/sales';
-  const urlUsers = 'https://andromeda-8.onrender.com/api/users';
-  const urlAppointment = 'https://andromeda-8.onrender.com/api/appointment';
+  const urlSales = 'https://barberiaorion.onrender.com/api/sales';
+  const urlUsers = 'https://barberiaorion.onrender.com/api/users';
+  const urlAppointment = 'https://barberiaorion.onrender.com/api/appointment';
   const [detailData, setDetailData] = useState({});
   const [saleDetails, setSaleDetails] = useState({ success: true, data: [], saleInfo: {} });
   const [hasFetchedData, setHasFetchedData] = useState(false);
@@ -198,7 +198,7 @@ export default function CalendarioBarberia({ info }) {
     const fetchAppointmentDetails = async () => {
       try {
         // Llamada a la API para obtener detalles de la cita
-        const response = await axios.get(`https://andromeda-8.onrender.com/api/appointments/${appointmentId}`);
+        const response = await axios.get(`https://barberiaorion.onrender.com/api/appointments/${appointmentId}`);
         const appointment = response.data;
 
         // Configurar datos de la cita

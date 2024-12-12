@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 // API Configuration
 const api = axios.create({
-  baseURL: 'https://andromeda-8.onrender.com/api',
+  baseURL: 'https://barberiaorion.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
