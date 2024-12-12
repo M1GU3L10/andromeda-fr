@@ -14,6 +14,7 @@ import Divider from '@mui/material/Divider';
 import { MyContext } from '../../App';
 import { toast } from 'react-toastify';
 import { BsHouseFill } from 'react-icons/bs';
+import './header.css';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -81,16 +82,16 @@ const Header = () => {
 
     return (
         <>
-            <header className="d-flex align-items-center">
+            <header className="d-flex align-items-center responsive-header">
                 <div className="container-fluid w-100">
                     <div className='row d-flex align-items-center'>
-                        <div className="col-sm-2 parte1">
+                        <div className="col-12 col-sm-2 parte1 logo-container">
                             <Link to={'/'} className='d-flex align-items-center logo'>
                                 <img src={logo} alt="Barberia Orion Logo" />
                                 <span className='ml-2'>Barberia Orion</span>
                             </Link>
                         </div>
-                        <div className="col-sm-3 d-flex align-items-center parte2">
+                        <div className="col-12 col-sm-3 d-flex align-items-center justify-content-end parte2 menu-toggle">
                             <Button
                                 className='rounded-circle mr-3'
                                 onClick={() => {
@@ -104,52 +105,54 @@ const Header = () => {
                                 {context.isToggleSidebar ? <MdOutlineMenu /> : <MdMenuOpen />}
                             </Button>
                         </div>
-                        <div className="col-sm-7 d-flex align-items-center justify-content-end parte3">
-                            <Button className='rounded-circle mr-3' onClick={() => context.setThemeMode(!context.themeMode)}>
-                                <MdOutlineLightMode />
-                            </Button>
-                            <div className='MyAccWrapper'>
-                                <Button className='MyAcc d-flex align-items-center' onClick={handleClick}>
-                                    <div className='ImgUser'>
-                                        <span className='rounded-circle'>
-                                            <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' alt="User Avatar" />
-                                        </span>
-                                    </div>
-                                    <div className="userInfo" style={{ textAlign: 'center', margin: '0 auto' }}>
-                                        {isLoggedIn ? (
-                                            <>
-                                                <p className="text-sm font-medium" style={{ margin: '0', fontWeight: 'bold' }}>{userEmail}</p>
-                                                <p className="text-xs text-gray-500" style={{ margin: '0', fontSize: '12px' }}>
-                                                    {userRole === '1' ? 'Administrador' : userRole === '2' ? 'Empleado' : 'Usuario'}
-                                                </p>
-                                            </>
-                                        ) : (
-                                            <p className="text-sm" style={{ margin: '0' }}>No está logueado</p>
-                                        )}
-                                    </div>
+                        <div className="col-12 col-sm-7 d-flex align-items-center justify-content-end parte3 header-actions">
+                            <div className="d-flex align-items-center">
+                                <Button className='rounded-circle mr-3 theme-toggle' onClick={() => context.setThemeMode(!context.themeMode)}>
+                                    <MdOutlineLightMode />
                                 </Button>
-                                <Menu
-                                    anchorEl={anchorEl}
-                                    id="account-menu"
-                                    open={open}
-                                    onClose={handleClose}
-                                    onClick={handleClose}
-                                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                                >
-                                    <MenuItem onClick={handleGoToHome}>
-                                        <ListItemIcon>
-                                            <BsHouseFill />
-                                        </ListItemIcon>
-                                        Volver al inicio
-                                    </MenuItem>
-                                    <MenuItem onClick={handleLogout}>
-                                        <ListItemIcon>
-                                            <Logout fontSize="small" />
-                                        </ListItemIcon>
-                                        Cerrar sesión
-                                    </MenuItem>
-                                </Menu>
+                                <div className='MyAccWrapper'>
+                                    <Button className='MyAcc d-flex align-items-center' onClick={handleClick}>
+                                        <div className='ImgUser'>
+                                            <span className='rounded-circle'>
+                                                <img src='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg' alt="User Avatar" />
+                                            </span>
+                                        </div>
+                                        <div className="userInfo" style={{ textAlign: 'center', margin: '0 auto' }}>
+                                            {isLoggedIn ? (
+                                                <>
+                                                    <p className="text-sm font-medium" style={{ margin: '0', fontWeight: 'bold' }}>{userEmail}</p>
+                                                    <p className="text-xs text-gray-500" style={{ margin: '0', fontSize: '12px' }}>
+                                                        {userRole === '1' ? 'Administrador' : userRole === '2' ? 'Empleado' : 'Usuario'}
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <p className="text-sm" style={{ margin: '0' }}>No está logueado</p>
+                                            )}
+                                        </div>
+                                    </Button>
+                                    <Menu
+                                        anchorEl={anchorEl}
+                                        id="account-menu"
+                                        open={open}
+                                        onClose={handleClose}
+                                        onClick={handleClose}
+                                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                                    >
+                                        <MenuItem onClick={handleGoToHome}>
+                                            <ListItemIcon>
+                                                <BsHouseFill />
+                                            </ListItemIcon>
+                                            Volver al inicio
+                                        </MenuItem>
+                                        <MenuItem onClick={handleLogout}>
+                                            <ListItemIcon>
+                                                <Logout fontSize="small" />
+                                            </ListItemIcon>
+                                            Cerrar sesión
+                                        </MenuItem>
+                                    </Menu>
+                                </div>
                             </div>
                         </div>
                     </div>

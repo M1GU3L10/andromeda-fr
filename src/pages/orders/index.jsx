@@ -110,21 +110,7 @@ export default function Orders() {
   const hasPermission = (permission) => {
     return permissions.includes(permission);
   };
-  const openRegisterModal = () => {
-    setFormValues({
-      id: '',
-      Billnumber: generateBillNumber(),
-      OrderDate: new Date().toISOString().split('T')[0],
-      registrationDate: new Date().toISOString().split('T')[0],
-      total_price: '',
-      status: '',
-      id_usuario: '',
-      Token_Expiration: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-      orderDetails: []
-    })
-    setShowRegisterModal(true)
-    setErrors({})
-  }
+
 
   const openEditModal = (order) => {
     setEditValues({
@@ -409,16 +395,7 @@ export default function Orders() {
           <div className='row'>
             <div className='col-sm-5 d-flex align-items-center'>
               {
-                hasPermission('Pedidos registrar') && (
-                  <Button
-                    className='btn-register'
-                    onClick={() => openRegisterModal(1)}
-                    variant="contained"
-                    color="primary"
-                  >
-                    <BsPlusSquareFill /> Registrar
-                  </Button>
-                )
+              
               }
             </div>
 
@@ -438,7 +415,7 @@ export default function Orders() {
                   <th>Fecha del pedido</th>
                   <th>Monto Total</th>
                   <th>Estado</th>
-                  <th>Usuario</th>
+                  <th>Cliente</th>
                   <th>Acciones</th>
                 </tr>
               </thead>

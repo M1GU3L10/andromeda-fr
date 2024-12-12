@@ -680,23 +680,6 @@ const Products = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col sm="6">
-                <Form.Group>
-                  <Form.Label className='required'>Stock</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="Stock"
-                    value={formData.Stock}
-                    placeholder="Stock"
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    isInvalid={touched.Stock && !!errors.Stock}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.Stock}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
             </Row>
 
             <Form.Group className="mb-3">

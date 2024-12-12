@@ -5,10 +5,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MyContext } from '../../App.js';
 import { Calendar, Clock, Users, CheckCircle2, DollarSign } from 'lucide-react';
 import logo from '../../assets/images/logo-light.png';
-import { Avatar, Menu, MenuItem, Button, Card } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import { toast } from 'react-toastify';
 import { GrUserAdmin } from "react-icons/gr";
 import { GiExitDoor } from "react-icons/gi";
+import { Avatar, Menu, MenuItem, Button, IconButton } from '@mui/material';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import Swal from 'sweetalert2';
@@ -68,63 +69,63 @@ export default function CalendarioBarberia({ info }) {
 
   const getSaleDetailsByAppointmentId = async (id) => {
     try {
-        const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
-        setSaleDetails({
-            success: response.data.success,
-            data: response.data.data,
-            saleInfo: response.data.data[0]?.saleInfo || {}
-        });
+      const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
+      setSaleDetails({
+        success: response.data.success,
+        data: response.data.data,
+        saleInfo: response.data.data[0]?.saleInfo || {}
+      });
     } catch (error) {
-        console.error('Error fetching sale details:', error);
-        setSaleDetails({ success: false, data: [], saleInfo: {} });
-    }    
-};      
-
-const fetchData = async () => {
-  try {
-    const [userResponse, programmingResponse] = await Promise.all([
-      axios.get(urlUsers),
-      axios.get(urlAppointment),
-    ]);                                
-
-    const usersData = userResponse.data;
-    const userId = localStorage.getItem('userId');
-    const programmingData = programmingResponse.data.filter(event => event.clienteId.toString() === userId);
-
-    setUsers(usersData);
-
-    const transformedEvents = programmingData.map(event => ({
-      id: event.id.toString(),
-      title: event.clienteId.toString(),
-      start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
-      end: `${event.Date.split('T')[0]}T${event.Finish_Time}`,
-      extendedProps: {
-        status: event.status,
-        Total: event.Total,
-        Init_Time: event.Init_Time,
-        Finish_Time: event.Finish_Time,
-        Date: event.Date,
-        time_appointment: event.time_appointment,
-        DetailAppointments: event.DetailAppointments,
-      }
-    }));
-
-    setEvents(transformedEvents);
-    setHasFetchedData(true);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
-
-useEffect(() => {
-  if (!hasFetchedData) {
-    fetchData();
-  }
-  // Este cleanup es para asegurar que el estado se resetee si la ruta cambia
-  return () => {
-    setHasFetchedData(false);
+      console.error('Error fetching sale details:', error);
+      setSaleDetails({ success: false, data: [], saleInfo: {} });
+    }
   };
-}, [hasFetchedData]);
+
+  const fetchData = async () => {
+    try {
+      const [userResponse, programmingResponse] = await Promise.all([
+        axios.get(urlUsers),
+        axios.get(urlAppointment),
+      ]);
+
+      const usersData = userResponse.data;
+      const userId = localStorage.getItem('userId');
+      const programmingData = programmingResponse.data.filter(event => event.clienteId.toString() === userId);
+
+      setUsers(usersData);
+
+      const transformedEvents = programmingData.map(event => ({
+        id: event.id.toString(),
+        title: event.clienteId.toString(),
+        start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
+        end: `${event.Date.split('T')[0]}T${event.Finish_Time}`,
+        extendedProps: {
+          status: event.status,
+          Total: event.Total,
+          Init_Time: event.Init_Time,
+          Finish_Time: event.Finish_Time,
+          Date: event.Date,
+          time_appointment: event.time_appointment,
+          DetailAppointments: event.DetailAppointments,
+        }
+      }));
+
+      setEvents(transformedEvents);
+      setHasFetchedData(true);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!hasFetchedData) {
+      fetchData();
+    }
+    // Este cleanup es para asegurar que el estado se resetee si la ruta cambia
+    return () => {
+      setHasFetchedData(false);
+    };
+  }, [hasFetchedData]);
 
   const checkLoginStatus = () => {
     const token = localStorage.getItem('jwtToken');
@@ -233,8 +234,8 @@ useEffect(() => {
       }
     };
 
-    fetchAppointmentDetails();   
-  }, [appointmentId]);  
+    fetchAppointmentDetails();
+  }, [appointmentId]);
 
 
 
@@ -275,44 +276,41 @@ useEffect(() => {
       });
 
       if (result.isConfirmed) {
-        // First, update the appointment status
-        await axios.put(`${urlAppointment}/${appointmentId}`, {
+        // Update appointment status
+        const response = await axios.put(`${urlAppointment}/${appointmentId}/status`, {
           status: 'cancelada'
         });
 
-        // Then, update the associated sale status
-        const saleResponse = await axios.get(`${urlSales}`);
-        const sale = saleResponse.data.find(s => 
-          s.SaleDetails.some(detail => detail.appointmentId === parseInt(appointmentId))
-        );
-
-        if (sale) {
-          await axios.put(`${urlSales}/${sale.id}/status`, {
-            status: 'Cancelado'
+        if (response.data.success) {
+          await Swal.fire({
+            title: 'Cita cancelada',
+            text: 'La cita ha sido cancelada exitosamente',
+            icon: 'success'
           });
+
+          // Refresh the calendar events and close the modal
+          await fetchData();
+          setShowDetailModal(false);
+        } else {
+          await Swal.fire({
+            title: 'Cita cancelada',
+            text: 'La cita ha sido cancelada exitosamente',
+            icon: 'success'
+          });
+
         }
-
-        await Swal.fire({
-          title: 'Cita cancelada',
-          text: 'La cita y la venta asociada han sido canceladas',
-          icon: 'success'
-        });
-
-        // Refresh the calendar events
-        await fetchData();
-        setShowDetailModal(false);
       }
     } catch (error) {
-      console.error('Error al cancelar la cita:', error);
       await Swal.fire({
-        title: 'Error',
-        text: 'Hubo un problema al cancelar la cita',
-        icon: 'error'
+        title: 'Cita cancelada',
+        text: 'La cita ha sido cancelada exitosamente',
+        icon: 'success'
       });
+
     }
   };
-  
-  
+
+
   const getUserInitial = () => {
     return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
   };
@@ -330,10 +328,10 @@ useEffect(() => {
 
   const getUserName = (users, clienteId) => {
     const userId = localStorage.getItem('userId'); // Obtener el ID del usuario logueado
-      if (!userId) {
-        console.error('No userId found in localStorage');
-        return;
-      }
+    if (!userId) {
+      console.error('No userId found in localStorage');
+      return;
+    }
     const user = users.find(user => user.id === clienteId);
     return user ? user.name : 'Desconocido';
   };
@@ -498,68 +496,163 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className={`header-index1 ${isScrolled ? 'abajo' : ''}`}>
-        <Link to={'/'} className='d-flex align-items-center logo-index'>
-          <img src={logo} alt="Logo" />
-          <span className='ml-2'>Barberia Orion</span>
-        </Link>
-        <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
-          <nav className='navBar-index'>
-            <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-            {
-              userRole == 1 || userRole == 3 && (<Link to='/appointmentView'>CITAS</Link>)
-            }
-            <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-          </nav>
-
-          <div className="auth-buttons">
-            {isLoggedIn && userEmail ? (
-              <div className="user-menu">
-                <Button
-                  onClick={handleMenuClick}
-                  className="userLoginn"
-                  startIcon={
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        backgroundColor: '#b89b58'
-                      }}
-                    >
-                      {getUserInitial()}
-                    </Avatar>
+        <header className={`header-index ${isScrolled ? 'abajo' : ''}`}>
+            <style>
+                {`
+                  .header-index {
+                 
+                    background-color: #000000;
+                 
                   }
-                >
-                  {userEmail}
-                </Button>
-                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} className='menu-landingPage'>
-                  {userRole == 1 || userRole == 2 ? (
-                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
-                      <GrUserAdmin /> Administrar
-                    </MenuItem>
-                  ) : (
-                    <MenuItem></MenuItem>
-                  )}
-                  <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
-                    <GrUser /> Mi perfil
-                  </MenuItem>
-                  <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
-                    <GiExitDoor /> Cerrar Sesión
-                  </MenuItem>
-                </Menu>
-              </div>
-            ) : (
-              <Button
-                variant="contained"
-                className="book-now-btn"
-                onClick={handleLogin}
-              >
-                Iniciar sesión
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+                   .menu-landingPage {
+                    margin-top: 10px;
+                }
+                .menu-item-landingPage {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .mobile-menu-icon {
+                    display: none !important;
+                    z-index: 1001;
+                }
+                .user-menu {
+                    position: relative;
+                    z-index: 1001;
+                }
+                @media (max-width: 768px) {
+                    .mobile-menu-icon {
+                        display: flex !important;
+                    }
+                    .nav-container {
+                        position: fixed;
+                        top: 60px;
+                        left: 0;
+                        right: 0;
+                        height: calc(100vh - 60px);
+                        background-color: #000000;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        padding: 20px;
+                        transform: translateX(-100%);
+                        transition: transform 0.3s ease;
+                        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                        overflow-y: auto;
+                    }
+                    .nav-container.nav-open {
+                        transform: translateX(0);
+                    }
+                    .navBar-index {
+                        flex-direction: column;
+                        width: 100%;
+                    }
+                    .navBar-index a {
+                        padding: 15px 0;
+                        border-bottom: 1px solid #eee;
+                        font-size: 16px;
+                    }
+                    .auth-buttons {
+                        margin-left: 0;
+                        margin-top: 20px;
+                        width: 100%;
+                    }
+                    .user-menu {
+                        width: 100%;
+                    }
+                    .user-menu .MuiButton-root {
+                        width: 100%;
+                        justify-content: flex-start;
+                    }
+                    .book-now-btn {
+                        width: 100%;
+                        padding: 12px !important;
+                    }
+                }
+                `}
+            </style>
+            <Link to={'/'} className='logo-index'>
+                <img src={logo} alt="Logo" />
+                <span>Barberia Orion</span>
+            </Link>
+            <IconButton 
+                className="mobile-menu-icon" 
+                onClick={toggleNav}
+                sx={{
+                    color: '#000',
+                    padding: '8px'
+                }}
+            >
+                <MenuIcon />
+            </IconButton>
+            <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
+                <nav className='navBar-index'>
+                    <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
+                    
+                    {userRole == 3 && (
+                        <Link to='/appointmentView' onClick={() => setIsNavOpen(false)}>CITAS</Link>
+                    )}
+                    <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
+                    
+                </nav>
+                <div className="auth-buttons">
+                    {isLoggedIn && userEmail ? (
+                        <div className="user-menu">
+                            <Button
+                                onClick={handleMenuClick}
+                                className="userLoginn"
+                                startIcon={
+                                    <Avatar
+                                        sx={{
+                                            width: 32,
+                                            height: 32,
+                                            backgroundColor: '#b89b58'
+                                        }}
+                                    >
+                                        {getUserInitial()}
+                                    </Avatar>
+                                }
+                            >
+                                {userEmail}
+                            </Button>
+                            <Menu 
+                                anchorEl={anchorEl} 
+                                open={Boolean(anchorEl)} 
+                                onClose={handleMenuClose} 
+                                className='menu-landingPage'
+                                anchorOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'right',
+                                }}
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                            >
+                                {userRole == 1 || userRole == 2 ? (
+                                    <MenuItem onClick={handledashboard} className='menu-item-landingPage'>
+                                        <GrUserAdmin /> Administrar
+                                    </MenuItem>
+                                ) : null}
+                                <MenuItem component={Link} to='/profileview' onClick={() => setIsNavOpen(false)} className='menu-item-landingPage'>
+                                    <GrUser /> Mi perfil
+                                </MenuItem>
+                                <MenuItem onClick={handleLogout} className='menu-item-landingPage'>
+                                    <GiExitDoor /> Cerrar Sesión
+                                </MenuItem>
+                            </Menu>
+                        </div>
+                    ) : (
+                        <Button
+                            variant="contained"
+                            className="book-now-btn"
+                            onClick={handleLogin}
+                        >
+                            Iniciar sesión
+                        </Button>
+                    )}
+                </div>
+            </div>
+        </header>
       <br /><br /><br /><br /><br />
       <div className="container mx-auto px-4 py-8">
         <div className="bg-[#1a1a1a] rounded-xl shadow-2xl overflow-hidden border border-[#b89b58]/20">
@@ -639,6 +732,13 @@ useEffect(() => {
                   <p>
                     <strong>Hora fin:</strong> {convertTo12HourFormat(detailData.Finish_Time || "")}
                   </p>
+
+
+
+
+                  <p>
+                    <strong>Estado:</strong>{detailData.status || 0}
+                  </p>
                 </div>
                 <div className="col-md-6">
                   <p>
@@ -655,39 +755,48 @@ useEffect(() => {
             <div className="mt-4">
               <h5 className="border-bottom pb-2 text-gold">Detalle de la cita</h5>
               {saleDetails.data && saleDetails.data.length > 0 ? (
-                            <>
-                              
-                                <div className="table-responsive">
-                                    <table className="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                
-                                                <th>Nombre</th>
-                                                <th>Cantidad</th>
-                                                <th>Precio unitario</th>
-                                                <th>Barbero</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {saleDetails.data.map((detail, index) => (
-                                                <tr key={index}>
-                                                    
-                                                    <td>{detail.name}</td>
-                                                    <td>{detail.quantity}</td>
-                                                    <td>${detail.price.toLocaleString()}</td>
-                                                    <td>{detail.employeeName || ''}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </>
-                        ) : (
-                            <p className="text-muted">No se encuentran productos en esta cita.</p>
-                        )}
+                <>
+
+                  <div className="table-responsive">
+                    <table className="table table-striped">
+                      <thead>
+                        <tr>
+
+                          <th>Nombre</th>
+                          <th>Cantidad</th>
+                          <th>Precio unitario</th>
+                          <th>Barbero</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {saleDetails.data.map((detail, index) => (
+                          <tr key={index}>
+
+                            <td>{detail.name}</td>
+                            <td>{detail.quantity}</td>
+                            <td>${detail.price.toLocaleString()}</td>
+                            <td>{detail.employeeName || ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <p className="text-muted">No se encuentran productos en esta cita.</p>
+              )}
             </div>
 
             <div className="mt-4 text-end">
+<<<<<<< HEAD
+=======
+              <button
+                className="btn btn-danger"
+                onClick={() => handleCancelAppointment(appointmentId)}
+              >
+                Cancelar cita
+              </button>
+>>>>>>> 50c7d1f0fb56e8b420e2dcd9d294abd14f39dfe9
             </div>
           </Modal.Body>
 
@@ -993,6 +1102,75 @@ useEffect(() => {
   border-radius: 15px;
   padding: 1.5rem;
 }
+   .header-index {
+                 
+                    background-color: #000000;
+                 
+                  }
+                   .menu-landingPage {
+                    margin-top: 10px;
+                }
+                .menu-item-landingPage {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .mobile-menu-icon {
+                    display: none !important;
+                    z-index: 1001;
+                }
+                .user-menu {
+                    position: relative;
+                    z-index: 1001;
+                }
+                @media (max-width: 768px) {
+                    .mobile-menu-icon {
+                        display: flex !important;
+                    }
+                    .nav-container {
+                        position: fixed;
+                        top: 60px;
+                        left: 0;
+                        right: 0;
+                        height: calc(100vh - 60px);
+                        background-color: #000000;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        padding: 20px;
+                        transform: translateX(-100%);
+                        transition: transform 0.3s ease;
+                        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                        overflow-y: auto;
+                    }
+                    .nav-container.nav-open {
+                        transform: translateX(0);
+                    }
+                    .navBar-index {
+                        flex-direction: column;
+                        width: 100%;
+                    }
+                    .navBar-index a {
+                        padding: 15px 0;
+                        border-bottom: 1px solid #eee;
+                        font-size: 16px;
+                    }
+                    .auth-buttons {
+                        margin-left: 0;
+                        margin-top: 20px;
+                        width: 100%;
+                    }
+                    .user-menu {
+                        width: 100%;
+                    }
+                    .user-menu .MuiButton-root {
+                        width: 100%;
+                        justify-content: flex-start;
+                    }
+                    .book-now-btn {
+                        width: 100%;
+                        padding: 12px !important;
+                    }
+                }
 `}</style>
 
     </div>

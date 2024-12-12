@@ -32,7 +32,7 @@ const Index = () => {
                     <p>
                         La barbería es el lugar donde puedes conseguir un corte de pelo de alta calidad de barberos certificados, que no sólo son profesionales, sino también maestros con talento.
                     </p>
-               
+
                 </div>
             </section>
 
@@ -40,8 +40,32 @@ const Index = () => {
                 <div className='d-flex align-items-center justify-content-center mt-5'>
                     <h2 className='tittle-landingPage'>Nuestros servicios</h2>
                 </div>
-                <p className='description-landingPage'>En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.</p>
-                <div className='w-100 section-services'>
+                <p style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '15px',
+                    marginTop: '20px',
+                    marginBottom: '20px',
+                    textAlign: 'center',
+                    padding: '10px 20px',
+                    color: '#333', // Assuming dark text on light background, adjust if needed
+                    fontFamily: '"Poppins", sans-serif',
+                    maxWidth: '800px',
+                    margin: '20px auto',
+                }}>
+                    En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.
+                </p>
+                <div style={{
+                    width: '100%',
+                    padding: '10px 20px',
+                    '@media (min-width: 768px)': {
+                        padding: '10px 100px',
+                    },
+                    '@media (min-width: 1024px)': {
+                        padding: '10px 270px',
+                    },
+                }}>
                     <ServicesSection />
                 </div>
             </section>
@@ -50,11 +74,30 @@ const Index = () => {
                 <div className='d-flex align-items-center justify-content-center mt-5'>
                     <h2 className='tittle-landingPage'>Nuestros Mejores Productos</h2>
                 </div>
-                <p className='description-landingPage White'>En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.</p>
-                <div className='w-100'>
+                <p style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '15px',
+                    marginTop: '5px',
+                    textAlign: 'center',
+                    padding: '10px 20px',
+                    color: '#fff',
+                    fontFamily: '"Poppins", sans-serif',
+                    maxWidth: '800px',
+                    margin: '0 auto 20px',
+                }}>
+                    En esta sección, encontrará una selección de algunos de nuestros servicios, aquellos que son solicitados por nuestros clientes.
+                </p>
+                <div style={{
+                    width: '100%',
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    padding: '0 15px',
+                }}>
                     <ProductSection />
                 </div>
-                
+
             </section>
             <div ref={contactRef}>
                 <SectionFooter />
