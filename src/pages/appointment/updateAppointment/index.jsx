@@ -202,11 +202,11 @@ export default function Component({ saleId }) {
     switch (fieldName) {
       case 'Billnumber':
         if (value.length === 0) {
-          newErrors.Billnumber = 'El número de Combrobante es requerido';
+          newErrors.Billnumber = 'El número de Comprobante es requerido';
         } else if (value.length !== 3) {
-          newErrors.Billnumber = 'El número de Combrobante debe tener exactamente 3 dígitos';
+          newErrors.Billnumber = 'El número de Comprobante debe tener exactamente 3 dígitos';
         } else if (!/^\d+$/.test(value)) {
-          newErrors.Billnumber = 'El número de Combrobante debe contener solo dígitos';
+          newErrors.Billnumber = 'El número de Comprobante debe contener solo dígitos';
         } else {
           newErrors.Billnumber = '';
         }

@@ -201,7 +201,7 @@ export default function Orders() {
 
   const validateRegisterForm = () => {
     const newErrors = {}
-    if (!formValues.Billnumber) newErrors.Billnumber = 'El número de Combrobante es requerido'
+    if (!formValues.Billnumber) newErrors.Billnumber = 'El número de Comprobante es requerido'
     if (!formValues.OrderDate) newErrors.OrderDate = 'La fecha de pedido es requerida'
     if (!formValues.status) newErrors.status = 'El estado es requerido'
     if (!formValues.id_usuario) newErrors.id_usuario = 'El usuario es requerido'
@@ -272,11 +272,11 @@ export default function Orders() {
       try {
         await axios.put(`${API_URL}/orders/${editValues.id}`, { status: editValues.status })
 
-        showAlert('Estado de la pedido actualizado exitosamente', 'success')
+        showAlert('Estado del pedido actualizado exitosamente', 'success')
         setShowEditModal(false)
         await fetchOrders()
       } catch (error) {
-        showAlert('Error al actualizar el estado de la pedido', 'error')
+        showAlert('Error al actualizar el estado del pedido', 'error')
       }
     } else {
       showAlert('Por favor, selecciona un estado', 'warning')
@@ -325,7 +325,7 @@ export default function Orders() {
       title: 'Detalles del pedido',
       html: `
         <div class="text-left">
-          <p><strong>Número de Combrobante:</strong> ${order.Billnumber}</p>
+          <p><strong>Número de Comprobante:</strong> ${order.Billnumber}</p>
           <p><strong>Fecha del pedido:</strong> ${new Date(order.OrderDate).toLocaleDateString()}</p>
           <p><strong>Monto Total:</strong> ${order.total_price}</p>
           <p><strong>Estado:</strong> ${order.status}</p>
@@ -411,7 +411,7 @@ export default function Orders() {
               <thead className='table-primary'>
                 <tr>
                   <th>#</th>
-                  <th>Número de Combrobante</th>
+                  <th>Número de Comprobante</th>
                   <th>Fecha del pedido</th>
                   <th>Monto Total</th>
                   <th>Estado</th>
@@ -499,7 +499,7 @@ export default function Orders() {
             <Row className="mb-3">
               <Col sm="6">
                 <Form.Group>
-                  <Form.Label className='required'>Número de Combrobante</Form.Label>
+                  <Form.Label className='required'>Número de Comprobante</Form.Label>
                   <Form.Control
                     type="text"
                     name="Billnumber"

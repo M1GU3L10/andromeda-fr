@@ -263,11 +263,11 @@ export default function Component() {
     switch (fieldName) {
       case 'Billnumber':
         if (value.length === 0) {
-          newErrors.Billnumber = 'El número de Combrobante es requerido';
+          newErrors.Billnumber = 'El número de Comprobante es requerido';
         } else if (value.length !== 3) {
-          newErrors.Billnumber = 'El número de Combrobante debe tener exactamente 3 dígitos';
+          newErrors.Billnumber = 'El número de Comprobante debe tener exactamente 3 dígitos';
         } else if (!/^\d+$/.test(value)) {
-          newErrors.Billnumber = 'El número de Combrobante debe contener solo dígitos';
+          newErrors.Billnumber = 'El número de Comprobante debe contener solo dígitos';
         } else {
           newErrors.Billnumber = '';
         }
@@ -667,7 +667,7 @@ export default function Component() {
                     <Form className='form w-100'>
                       <Form.Group as={Row} className="mb-3">
                         <Col sm="6">
-                          <Form.Label className='required'># Combrobante</Form.Label>
+                          <Form.Label className='required'># Comprobante</Form.Label>
                           <Form.Control
                             type="text"
                             name="Billnumber"

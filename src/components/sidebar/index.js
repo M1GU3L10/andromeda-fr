@@ -45,14 +45,6 @@ const Sidebar = () => {
     return permissions.includes(permission);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('jwtToken');
-    localStorage.removeItem('roleId');
-    context.setIsLogin(false);
-    context.setIsHideSidebarAndHeader(true);
-    navigate('/login');
-  };
-
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -170,7 +162,7 @@ const Sidebar = () => {
                   )}
                   {hasPermission('Programacion de empleado') && (
                     <li>
-                      <Link to="/programming">Programacion empleados</Link>
+                      <Link to="/programming">Programación empleados</Link>
                     </li>
                   )}
                   {hasPermission('Ausencias') && (
