@@ -184,77 +184,6 @@ header .logo-index span {
     color: #fff !important;
 }
 
-/* Responsive styles */
-@media screen and (max-width: 1024px) {
-    .hero-content h1 {
-        font-size: 48px;
-    }
-
-    .navBar-index {
-        gap: 20px;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .navBar-index {
-        margin-top: 20px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-
-    .hero-content {
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        width: 90%;
-    }
-
-    .hero-content h1 {
-        font-size: 36px;
-    }
-
-    .hero-content p {
-        font-size: 14px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .logo-index {
-        font-size: 24px;
-    }
-
-    .logo-index img {
-        width: 40px;
-    }
-
-    .logo-index span {
-        font-size: 18px;
-    }
-
-    .hero-content h1 {
-        font-size: 28px;
-    }
-
-    .book-now-btn,
-    .read-more-btn {
-        padding: 8px 16px !important;
-        font-size: 12px !important;
-    }
-}
-
-/* .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-} */
-
 .nav-toggle {
     display: none;
     background: none;
@@ -274,65 +203,6 @@ header .logo-index span {
     margin-left: 10px;
 }
 
-/* @media screen and (max-width: 768px) {
-    .header-content {
-        padding: 15px 5%;
-    }
-
-    .nav-toggle {
-        display: block;
-    }
-
-    .nav-container {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: rgba(0, 0, 0, 0.9);
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        transform: translateY(-100%);
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease-in-out;
-    }
-
-    .nav-container.nav-open {
-        transform: translateY(0);
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .navBar-index {
-        flex-direction: column;
-        align-items: center;
-        margin-top: 0;
-        width: 100%;
-        text-align: center;
-    }
-
-    .navBar-index a {
-        display: block;
-        padding: 10px 0;
-        width: 100%;
-        text-align: center;
-    }
-
-    .auth-buttons {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-    }
-
-    .user-menu {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-    }
-} */
-
 .css-3dzjca-MuiPaper-root-MuiPopover-paper-MuiMenu-paper {
     background-color: #171614 !important;
     color: #fff !important;
@@ -345,6 +215,53 @@ header .logo-index span {
 
 .menu-landingPage .menu-item-landingPage {
     border: 1px solid #1a1919;
+}
+
+@media screen and (max-width: 768px) {
+    .navBar-index {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .nav-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .nav-toggle {
+        display: block;
+    }
+
+    .hero-content {
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        width: 90%;
+    }
+
+    .hero-content h1 {
+        font-size: 36px;
+    }
+
+    .hero-content p {
+        font-size: 12px;
+    }
+
+    .read-more-btn,
+    .book-now-btn {
+        padding: 8px 20px !important;
+        font-size: 12px !important;
+    }
+
+    .auth-buttons {
+        width: 100% !important;
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    .zona1 {
+        height: 70vh;
+    }
 }
 
 /****************************/
@@ -372,7 +289,6 @@ header .logo-index span {
 /*********************************/
 /*********SECTION SERVICE*********/
 /*********************************/
-
 .section-services {
     padding: 10px 270px !important;
 }
@@ -384,7 +300,6 @@ header .logo-index span {
 
 .accordion .MuiAccordionSummary-root {
     background: rgba(255, 255, 255, 0.05);
-    /* Un fondo sutilmente más claro */
     padding: 10px;
 }
 
@@ -410,6 +325,44 @@ header .logo-index span {
     color: #b89b58 !important;
 }
 
+@media screen and (max-width: 768px) {
+    .section-services {
+        padding: 10px 20px !important;
+    }
+
+    .accordion .MuiAccordionSummary-root {
+        padding: 8px;
+    }
+
+    .css-15v22id-MuiAccordionDetails-root {
+        padding: 20px 16px 12px !important;
+    }
+
+    .accordion .MuiButton-root {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .section-services {
+        padding: 10px !important;
+    }
+
+    .accordion .MuiAccordionSummary-root {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .accordion .MuiAccordionSummary-content {
+        margin: 0 0 10px 0;
+    }
+
+    .accordion .MuiAccordionSummary-expandIcon {
+        align-self: flex-end;
+    }
+}
+
 /*********************************/
 /*********SECTION PRODUCT*********/
 /*********************************/
@@ -428,18 +381,13 @@ header .logo-index span {
     border-radius: 20px;
 }
 
-
 .card-product-carousel {
     border: none;
     border-radius: 20px;
     padding: 10px;
-    /* Reduce el padding */
     text-align: center;
     height: 370px;
-    /* Reduce la altura */
     width: 290px;
-    /* Establece un ancho específico */
-
     display: flex;
     flex-direction: column;
     background: #000000;
@@ -493,7 +441,6 @@ header .logo-index span {
     bottom: calc(var(--height) + var(--gap-between-tooltip-to-button) + 10px);
     left: calc(50% - var(--tooltip-width) / 2);
 }
-
 
 .cart::before {
     opacity: 0;
@@ -572,6 +519,91 @@ header .logo-index span {
     color: #b89b58;
     font-weight: 600;
     margin-top: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    .section-products {
+        height: auto;
+        padding-bottom: 40px;
+        margin-bottom: 60px;
+    }
+
+    .product-carousel {
+        padding: 20px;
+    }
+
+    .card-product-carousel {
+        width: 100%;
+        height: auto;
+        min-height: 350px;
+    }
+
+    .product--image {
+        height: 150px;
+    }
+
+    .Product--name {
+        font-size: 16px;
+    }
+
+    .cart {
+        --width: 120px;
+        --height: 36px;
+        --tooltip-height: 30px;
+        --tooltip-width: 80px;
+    }
+
+    .text-card {
+        font-size: 12px;
+    }
+
+    .icon-button-card svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .section-products {
+        margin-top: 20px;
+        padding-top: 10px !important;
+    }
+
+    .product-carousel {
+        padding: 10px;
+    }
+
+    .card-product-carousel {
+        min-height: 300px;
+    }
+
+    .product--image {
+        height: 120px;
+    }
+
+    .Product--name {
+        font-size: 14px;
+    }
+
+    .price-card-product {
+        font-size: 14px;
+    }
+
+    .cart {
+        --width: 100px;
+        --height: 32px;
+        --tooltip-height: 25px;
+        --tooltip-width: 70px;
+    }
+
+    .text-card {
+        font-size: 11px;
+    }
+
+    .icon-button-card svg {
+        width: 16px;
+        height: 16px;
+    }
 }
 
 /*********************************/
@@ -680,6 +712,3 @@ header .logo-index span {
 /*********SECTION PRODUCT*********/
 /*********************************/
 
-.error-container{
-    
-}

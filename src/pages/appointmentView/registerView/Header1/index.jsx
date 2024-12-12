@@ -185,12 +185,12 @@ const Header = ({ scrollToServices, scrollToContact }) => {
             <div className={`nav-container ${isNavOpen ? 'nav-open' : ''}`}>
                 <nav className='navBar-index'>
                     <Link to='/index' onClick={() => setIsNavOpen(false)}>INICIO</Link>
-                    <Link to='#' onClick={() => { scrollToServices(); setIsNavOpen(false); }}>SERVICIOS</Link>
+                    
                     {userRole == 3 && (
                         <Link to='/appointmentView' onClick={() => setIsNavOpen(false)}>CITAS</Link>
                     )}
                     <Link to='/shop' onClick={() => setIsNavOpen(false)}>PRODUCTOS</Link>
-                    <Link to='#' onClick={() => { scrollToContact(); setIsNavOpen(false); }}>CONTACTO</Link>
+                    
                 </nav>
                 <div className="auth-buttons">
                     {isLoggedIn && userEmail ? (
