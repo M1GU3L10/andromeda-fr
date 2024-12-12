@@ -67,35 +67,6 @@ const Sidebar = () => {
       </IconButton>
       <div className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <ul>
-<<<<<<< HEAD
-
-          {
-            hasPermission('Dashboard') && (
-              <li>
-                <Link to="/dashboard">
-                  <Button className={`w-100 ${activeTab === 0 ? 'active' : ''}`} onClick={() => isOpensubMenu(0)}>
-                    <span className='icon'><TbLayoutDashboardFilled /></span>
-                    <span className='sidebar-option'>Panel de control</span>
-                    <span className='arrow'></span>
-                  </Button>
-                </Link>
-              </li>
-            )
-          }
-          {
-            hasPermission('Dashboard') && (
-              <li>
-                <Link to="/profile">
-                  <Button className={`w-100 ${activeTab === 1 ? 'active' : ''}`} onClick={() => isOpensubMenu(1)}>
-                    <span className='icon'><BsFillPersonVcardFill /></span>
-                    <span className='sidebar-option'>Mi perfil</span>
-                    <span className='arrow'></span>
-                  </Button>
-                </Link>
-              </li>
-            )
-          }
-=======
           {hasPermission('Dashboard') && (
             <li>
               <Link to="/dashboard">
@@ -118,7 +89,6 @@ const Sidebar = () => {
               </Link>
             </li>
           )}
->>>>>>> 50c7d1f0fb56e8b420e2dcd9d294abd14f39dfe9
           {hasPermission('Roles') && (
             <li>
               <Button className={`w-100 ${activeTab === 2 && isToggleSubmenu ? 'active' : ''}`} onClick={() => isOpensubMenu(2)}>
@@ -244,7 +214,7 @@ const Sidebar = () => {
         <div className='logoutWrapper'>
           <div className='logoutBox'>
             <Link to="/tango">
-              <Button variant="contained" className='btn-golden' ><GiExitDoor />Guia de Usuarios</Button>
+              <Button variant="contained" className='btn-golden' >Guia de Usuarios</Button>
             </Link>
           </div>
         </div>

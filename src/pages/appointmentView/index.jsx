@@ -788,15 +788,12 @@ export default function CalendarioBarberia({ info }) {
             </div>
 
             <div className="mt-4 text-end">
-<<<<<<< HEAD
-=======
               <button
                 className="btn btn-danger"
                 onClick={() => handleCancelAppointment(appointmentId)}
               >
                 Cancelar cita
               </button>
->>>>>>> 50c7d1f0fb56e8b420e2dcd9d294abd14f39dfe9
             </div>
           </Modal.Body>
 
