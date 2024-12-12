@@ -42,9 +42,11 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     };
 });
 
+axios.defaults.baseURL = 'https://andromeda-8.onrender.com';
+
 const Absences = () => {
-    const urlAbsences = 'https://andromeda-8.onrender.com/api/absences';
-    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
+    const urlAbsences = '/api/absences';
+    const urlUsers = '/api/users';
     const [absences, setAbsences] = useState([]);
     const [users, setUsers] = useState([]);
     const [currentAbsence, setCurrentAbsence] = useState({});
@@ -73,7 +75,6 @@ const Absences = () => {
         getUsers();
     }, []);
 
-     // Modificar getAbsences para que sea async y devuelva los datos
     const getAbsences = async () => {
         try {
             const response = await axios.get(urlAbsences);
@@ -160,7 +161,6 @@ const Absences = () => {
 
     const handleCloseDetail = () => setShowDetailModal(false);
 
-    // funcion para que no traiga usuarios que tengan otro rol diferente a empleados
     const FiltrarUsers = () => {
         return users.filter(user => user.roleId === 2 && user.status === 'A');
     }
@@ -181,13 +181,10 @@ const Absences = () => {
                     show_alerta('Operación exitosa', 'success');
                     await getAbsences();
                     
-                    // Calcular el número total de páginas después de eliminar
-                    const totalItems = absences.length - 1; // Restamos 1 por el elemento eliminado
+                    const totalItems = absences.length - 1;
                     const newTotalPages = Math.ceil(totalItems / dataQt);
                     
-                    // Si estamos en la última página y está vacía después de eliminar
                     if (currentPages > newTotalPages) {
-                        // Regresar a la página anterior
                         setCurrentPages(Math.max(1, currentPages - 1));
                     }
                     
@@ -207,7 +204,8 @@ const Absences = () => {
 
         if (operation === 3 && value === '') {
             return;
-        }   switch (name) {
+        }
+        switch (name) {
             case 'startTime':
                 if (!value) {
                     error = 'La hora de inicio es requerida';
@@ -259,7 +257,6 @@ const Absences = () => {
                 break;
         }
     
-        // Only set the error if there is one
         if (error) {
             setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
         }
@@ -274,46 +271,36 @@ const Absences = () => {
     const validar = async () => {
         const { startTime, endTime, date, description, userId, status } = formValues;
 
-        const fields = { startTime, endTime, date, description, userId };
-        let valid = true;
-
-        Object.keys(fields).forEach(field => {
-            if (operation !== 3 || fields[field] || field === 'status') {
-                validateField(field, fields[field]);
-                if (errors[field]) valid = false;
-            }
-        });
-
-        if (!valid) {
-            show_alerta('Por favor corrige los errores antes de continuar', 'error');
+        if (!startTime || !endTime || !date || !description || !userId) {
+            show_alerta('Todos los campos son obligatorios', 'error');
             return;
         }
 
         const data = {
-            id: formValues.id,
             startTime,
             endTime,
             date,
             description,
-            userId,
-            status
+            userId: userId.toString(),
+            status: status || 'en proceso'
         };
 
-        if (operation === 1) {
-            await enviarSolicitud('POST', data);
-        } else if (operation === 3) {
-            if (!data.id) {
-                show_alerta('ID no encontrado para actualizar', 'error');
-                return;
+        console.log('Datos a enviar:', data);
+
+        try {
+            if (operation === 1) {
+                await enviarSolicitud('POST', data);
+            } else if (operation === 3) {
+                if (!formValues.id) {
+                    show_alerta('ID no encontrado para actualizar', 'error');
+                    return;
+                }
+                data.id = formValues.id;
+                await enviarSolicitud('PUT', data);
             }
-            // Check if any field has changed
-            const hasChanges = Object.keys(data).some(key => data[key] !== currentAbsence[key]);
-            if (!hasChanges) {
-                show_alerta('No se modificó ningún campo', 'info');
-                handleCloseModal();
-                return;
-            }
-            await enviarSolicitud('PUT', data);
+        } catch (error) {
+            console.error('Error al validar y enviar la solicitud:', error);
+            show_alerta('Error al procesar la solicitud', 'error');
         }
     };
 
@@ -322,23 +309,64 @@ const Absences = () => {
             ? `${urlAbsences}/${parametros.id}`
             : urlAbsences;
 
+        console.log(`Enviando solicitud ${metodo} a ${url}`);
+        console.log('Parámetros:', parametros);
+
         try {
-            await axios({ method: metodo, url, data: parametros });
-            if (metodo === 'PUT' && JSON.stringify(parametros) === JSON.stringify(currentAbsence)) {
-                show_alerta('No se realizaron cambios', 'info');
-            } else {
+            const response = await axios({
+                method: metodo,
+                url,
+                data: parametros,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            console.log('Respuesta del servidor:', response);
+
+            if (response.status >= 200 && response.status < 300) {
                 show_alerta('Operación exitosa', 'success');
+                handleCloseModal();
+                getAbsences();
+            } else {
+                throw new Error(`Error en la solicitud: ${response.status} ${response.statusText}`);
             }
-            handleCloseModal();
-            getAbsences();
         } catch (error) {
-            console.error('Error en la solicitud:', error.response?.status, error.response?.data);
-            show_alerta('Error en la solicitud', 'error');
+            console.error('Error detallado:', error);
+            if (error.response) {
+                console.error('Respuesta del servidor:', error.response.data);
+                show_alerta(`Error del servidor: ${error.response.data.message || 'Error desconocido'}`, 'error');
+            } else if (error.request) {
+                console.error('No se recibió respuesta:', error.request);
+                show_alerta('No se recibió respuesta del servidor', 'error');
+            } else {
+                console.error('Error de configuración:', error.message);
+                show_alerta(`Error de configuración: ${error.message}`, 'error');
+            }
         }
     };
 
     const hasPermission = (permission) => {
         return permissionsR.includes(permission);
+    };
+
+    const testConnection = async () => {
+        try {
+            const response = await axios.get('/api/absences');
+            console.log('Test de conexión exitoso:', response.data);
+            show_alerta('Conexión exitosa', 'success');
+        } catch (error) {
+            console.error('Error en el test de conexión:', error);
+            show_alerta('Error de conexión', 'error');
+        }
+    };
+
+    const show_alerta = (message, icon) => {
+        Swal.fire({
+            title: message,
+            icon: icon,
+            buttonsStyling: true
+        });
     };
 
     return (

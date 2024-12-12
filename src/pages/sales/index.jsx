@@ -326,19 +326,35 @@ const Sales = () => {
 
     return (
         <div className="right-content w-100">
+
             <div className="row d-flex align-items-center w-100">
                 <div className="spacing d-flex align-items-center">
                     <div className='col-sm-5'>
                         <span className='Title'>Ventas</span>
                     </div>
                     <div className='col-sm-7 d-flex align-items-center justify-content-end pe-4'>
-                        <StyledBreadcrumb
-                            items={[
-                                { href: "#", label: "Home", icon: <HomeIcon fontSize="small" /> },
-                                { href: "#", label: "Salidas", icon: <FaMoneyBillWave fontSize="small" /> },
-                                { href: "#", label: "Ventas", icon: <FcSalesPerformance fontSize="small" /> }
-                            ]}
-                        />
+                        <div role="presentation">
+                            <Breadcrumbs aria-label="breadcrumb">
+                                <StyledBreadcrumb
+                                    component="a"
+                                    href="#"
+                                    label="Home"
+                                    icon={<HomeIcon fontSize="small" />}
+                                />
+                                <StyledBreadcrumb
+                                    component="a"
+                                    href="#"
+                                    label="Salidas"
+                                    icon={<FaMoneyBillWave fontSize="small" />}
+                                />
+                                <StyledBreadcrumb
+                                    component="a"
+                                    href="#"
+                                    label="Ventas"
+                                    icon={<FcSalesPerformance fontSize="small" />}
+                                />
+                            </Breadcrumbs>
+                        </div>
                     </div>
                 </div>
                 <div className='card shadow border-0 p-3'>
