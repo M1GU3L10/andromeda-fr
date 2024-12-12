@@ -48,9 +48,9 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 })
 
 const SaleDetailModal = ({ show, onHide, sale }) => {
-    const urlUsers = 'http://localhost:1056/api/users';
-    const urlServices = 'http://localhost:1056/api/services';
-    const urlProducts = 'http://localhost:1056/api/products';
+    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
+    const urlServices = 'https://andromeda-8.onrender.com/api/services';
+    const urlProducts = 'https://andromeda-8.onrender.com/api/products';
     const [users, setUsers] = useState([]);
     const [productos, setProducts] = useState([]);
     const [servicess, setServices] = useState([]);
@@ -198,8 +198,8 @@ const SaleDetailModal = ({ show, onHide, sale }) => {
 };
 
 const Sales = () => {
-    const url = 'http://localhost:1056/api/sales';
-    const urlUsers = 'http://localhost:1056/api/users';
+    const url = 'https://andromeda-8.onrender.com/api/sales';
+    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
     const [sales, setSales] = useState([]);
     const [users, setUsers] = useState([]);
     const [search, setSearch] = useState('');

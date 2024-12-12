@@ -71,9 +71,9 @@ const PermissionGrid = styled('div')({
 });
 
 const Roles = () => {
-    const url = 'http://localhost:1056/api/roles';
-    const urlPermissions = 'http://localhost:1056/api/permissions';
-    const urlPermissionsRoles = 'http://localhost:1056/api/permissionsRole';
+    const url = 'https://andromeda-8.onrender.com/api/roles';
+    const urlPermissions = 'https://andromeda-8.onrender.com/api/permissions';
+    const urlPermissionsRoles = 'https://andromeda-8.onrender.com/api/permissionsRole';
     const [services, setServices] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [selectedPermissions, setSelectedPermissions] = useState([]);

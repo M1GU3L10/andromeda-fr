@@ -381,7 +381,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const salesResponse = await fetch('http://localhost:1056/api/sales')
+        const salesResponse = await fetch('https://andromeda-8.onrender.com/api/sales')
         const salesData = await salesResponse.json()
         const formattedSales = salesData.map(sale => ({
           date: sale.SaleDate,
@@ -390,7 +390,7 @@ export default function Dashboard() {
         }))
         setSales(formattedSales)
 
-        const productsResponse = await fetch('http://localhost:1056/api/products')
+        const productsResponse = await fetch('https://andromeda-8.onrender.com/api/products')
         const productsData = await productsResponse.json()
         const formattedProducts = productsData.map(product => ({
           name: product.Product_Name,
@@ -399,7 +399,7 @@ export default function Dashboard() {
         }))
         setProducts(formattedProducts)
 
-        const appointmentsResponse = await fetch('http://localhost:1056/api/appointment')
+        const appointmentsResponse = await fetch('https://andromeda-8.onrender.com/api/appointment')
         const appointmentsData = await appointmentsResponse.json()
         const formattedAppointments = appointmentsData.map(appointment => ({
           status: appointment.status,
@@ -407,7 +407,7 @@ export default function Dashboard() {
         }))
         setAppointments(formattedAppointments)
 
-        const shoppingResponse = await fetch('http://localhost:1056/api/shopping')
+        const shoppingResponse = await fetch('https://andromeda-8.onrender.com/api/shopping')
         const shoppingData = await shoppingResponse.json()
         const formattedShopping = shoppingData.map(shop => ({
           date: shop.purchaseDate,

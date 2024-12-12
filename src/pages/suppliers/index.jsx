@@ -57,7 +57,7 @@ const BlueSwitch = styled(Switch)(({ theme }) => ({
 }));
 
 const Suppliers = () => {
-    const url = 'http://localhost:1056/api/suppliers';
+    const url = 'https://andromeda-8.onrender.com/api/suppliers';
     const [suppliers, setSuppliers] = React.useState([]);
     const [formValues, setFormValues] = React.useState({
         id: '',
@@ -424,7 +424,7 @@ const Suppliers = () => {
                                                                 onClick={async () => {
                                                                     try {
                                                                         // Consultar compras asociadas
-                                                                        const response = await axios.get('http://localhost:1056/api/shopping');
+                                                                        const response = await axios.get('https://andromeda-8.onrender.com/api/shopping');
                                                                         const purchases = response.data;
 
                                                                         // Verificar si el proveedor está asociado a alguna compra

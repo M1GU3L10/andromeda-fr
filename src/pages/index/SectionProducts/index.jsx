@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 
 const SectionProducts = () => {
-    const url = 'http://localhost:1056/api/products';
+    const url = 'https://andromeda-8.onrender.com/api/products';
     const [products, setProducts] = useState([]);
 
     useEffect(() => {

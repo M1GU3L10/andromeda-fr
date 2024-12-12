@@ -59,8 +59,8 @@ export default function Component({ saleId }) {
   }, [saleId]);
 
   const [errors, setErrors] = useState({});
-  const urlServices = 'http://localhost:1056/api/services';
-  const urlUsers = 'http://localhost:1056/api/users';
+  const urlServices = 'https://andromeda-8.onrender.com/api/services';
+  const urlUsers = 'https://andromeda-8.onrender.com/api/users';
 
   useEffect(() => {
     getUsers();
@@ -73,7 +73,7 @@ export default function Component({ saleId }) {
 
   const fetchSaleData = async () => {
     try {
-      const response = await axios.get(`http://localhost:1056/api/sales/${saleId}`);
+      const response = await axios.get(`https://andromeda-8.onrender.com/api/sales/${saleId}`);
       const saleData = response.data;
       setSaleInfo({
         ...saleData,
@@ -97,7 +97,7 @@ export default function Component({ saleId }) {
 
   const getProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:1056/api/products');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/products');
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -228,7 +228,7 @@ export default function Component({ saleId }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await axios.put(`http://localhost:1056/api/sales/${saleId}/appointments/${saleInfo.appointmentData.id}`, {
+      await axios.put(`https://andromeda-8.onrender.com/api/sales/${saleId}/appointments/${saleInfo.appointmentData.id}`, {
         saleId: saleId,
         appointmentData: {
           ...saleInfo.appointmentData,

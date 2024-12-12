@@ -59,7 +59,7 @@ const Shopping = () => {
 
   const getShopping = async () => {
     try {
-      const response = await axios.get('http://localhost:1056/api/shopping');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/shopping');
       setShopping(response.data);
     } catch (error) {
       console.error('Error fetching shopping data:', error);
@@ -69,7 +69,7 @@ const Shopping = () => {
 
   const getSuppliers = async () => {
     try {
-      const response = await axios.get('http://localhost:1056/api/suppliers');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/suppliers');
       setSuppliers(response.data);
     } catch (error) {
       console.error('Error fetching suppliers:', error);
@@ -79,7 +79,7 @@ const Shopping = () => {
 
   const getProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:1056/api/products');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/products');
       setProducts(response.data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -133,9 +133,9 @@ const Shopping = () => {
         try {
           let response;
           if (newStatus === 'anulada') {
-            response = await axios.patch(`http://localhost:1056/api/shopping/${shoppingId}/cancel`, { status: 'anulada' });
+            response = await axios.patch(`https://andromeda-8.onrender.com/api/shopping/${shoppingId}/cancel`, { status: 'anulada' });
           } else {
-            response = await axios.put(`http://localhost:1056/api/shopping/${shoppingId}`, { status: 'completada' });
+            response = await axios.put(`https://andromeda-8.onrender.com/api/shopping/${shoppingId}`, { status: 'completada' });
           }
   
           if (response.status === 200) {

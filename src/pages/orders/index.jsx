@@ -17,7 +17,7 @@ import { Modal, Form, Col, Row } from 'react-bootstrap'
 import Pagination from '../../components/pagination'
 
 
-const API_URL = 'http://localhost:1056/api'
+const API_URL = 'https://andromeda-8.onrender.com/api'
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],

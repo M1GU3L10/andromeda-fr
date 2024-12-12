@@ -44,12 +44,12 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 })
 
 const Categories = () => {
-    const url = 'http://localhost:1056/api/categories';
+    const url = 'https://andromeda-8.onrender.com/api/categories';
     const [categories, setCategories] = useState([]);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [status, setStatus] = useState('');
+    const [status, setStatus] = useState('A'); // Updated initial state
     const [operation, setOperation] = useState(1);
     const [title, setTitle] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -78,8 +78,13 @@ const Categories = () => {
     };
 
     const getCategories = async () => {
-        const response = await axios.get(url);
-        setCategories(response.data);
+        try {
+            const response = await axios.get(url);
+            setCategories(response.data);
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            show_alerta('Error al obtener las categorías', 'error');
+        }
     }
 
     const searcher = (e) => {
@@ -151,9 +156,7 @@ const Categories = () => {
 
     const checkIfCategoryExists = async (name) => {
         try {
-            const response = await axios.get(`${url}`, {
-                params: { name }
-            });
+            const response = await axios.get(`${url}`);
             return response.data.some(category => category.name.trim().toLowerCase() === name.trim().toLowerCase());
         } catch (error) {
             console.error('Error al verificar la existencia de la categoría:', error);
@@ -210,66 +213,92 @@ const Categories = () => {
             show_alerta(errors.name || 'Por favor, complete el nombre de la categoría.', 'warning');
             return;
         }
-
+    
         if (errors.description || !description.trim()) {
             show_alerta(errors.description || 'Por favor, complete la descripción de la categoría.', 'warning');
             return;
         }
-
+    
         if (operation === 1) {
             const categoryExists = await checkIfCategoryExists(name.trim());
-
+    
             if (categoryExists) {
                 show_alerta('La categoría con este nombre ya existe. Por favor, elija otro nombre.', 'warning');
                 return;
             }
         }
-
-        const isValidName = !validateName(name);
-        const isValidDescription = !validateDescription(description);
-        if (!isValidName) show_alerta(errors.name, 'warning');
-        else if (!isValidDescription) show_alerta(errors.description, 'warning');
-        else {
-            const parametros = {
-                id: id,
-                name: name.trim(),
-                description: description.trim(),
-                status: status,
-            };
-
-            const isUpdate = operation === 2;
-            const metodo = isUpdate ? 'PUT' : 'POST';
-            enviarSolicitud(metodo, parametros);
+    
+        // Ensure proper data structure
+        const parametros = {
+            name: name.trim(),
+            description: description.trim(),
+            status: 'A' // Always set active status for new categories
+        };
+    
+        // Add id only for updates
+        if (operation === 2) {
+            parametros.id = id;
         }
+    
+        const metodo = operation === 2 ? 'PUT' : 'POST';
+        enviarSolicitud(metodo, parametros);
     };
-
     const enviarSolicitud = async (metodo, parametros) => {
         const urlWithId = metodo === 'PUT' || metodo === 'DELETE' ? `${url}/${parametros.id}` : url;
         try {
-            await axios({ method: metodo, url: urlWithId, data: parametros });
+            // Add headers explicitly
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            // Log the request details
+            console.log('Request details:', {
+                method: metodo,
+                url: urlWithId,
+                data: parametros
+            });
+
+            const response = await axios({
+                method: metodo,
+                url: urlWithId,
+                data: parametros,
+                ...config
+            });
+
+            // Log successful response
+            console.log('Response:', response.data);
+
             show_alerta('Operación exitosa', 'success');
             if (metodo === 'PUT' || metodo === 'POST') {
-                document.getElementById('btnCerrar').click();
+                document.getElementById('btnCerrar')?.click();
             }
             getCategories();
-            console.log(parametros);
         } catch (error) {
-            show_alerta('Error en la solicitud', 'error');
-            console.log(error);
-            console.log(parametros);
+            // Enhanced error logging
+            console.error('Error details:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                data: parametros
+            });
+
+            const errorMessage = error.response?.data?.message || 'Error en la solicitud';
+            show_alerta(errorMessage, 'error');
         }
     };
 
     const deleteCategory = async (id, name) => {
         try {
             // Check if the category is associated with any products
-            const productsResponse = await axios.get('http://localhost:1056/api/products');
-            const isCategoryInUse = productsResponse.data.some(product => 
+            const productsResponse = await axios.get('https://andromeda-8.onrender.com/api/products');
+            const isCategoryInUse = productsResponse.data.some(product =>
                 product.Category_Id === id
             );
 
             const Myswal = withReactContent(Swal);
-            
+
             // If category is associated with products, show an error message and prevent deletion
             if (isCategoryInUse) {
                 Myswal.fire({
@@ -544,3 +573,4 @@ const Categories = () => {
 }
 
 export default Categories;
+

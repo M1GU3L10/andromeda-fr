@@ -14,7 +14,7 @@ import Header from './Header1';
 import Swal from 'sweetalert2';
 
 export default function EnhancedProfileEditor() {
-    const url = 'http://localhost:1056/api/users';
+    const url = 'https://andromeda-8.onrender.com/api/users';
     const [userData, setUserData] = useState({
         id: '',
         name: '',

@@ -31,7 +31,7 @@ export function useUserPermissions() {
 
     const fetchUserPrivileges = async () => {
       try {
-        const response = await axios.get('http://localhost:1056/api/privilege-permission-roles', {
+        const response = await axios.get('https://andromeda-8.onrender.com/api/privilege-permission-roles', {
           params: { roleId: userRole }, // Utiliza el roleId del estado
         });
 

@@ -56,7 +56,7 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:1056/api/users/login', {
+            const response = await axios.post('https://andromeda-8.onrender.com/api/users/login', {
                 email,
                 password
             });

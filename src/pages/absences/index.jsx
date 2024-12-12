@@ -43,8 +43,8 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 });
 
 const Absences = () => {
-    const urlAbsences = 'http://localhost:1056/api/absences';
-    const urlUsers = 'http://localhost:1056/api/users';
+    const urlAbsences = 'https://andromeda-8.onrender.com/api/absences';
+    const urlUsers = 'https://andromeda-8.onrender.com/api/users';
     const [absences, setAbsences] = useState([]);
     const [users, setUsers] = useState([]);
     const [currentAbsence, setCurrentAbsence] = useState({});

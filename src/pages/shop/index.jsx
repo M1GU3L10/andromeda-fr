@@ -152,7 +152,7 @@ export default function Component() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:1056/api/products');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/products');
       const activeProducts = response.data.filter(product => product.status === 'A');
       console.log('Fetched products:', activeProducts);
       setProducts(activeProducts);
@@ -167,7 +167,7 @@ export default function Component() {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:1056/api/categories');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/categories');
       setCategories(response.data);
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -354,7 +354,7 @@ export default function Component() {
         orderDetails: orderDetails
       };
 
-      const response = await axios.post('http://localhost:1056/api/orders', orderData);
+      const response = await axios.post('https://andromeda-8.onrender.com/api/orders', orderData);
 
       if (response.status === 201) {
         orderCreated = true;

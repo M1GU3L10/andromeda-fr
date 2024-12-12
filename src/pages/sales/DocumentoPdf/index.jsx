@@ -86,7 +86,7 @@ const DocumentPdf = ({ sale }) => {
     const [services, setServices] = useState([]);
     const [users, setUsers] = useState([]);
     const [appointment, setAppointment] = useState(null);
-    const urlUsers = 'http://localhost:1056/api/users'
+    const urlUsers = 'https://andromeda-8.onrender.com/api/users'
 
     useEffect(() => {
         getProducts();
@@ -115,7 +115,7 @@ const DocumentPdf = ({ sale }) => {
 
     const getProducts = async () => {
         try {
-            const response = await axios.get("http://localhost:1056/api/products");
+            const response = await axios.get("https://andromeda-8.onrender.com/api/products");
             setProducts(response.data);
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -124,7 +124,7 @@ const DocumentPdf = ({ sale }) => {
 
     const getServices = async () => {
         try {
-            const response = await axios.get("http://localhost:1056/api/services");
+            const response = await axios.get("https://andromeda-8.onrender.com/api/services");
             setServices(response.data);
         } catch (error) {
             console.error("Error fetching services:", error);
@@ -134,7 +134,7 @@ const DocumentPdf = ({ sale }) => {
     const getAppointment = async (appointmentId) => {
         try {
             const response = await axios.get(
-                `http://localhost:1056/api/appointment/${appointmentId}`
+                `https://andromeda-8.onrender.com/api/appointment/${appointmentId}`
             );
             setAppointment(response.data);
         } catch (error) {

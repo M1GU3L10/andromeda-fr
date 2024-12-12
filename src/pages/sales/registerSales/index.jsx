@@ -64,8 +64,8 @@ export default function Component() {
     };
   });
   const [errors, setErrors] = useState({});
-  const urlServices = 'http://localhost:1056/api/services';
-  const urlUsers = 'http://localhost:1056/api/users';
+  const urlServices = 'https://andromeda-8.onrender.com/api/services';
+  const urlUsers = 'https://andromeda-8.onrender.com/api/users';
   const [subtotalProducts, setSubtotalProducts] = useState(() => {
     const saved = localStorage.getItem('subtotalProducts');
     return saved ? parseFloat(saved) : 0;
@@ -105,7 +105,7 @@ export default function Component() {
 
   const getProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:1056/api/products');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/products');
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -303,7 +303,7 @@ export default function Component() {
     }
 
     try {
-      await axios.post('http://localhost:1056/api/sales', saleInfo);
+      await axios.post('https://andromeda-8.onrender.com/api/sales', saleInfo);
       show_alerta('Venta registrada con éxito', 'success');
 
       // Clear localStorage

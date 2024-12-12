@@ -9,7 +9,6 @@ import Button from '@mui/material/Button';
 import { BsPlusSquareFill } from "react-icons/bs";
 import { FaEye, FaPencilAlt } from "react-icons/fa";
 import { IoTrashSharp, IoSearch, IoCart } from "react-icons/io5";
-import { MdOutlineSave } from "react-icons/md";
 import { show_alerta } from '../../assets/functions';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
@@ -41,7 +40,6 @@ const Products = () => {
     Price: '',
     Category_Id: '',
     Image: null,
-    Stock: '',
     status: 'A',
   });
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
@@ -62,7 +60,7 @@ const Products = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:1056/api/categories');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/categories');
       setCategories(response.data);
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -72,15 +70,17 @@ const Products = () => {
 
   const fetchProductData = async () => {
     try {
-      const response = await axios.get('http://localhost:1056/api/products');
+      const response = await axios.get('https://andromeda-8.onrender.com/api/products');
       setProductData(response.data);
     } catch (err) {
       show_alerta('Error al cargar los productos', 'error');
     }
   };
+
   const hasPermission = (permission) => {
     return permissions.includes(permission);
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     let updatedValue = value;
@@ -137,10 +137,6 @@ const Products = () => {
       newErrors.Category_Id = 'Debe seleccionar una categoría válida';
     }
 
-    if (formData.Stock !== '' && (isNaN(formData.Stock) || parseInt(formData.Stock) < 0)) {
-      newErrors.Stock = 'El stock debe ser un número entero no negativo';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -156,9 +152,6 @@ const Products = () => {
         break;
       case 'Category_Id':
         error = !value || isNaN(value) ? 'Debe seleccionar una categoría válida' : '';
-        break;
-      case 'Stock':
-        error = value !== '' && (isNaN(value) || parseInt(value) < 0) ? 'El stock debe ser un número entero no negativo' : '';
         break;
       default:
         break;
@@ -182,13 +175,13 @@ const Products = () => {
     formDataToSend.append('Price', formData.Price);
     formDataToSend.append('Category_Id', formData.Category_Id);
     formDataToSend.append('status', formData.status);
-    formDataToSend.append('Stock', formData.Stock);
+    formDataToSend.append('Stock', '0'); // Always set Stock to 0
     if (formData.Image) {
       formDataToSend.append('Image', formData.Image);
     }
 
     try {
-      const response = await axios.post('http://localhost:1056/api/products', formDataToSend, {
+      const response = await axios.post('https://andromeda-8.onrender.com/api/products', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -217,14 +210,14 @@ const Products = () => {
     formDataToSend.append('Price', formData.Price);
     formDataToSend.append('Category_Id', formData.Category_Id);
     formDataToSend.append('status', formData.status);
-    formDataToSend.append('Stock', formData.Stock);
+    formDataToSend.append('Stock', '0'); // Always set Stock to 0
 
     if (formData.Image instanceof File) {
       formDataToSend.append('Image', formData.Image);
     }
 
     try {
-      const response = await axios.put(`http://localhost:1056/api/products/${formData.id}`,
+      const response = await axios.put(`https://andromeda-8.onrender.com/api/products/${formData.id}`,
         formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -244,7 +237,7 @@ const Products = () => {
     }
   };
 
-  const openModal = (op, id, Product_Name, Price, Category_Id, Image, Stock, status) => {
+  const openModal = (op, id, Product_Name, Price, Category_Id, Image, status) => {
     setOperation(op);
     setFormData({
       id,
@@ -252,7 +245,6 @@ const Products = () => {
       Price: Price || '',
       Category_Id: Category_Id || '',
       Image: null,
-      Stock: Stock || '',
       status: status || 'A',
     });
     setImagePreviewUrl(Image || '');
@@ -290,7 +282,7 @@ const Products = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:1056/api/products/${id}`);
+          await axios.delete(`https://andromeda-8.onrender.com/api/products/${id}`);
           fetchProductData();
           show_alerta('Producto eliminado exitosamente', 'success');
         } catch (err) {
@@ -329,7 +321,7 @@ const Products = () => {
           },
         });
 
-        const response = await axios.put(`http://localhost:1056/api/products/${productId}/status`, {
+        const response = await axios.put(`https://andromeda-8.onrender.com/api/products/${productId}/status`, {
           status: newStatus
         });
 
@@ -531,7 +523,7 @@ const Products = () => {
                                 color="secondary"
                                 className='secondary'
                                 onClick={() => openModal(2, product.id, product.Product_Name, product.Price, product.Category_Id,
-                                  product.Image, product.Stock, product.status)}
+                                  product.Image, product.status)}
                               >
                                 <FaPencilAlt />
                               </Button>
@@ -545,7 +537,7 @@ const Products = () => {
                                 onClick={async () => {
                                   try {
                                     // Consultar compras asociadas
-                                    const response = await axios.get('http://localhost:1056/api/shopping');
+                                    const response = await axios.get('https://andromeda-8.onrender.com/api/shopping');
                                     const purchases = response.data;
 
                                     // Verificar si el producto está en los detalles de compras
@@ -590,17 +582,17 @@ const Products = () => {
                               >
                                 <IoTrashSharp />
                               </Button>
-
                             )
                           }
                         </div>
-
                       </td>
                     </tr>
                   ))
-                ) : ('')
-
-                }
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="text-center">No hay productos disponibles</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -701,7 +693,6 @@ const Products = () => {
           <Button variant="primary" onClick={operation === 1 ? handleSubmit : handleUpdate} className='btn-sucess'>
             Guardar
           </Button>
-
         </Modal.Footer>
       </Modal>
     </div>
