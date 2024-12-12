@@ -1,3 +1,6 @@
+import React from "react";
+import './Tango.css';
+
 const Tango = () => {
     return (
         <>
