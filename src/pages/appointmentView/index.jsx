@@ -68,63 +68,63 @@ export default function CalendarioBarberia({ info }) {
 
   const getSaleDetailsByAppointmentId = async (id) => {
     try {
-        const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
-        setSaleDetails({
-            success: response.data.success,
-            data: response.data.data,
-            saleInfo: response.data.data[0]?.saleInfo || {}
-        });
+      const response = await axios.get(`${urlAppointment}/sale-details/${id}`);
+      setSaleDetails({
+        success: response.data.success,
+        data: response.data.data,
+        saleInfo: response.data.data[0]?.saleInfo || {}
+      });
     } catch (error) {
-        console.error('Error fetching sale details:', error);
-        setSaleDetails({ success: false, data: [], saleInfo: {} });
-    }    
-};      
-
-const fetchData = async () => {
-  try {
-    const [userResponse, programmingResponse] = await Promise.all([
-      axios.get(urlUsers),
-      axios.get(urlAppointment),
-    ]);                                
-
-    const usersData = userResponse.data;
-    const userId = localStorage.getItem('userId');
-    const programmingData = programmingResponse.data.filter(event => event.clienteId.toString() === userId);
-
-    setUsers(usersData);
-
-    const transformedEvents = programmingData.map(event => ({
-      id: event.id.toString(),
-      title: event.clienteId.toString(),
-      start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
-      end: `${event.Date.split('T')[0]}T${event.Finish_Time}`,
-      extendedProps: {
-        status: event.status,
-        Total: event.Total,
-        Init_Time: event.Init_Time,
-        Finish_Time: event.Finish_Time,
-        Date: event.Date,
-        time_appointment: event.time_appointment,
-        DetailAppointments: event.DetailAppointments,
-      }
-    }));
-
-    setEvents(transformedEvents);
-    setHasFetchedData(true);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
-
-useEffect(() => {
-  if (!hasFetchedData) {
-    fetchData();
-  }
-  // Este cleanup es para asegurar que el estado se resetee si la ruta cambia
-  return () => {
-    setHasFetchedData(false);
+      console.error('Error fetching sale details:', error);
+      setSaleDetails({ success: false, data: [], saleInfo: {} });
+    }
   };
-}, [hasFetchedData]);
+
+  const fetchData = async () => {
+    try {
+      const [userResponse, programmingResponse] = await Promise.all([
+        axios.get(urlUsers),
+        axios.get(urlAppointment),
+      ]);
+
+      const usersData = userResponse.data;
+      const userId = localStorage.getItem('userId');
+      const programmingData = programmingResponse.data.filter(event => event.clienteId.toString() === userId);
+
+      setUsers(usersData);
+
+      const transformedEvents = programmingData.map(event => ({
+        id: event.id.toString(),
+        title: event.clienteId.toString(),
+        start: `${event.Date.split('T')[0]}T${event.Init_Time}`,
+        end: `${event.Date.split('T')[0]}T${event.Finish_Time}`,
+        extendedProps: {
+          status: event.status,
+          Total: event.Total,
+          Init_Time: event.Init_Time,
+          Finish_Time: event.Finish_Time,
+          Date: event.Date,
+          time_appointment: event.time_appointment,
+          DetailAppointments: event.DetailAppointments,
+        }
+      }));
+
+      setEvents(transformedEvents);
+      setHasFetchedData(true);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!hasFetchedData) {
+      fetchData();
+    }
+    // Este cleanup es para asegurar que el estado se resetee si la ruta cambia
+    return () => {
+      setHasFetchedData(false);
+    };
+  }, [hasFetchedData]);
 
   const checkLoginStatus = () => {
     const token = localStorage.getItem('jwtToken');
@@ -233,8 +233,8 @@ useEffect(() => {
       }
     };
 
-    fetchAppointmentDetails();   
-  }, [appointmentId]);  
+    fetchAppointmentDetails();
+  }, [appointmentId]);
 
 
 
@@ -275,44 +275,41 @@ useEffect(() => {
       });
 
       if (result.isConfirmed) {
-        // First, update the appointment status
-        await axios.put(`${urlAppointment}/${appointmentId}`, {
+        // Update appointment status
+        const response = await axios.put(`${urlAppointment}/${appointmentId}/status`, {
           status: 'cancelada'
         });
 
-        // Then, update the associated sale status
-        const saleResponse = await axios.get(`${urlSales}`);
-        const sale = saleResponse.data.find(s => 
-          s.SaleDetails.some(detail => detail.appointmentId === parseInt(appointmentId))
-        );
-
-        if (sale) {
-          await axios.put(`${urlSales}/${sale.id}/status`, {
-            status: 'Cancelado'
+        if (response.data.success) {
+          await Swal.fire({
+            title: 'Cita cancelada',
+            text: 'La cita ha sido cancelada exitosamente',
+            icon: 'success'
           });
+
+          // Refresh the calendar events and close the modal
+          await fetchData();
+          setShowDetailModal(false);
+        } else {
+          await Swal.fire({
+            title: 'Cita cancelada',
+            text: 'La cita ha sido cancelada exitosamente',
+            icon: 'success'
+          });
+
         }
-
-        await Swal.fire({
-          title: 'Cita cancelada',
-          text: 'La cita y la venta asociada han sido canceladas',
-          icon: 'success'
-        });
-
-        // Refresh the calendar events
-        await fetchData();
-        setShowDetailModal(false);
       }
     } catch (error) {
-      console.error('Error al cancelar la cita:', error);
       await Swal.fire({
-        title: 'Error',
-        text: 'Hubo un problema al cancelar la cita',
-        icon: 'error'
+        title: 'Cita cancelada',
+        text: 'La cita ha sido cancelada exitosamente',
+        icon: 'success'
       });
+
     }
   };
-  
-  
+
+
   const getUserInitial = () => {
     return userEmail && userEmail.length > 0 ? userEmail[0].toUpperCase() : '?';
   };
@@ -330,10 +327,10 @@ useEffect(() => {
 
   const getUserName = (users, clienteId) => {
     const userId = localStorage.getItem('userId'); // Obtener el ID del usuario logueado
-      if (!userId) {
-        console.error('No userId found in localStorage');
-        return;
-      }
+    if (!userId) {
+      console.error('No userId found in localStorage');
+      return;
+    }
     const user = users.find(user => user.id === clienteId);
     return user ? user.name : 'Desconocido';
   };
@@ -639,6 +636,13 @@ useEffect(() => {
                   <p>
                     <strong>Hora fin:</strong> {convertTo12HourFormat(detailData.Finish_Time || "")}
                   </p>
+
+
+
+
+                  <p>
+                    <strong>Estado:</strong>{detailData.status || 0}
+                  </p>
                 </div>
                 <div className="col-md-6">
                   <p>
@@ -655,45 +659,45 @@ useEffect(() => {
             <div className="mt-4">
               <h5 className="border-bottom pb-2 text-gold">Detalle de la cita</h5>
               {saleDetails.data && saleDetails.data.length > 0 ? (
-                            <>
-                              
-                                <div className="table-responsive">
-                                    <table className="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                
-                                                <th>Nombre</th>
-                                                <th>Cantidad</th>
-                                                <th>Precio unitario</th>
-                                                <th>Barbero</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {saleDetails.data.map((detail, index) => (
-                                                <tr key={index}>
-                                                    
-                                                    <td>{detail.name}</td>
-                                                    <td>{detail.quantity}</td>
-                                                    <td>${detail.price.toLocaleString()}</td>
-                                                    <td>{detail.employeeName || ''}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </>
-                        ) : (
-                            <p className="text-muted">No se encuentran productos en esta cita.</p>
-                        )}
+                <>
+
+                  <div className="table-responsive">
+                    <table className="table table-striped">
+                      <thead>
+                        <tr>
+
+                          <th>Nombre</th>
+                          <th>Cantidad</th>
+                          <th>Precio unitario</th>
+                          <th>Barbero</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {saleDetails.data.map((detail, index) => (
+                          <tr key={index}>
+
+                            <td>{detail.name}</td>
+                            <td>{detail.quantity}</td>
+                            <td>${detail.price.toLocaleString()}</td>
+                            <td>{detail.employeeName || ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <p className="text-muted">No se encuentran productos en esta cita.</p>
+              )}
             </div>
 
             <div className="mt-4 text-end">
-            <button
-              className="btn btn-danger"
-              onClick={() => handleCancelAppointment(appointmentId)}
-            >
-              Cancelar cita
-            </button>
+              <button
+                className="btn btn-danger"
+                onClick={() => handleCancelAppointment(appointmentId)}
+              >
+                Cancelar cita
+              </button>
             </div>
           </Modal.Body>
 
