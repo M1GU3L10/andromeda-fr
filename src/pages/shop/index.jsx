@@ -642,7 +642,13 @@ export default function Component() {
       </header>
       <main className="container mx-auto mt-8 shop-container">
         <h1 className="shop-title">NUESTROS PRODUCTOS</h1>
-
+        <Button
+            onClick={handleCategoryClick}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-md shadow transition duration-200 ease-in-out transform hover:scale-105 flex items-center space-x-2"
+          >
+            <Scissors className="w-5 h-5 text-gray-600" />
+            <span>Categorías</span>
+          </Button>
         <div className="search-and-filter">
           <div className="search-bar">
             <input
@@ -652,13 +658,7 @@ export default function Component() {
               onChange={handleSearchChange}
             />
           </div>
-          <Button
-            onClick={handleCategoryClick}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-md shadow transition duration-200 ease-in-out transform hover:scale-105 flex items-center space-x-2"
-          >
-            <Scissors className="w-5 h-5 text-gray-600" />
-            <span>Categorías</span>
-          </Button>
+       
 
 
           <Menu
